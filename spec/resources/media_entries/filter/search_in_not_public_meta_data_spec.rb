@@ -2,12 +2,13 @@ require 'spec_helper'
 require Pathname(File.expand_path('datalayer/spec/models/media_entry/search_in_not_public_meta_data_shared_context.rb'))
 
 describe 'search for media entries with meta data from not public vocabulary' do
-  let :media_entries_relation do
-    json_roa_client.get.relation('media-entries')
-  end
+  #let :media_entries_relation do
+  #  json_roa_client.get.relation('media-entries')
+  #end
 
   def get_media_entries(filter = nil)
-    media_entries_relation.get(filter).data['media-entries']
+    plain_faraday_json_client.get("/api/media-entries/", filter).body['media-entries']
+    #media_entries_relation.get(filter).data['media-entries']
   end
 
   context 'applying a meta data filter' do

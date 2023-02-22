@@ -24,6 +24,18 @@ shared_context :auth_media_file_resource_via_json_roa do
   end
 end
 
+shared_context :auth_media_file_resource_via_json do
+  let :client do
+    basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
+  end
+  let :url do
+    "/api/media-files/#{@media_file.id}"
+  end
+  let :response do
+    client.get(url)
+  end
+end
+
 shared_context :auth_media_file_original_data_stream_via_json_roa do
   let :client do
     json_roa_client do |conn|
@@ -38,6 +50,17 @@ shared_context :auth_media_file_original_data_stream_via_json_roa do
   end
 end
 
+shared_context :auth_media_file_original_data_stream_via_json do
+  let :client do
+    basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
+  end
+  let :url do
+    "/api/media-files/#{@media_file.id}/data-stream"
+  end
+  let :response do
+    client.get(url)
+  end
+end
 
 shared_context :media_file_resource_via_plain_json do
   let :response do
@@ -46,10 +69,10 @@ shared_context :media_file_resource_via_plain_json do
 end
 
 shared_context :check_media_file_resource_via_any do |ctx|
-  context :via_json_roa do
-    include_context :media_file_resource_via_json_roa
-    include_context ctx
-  end
+  #context :via_json_roa do
+  #  include_context :media_file_resource_via_json_roa
+  #  include_context ctx
+  #end
 
   context :via_plain_json do
     include_context :media_file_resource_via_plain_json

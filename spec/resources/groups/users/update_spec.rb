@@ -29,17 +29,18 @@ describe 'updating group-users' do
   end
 
   context 'admin user' do
-    include_context :json_roa_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_user do
 
-      let :roa_response do
-        client.get.relation('group').get(id: @group.id).relation('users').put do |req|
+      let :response do
+        #client.get.relation('group').get(id: @group.id).relation('users').put do |req|
+        client.put("/api/groups/#{CGI.escape(@group.id)}/users/") do |req|
           req.body = {users: @update_data}.to_json
           req.headers['Content-Type'] = 'application/json'
         end
       end
 
       it 'works and sets the group users to exactly those given with the request' do
-        expect(roa_response.response.status).to be== 204
+        expect(response.status).to be== 204
         expect(
           Set.new(@group.users.reload.map(&:id))
         ).to be== Set.new(@update_users.map(&:id))

@@ -1,16 +1,14 @@
 require 'spec_helper'
 
 describe 'filtering collections' do
-  let :collections_relation do
-    client.get.relation('collections')
-  end
-
+  
   def get_collections(filter = nil)
-    collections_relation.get(filter).data['collections']
+    # TODO remove ROA: filter
+    client.get('/api/collections/', filter).body['collections']
   end
 
   context 'by collection_id' do
-    include_context :json_roa_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_user do
       it 'as single filter option' do
         @collection = FactoryBot.create(:collection)
         5.times do

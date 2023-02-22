@@ -28,7 +28,7 @@ describe 'Getting a media-file resource with authentication' do
     @entity = FactoryBot.create(:user, password: 'password')
   end
 
-  include_context :auth_media_file_resource_via_json_roa
+  include_context :auth_media_file_resource_via_json
 
   context :check_allowed_if_responsible do
     before :example do

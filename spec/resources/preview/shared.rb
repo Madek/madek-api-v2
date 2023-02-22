@@ -36,11 +36,20 @@ shared_context :auth_preview_resource_via_json_roa do
   end
 end
 
-shared_context :check_preview_resource_via_any do |ctx|
-  context :via_json_roa do
-    include_context :preview_resource_via_json_roa
-    include_context ctx
+shared_context :auth_preview_resource_via_json do
+  def auth_client_for_preview
+    basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
   end
+  let :response do
+    auth_client_for_preview.get("/api/previews/#{@preview.id}")
+  end
+end
+
+shared_context :check_preview_resource_via_any do |ctx|
+  #context :via_json_roa do
+  #  include_context :preview_resource_via_json_roa
+  #  include_context ctx
+  #end
 
   context :via_plain_json do
     include_context :preview_resource_via_plain_json

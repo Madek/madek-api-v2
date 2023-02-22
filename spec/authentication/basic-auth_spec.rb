@@ -26,16 +26,18 @@ end
 
 shared_context :test_bad_password_basic_auth do
   context 'with proper username but bad password' do
-    let :client do
-      json_roa_client do |conn|
-        conn.basic_auth(@entity.login, 'BOGUS')
-      end
-    end
-    let :resource do
-      client.get.relation('auth-info').get
-    end
+    # TODO: roa: use plain json
+    #let :client do
+    #  json_roa_client do |conn|
+    #    conn.basic_auth(@entity.login, 'BOGUS')
+    #  end
+    #end
+    #let :resource do
+    #  client.get.relation('auth-info').get
+    #end
     let :response do
-      resource.response
+      #resource.response
+      basic_auth_plain_faraday_json_client(@entity.login, 'BOGUS').get('auth-info')
     end
     it 'responds with 401' do
       expect(response.status).to be == 401
@@ -45,18 +47,19 @@ end
 
 shared_context :test_proper_basic_auth do
   context 'with proper username and password' do
-    let :client do
-      json_roa_client do |conn|
-        conn.basic_auth(@entity.login, @entity.password)
-      end
-    end
-
-    let :resource do
-      client.get.relation('auth-info').get
-    end
+    # TODO: roa: use plain json
+    #let :client do
+    #  json_roa_client do |conn|
+    #    conn.basic_auth(@entity.login, @entity.password)
+    #  end
+    #end
+    #let :resource do
+    #  client.get.relation('auth-info').get
+    #end
 
     let :response do
-      resource.response
+      #resource.response
+      basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get('auth-info')
     end
 
     it 'responds with success 200' do
@@ -101,12 +104,15 @@ end
 
 describe '/auth-info resource' do
   context 'without any authentication' do
-    context 'via json roa' do
-      let :resource do
-        json_roa_client.get.relation('auth-info').get
-      end
+    # TODO: roa: use plain json
+    #context 'via json roa' do
+    context 'via json' do
+      #let :resource do
+      #  json_roa_client.get.relation('auth-info').get
+      #end
       let :response do
-        resource.response
+        #resource.response
+        plain_faraday_json_client.get('auth-info')
       end
 
       it 'responds with not authorized 401' do

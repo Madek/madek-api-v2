@@ -4,30 +4,28 @@ require Pathname(File.expand_path('../../', __FILE__)).join('shared')
 describe 'filtering media entries' do
   include_context :bunch_of_media_entries
 
-  let :media_entries_relation do
-    media_entries # force evaluation
-    client.get.relation('media-entries')
+  def get_media_entries_response(filter = nil)
+    #media_entries # force evaluation
+    client.get("/api/media-entries/", filter)
   end
 
   def get_media_entries(filter = nil)
-    media_entries_relation.get(filter).data['media-entries']
+    get_media_entries_response(filter).body['media-entries']
   end
 
   context 'permission params checks' do
-    include_context :json_roa_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_user do
       it 'returns 422 if some \'me_\' not true' do
-        response = \
-          media_entries_relation.get('me_get_metadata_and_previews' => false)
-          .response
+        response = get_media_entries_response('me_get_metadata_and_previews' => false)
         expect(response.status).to be == 422
       end
     end
   end
 
   context 'by public_ permissions' do
-    include_context :json_roa_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_user do
       it 'public_get_metadata_and_previews' do
-        get_media_entries('public_get_metadata_and_previews' => 'true')
+        get_media_entries('public_get_metadata_and_previews' => true)
           .each do |me|
           media_entry = MediaEntry.unscoped.find(me['id'])
           expect(media_entry.get_metadata_and_previews).to be true
@@ -35,7 +33,7 @@ describe 'filtering media entries' do
       end
 
       it 'public_get_full_size' do
-        get_media_entries('public_get_full_size' => 'true')
+        get_media_entries('public_get_full_size' => true)
           .each do |me|
           media_entry = MediaEntry.unscoped.find(me['id'])
           expect(media_entry.get_full_size).to be true
@@ -45,12 +43,12 @@ describe 'filtering media entries' do
   end
 
   context 'by me_ permissons' do
-    let :media_entries_relation do
-      client.get.relation('media-entries')
-    end
+    #let :media_entries_relation do
+    #  client.get.relation('media-entries')
+    #end
 
     context 'me_get_metadata_and_previews for a user' do
-      include_context :json_roa_client_for_authenticated_user do
+      include_context :json_client_for_authenticated_user do
         it '200 for public permissions' do
           10.times {
             FactoryBot.create(:media_entry,
@@ -58,7 +56,7 @@ describe 'filtering media entries' do
                                get_full_size: false)
           }
 
-          get_media_entries('me_get_metadata_and_previews' => 'true')
+          get_media_entries('me_get_metadata_and_previews' => true)
             .each do |me|
             media_entry = MediaEntry.unscoped.find(me['id'])
             expect(media_entry.get_metadata_and_previews).to be true
@@ -76,7 +74,7 @@ describe 'filtering media entries' do
           get_media_entries('me_get_metadata_and_previews' => 'true')
             .each do |me|
             media_entry = MediaEntry.unscoped.find(me['id'])
-            expect(media_entry.responsible_user).to be == user
+            expect(media_entry.responsible_user.id).to be == user.id
           end
         end
 
@@ -90,7 +88,7 @@ describe 'filtering media entries' do
               user: user
           end
 
-          get_media_entries('me_get_metadata_and_previews' => 'true')
+          get_media_entries('me_get_metadata_and_previews' => true)
             .each do |me|
             media_entry = MediaEntry.unscoped.find(me['id'])
             expect(media_entry.user_permissions.first.user).to be == user
@@ -120,7 +118,7 @@ describe 'filtering media entries' do
     end
 
     context 'me_get_full_size for a user' do
-      include_context :json_roa_client_for_authenticated_user do
+      include_context :json_client_for_authenticated_user do
         it '200 for public permissions' do
           10.times {
             FactoryBot.create(:media_entry,
@@ -190,7 +188,7 @@ describe 'filtering media entries' do
     end
 
     context 'me_get_metadata_and_previews for an api_client' do
-      include_context :json_roa_client_for_authenticated_api_client do
+      include_context :json_client_for_authenticated_api_client do
         it '200 for public permissions' do
           10.times {
             FactoryBot.create(:media_entry,
@@ -226,7 +224,7 @@ describe 'filtering media entries' do
     end
 
     context 'me_get_metadata_and_previews for an api_client' do
-      include_context :json_roa_client_for_authenticated_api_client do
+      include_context :json_client_for_authenticated_api_client do
         it '200 for public permissions' do
           10.times {
             FactoryBot.create(:media_entry,

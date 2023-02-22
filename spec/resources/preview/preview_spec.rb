@@ -24,7 +24,7 @@ describe 'Getting a random preview for a specific media-entry' do
   end
 
   (1..ROUNDS).each do |round|
-    include_context :preview_resource_via_json_roa
+    include_context :preview_resource_via_plain_json
 
     context "ROUND #{round}" do
       it "is successful (200)" do
@@ -32,11 +32,13 @@ describe 'Getting a random preview for a specific media-entry' do
       end
 
       describe 'getting the data-stream resource' do
-        let :data_stream_resource do
-          resource.relation('data-stream').get
-        end
+        #let :data_stream_resource do
+        #  resource.relation('data-stream').get
+        #end
         let :data_stream_resource_response do
-          data_stream_resource.response
+          #data_stream_resource.response
+          plain_faraday_json_client.get("/api/previews/#{@preview.id}/data-stream")
+          # TODO json roa remove: test relation: preview data stream
         end
         let :content_type do
           data_stream_resource_response.headers['content-type']

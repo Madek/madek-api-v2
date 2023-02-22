@@ -28,7 +28,7 @@ describe 'Getting a preview resource with authentication' do
     @entity = FactoryBot.create(:user, password: 'password')
   end
 
-  include_context :auth_preview_resource_via_json_roa
+  include_context :auth_preview_resource_via_json
 
   context :check_forbidden_without_required_permission do
     before :example do

@@ -23,9 +23,10 @@ shared_context :valid_session_object do |to_include|
     end
 
     let :client do
-      json_roa_client do |conn|
-        conn.headers['Cookie'] = session_cookie.to_s
-      end
+      #json_roa_client do |conn|
+      #  conn.headers['Cookie'] = session_cookie.to_s
+      #end
+      session_auth_plain_faraday_json_client(session_cookie.to_s)
     end
 
     include_examples to_include
@@ -41,12 +42,13 @@ describe 'Session/Cookie Authentication' do
     FactoryBot.create :user, password: 'TOPSECRET'
   end
 
-  let :resource do
-    client.get.relation('auth-info').get
-  end
+  #let :resource do
+  #  client.get.relation('auth-info').get
+  #end
 
   let :response do
-    resource.response
+    #resource.response
+    client.get('auth-info')
   end
 
   context 'Session authentication is enabled' do
@@ -61,9 +63,10 @@ describe 'Session/Cookie Authentication' do
       end
 
       let :client do
-        json_roa_client do |conn|
-          conn.headers['Cookie'] = session_cookie.to_s
-        end
+        #json_roa_client do |conn|
+        #  conn.headers['Cookie'] = session_cookie.to_s
+        #end
+        session_auth_plain_faraday_json_client(session_cookie.to_s)
       end
 
       include_examples :responds_with_not_authorized

@@ -1,15 +1,11 @@
 require 'spec_helper'
 
 describe 'MediaFile Resource' do
-  include_context :authenticated_json_roa_client
+  include_context :authenticated_json_client
 
   describe 'requesting a non existing media-resource' do
-    let :resource do
-      authenticated_json_roa_client.get.relation('media-file') \
-        .get('id' => SecureRandom.uuid)
-    end
     let :response do
-      resource.response
+      authenticated_json_client.get("/api/media-files/#{SecureRandom.uuid}")
     end
 
     it 'responds with 404 not found' do
@@ -32,29 +28,30 @@ describe 'MediaFile Resource' do
       expect(media_file).to be
     end
 
-    describe 'the media-entry resource' do
-      let :media_entry_resource do
-        authenticated_json_roa_client.get.relation('media-entry')
-          .get('id' => media_file.media_entry.id)
-      end
-      it 'has a media-file relation' do
-        expect(media_entry_resource.relation('media-file')).to be_a JSON_ROA::Client::Relation
-      end
-      it 'links to the media-file resource' do
-        expect(media_entry_resource.relation('media-file').data['href']).to \
-          match %r{.*/media-files/#{media_file.id}}
-      end
-    end
+    # TODO remove json roa: test links: media-entry to media-file
+    #describe 'the media-entry resource' do
+    #  let :media_entry_resource do
+    #    authenticated_json_roa_client.get.relation('media-entry')
+    #      .get('id' => media_file.media_entry.id)
+    #  end
+    #  it 'has a media-file relation' do
+    #    expect(media_entry_resource.relation('media-file')).to be_a JSON_ROA::Client::Relation
+    #  end
+    #  it 'links to the media-file resource' do
+    #    expect(media_entry_resource.relation('media-file').data['href']).to \
+    #      match %r{.*/media-files/#{media_file.id}}
+    #  end
+    #end
 
     describe 'the media-file resource' do
-      let :resource do
-        authenticated_json_roa_client.get.relation('media-file') \
-          .get('id' => media_file.id)
-      end
+      #let :resource do
+        #authenticated_json_roa_client.get.relation('media-file') \
+        #  .get('id' => media_file.id)
+      #end
 
       describe 'the response' do
         let :response do
-          resource.response
+          authenticated_json_client.get("/api/media-files/#{media_file.id}")
         end
 
         describe 'the status ' do
@@ -77,13 +74,14 @@ describe 'MediaFile Resource' do
       end
 
       describe 'the data-stream resource' do
-        let :data_stream_resource do
-          resource.relation('data-stream').get
-        end
+        #let :data_stream_resource do
+        #  resource.relation('data-stream').get
+        #end
 
         describe 'the response' do
           let :data_stream_resource_response do
-            data_stream_resource.response
+            #data_stream_resource.response
+            authenticated_json_client.get("/api/media-files/#{media_file.id}/data-stream")
           end
 
           it do

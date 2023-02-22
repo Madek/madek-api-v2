@@ -3,13 +3,14 @@ require Pathname(File.expand_path('..', __FILE__)).join('shared')
 
 describe 'generated runs' do
   (1..ROUNDS).each do |round|
+  #(1..1).each do |round|
     describe "ROUND #{round}" do
       describe 'meta_datum_text_for_random_resource_type' do
         include_context :meta_datum_for_random_resource_type
         let(:meta_datum_text) { meta_datum ['text', 'text_date'].sample }
 
-        describe 'authenticated_json_roa_client' do
-          include_context :authenticated_json_roa_client
+        describe 'authenticated_json_client' do
+          include_context :authenticated_json_client
           after :each do |example|
             if example.exception
               example.exception.message << \
@@ -27,13 +28,14 @@ describe 'generated runs' do
             end
 
             describe 'the meta-data resource' do
-              let :resource do
-                authenticated_json_roa_client.get.relation('meta-datum') \
-                  .get('id' => meta_datum_text.id)
-              end
+              #let :resource do
+              #  authenticated_json_roa_client.get.relation('meta-datum') \
+              #    .get('id' => meta_datum_text.id)
+              #end
 
               let :response do
-                resource.response
+                #resource.response
+                authenticated_json_client.get("/api/meta-data/#{meta_datum_text.id}")
               end
 
               it 'status, either 200 success or 403 forbidden, '\
@@ -44,21 +46,22 @@ describe 'generated runs' do
 
               it 'holds the proper text value when the response is 200' do
                 if response.status == 200
-                  expect(resource.data['value']).to be == meta_datum_text.string
+                  expect(response.body['value']).to be == meta_datum_text.string
                 end
               end
             end
 
             describe 'the meta-datum-data-stream resource' do
-              let :resource do
-                authenticated_json_roa_client.get.relation('meta-datum-data-stream') \
-                  .get('id' => meta_datum_text.id) do |conn|
-                    conn.headers.delete("Accept")
-                end
-              end
+              #let :resource do
+              #  authenticated_json_roa_client.get.relation('meta-datum-data-stream') \
+              #    .get('id' => meta_datum_text.id) do |conn|
+              #      conn.headers.delete("Accept")
+              #  end
+              #end
 
               let :response do
-                resource.response
+                #resource.response
+                authenticated_json_client.get("/api/meta-data/#{meta_datum_text.id}/data-stream")
               end
 
               it 'status, either 200 success or 403 forbidden, '\

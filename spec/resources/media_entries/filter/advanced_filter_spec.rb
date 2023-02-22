@@ -3,12 +3,13 @@ require Pathname(File.expand_path('datalayer/spec/models/media_entry/combined_fi
 require Pathname(File.expand_path('datalayer/spec/models/media_entry/search_in_all_meta_data_shared_context.rb'))
 
 describe 'advanced filtering of media entries' do
-  let :media_entries_relation do
-    json_roa_client.get.relation('media-entries')
-  end
+  #let :media_entries_relation do
+  #  json_roa_client.get.relation('media-entries')
+  #end
 
   def get_media_entries(filter = nil)
-    media_entries_relation.get(filter).data['media-entries']
+    #media_entries_relation.get(filter).data['media-entries']
+    plain_faraday_json_client.get("/api/media-entries/", filter).body['media-entries']
   end
 
   context 'applying a combined filter' do

@@ -4,21 +4,22 @@ require Pathname(File.expand_path('..', __FILE__)).join('shared')
 describe 'ordering media entries' do
   include_context :bunch_of_media_entries
 
-  include_context :json_roa_client_for_authenticated_user do
-    let :media_entries_relation do
-      media_entries # force evaluation
-      collection # force evaluation
-      client.get.relation('media-entries')
-    end
+  include_context :json_client_for_authenticated_user do
+    #let :media_entries_relation do
+    #  media_entries # force evaluation
+    #  collection # force evaluation
+    #  client.get.relation('media-entries')
+    #end
 
     def resource(order = nil)
-      media_entries_relation.get('order' => order)
+      #media_entries_relation.get('order' => order)
+      client.get('/api/media-entries/', {'order' => order})
     end
 
     context "old style string 'order' attribute" do
       context 'when passed order is incorrect' do
         it 'raises an error' do
-          response = resource('incorrect_value').response
+          response = resource('incorrect_value')
 
           expect(response.status).to eq(422)
           expect(response.body).to eq({ 'message' => 'only the following values are allowed as '\

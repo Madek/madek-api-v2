@@ -3,13 +3,14 @@ require Pathname(File.expand_path('..', __FILE__)).join('shared')
 
 describe 'generated runs' do
   (1..ROUNDS).each do |round|
+  #(1..5).each do |round|
     describe "ROUND #{round}" do
       describe 'meta_datum_people_for_random_resource_type' do
         include_context :meta_datum_for_random_resource_type
         let(:meta_datum_people) { meta_datum('people') }
 
         describe 'authenticated_json_roa_client' do
-          include_context :authenticated_json_roa_client
+          include_context :authenticated_json_client
           after :each do |example|
             if example.exception
               example.exception.message << \
@@ -25,13 +26,13 @@ describe 'generated runs' do
                 get_metadata_and_previews: (rand <= 0.5)
             end
             describe 'the meta-data resource' do
-              let :resource do
-                authenticated_json_roa_client.get.relation('meta-datum') \
-                  .get('id' => meta_datum_people.id)
-              end
+              #let :resource do
+              #  authenticated_json_roa_client.get.relation('meta-datum') \
+              #    .get('id' => meta_datum_people.id)
+              #end
 
               let :response do
-                resource.response
+                authenticated_json_client.get("/api/meta-data/#{meta_datum_people.id}")
               end
 
               it 'status, either 200 success or 403 forbidden, '\
@@ -41,28 +42,41 @@ describe 'generated runs' do
               end
 
               context 'if the response is 200' do
-                let(:value) { resource.data['value'] }
+                let(:value) { response.body['value'] }
 
                 it 'it holds the proper uuid array value' do
                   if response.status == 200
+                    mdi = response.body['id']
                     value.map { |v| v['id'] }.each do |person_id|
-                      expect(MetaDatum::Person.find_by(meta_datum_id: resource.data['id'],
+                      expect(MetaDatum::Person.find_by(meta_datum_id: mdi,
                                                        person_id: person_id))
                         .to be
                     end
                   end
                 end
 
+                # TODO json roa remove: test valid collection
                 it 'it provides valid collection and relations' do
                   if response.status == 200
-                    resource.collection.each do |c_entry|
-                      expect(c_entry.get.response.status).to be == 200
-                      expect(value.map { |v| v['id'] }).to include c_entry.get.data['id']
-                    end
+                    collection_data = response.body['value']
+                    collection_data.each do |c_entry|
 
-                    expect(resource.relation('meta-key').get.response.status)
+                      expect(value.map { |v| v['id'] }).to include c_entry['id']
+                    end
+                    #resource.collection.each do |c_entry|
+                    #  expect(c_entry.get.response.status).to be == 200
+                    #  expect(value.map { |v| v['id'] }).to include c_entry.get.data['id']
+                    #end
+
+                    # TODO json roa remove: test links: meta-data 2 meta-key
+                    meta_key_id = response.body['meta_key_id']
+                    expect(authenticated_json_client.get("/api/meta-keys/#{meta_key_id}").status)
+                    #expect(resource.relation('meta-key').get.response.status)
                       .to be == 200
-                    expect(resource.relation('media-entry').get.response.status)
+                    # TODO json roa remove: test links: meta-data 2 media-entry
+                    meta_key_id = response.body['media_entry_id']
+                    expect(authenticated_json_client.get("/api/media-entries/#{meta_key_id}").status)
+                    #expect(resource.relation('media-entry').get.response.status)
                       .to be == 200
                   end
                 end

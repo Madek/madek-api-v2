@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe 'index' do
-  include_context :json_roa_client_for_authenticated_user do
+  include_context :json_client_for_authenticated_user do
     let :meta_keys_resource do
-      json_roa_client.get.relation('meta-keys').get
+      client.get('/api/meta-keys/')
     end
 
     it 'should return 200 with only viewable by public meta-keys' do
@@ -11,8 +11,8 @@ describe 'index' do
       meta_key = FactoryBot.create(:meta_key,
                                     id: "#{vocab.id}:#{Faker::Lorem.word}",
                                     vocabulary: vocab)
-      expect(meta_keys_resource.response.status).to be == 200
-      expect(meta_keys_resource.data['meta-keys'].count).to be == 0
+      expect(meta_keys_resource.status).to be == 200
+      expect(meta_keys_resource.body['meta-keys'].count).to be == 0
     end
 
     context 'when user is authenticated' do
@@ -26,8 +26,8 @@ describe 'index' do
           Permissions::VocabularyUserPermission.create!(user_id: user.id,
                                                         view: true,
                                                         vocabulary: vocabulary)
-
-          data = client.get.relation('meta-keys').get.data['meta-keys'].first
+          data = meta_keys_resource.body['meta-keys'].first
+          #data = client.get.relation('meta-keys').get.data['meta-keys'].first
 
           expect(data).to have_key 'id'
           expect(data['id']).to eq meta_key.id
@@ -45,7 +45,7 @@ describe 'index' do
                                                          view: true,
                                                          vocabulary: vocabulary)
 
-          data = client.get.relation('meta-keys').get.data['meta-keys'].first
+          data = meta_keys_resource.body['meta-keys'].first
 
           expect(data).to have_key 'id'
           expect(data['id']).to eq meta_key.id
@@ -63,7 +63,7 @@ describe 'index' do
                                                         view: false,
                                                         vocabulary: vocabulary)
 
-          data = client.get.relation('meta-keys').get.data['meta-keys']
+          data = meta_keys_resource.body['meta-keys']
 
           expect(data.count).to be_zero
         end
@@ -80,7 +80,7 @@ describe 'index' do
                                                                       view: false,
                                                                       vocabulary: vocabulary)
 
-          data = client.get.relation('meta-keys').get.data['meta-keys']
+          data = meta_keys_resource.body['meta-keys']
 
           expect(data.count).to be_zero
         end

@@ -64,28 +64,29 @@ context 'Getting a media-entry resource without authentication' do
       end
     end
 
-    context 'for json-roa' do
-      include_context :media_entry_resource_via_json_roa
-      describe 'the content-type part of the content-type header' do
-        include_context :content_type_part
-        it do
-          expect(content_type).to be == 'application/json-roa+json'
-        end
-      end
+    # TODO json roa: test links
+    #context 'for json-roa' do
+    #  include_context :media_entry_resource_via_json_roa
+    #  describe 'the content-type part of the content-type header' do
+    #    include_context :content_type_part
+    #    it do
+    #      expect(content_type).to be == 'application/json-roa+json'
+    #    end
+    #  end
 
-      describe 'the relation meta-data ' do
-        let :relation_meta_data do
-          resource.relation('meta-data')
-        end
-        describe 'meta_data' do
-          it do
-            expect(relation_meta_data).to be
-          end
-          it do
-            expect(relation_meta_data).to be_a JSON_ROA::Client::Relation
-          end
-        end
-      end
-    end
+    #  describe 'the relation meta-data ' do
+    #    let :relation_meta_data do
+    #      resource.relation('meta-data')
+    #    end
+    #    describe 'meta_data' do
+    #      it do
+    #        expect(relation_meta_data).to be
+    #      end
+    #      it do
+    #        expect(relation_meta_data).to be_a JSON_ROA::Client::Relation
+    #      end
+    #    end
+    #  end
+    #end
   end
 end

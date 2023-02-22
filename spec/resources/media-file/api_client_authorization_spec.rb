@@ -13,7 +13,7 @@ describe 'Getting a media-file resource with authentication' do
 
   context 'the resource itself' do
 
-    include_context :auth_media_file_resource_via_json_roa
+    include_context :auth_media_file_resource_via_json
 
     context :check_allowed_if_api_client_permission do
       before :each do
@@ -32,7 +32,7 @@ describe 'Getting a media-file resource with authentication' do
 
   context 'the data stream' do
     context 'with get_full_size permission' do
-      include_context :auth_media_file_original_data_stream_via_json_roa
+      include_context :auth_media_file_original_data_stream_via_json
       before :each do
         @media_entry.api_client_permissions << \
           FactoryBot.create(:media_entry_api_client_permission,
@@ -47,7 +47,7 @@ describe 'Getting a media-file resource with authentication' do
 
 
     context 'without get_full_size permission' do
-      include_context :auth_media_file_original_data_stream_via_json_roa
+      include_context :auth_media_file_original_data_stream_via_json
       before :each do
         @media_entry.api_client_permissions << \
           FactoryBot.create(:media_entry_api_client_permission,

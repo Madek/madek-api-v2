@@ -25,7 +25,8 @@ describe 'Getting a media-entry resource with authentication' do
     @entity = FactoryBot.create(:user, password: 'password')
   end
 
-  include_context :auth_media_entry_resource_via_json_roa
+  include_context :auth_media_entry_resource_via_plain_json
+  #include_context :auth_media_entry_resource_via_json_roa
 
   context :check_forbidden_without_required_permission do
     before :example do

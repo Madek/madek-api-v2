@@ -8,7 +8,7 @@ describe 'Getting a collection resource with authentication' do
     @entity = FactoryBot.create(:api_client, password: 'password')
   end
 
-  include_context :auth_collection_resource_via_json_roa
+  include_context :auth_collection_resource_via_json
 
   context :check_forbidden_without_required_permission do
     before :example do

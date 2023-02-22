@@ -20,12 +20,8 @@ describe 'API-Token Authentication' do
     FactoryBot.create :user, password: 'TOPSECRET'
   end
 
-  let :auth_info do
-    client.get.relation('auth-info').get
-  end
-
   let :response do
-    resource.response
+    client.get('auth-info')
   end
 
   context 'revoking the token ' do
@@ -38,12 +34,10 @@ describe 'API-Token Authentication' do
 
       context 'used in basic auth' do
         let :client do
-          json_roa_client do |conn|
-            conn.basic_auth(token.token, nil)
-          end
+          basic_auth_plain_faraday_json_client(token.token, nil)
         end
         it 'accessing auth-info results in 200' do
-          expect(auth_info.response.status).to be == 200
+          expect(response.status).to be == 200
         end
       end
 
@@ -55,12 +49,10 @@ describe 'API-Token Authentication' do
 
         context 'used in basic auth' do
           let :client do
-            json_roa_client do |conn|
-              conn.basic_auth(token.token, nil)
-            end
+            basic_auth_plain_faraday_json_client(token.token, nil)
           end
           it 'accessing auth-info results in 401' do
-            expect(auth_info.response.status).to be == 401
+            expect(response.status).to be == 401
           end
         end
 
@@ -78,12 +70,10 @@ describe 'API-Token Authentication' do
 
     context 'used in basic auth' do
       let :client do
-        json_roa_client do |conn|
-          conn.basic_auth(token.token, nil)
-        end
+        basic_auth_plain_faraday_json_client(token.token, nil)
       end
       it 'accessing auth-info results in 401' do
-        expect(auth_info.response.status).to be == 401
+        expect(response.status).to be == 401
       end
     end
 
@@ -93,12 +83,10 @@ describe 'API-Token Authentication' do
       end
       context 'used in basic auth' do
         let :client do
-          json_roa_client do |conn|
-            conn.basic_auth(token.token, nil)
-          end
+          basic_auth_plain_faraday_json_client(token.token, nil)
         end
         it 'accessing auth-info results in 401' do
-          expect(auth_info.response.status).to be == 200
+          expect(response.status).to be == 200
         end
       end
     end
@@ -112,41 +100,33 @@ describe 'API-Token Authentication' do
 
     context 'connection via token as basic auth user' do
       let :client do
-        json_roa_client do |conn|
-          conn.basic_auth(token.token, nil)
-        end
+        basic_auth_plain_faraday_json_client(token.token, nil)
       end
       it 'enables to read the auth-info' do
-        expect(auth_info.response.status).to be == 200
+        expect(response.status).to be == 200
       end
     end
 
     context 'connection via token as password and some "nonsense" as username' do
       let :client do
-        json_roa_client do |conn|
-          conn.basic_auth("nonsense", token.token)
-        end
+        basic_auth_plain_faraday_json_client("nonsense", token.token)
       end
       it 'enables to read the auth-info' do
-        expect(auth_info.response.status).to be == 200
+        expect(response.status).to be == 200
       end
     end
 
     context 'connection via token "Authorization: token TOKEN" header' do
       let :client do
-        json_roa_client do |conn|
-          conn.basic_auth(token.token, nil)
-          conn.headers['Authorization'] = "token #{token.token}"
-        end
+        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
       end
 
       it 'enables to read the auth-info' do
-        expect(auth_info.response.status).to be == 200
+        expect(response.status).to be == 200
       end
 
       it 'is forbidden to use an unsafe http verb' do
-        delete_response = client.conn.delete(
-          client.get.relation('auth-info').data[:href])
+        delete_response = client.delete('auth-info') #.data[:href])
         expect(delete_response.status).to be == 403
       end
     end
@@ -157,12 +137,10 @@ describe 'API-Token Authentication' do
       ApiToken.create user: user, scope_read: false, scope_write: true
     end
     let :client do
-      json_roa_client do |conn|
-        conn.basic_auth(token.token, nil)
-      end
+      basic_auth_plain_faraday_json_client(token.token, nil)
     end
     it 'reading auth_info results in forbidden ' do
-      expect(auth_info.response.status).to be == 403
+      expect(response.status).to be == 403
     end
   end
 end
