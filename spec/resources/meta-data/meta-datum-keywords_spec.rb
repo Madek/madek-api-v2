@@ -4,7 +4,7 @@ require Pathname(File.expand_path('datalayer/spec/models/keyword/terms_for_sorti
 
 describe 'generated runs' do
   (1..ROUNDS).each do |round|
-  #(1..5).each do |round|
+  #(1..1).each do |round|
     describe "ROUND #{round}" do
       describe 'meta_datum_keywords_for_random_resource_type' do
         include_context :meta_datum_for_random_resource_type

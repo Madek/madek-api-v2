@@ -3,6 +3,7 @@ require Pathname(File.expand_path('..', __FILE__)).join('shared')
 
 describe 'generated runs' do
   (1..ROUNDS).each do |round|
+  #(1..1).each do |round|
     describe "ROUND #{round}" do
       describe 'meta_datum_json_for_random_resource_type' do
         include_context :meta_datum_for_random_resource_type

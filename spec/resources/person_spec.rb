@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-context 'Getting a keyword resource without authentication' do
+context 'Getting a person resource without authentication' do
   before :each do
     @person = FactoryBot.create :person
   end
