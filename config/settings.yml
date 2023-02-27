@@ -12,6 +12,8 @@ services:
   api:
 
     cors_enabled: true
+    use_compojure: false
+    json_roa_enabled: false
 
     http:
 
