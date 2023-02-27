@@ -15,7 +15,7 @@
 (defn arc-query [request]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
-      (sql/merge-where [:= :id (-> request :params :id)])
+      (sql/merge-where [:= :id (or (-> request :params :id) (-> request :parameters :path :id))])
       sql/format))
 
 (defn arc [request]

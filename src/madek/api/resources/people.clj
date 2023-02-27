@@ -7,7 +7,6 @@
     [logbug.debug :as debug]
     [madek.api.constants :refer [presence]]
     [madek.api.pagination :as pagination]
-    [madek.api.pagination :as pagination]
     [madek.api.resources.media-entries.index :refer [get-index]]
     [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
     [madek.api.resources.shared :as shared]
@@ -15,6 +14,8 @@
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
     [ring.util.codec :refer [url-decode]]
+    [schema.core :as s]
+    [clojure.tools.logging :as log]
     ))
 
 
@@ -149,3 +150,122 @@
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
+
+(def schema_export_person
+  {:id s/Uuid
+   :first_name (s/maybe s/Str)
+   :last_name (s/maybe s/Str)
+   :description (s/maybe s/Str)
+   :subtype s/Str
+   :institutional_id (s/maybe s/Str) ;(s/maybe s/Uuid)
+   :pseudonym (s/maybe s/Str)
+   
+   ; TODO when to use old vs new style?
+   :external_uris [s/Any]
+   :external_uri s/Str
+   
+   :created_at s/Any
+   :updated_at s/Any
+   }) ; TODO use s/Inst TODO json middleware
+
+(def schema_import_person
+  {:subtype s/Str
+   (s/optional-key :id) s/Uuid
+
+   (s/optional-key :first_name) (s/maybe s/Str)
+   (s/optional-key :last_name) s/Str
+   (s/optional-key :pseudonym) s/Str
+   (s/optional-key :searchable) s/Str
+
+   (s/optional-key :description) s/Str
+
+   (s/optional-key :institutional_id) s/Str ;s/Uuid
+
+   ; TODO when to use old vs new style?
+   ;(s/optional-key :external_uri) s/Str
+   (s/optional-key :external_uris) [s/Str]
+   }) ; TODO use s/Inst TODO json middleware
+
+(def schema_import_person_result
+  {:subtype s/Str
+   :id s/Uuid
+   (s/optional-key :institutional_id) (s/maybe s/Str) ;s/Uuid
+   (s/optional-key :description) (s/maybe s/Str)
+   (s/optional-key :first_name) (s/maybe s/Str)
+   (s/optional-key :last_name) (s/maybe s/Str)
+   (s/optional-key :pseudonym) (s/maybe s/Str)
+   (s/optional-key :external_uris) [s/Str]
+   (s/optional-key :updated_at) s/Any ;s/Inst
+   (s/optional-key :created_at) s/Any ;s/Inst
+
+   })
+
+
+
+(def schema_update_person
+  {
+   ;:subtype s/Str
+   (s/optional-key :id) s/Uuid
+   ;:id s/Uuid
+
+   (s/optional-key :first_name) (s/maybe s/Str)
+   (s/optional-key :last_name) s/Str
+   (s/optional-key :pseudonym) s/Str
+   (s/optional-key :searchable) s/Str
+
+   (s/optional-key :description) s/Str
+
+   (s/optional-key :institutional_id) s/Str ;s/Uuid
+
+   ; TODO when to use old vs new style?
+   ;(s/optional-key :external_uri) s/Str
+   (s/optional-key :external_uris) [s/Str]}) ; TODO use s/Inst TODO json middleware
+
+
+
+(def schema_query_person
+  {(s/optional-key :subtype) s/Str
+   (s/optional-key :id) s/Uuid
+
+   (s/optional-key :first_name) s/Str
+   (s/optional-key :last_name) s/Str
+   (s/optional-key :pseudonym) s/Str
+
+   (s/optional-key :description) s/Str
+
+   (s/optional-key :institutional_id) s/Uuid
+
+   ;(s/optional-key :external_uri) s/Str
+}) ; TODO use s/Inst TODO json middleware
+
+
+(defn handle_create-person
+  "TODO check subtype, catch errors"
+  [request]
+  (let [params (get-in request [:parameters :body])
+        data_wid (assoc params :id (or (:id params) (clj-uuid/v4)))
+        resultdb (->> (jdbc/insert! (rdbms/get-ds) :people data_wid) first)
+        result (dissoc resultdb :previous_id :searchable)]
+        ;result (:id resultdb)]
+    (log/info (apply str ["handler_create-person: \ndata:" data_wid "\nresult-db: " resultdb "\nresult: " result]))
+    ;{:status 201 :body {:id result}}
+    {:status 201 :body result}))
+
+(defn handle_get-person
+  [req]
+  (let [id (shared/get-path-params req :id)]
+    (get-person (str id))))
+
+(defn handle_delete-person [req]
+  (let [id (shared/get-path-params req :id)]
+    (delete-person (str id))))
+
+(defn handle_patch-person
+  ;[req]
+  ;(patch-person req)
+  [req]
+  (let [body (get-in req [:parameters :body])
+        pid (shared/get-path-params req :id)
+        id (or (:id body) pid)]
+    (log/info "handle_patch" "\nbody:\n" body "\nid:\n" id)
+    (patch-person {:params {:id (str id)} :body body})))

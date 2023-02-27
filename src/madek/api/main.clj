@@ -67,7 +67,7 @@
     (logging/info "Effective startup config " (get-config))
     (rdbms/initialize (config/get-db-spec :api))
     (nrepl/init (-> (get-config) :services :api :nrepl) options)
-    (madek.api.web/initialize)
+    (madek.api.web/initialize (rdbms/get-ds))
     (madek.api.constants/initialize (get-config))
     (logging/info 'madek.api.main "... initialized")))
 

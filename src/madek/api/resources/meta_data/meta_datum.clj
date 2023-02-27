@@ -90,6 +90,7 @@
   (let [meta-datum (:meta-datum request)]
     {:body (prepare-meta-datum meta-datum)}))
 
+; TODO Q? why no response status
 (defn get-meta-datum-data-stream [request]
   (let [meta-datum (:meta-datum request)
         content-type (case (-> request :meta-datum :type)
@@ -102,10 +103,34 @@
                       (ring-response/header "Content-Type" content-type))
       :else {:body value})))
 
+; TODO Q? why no response status
 (defn get-meta-datum-role
   [request]
   (let [meta-datum-role-id (-> request :params :meta_datum_id)]
-    {:body (prepare-meta-datum-role meta-datum-role-id)}))
+    {:status 200 :body (prepare-meta-datum-role meta-datum-role-id)}))
+
+(defn handle_get-meta-datum-role
+  [req]
+  (let [id (shared/get-path-params req :meta_datum_id)
+        wreq (assoc-in req [:params :meta_datum_id] id)]
+    (get-meta-datum-role wreq)))
+
+;(defn query_meta-datum-find-one
+;  [id]
+;  [(str "SELECT * FROM meta_data "
+;        "WHERE id = ? ") id])
+
+;(defn db_meta-datum-find-one
+;  [id]
+;  (first (jdbc/query (get-ds) (query_meta-datum-find-one id))))
+
+;(defn handle_get-meta-datum
+;  [req]
+;  (let [id (-> req :parameters :path :meta_datum_id)
+;        ;meta-datum (db_meta-datum-find-one id)] ;TODO use request meta-datum
+;        meta-datum (:meta-datum req)]
+;  (logging/info "handle_get-meta-datum" "\nid:\n" id "\nmeta-datum\n" meta-datum)
+;    {:status 200 :body (prepare-meta-datum meta-datum)}))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

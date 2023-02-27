@@ -28,6 +28,22 @@
     [ring.adapter.jetty :as jetty]
     [ring.middleware.cors :as cors-middleware]
     [ring.middleware.json]
+
+    [ring.middleware.reload :refer [wrap-reload]]
+    [reitit.ring.spec :as rs]
+    [reitit.ring :as rr]
+    [reitit.ring.middleware.exception :as re]
+    [reitit.ring.middleware.parameters :as rmp]
+    [muuntaja.core :as m]
+    [reitit.ring.middleware.muuntaja :as muuntaja]
+   
+    [reitit.swagger :as swagger]
+    [reitit.swagger-ui :as swagger-ui]
+    [reitit.coercion.spec]
+   
+    [reitit.ring.coercion :as rrc]
+    [reitit.coercion.schema]
+    [ring.middleware.defaults :as ring-defaults]
     ))
 
 ;### helper ###################################################################
@@ -57,6 +73,7 @@
 
 (defonce last-ex* (atom nil))
 
+; TODO Q? why not with msg/message
 (defn- wrap-exception
   ([handler]
    (fn [request]
@@ -69,14 +86,14 @@
        (logging/error "Cought ExceptionInfo in Webstack" (thrown/stringify ei))
        (if-let [status (-> ei ex-data :status)]
          {:status status
-          :body (ex-message ei)}
+          :body {:msg (ex-message ei)}}
          {:status 500
-          :body (ex-message ei)}))
+          :body {:msg (ex-message ei)}}))
      (catch Exception ex
        (reset! last-ex* ex)
        (logging/error "Cought ExceptionInfo in Webstack" (thrown/stringify ex))
        {:status 500
-        :body (ex-message ex)}))))
+        :body {:msg (ex-message ex)}}))))
 
 
 ;### routes ###################################################################
@@ -138,6 +155,16 @@
 
 ;##############################################################################
 
+(defn wrap-roa-req-if-configured [handler doit]
+  (if doit
+    (-> handler (json-roa_request/wrap madek.api.json-roa/handler))
+    handler))
+
+(defn wrap-roa-res-if-configured [handler doit]
+   (if doit
+     (-> handler json-roa_response/wrap)
+     handler))
+ 
 (defn build-site [context]
   (I> wrap-handler-with-logging
       dead-end-handler
@@ -148,18 +175,91 @@
       web.browser/wrap
       wrap-public-routes
       wrap-keywordize-request
-      (json-roa_request/wrap madek.api.json-roa/handler)
+      (wrap-roa-req-if-configured (-> (get-config) :services :api :json_roa_enabled))
       wrap-parse-json-query-parameters
       (wrap-cors-if-configured (-> (get-config) :services :api :cors_enabled))
       status/wrap
       site
       (wrap-context context)
-      json-roa_response/wrap
+      (wrap-roa-res-if-configured (-> (get-config) :services :api :json_roa_enabled))
       (ring.middleware.json/wrap-json-body {:keywords? true})
       ring.middleware.json/wrap-json-response
       wrap-exception
       ))
 
+
+
+(def exception-middleware
+  (re/create-exception-middleware
+   (merge
+    re/default-handlers
+    {::re (fn [handler e request]
+            (logging/error e request)
+            (handler e request))})))
+(def app
+  (rr/ring-handler
+   (rr/router
+    (->>
+     [madek.api.resources/ring-routes
+      management/api-routes
+       
+      ["/test"
+       ["/exception" {:get (fn [_] (throw (ex-info "test exception" {})))
+                      :skip-auth true}]
+       ["/ok" {:get (constantly {:status 200 :body {:ok "ok"}})
+               :skip-auth true}]]
+      
+       ;api/router
+      ["" {:no-doc true
+           :skip-auth true}
+       ["/swagger.json" {:get (swagger/create-swagger-handler)}]
+       ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]]]
+     (filterv some?))
+    {:validate rs/validate
+     #_#_:compile coercion/compile-request-coercers
+     :data {:middleware [swagger/swagger-feature
+
+                         rmp/parameters-middleware
+                         muuntaja/format-negotiate-middleware
+                         muuntaja/format-response-middleware
+                         wrap-exception
+                         muuntaja/format-request-middleware
+                         ;auth/wrap-auth-madek-deps
+                         authorization/wrap-authorize-http-method
+                         ;authentication/wrap
+                         rrc/coerce-request-middleware
+                         rrc/coerce-response-middleware
+                         rrc/coerce-exceptions-middleware
+                         ;exception-middleware
+                         ;wrap-exception
+                         ]
+            :muuntaja m/instance}})
+   (rr/routes
+    (rr/redirect-trailing-slash-handler)
+    (rr/create-default-handler))))
+
+
+
+(def reloadable-app
+  (wrap-reload #'app))
+
+(def api-defaults
+  (-> ring-defaults/api-defaults
+      (assoc :cookies true)
+      #_(assoc-in [:params :urlencoded] false)
+      #_(assoc-in [:params :keywordize] false)))
+
+(defn- wrap-defaults [handler]
+  #_handler
+  (ring-defaults/wrap-defaults handler api-defaults))
+
+
+(defn- wrap-deps [handler db]
+  (fn [req]
+    (handler (assoc req :db db ))))
+
+(defn middleware [handler ds]
+  (-> handler (wrap-deps ds) wrap-defaults))
 
 ;### server ###################################################################
 
@@ -180,12 +280,14 @@
                                 :host "localhost"
                                 :join? false})))))
 
-(defn initialize []
+(defn initialize [ds]
   (let [http-conf (-> (get-config) :services :api :http)
+        use_compojure (-> (get-config) :services :api :use_compojure)
         context (str (:context http-conf) (:sub_context http-conf))]
-    (http-server/start http-conf (build-site context))))
-
-
+    (if use_compojure
+      (http-server/start http-conf (build-site context))
+      ;(http-server/start http-conf (middleware app ds)))))
+      (http-server/start http-conf (middleware reloadable-app ds)))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

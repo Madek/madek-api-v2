@@ -23,12 +23,22 @@
           ["SELECT * FROM media_files WHERE id = ?" media-file-id])
         first)))
 
-(defn- wrap-find-and-add-media-file
+(defn wrap-find-and-add-media-file
   ([handler] #(wrap-find-and-add-media-file % handler))
   ([request handler]
-   (when-let [media-file-id (-> request :route-params :media_file_id)]
-     (when-let [media-file (query-media-file media-file-id)]
-       (handler (assoc request :media-file media-file))))))
+   (when-let [media-file-id (or (-> request :route-params :media_file_id) (-> request :parameters :path :media_file_id))]
+     (if-let [media-file (query-media-file media-file-id)]
+        ;(
+          ;(logging/info "wrap-find-and-add-media-file" "\nid\n" media-file-id "\nmedia file\n" media-file)
+          (handler (assoc request :media-file media-file)) 
+        ;)
+        ;(
+          ;(logging/info "wrap-find-and-add-media-file" "not found" "\nid\n" media-file-id)
+          {:status 404}
+         ;)
+        ))))
+     ;(when-let [media-file (query-media-file media-file-id)]
+     ;  (handler (assoc request :media-file media-file))))))
 
 ;##############################################################################
 

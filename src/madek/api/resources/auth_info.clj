@@ -5,13 +5,13 @@
     [logbug.debug :as debug]
     ))
 
-
-(defn- auth-info [request]
+; TODO Q? why not with msg/message
+(defn auth-info [request]
   (if-let [auth-entity (:authenticated-entity request)]
-    {:body (merge {}
+    {:status 200 :body (merge {}
                   (select-keys auth-entity [:type :id :login :created_at :email_address])
                   (select-keys request [:authentication-method :session-expiration-seconds]))}
-    {:status 401}))
+    {:status 401 :body {:msg "Not authorized"}}))
 
 (def routes
   (cpj/routes

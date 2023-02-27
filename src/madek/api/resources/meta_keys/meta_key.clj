@@ -52,7 +52,7 @@
       (sql/format)))
 
 (defn get-meta-key [request]
-  (let [id (-> request :params :id)
+  (let [id (or (-> request :params :id) (-> request :parameters :path :id))
         query (build-meta-key-query id)]
     (if (re-find #"^[a-z0-9\-\_\:]+:[a-z0-9\-\_\:]+$" id)
       (if-let [meta-key (first

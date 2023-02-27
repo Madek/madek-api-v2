@@ -19,5 +19,16 @@
     (cpj/ANY "*" _ shared/dead-end-handler)
     ))
 
+
+(defn handle_get-index [req]
+  (let [query-params (-> req :parameters :query)
+        qreq (assoc-in req [:query-params] query-params)]
+    (get-index qreq)))
+
+(defn handle_get-media-entry [req]
+  (let [query-params (-> req :parameters :query)
+        qreq (assoc-in req [:query-params] query-params)]
+    (get-media-entry qreq)
+  ))
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -143,7 +143,7 @@
       (sql/merge-order-by :media_entries.id)))
 
 (defn- build-query [request]
-  (let [query-params (:query-params request)
+  (let [query-params (or (:query-params request) (-> request :parameters :query))
         authenticated-entity (:authenticated-entity request)]
     (I> identity-with-logging
         base-query

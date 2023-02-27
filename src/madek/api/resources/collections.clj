@@ -17,5 +17,11 @@
     (cpj/GET "/collections/:id" _ get-collection)
     (cpj/ANY "*" _ shared/dead-end-handler)))
 
+(defn handle_get-index [req]
+  (get-index req))
+
+;(defn handle_get-collection [req]
+;  (get-collection req))
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

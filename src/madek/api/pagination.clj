@@ -11,12 +11,16 @@
 (def LIMIT 100)
 
 (defn page-number [params]
-  (or (-> params keywordize-keys :page)
-      0))
+  (let [page (-> params keywordize-keys :page)]
+    (if (not= nil page)
+      (let [pagen (Integer/parseInt page)]
+        (or pagen 0))
+      0)
+    )
+  )
 
 (defn compute-offset [params]
-  (let [page (page-number params)]
-    (* LIMIT page)))
+  (* LIMIT (page-number params)))
 
 (defn add-offset-for-honeysql [query params]
   (let [off (compute-offset params)]

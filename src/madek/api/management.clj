@@ -19,7 +19,7 @@
 
 (defn- get-status [_]
   ; TODO possibly check DB connection
-  {:body "OK"})
+  {:status 200 :body {:msg "OK" :db (rdbms/check-connection)}})
 
 (def ^:private management-handler
   (cpj/routes
@@ -41,6 +41,24 @@
     (cpj/ANY "/management*" _ handle-management-request)
     (cpj/ANY "*" _ default-handler)))
 
+(defn mw-management-auth [handler]
+  (fn [request] 
+    (if-let [password (-> request basic-auth/extract :password)]
+      (if-not (= password "secret");(-> (get-config) :madek_master_secret))
+        {:status 401 :body {:msg "Password doesn't match the madek_master_secret" :pw password :mpw (-> (get-config) :madek_master_secret)}}
+        (handler request))
+      {:status 401 :body {:msg "The management pages require basic password authentication."}}
+      )))
+
+(def api-routes
+  ["/api/management" 
+   ["/status" { 
+               :get {:middleware [mw-management-auth]
+                     :handler get-status}}]
+   ["/shutdown" {
+                 :post {:middleware [mw-management-auth]
+                        :handler shutdown}}]
+   ])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

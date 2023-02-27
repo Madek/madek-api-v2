@@ -11,6 +11,7 @@
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
     [ring.util.codec :refer [url-decode]]
+    [schema.core :as s]
     ))
 
 
@@ -88,7 +89,8 @@
 ;### patch user ##############################################################
 
 (defn patch-user [{body :body {id :id} :params}]
-  (if (= 1 (first (jdbc/update! (rdbms/get-ds) :users body (jdbc-id-where-clause id))))
+  ;((logging/info "patch-user " "\nbody:\n" body "\nid:\n" id)
+   (if (= 1 (first (jdbc/update! (rdbms/get-ds) :users body (jdbc-id-where-clause id))))
     {:body (find-user id)}
     {:status 404}))
 
@@ -118,6 +120,40 @@
         (cpj/DELETE "/users/:id" [id] (delete-user id))
         (cpj/PATCH "/users/:id" [] patch-user))
       wrap-authorize-admin!))
+
+(def schema_update_user 
+  {
+   (s/optional-key :id) s/Uuid
+   (s/optional-key :email) s/Str
+   (s/optional-key :institutional_id) s/Str
+   (s/optional-key :login) s/Str
+   (s/optional-key :person_id) s/Uuid
+   })
+
+(def schema_export_user
+  {
+   :id s/Uuid
+   :email s/Str
+   :institutional_id s/Str
+   :login s/Str
+   :person_id s/Uuid
+   :created_at s/Inst
+   :updated_at s/Inst})
+
+(defn handle_get-user [req]
+  (get-user (-> req :parameters :path :id)))
+
+(defn handle_delete-user [req]
+  (delete-user (-> req :parameters :path :id)))
+
+(defn handle_patch-user [req]
+  (let [id (-> req :parameters :path :id)
+        body (-> req :parameters :body)
+        ireq (assoc-in req [:params :id] id)
+        breq (assoc-in ireq [:body] body)]
+        ;body (-> req :parameters :body)]
+    
+    (patch-user breq)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

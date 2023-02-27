@@ -11,16 +11,20 @@
     ))
 
 (defn get-preview [request]
-  (let [id (-> request :params :preview_id)
+  (let [id (or (-> request :params :preview_id) (-> request :parameters :path :preview_id))
         query (-> (sql/select :*)
                   (sql/from :previews)
                   (sql/merge-where
                     [:= :previews.id id])
                   (sql/format))]
+                  (logging/info "get-preview" "\nid\n" id)
     {:body (first (jdbc/query (rdbms/get-ds) query))}))
 
 (defn- preview-file-path [preview]
-  (let [filename (:filename preview)
+  (let [; TODO why is this needed for compojure
+        ;filename (:filename preview)
+        ; TODO why is this needed for reitit
+         filename (:filename_2 preview)
         [first-char] filename]
     (clojure.string/join
       (java.io.File/separator)
@@ -30,6 +34,7 @@
   (catcher/snatch {}
     (when-let [preview (:preview request)]
       (when-let [file-path (preview-file-path preview)]
+        ;(logging/info "get-preview-file-ds" "\nfilepath\n" file-path)
         (data-streaming/respond-with-file file-path
                                           (:content_type preview))))))
 

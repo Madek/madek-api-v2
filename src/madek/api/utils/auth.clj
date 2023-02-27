@@ -32,7 +32,7 @@
         (ex-info
           "Only administrators are allowed to access this resource."
           {:status 403
-           :body "Only administrators are allowed to access this resource." })))))
+           :body {:msg "Only administrators are allowed to access this resource."}})))))
 
 (defn wrap-authorize-admin! [handler]
   (fn [req]

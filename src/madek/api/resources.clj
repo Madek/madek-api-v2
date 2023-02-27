@@ -1,29 +1,48 @@
 (ns madek.api.resources
-  (:require
-    [clojure.java.jdbc :as jdbc]
-    [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
-    [logbug.catcher :as catcher]
-    [logbug.debug :as debug]
-    [madek.api.authorization :refer [authorized?]]
-    [madek.api.resources.auth-info :as auth-info]
-    [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
-    [madek.api.resources.collections :as collections]
-    [madek.api.resources.groups :as groups]
-    [madek.api.resources.keywords :as keywords]
-    [madek.api.resources.media-entries :as media-entries]
-    [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
-    [madek.api.resources.media-files :as media-files]
-    [madek.api.resources.meta-data :as meta-data]
-    [madek.api.resources.meta-keys :as meta-keys]
-    [madek.api.resources.people :as people]
-    [madek.api.resources.previews :as previews]
-    [madek.api.resources.roles :as roles]
-    [madek.api.resources.shared :as shared]
-    [madek.api.resources.users :as users]
-    [madek.api.resources.vocabularies :as vocabularies]
-    [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-    ))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [compojure.core :as cpj]
+            [logbug.catcher :as catcher]
+            [logbug.debug :as debug]
+            [madek.api.authentication :as authentication]
+            [madek.api.authorization :refer [authorized?]]
+            [madek.api.resources.auth-info :as auth-info]
+            [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
+            [madek.api.resources.collections :as collections]
+            [madek.api.resources.collections.collection :as rcollection]
+            [madek.api.resources.groups :as groups]
+            [madek.api.resources.groups.users :as group-users]
+            [madek.api.resources.keywords :as keywords]
+            [madek.api.resources.keywords.keyword :as keyword]
+            [madek.api.resources.media-entries :as media-entries]
+            [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
+            [madek.api.resources.media-files :as media-files]
+            [madek.api.resources.media-files.media-file :as media-files.file]
+            [madek.api.resources.media-files.authorization :as media-files.auth]
+            [madek.api.resources.meta-data :as meta-data]
+            [madek.api.resources.meta-data.index :as meta-data-index]
+            [madek.api.resources.meta-data.meta-datum :as meta-datum]
+            [madek.api.resources.meta-keys :as meta-keys]
+            [madek.api.resources.meta-keys.index :as meta-keys-index]
+            [madek.api.resources.meta-keys.meta-key :as meta-key]
+            [madek.api.resources.people :as people]
+            [madek.api.resources.previews :as previews]
+            [madek.api.resources.previews.preview :as preview]
+            [madek.api.resources.roles :as roles]
+            [madek.api.resources.roles.index :as roles-index]
+            [madek.api.resources.roles.role :as roles-role]
+            [madek.api.resources.shared :as shared]
+            [madek.api.resources.users :as users]
+            [madek.api.resources.vocabularies :as vocabularies]
+            [madek.api.resources.vocabularies.index :as vocabularies-index]
+            [madek.api.resources.vocabularies.vocabulary :as vocabularies-get]
+            [madek.api.semver :as semver]
+            [madek.api.utils.auth :as auth]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [reitit.coercion.schema]
+            [schema.core :as s]
+            
+            ))
 
 
 ;### wrap media resource ######################################################
@@ -34,7 +53,8 @@
      (or (get-media-resource request :media_entry_id "media_entries" "MediaEntry")
          (get-media-resource request :collection_id "collections" "Collection"))))
   ([request id-key table-name type]
-   (when-let [id (-> request :params id-key)]
+   (when-let [id (or (-> request :params id-key) (-> request :parameters :path id-key))]
+     (logging/info "get-media-resource" "\nid\n" id)
      (when-let [resource (-> (jdbc/query (get-ds)
                                          [(str "SELECT * FROM " table-name "
                                                WHERE id = ?") id]) first)]
@@ -58,9 +78,35 @@
          (cpj/ANY "/collections/:id*" _ response-for-not-found-media-resource)
          (cpj/ANY "*" _ handler)) request))))
 
+(defn- ring-add-media-resource-preview [request handler]
+  (if-let [media-resource (get-media-entry-for-preview request)
+           ;media-resource #(assoc (get-media-entry-for-preview %) :type "MediaEntry" :table-name "media_entries")
+           ] 
+    (let [mmr (assoc media-resource :type "MediaEntry" :table-name "media_entries")
+          request-with-media-resource (assoc request :preview mmr)]
+      (logging/info "ring-add-media-resource-preview" "\nmmr\n" mmr)
+      (handler request-with-media-resource))
+    {:status 404 :body "No media-resource for preview"}))
+
+(defn- ring-add-media-resource [request handler]
+  (if-let [media-resource (get-media-resource request)]
+    (let [request-with-media-resource (assoc request :media-resource media-resource)]
+      ;(logging/info "ring-add-media-resource" "\nmedia-resource\n" media-resource)
+      (handler request-with-media-resource))
+    {:status 404}))
+
 (defn- wrap-add-media-resource [handler]
   (fn [request]
     (add-media-resource request handler)))
+
+
+(defn- ring-wrap-add-media-resource-preview [handler]
+  (fn [request]
+    (ring-add-media-resource-preview request handler)))
+
+(defn- ring-wrap-add-media-resource [handler]
+  (fn [request]
+    (ring-add-media-resource request handler)))
 
 (defn- wrap-check-uuid-syntax-conformity [handler]
   (letfn [(return-422-if-not-uuid-conform [request]
@@ -81,7 +127,8 @@
 ;### wrap meta-datum with media-resource#######################################
 
 (defn query-meta-datum [request]
-  (let [id (-> request :params :meta_datum_id)]
+  (let [id (or (-> request :params :meta_datum_id) (-> request :parameters :path :meta_datum_id))]
+    (logging/info "query-meta-datum" "\nid\n" id)
     (or (-> (jdbc/query (get-ds)
                         [(str "SELECT * FROM meta_data "
                               "WHERE id = ? ") id])
@@ -107,6 +154,16 @@
 (defn- add-meta-datum-with-media-resource [request handler]
   (if-let [meta-datum (query-meta-datum-dispatcher request)]
     (let [media-resource (query-media-resource-for-meta-datum meta-datum)]
+      (logging/info "add-meta-datum-with-media-resource" "\nmeta-datum\n" meta-datum "\nmedia-resource\n" media-resource)
+      (handler (assoc request
+                      :meta-datum meta-datum
+                      :media-resource media-resource)))
+    (handler request)))
+
+(defn- ring-add-meta-datum-with-media-resource [request handler]
+  (if-let [meta-datum (query-meta-datum request)]
+    (let [media-resource (query-media-resource-for-meta-datum meta-datum)]
+      (logging/info "add-meta-datum-with-media-resource" "\nmeta-datum\n" meta-datum "\nmedia-resource\n" media-resource)
       (handler (assoc request
                       :meta-datum meta-datum
                       :media-resource media-resource)))
@@ -116,6 +173,9 @@
   (fn [request]
     (add-meta-datum-with-media-resource request handler)))
 
+(defn- ring-wrap-add-meta-datum-with-media-resource [handler]
+  (fn [request]
+    (ring-add-meta-datum-with-media-resource request handler)))
 
 
 ;### wrap authorize ###########################################################
@@ -147,6 +207,10 @@
 (defn- wrap-authorization [handler]
   (fn [request]
     (dispatch-authorize request handler)))
+
+(defn- ring-wrap-authorization [handler]
+  (fn [request]
+    (authorize-request-for-handler request handler)))
 
 ;### a few redirects ##########################################################
 
@@ -195,13 +259,482 @@
         (cpj/ANY "/previews/:preview_id*" _ previews/routes)
         (cpj/ANY "/users/*" _ users/routes)
         (cpj/ANY "/vocabularies/*" _ vocabularies/routes)
-        (cpj/ANY "*" _ default-handler)
-        )
+        (cpj/ANY "*" _ default-handler))
+        
       wrap-authorization
       wrap-add-media-resource
       wrap-add-meta-datum-with-media-resource
-      wrap-check-uuid-syntax-conformity
-      ))
+      wrap-check-uuid-syntax-conformity))
+      
+
+
+
+(def root
+  {:status 200
+   :body {:api-version (semver/get-semver)
+          :message "Hello Madek User!"}})
+
+
+
+(def todo
+  {:status 200
+   :body {:api-version (semver/get-semver)
+          :message "TODO: not implemented!"}})
+
+(defn autch-test-handler [request]
+  (let [auth (:authenticated-entity request)]
+        
+    {:status 200 :body {:authed (apply str ["authed" auth])}}))
+
+(defn wrap-req-paramters-path-2-params [handler param-key]
+  (fn [request]
+     (let [pp (-> request :parameters :path param-key)]
+       (assoc-in request [:params] pp))))
+
+(def ring-routes
+  ["/api" {:middleware [authentication/wrap]}
+   ["/" {:get (constantly root)}]
+   ["/auth-info" {:get {:handler auth-info/auth-info}}]
+
+   ; collections
+   ["/collections"
+
+    ["/" {:get {:handler collections/handle_get-index
+                :summary "Get collection ids"
+                :description "Get collection id list."
+                :swagger {:produces "application/json"}
+                :parameters {:query {(s/optional-key :page) s/Int}}
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:collections [{:id s/Uuid :created_at s/Inst}]}}}}}]
+
+    ["/:collection_id" {:get {:handler rcollection/get-collection
+                              :middleware [ring-wrap-add-media-resource ring-wrap-authorization]
+                              :summary "Get collection for id."
+                              :swagger {:produces "application/json"}
+                              :coercion reitit.coercion.schema/coercion
+                              :parameters {:path {:collection_id s/Str}}
+                              :responses {200 {:body s/Any}} ; TODO response coercion
+                              }}]]
+
+
+   ["/collection-media-entry-arcs"
+    ["/" {:get {:summary "Get collection media-entry arcs."
+                :handler collection-media-entry-arcs/arcs
+                :swagger {:produces "application/json"}
+                :coercion reitit.coercion.schema/coercion
+
+                :responses {200 {:body s/Any}} ; TODO response coercion
+                }}]
+    ["/:id" {:get {:summary "Get collection media-entry arcs."
+                   :handler collection-media-entry-arcs/arc
+                   :swagger {:produces "application/json"}
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Str}}
+                   :responses {200 {:body s/Any}} ; TODO response coercion
+                   }}]]
+
+   ; groups/ring-routes
+   ["/groups"
+    ["/" {:get {:summary "Get all group ids"
+                :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
+                :handler groups/index
+                :middleware [auth/wrap-authorize-admin!]
+                :swagger {:produces "application/json"}
+                :parameters {:query {(s/optional-key :page) s/Int}}
+                ;:content-type "application/json"
+                ;:accept "application/json"
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:groups [{:id s/Uuid}]}}}}
+
+          :post {:summary "Create a group"
+                 :description "Create a group."
+                 :handler groups/handle_create-group
+                 :middleware [auth/wrap-authorize-admin!]
+                 :swagger {:produces "application/json" :consumes "application/json"}
+                 :content-type "application/json"
+                 :accept "application/json"
+                 :coercion reitit.coercion.schema/coercion
+                 :parameters {:body groups/schema_import-group}
+                 :responses {201 {:body groups/schema_export-group} ;{:id s/Uuid}} ; api1 returns created data
+                             500 {:body {:msg s/Any}} ; TODO error handling
+                             }
+                 }}]
+
+    ["/:id" {:get {:summary "Get group by id"
+                   :description "Get group by id. Returns 404, if no such group exists."
+                   :swagger {:produces "application/json"}
+                   :content-type "application/json"
+                   :accept "application/json"
+                   :handler groups/handle_get-group
+                   :middleware [auth/wrap-authorize-admin!]
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Str}}
+                   :responses {200 {:body groups/schema_export-group}
+                               404 {:body s/Str}}}
+
+             :delete {:summary "Deletes a group by id"
+                      :description "Delete a group by id"
+                      :handler groups/handle_delete-group
+                      :middleware [auth/wrap-authorize-admin!]
+                      :coercion reitit.coercion.schema/coercion
+                      :parameters {:path {:id s/Str}}
+                      :responses {403 {:body s/Any}
+                                  204 {:body s/Any}}}
+             :patch (constantly todo)}]]
+     ; groups-users/ring-routes 
+   ["/groups/:group-id/users"
+    ["/" {:get {:summary "Get group users by id"
+                :description "Get group users by id."
+                :swagger {:produces "application/json"}
+                :content-type "application/json"
+
+                :handler group-users/handle_get-group-users
+                :middleware [auth/wrap-authorize-admin!]
+                :coercion reitit.coercion.schema/coercion
+                :parameters {:path {:group-id s/Str}}
+                :responses {200 {:body groups/schema_export-group} ; TODO schema
+                            404 {:body s/Str}}
+                }
+
+          ; TODO works with tests, but not with the swagger ui
+          :put {:summary "Update group users by group-id and list of users."
+                :description "Update group users by group-id and list of users."
+                :swagger {:consumes "application/json" :produces "application/json"}
+                :content-type "application/json"
+                :accept "application/json"
+                :handler group-users/handle_update-group-users
+                :coercion reitit.coercion.schema/coercion
+                :parameters {:path {:group-id s/Str}
+                             :body {:users 
+                                    [ s/Any]
+                                    ;[{:id s/Str
+                                    ;  :institutional_id s/Str
+                                    ;  :email s/Str}]
+                                    }}
+                             ;:body {:users [s/Any]}}
+                :responses {200 {:body s/Any} ;groups/schema_export-group}
+                            404 {:body s/Str}}
+                }
+          }]
+    ["/:user-id" {:get {:summary "Get group user by group-id and user-id"
+                        :description "Get group user by group-id and user-id."
+                        :swagger {:produces "application/json"}
+                        :content-type "application/json"
+
+                        :handler group-users/handle_get-group-user
+                        :middleware [auth/wrap-authorize-admin!]
+                        :coercion reitit.coercion.schema/coercion
+                        :parameters {:path {:group-id s/Str :user-id s/Str}}
+                        :responses {200 {:body group-users/schema_export-group-user}
+                                    406 {:body s/Str} ; TODO error handling
+                                    }}
+
+                  :put (constantly todo)
+
+                  :delete {:summary "Deletes a group-user by group-id and user-id"
+                           :description "Delete a group-user by group-id and user-id."
+                           ;:swagger {:produces "application/json"}
+                           ;:content-type "application/json"
+                           :handler group-users/handle_delete-group-user
+                           :middleware [auth/wrap-authorize-admin!]
+                           :coercion reitit.coercion.schema/coercion
+                           :parameters {:path {:group-id s/Str :user-id s/Str}}
+                           :responses {204 {:body s/Any}
+                                       406 {:body s/Str} ; TODO error handling
+                                       }}}]]
+    ;keyword/ring-routes
+   ["/keywords"
+    ["/" {:get {:handler keyword/handle_query-keywords
+                :summary "Get all keywords ids"
+                :description "Get keywords id list. TODO query parameters and paging. TODO get full data."
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:keywords [{:id s/Uuid}]}}}}}]
+    ["/:id" {:get {:handler keyword/handle_get-keyword
+
+                   :summary "Get keyword for id"
+                   :description "Get keyword for id. Returns 404, if no such keyword exists."
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Uuid}}
+                   :responses {200 {:body keyword/schema_export_keyword}
+                               404 {:body {:msg s/Str}}}}}]]
+
+   ;links
+
+   ;media_entries
+   ["/media-entries"
+    ["/" {:get {:summary "Get list media-entries."
+                :swagger {:produces "application/json"}
+                :content-type "application/json"
+                :handler media-entries/handle_get-index
+                ;:middleware [media-files/wrap-find-and-add-media-file media-files.auth/ring-wrap-authorize-metadata-and-previews]
+                :coercion reitit.coercion.schema/coercion
+                :parameters {:query {(s/optional-key :collection_id) s/Str}}}}]
+    
+    ["/:media_entry_id" {:get {:summary "Get media-entry for id."
+                   :swagger {:produces "application/json"}
+                   :content-type "application/json"
+                   :handler media-entries/handle_get-media-entry
+                   :middleware [ring-wrap-add-media-resource]
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:media_entry_id s/Str}}}}]]
+
+   ;media_files
+   ["/media-files"
+    ["/:media_file_id" {:get {:summary "Get media-file for id."
+                              :swagger {:produces "application/json"}
+                              :content-type "application/json"
+                              :handler media-files.file/get-media-file
+                              :middleware [media-files/wrap-find-and-add-media-file media-files.auth/ring-wrap-authorize-metadata-and-previews]
+                              :coercion reitit.coercion.schema/coercion
+                              :parameters {:path {:media_file_id s/Str}}}}]
+    
+    ["/:media_file_id/data-stream" {:get {:summary "Get media-file data-stream for id."
+                                          :handler media-files.file/get-media-file-data-stream
+                                          :middleware [media-files/wrap-find-and-add-media-file media-files.auth/ring-wrap-authorize-metadata-and-previews]
+                                          :coercion reitit.coercion.schema/coercion
+                                          :parameters {:path {:media_file_id s/Str}}}}]]
+
+   ;meta_data
+   ["/collections/:collection_id/meta-data" {:get {:summary "Get meta-data for collection."
+                                                   :handler meta-data-index/get-index
+                                                   :middleware [ring-wrap-add-media-resource ring-wrap-authorization]
+                                                   ; TODO 401s test fails
+                                                   :coercion reitit.coercion.schema/coercion
+                                                   :parameters {:path {:collection_id s/Str}}
+                                                   :responses {200 {:body s/Any}}}}]
+
+   ["/media-entries/:media_entry_id/meta-data" {:get {:summary "Get meta-data for media-entry."
+                                                      :handler meta-data-index/get-index
+                                                      ; TODO 401s test fails
+                                                      :middleware [ring-wrap-add-media-resource ring-wrap-authorization]
+                                                      :coercion reitit.coercion.schema/coercion
+                                                      :parameters {:path {:media_entry_id s/Str}}
+                                                      :responses {200 {:body s/Any}}}}]
+
+   ["/meta-data"
+    ["/:meta_datum_id" {:get {:handler meta-datum/get-meta-datum
+                              :middleware [ring-wrap-add-meta-datum-with-media-resource ring-wrap-authorization]
+                              :summary "Get meta-data for id"
+                              :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
+                              :coercion reitit.coercion.schema/coercion
+                              :parameters {:path {:meta_datum_id s/Str}}
+                              ; TODO coercion
+                              :responses {200 {:body s/Any}
+                                          401 {:body s/Any}
+                                          403 {:body s/Any}
+                                          500 {:body s/Any}}}}]
+    ["/:meta_datum_id/data-stream" {:get {:handler meta-datum/get-meta-datum-data-stream
+                                          ; TODO json meta-data: fix response conversion error
+                                          :middleware [ring-wrap-add-meta-datum-with-media-resource ring-wrap-authorization]
+                                          :summary "Get meta-data data-stream."
+                                          :description "Get meta-data data-stream."
+                                          :coercion reitit.coercion.schema/coercion
+                                          :parameters {:path {:meta_datum_id s/Str}}
+                                          :responses {200 {:body s/Any}
+                                                      422 {:body s/Any}}}}]]
+
+
+   ["/meta-data-roles/:meta_datum_id" {:get {:handler meta-datum/handle_get-meta-datum-role
+                                             :summary "Get meta-data role for id"
+                                             :description "Get meta-data role for id. TODO: should return 404, if no such meta-data role exists."
+                                             :coercion reitit.coercion.schema/coercion
+                                             :parameters {:path {:meta_datum_id s/Str}}
+                                             :responses {200 {:body s/Any}}}}]
+
+   ;meta_keys
+   ["/meta-keys"
+    ["/" {:get {:summary "Get all meta-key ids"
+                :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
+                :handler meta-keys-index/get-index
+                :swagger {:produces "application/json"}
+                :parameters {:query {(s/optional-key :page) s/Int}}
+                ;:content-type "application/json"
+                ;:accept "application/json"
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:people [{:id s/Uuid}]}}}}}]
+
+    ["/:id" {:get {:summary "Get meta-key by id"
+                   :description "Get meta-key by id. Returns 404, if no such person exists. TODO query params."
+                   :swagger {:produces "application/json"}
+                   :content-type "application/json"
+                   :accept "application/json"
+                   :handler meta-key/get-meta-key
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Str}} ; TODO test valid id
+                   :responses {200 {:body s/Str}
+                               404 {:body {:message s/Str}}
+                               422 {:body {:message s/Str}}}}}]]
+
+   ;people/ring-routes
+   ["/people"
+    ["/" {:get {:summary "Get all people ids"
+                :description "Get list of peoples ids. Paging is used as you get a limit of 100 entries."
+                :handler people/index
+                :swagger {:produces "application/json"}
+                :parameters {:query {(s/optional-key :page) s/Int}}
+                ;:content-type "application/json"
+                ;:accept "application/json"
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:people [{:id s/Uuid}]}}}}
+
+          :post {:summary "Create a person"
+                 :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
+                 :handler people/handle_create-person
+                 :middleware [auth/wrap-authorize-admin!]
+                 :swagger {:produces "application/json" :consumes "application/json"}
+                 :content-type "application/json"
+                 :accept "application/json"
+                 :coercion reitit.coercion.schema/coercion
+                 :parameters {:body people/schema_import_person}
+                 :responses {201 {:body people/schema_import_person_result} ;{:id s/Uuid}} ; api1 returns created data
+                             500 {:body {:msg s/Any}} ; TODO error handling
+                             400 {:body {:msg s/Any}}
+                             401 {:body {:msg s/Any}}
+                             403 {:body {:msg s/Any}}}}}]
+
+    ["/:id" {:get {:summary "Get person by id"
+                   :description "Get person by id. Returns 404, if no such person exists. TODO query params."
+                   :swagger {:produces "application/json"}
+                   :content-type "application/json"
+                   :accept "application/json"
+                   :handler people/handle_get-person
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Str}}
+                   :responses {200 {:body people/schema_export_person}
+                               404 {:body s/Str}}}
+
+             :patch {:summary "Updates entities fields"
+                     :description "Updates the entities fields"
+                     :swagger {:consumes "application/json" :produces "application/json"}
+                     :content-type "application/json"
+                     :accept "application/json"
+                     :handler people/handle_patch-person
+                     :coercion reitit.coercion.schema/coercion
+                     :parameters {:path {:id s/Str} :body people/schema_update_person}
+                     :responses {200 {:body s/Any} ;people/schema_export_person}
+                                 404 {:body s/Str}}}
+
+             :delete {:summary "Deletes a person by id"
+                      :description "Delete a person by id"
+                      :swagger {:produces "application/json"}
+                      :content-type "application/json"
+                      :handler people/handle_delete-person
+                      :middleware [auth/wrap-authorize-admin!]
+                      :coercion reitit.coercion.schema/coercion
+                      :parameters {:path {:id s/Uuid}}
+                      :responses {403 {:body s/Any}
+                                  204 {:body s/Any}}}}]]
+
+    ; preview
+   ["/previews"
+    ["/:preview_id" {:get {:summary "Get preview for id."
+                           :swagger {:produces "application/json"}
+                           :content-type "application/json"
+                           :handler preview/get-preview
+                           ;:middleware [ring-wrap-add-media-resource-preview]
+                           :coercion reitit.coercion.schema/coercion
+                           :parameters {:path {:preview_id s/Str}}
+                           }}]
+
+    ["/:preview_id/data-stream" {:get {:summary "Get preview data-stream for id."
+                                       :handler preview/get-preview-file-data-stream
+                                       :middleware [ring-wrap-add-media-resource-preview]
+                                       :coercion reitit.coercion.schema/coercion
+                                       :parameters {:path {:preview_id s/Uuid}}}}]
+    ]
+
+    ; roles/ring-routes
+    ; TODO coercion 
+   ["/roles"
+    ["/" {:get {:summary "Get list of roles."
+                :description "Get list of roles."
+                :handler roles-index/get-index
+                :swagger {:produces "application/json"}
+                :parameters {:query {(s/optional-key :page) s/Int}}
+                :content-type "application/json"
+                ;:accept "application/json"
+                :coercion reitit.coercion.schema/coercion}}]
+                ;:responses {200 {:body {:people [{:id s/Uuid}]}}}
+
+    ["/:id" {:get {:summary "Get role by id"
+                   :description "Get a role by id. Returns 404, if no such role exists."
+                   :swagger {:produces "application/json"}
+                   :content-type "application/json"
+                   ;:accept "application/json"
+                   :handler roles-role/handle_get-role
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Str}}
+                   :responses {200 {:body roles-role/schema_export-role}
+                               404 {:body s/Str}}}}]]
+
+    ; users/ring-routes
+   ["/users"
+    ["/" {:get {:middleware [auth/wrap-authorize-admin!]
+                :summary "Get list of users ids."
+                :description "Get list of users ids."
+                :swagger {:produces "application/json"}
+                :parameters {:query {(s/optional-key :page) s/Int}}
+                :content-type "application/json"
+                :handler users/index
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:users [{:id s/Uuid}]}}}}
+          :post (constantly todo)}]
+    ["/:id" {:get {:middleware [auth/wrap-authorize-admin!]
+                   :summary "Get user by id"
+                   :description "Get a user by id. Returns 404, if no such users exists."
+                   :swagger {:produces "application/json"}
+                   :coercion reitit.coercion.schema/coercion
+                   :content-type "application/json"
+                   :parameters {:path {:id s/Str}}
+                   :handler users/handle_get-user
+                   :responses {200 {:body users/schema_export_user}}}
+             :delete {:middleware [auth/wrap-authorize-admin!]
+                      :summary "Delete user by id"
+                      :description "Delete a user by id. Returns 404, if no such user exists."
+                      :swagger {:produces "application/json"}
+                      :coercion reitit.coercion.schema/coercion
+                      :content-type "application/json"
+                      :parameters {:path {:id s/Str}}
+                      :handler users/handle_delete-user
+                      :responses {204 {:body s/Any}
+                                  404 {:body s/Any}}}
+             :patch {:middleware [auth/wrap-authorize-admin!]
+                     :summary "Patch user with id"
+                     :description "Patch a user with id. Returns 404, if no such user exists."
+                     :swagger {:consumes "application/json" :produces "application/json"}
+                     :coercion reitit.coercion.schema/coercion
+                     :content-type "application/json"
+                     :accept "application/json"
+
+                     :parameters {:path {:id s/Str}
+                                  :body users/schema_update_user}
+                     :handler users/handle_patch-user
+                     :responses {204 {:body users/schema_export_user}
+                                 404 {:body s/Any}}}}]]
+    ; vocabularies/ring-routes
+    ; TODO export schema
+   ["/vocabularies"
+    ["/" {:get {:summary "Get list of vocabularies ids."
+                :description "Get list of vocabularies ids."
+
+                :handler vocabularies-index/get-index
+                :swagger {:produces "application/json"}
+                :parameters {:query {(s/optional-key :page) s/Int}}
+                :content-type "application/json"
+                ;:accept "application/json"
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:vocabularies [{:id s/Uuid}]}}}}}]
+    ["/:id" {:get {:summary "Get vocabulary by id."
+                   :description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
+                   :swagger {:produces "application/json"}
+                   :content-type "application/json"
+                   :handler vocabularies-get/handle_get-vocabulary
+                    ;:middleware [wrap-req-paramters-path-2-params]
+                    ;:handler vocabularies-get/get-vocabulary
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Str}}
+                   :responses {200 {:body vocabularies-get/schema_export-vocabulary}
+                               404 {:body s/Any}}}}]]])
 
 ;### Debug ####################################################################
-;(debug/debug-ns *ns*)
+(debug/debug-ns *ns*)

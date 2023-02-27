@@ -7,6 +7,7 @@
     [madek.api.authentication.session :as session-auth]
     [madek.api.authentication.token :as token-auth]
     [madek.api.utils.rdbms :as rdbms]
+    [madek.api.management :as management]
     ))
 
 (defn- add-www-auth-header-if-401 [response]
@@ -20,6 +21,7 @@
   (fn [request]
     (let [response ((-> handler
                         session-auth/wrap
+                        ;management/wrap
                         basic-auth/wrap
                         token-auth/wrap
                         ) request)]

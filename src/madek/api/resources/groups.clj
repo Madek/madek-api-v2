@@ -16,6 +16,8 @@
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
     [ring.util.codec :refer [url-decode]]
+    
+    [schema.core :as s]
     ))
 
 
@@ -85,6 +87,44 @@
         (cpj/DELETE "/groups/:group-id" [group-id] (delete-group group-id))
         (cpj/PATCH "/groups/:group-id" [] patch-group))
       wrap-authorize-admin!))
+
+(def schema_import-group
+  {(s/optional-key :id) s/Str
+   :name s/Str
+   ;:type (s/enum "Group" "AuthenticationGroup" "InstitutionalGroup")
+   (s/optional-key :type) (s/enum "Group" "AuthenticationGroup" "InstitutionalGroup")
+   (s/optional-key :institutional_id) (s/maybe s/Str)
+   (s/optional-key :institutional_name) (s/maybe s/Str)
+   (s/optional-key :person_id) (s/maybe s/Uuid)})
+
+(def schema_export-group
+  {:id s/Uuid
+   :name s/Str
+   :type s/Str ; TODO enum
+   :institutional_id (s/maybe s/Str)
+   :institutional_name (s/maybe s/Str)
+   :person_id (s/maybe s/Uuid)})
+
+(defn handle_create-group
+  "TODO  catch errors"
+  [request]
+  (let [params (get-in request [:parameters :body])
+        data_wid (assoc params :id (or (:id params) (clj-uuid/v4)))
+        data_wtype (assoc data_wid :type (or (:type data_wid) "Group"))
+        resultdb (->> (jdbc/insert! (rdbms/get-ds) :groups data_wtype) first)
+        result (dissoc resultdb :previous_id :searchable)]
+    (logging/info (apply str ["handler_create-group: \ndata:" data_wtype "\nresult-db: " resultdb "\nresult: " result]))
+    ;{:status 201 :body {:id result}}
+    {:status 201 :body result}))
+
+(defn handle_get-group [req]
+  (let [id (-> req :parameters :path :id)]
+    (logging/info "handle_get-group" "\nid\n" id)
+    (get-group id)))
+
+(defn handle_delete-group [req]
+  (let [id (-> req :parameters :path :id)]
+    (delete-group id)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

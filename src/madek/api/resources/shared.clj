@@ -18,3 +18,8 @@
 (defn remove-internal-keys
   [resource]
   (apply dissoc resource internal-keys))
+
+
+(defn get-path-params
+  ([req] (let [params (get-in req [:parameters :path])] params))
+  ([req pname] (let [param (get-in req [:parameters :path pname])] param)))

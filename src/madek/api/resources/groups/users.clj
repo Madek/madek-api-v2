@@ -17,6 +17,7 @@
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
     [ring.util.codec :refer [url-decode]]
+    [schema.core :as s]
     ))
 
 (defn group-user-query [group-id user-id]
@@ -37,6 +38,22 @@
   (when-let [user (find-group-user group-id user-id)]
     {:body user}))
 
+(def schema_export-group-user
+  {
+   :id s/Uuid
+   :email (s/maybe s/Str)
+   :institutional_id (s/maybe s/Str)
+   :login (s/maybe s/Str)
+   :created_at s/Inst
+   :updated_at s/Inst
+   :person_id s/Uuid
+  })
+
+(defn handle_get-group-user [req]
+  (let [group-id (shared/get-path-params req :group-id)
+        user-id (shared/get-path-params req :user-id)]
+    (logging/info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
+    (get-group-user group-id user-id)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn add-user [group-id user-id]
@@ -124,15 +141,20 @@
 (defn update-group-users [group-id data]
   (jdbc/with-db-transaction [tx (rdbms/get-ds)]
     (let [current-group-users-ids (current-group-users-ids tx group-id)
-          target-group-users-ids (target-group-users-ids tx (:users data))]
+          target-group-users-ids (target-group-users-ids tx (:users data))
+          del-query (update-delete-query group-id (clojure.set/difference current-group-users-ids target-group-users-ids))
+          ins-query (update-insert-query group-id (clojure.set/difference target-group-users-ids current-group-users-ids))
+          ]
+      (logging/info "update-group-users" "\ncurr\n" current-group-users-ids "\ntarget\n" target-group-users-ids )
+      (logging/info "update-group-users" "\ndel-q\n" del-query) 
+      (logging/info "update-group-users" "\nins-q\n" ins-query)
       (jdbc/execute!
         tx
-        (update-delete-query
-          group-id (clojure.set/difference current-group-users-ids target-group-users-ids)))
+        del-query)
       (jdbc/execute!
         tx
-        (update-insert-query
-          group-id (clojure.set/difference target-group-users-ids current-group-users-ids)))
+       ins-query
+        )
       {:status 204})))
 
 
@@ -156,6 +178,22 @@
     (cpj/PUT "/groups/:group-id/users/"
              [group-id :as {data :body}]
              (update-group-users group-id data))))
+
+(defn handle_delete-group-user [req]
+  (let [group-id (shared/get-path-params req :group-id)
+        user-id (shared/get-path-params req :user-id)]
+    (logging/info "handle_delete-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
+    (remove-user group-id user-id)))
+
+(defn handle_get-group-users [request]
+  (let [id (-> request :parameters :path :group-id)]
+    (get-group-users id request)))
+
+(defn handle_update-group-users [req]
+  (let [id (-> req :parameters :path :group-id)
+        data (-> req :parameters :body)]
+    (logging/info "handle_update-group-users" "\nid\n" id "\ndata\n" data)
+    (update-group-users id data)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

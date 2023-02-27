@@ -30,5 +30,8 @@
 (defn wrap-authorize [handler scope]
   (fn [request] (authorize request handler scope)))
 
+(defn ring-wrap-authorize-metadata-and-previews [handler]
+  (fn [request] (authorize request handler :get_metadata_and_previews)))
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
