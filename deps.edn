@@ -1,9 +1,8 @@
 {
  :paths ["src" "resources"]
- :deps {
-        aleph/aleph {:mvn/version "0.4.6"}
-        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
-        cheshire/cheshire {:mvn/version "5.10.1"}
+ :deps {aleph/aleph {:mvn/version "0.6.1"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+        cheshire/cheshire {:mvn/version "5.11.0"}
         cider-ci/open-session {:mvn/version "2.0.0-beta.1"} ; upgrade will break
         clj-http/clj-http {:mvn/version "3.12.3"}
         clj-pid/clj-pid {:mvn/version "0.1.2"}
@@ -12,12 +11,12 @@
         com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
         com.github.mfornos/humanize-slim {:mvn/version "1.2.2"}
         com.mchange/c3p0 {:mvn/version "0.9.5.5"}
-        com.taoensso/timbre {:mvn/version "5.1.2"}
-        compojure/compojure {:mvn/version "1.6.2"}
+        com.taoensso/timbre {:mvn/version "6.0.4"}
+        compojure/compojure {:mvn/version "1.7.0"}
         drtom/clj-uuid  {:mvn/version "0.1.7"}
         environ/environ {:mvn/version "1.2.0"}
         honeysql/honeysql {:mvn/version "1.0.461"}
-        inflections/inflections {:mvn/version "0.13.2"}
+        inflections/inflections {:mvn/version "0.14.1"}
         json-roa/clj-utils {:mvn/version "1.0.0"}
         logbug/logbug {:mvn/version "5.0.0"}
         me.raynes/fs {:mvn/version "1.4.6"}
@@ -30,14 +29,22 @@
         org.clojure/java.jdbc {:mvn/version "0.7.12"}
         org.clojure/tools.cli {:mvn/version "1.0.206"}
         org.clojure/tools.logging {:mvn/version "1.2.1"}
-        org.yaml/snakeyaml {:mvn/version "1.29"}
+        org.yaml/snakeyaml {:mvn/version "1.33"}
         pg-types/pg-types {:mvn/version "3.0.0"}
         ring-basic-authentication/ring-basic-authentication {:mvn/version "1.1.1"}
         ring-cors/ring-cors {:mvn/version "0.1.13"}
-        ring/ring-core {:mvn/version "1.9.4"}
+        ring/ring-core {:mvn/version "1.9.6"}
+        javax.servlet/servlet-api {:mvn/version "2.5"}
+        ring/ring-jetty-adapter {:mvn/version "1.9.5"}
         ring/ring-json {:mvn/version "0.5.1"}
+        ring/ring-devel {:mvn/version "1.9.6"}
         spootnik/signal {:mvn/version "0.2.4"}
-        uritemplate-clj/uritemplate-clj {:mvn/version "1.3.0"}
+        uritemplate-clj/uritemplate-clj {:mvn/version "1.3.1"}
+
+        ring/ring-defaults                         {:mvn/version "0.3.4"}
+        metosin/muuntaja                           {:mvn/version "0.6.8"}
+        metosin/reitit                             {:mvn/version "0.5.18"}
+        metosin/reitit-swagger-ui                  {:mvn/version "0.5.18"}
         }
  :aliases
  {;
