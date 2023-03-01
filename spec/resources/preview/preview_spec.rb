@@ -24,6 +24,7 @@ describe 'Getting a random preview for a specific media-entry' do
   end
 
   (1..ROUNDS).each do |round|
+  #(1..1).each do |round|
     include_context :preview_resource_via_plain_json
 
     context "ROUND #{round}" do

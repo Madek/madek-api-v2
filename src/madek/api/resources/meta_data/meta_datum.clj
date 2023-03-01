@@ -12,6 +12,7 @@
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
     [ring.util.response :as ring-response]
+    [cheshire.core :as json]
     ))
 
 ;### people ###################################################################
@@ -66,7 +67,8 @@
   (merge (select-keys meta-datum [:id :meta_key_id :type])
          {:value (let [meta-datum-type (:type meta-datum)]
                    (case meta-datum-type
-                     "MetaDatum::JSON" (:json meta-datum)
+                     "MetaDatum::JSON"  (json/generate-string (:json meta-datum) {:escape-non-ascii false})
+                     ; TODO meta-data json value transport Q as string
                      "MetaDatum::Text" (:string meta-datum)
                      "MetaDatum::TextDate" (:string meta-datum)
                      (map #(select-keys % [:id])
@@ -87,8 +89,10 @@
   ))
 
 (defn get-meta-datum [request]
-  (let [meta-datum (:meta-datum request)]
-    {:body (prepare-meta-datum meta-datum)}))
+  (let [meta-datum (:meta-datum request)
+        result (prepare-meta-datum meta-datum)]
+    ;(logging/info "get-meta-datum" "\nresult\n" result)
+    {:body result}))
 
 ; TODO Q? why no response status
 (defn get-meta-datum-data-stream [request]

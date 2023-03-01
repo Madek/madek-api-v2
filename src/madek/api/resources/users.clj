@@ -50,13 +50,11 @@
   (let [params (as-> (:body request) params
                  (or params {})
                  (assoc params :id (or (:id params) (clj-uuid/v4))))]
-    {:body (dissoc
-             (->> (jdbc/insert!
-                    (rdbms/get-ds) :users params)
-                  first)
-             :previous_id :searchable)
-     :status 201}))
-
+    ;(logging/info "create-user" "\nparams\n" params)
+    (when-let [dbresult (->> (jdbc/insert! (rdbms/get-ds) :users params) first)]
+      ;(logging/info "create-user" "\nparams\n" params "\ndbresult\n" dbresult) 
+      (let [result (dissoc dbresult :previous_id :searchable)] ; TODO hide password in result
+        {:body result :status 201}))))
 
 ;### get user ################################################################
 
@@ -73,7 +71,7 @@
 
 (defn get-user [some-id]
   (if-let [user (find-user some-id)]
-    {:body user}
+    {:status 200 :body user}
     {:status 404 :body "No such user found"}))
 
 
@@ -121,6 +119,7 @@
         (cpj/PATCH "/users/:id" [] patch-user))
       wrap-authorize-admin!))
 
+
 (def schema_update_user 
   {
    (s/optional-key :id) s/Uuid
@@ -128,6 +127,23 @@
    (s/optional-key :institutional_id) s/Str
    (s/optional-key :login) s/Str
    (s/optional-key :person_id) s/Uuid
+   })
+
+(def schema_create_user_result
+  {:id s/Uuid
+   :email (s/maybe s/Str)
+   :institutional_id (s/maybe s/Str)
+   :login (s/maybe s/Str)
+   :person_id s/Uuid
+   :created_at s/Any ; TODO Inst
+   :updated_at s/Any ; TODO Inst
+   :settings s/Any ; TODO
+   :accepted_usage_terms_id (s/maybe s/Any) ; TODO
+   :is_deactivated s/Bool
+   :notes (s/maybe s/Any) ; TODO
+   :password_digest (s/maybe s/Any) ; TODO
+   :last_signed_in_at (s/maybe s/Any) ; TODO
+   :autocomplete s/Str
    })
 
 (def schema_export_user
@@ -141,7 +157,9 @@
    :updated_at s/Inst})
 
 (defn handle_get-user [req]
-  (get-user (-> req :parameters :path :id)))
+  (let [id (-> req :parameters :path :id)]
+    (logging/info "handle_get-user" "\nid\n" id)
+    (get-user id)))
 
 (defn handle_delete-user [req]
   (delete-user (-> req :parameters :path :id)))
@@ -151,9 +169,12 @@
         body (-> req :parameters :body)
         ireq (assoc-in req [:params :id] id)
         breq (assoc-in ireq [:body] body)]
-        ;body (-> req :parameters :body)]
-    
     (patch-user breq)))
 
+(defn handle_create-user [req]
+  (let [body (-> req :parameters :body)
+        breq (assoc-in req [:body] body)]
+    (create-user breq)
+    ))
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

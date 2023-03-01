@@ -275,21 +275,10 @@
           :message "Hello Madek User!"}})
 
 
-
-(def todo
-  {:status 200
-   :body {:api-version (semver/get-semver)
-          :message "TODO: not implemented!"}})
-
-(defn autch-test-handler [request]
-  (let [auth (:authenticated-entity request)]
-        
-    {:status 200 :body {:authed (apply str ["authed" auth])}}))
-
-(defn wrap-req-paramters-path-2-params [handler param-key]
-  (fn [request]
-     (let [pp (-> request :parameters :path param-key)]
-       (assoc-in request [:params] pp))))
+;(defn wrap-req-paramters-path-2-params [handler param-key]
+;  (fn [request]
+;     (let [pp (-> request :parameters :path param-key)]
+;       (assoc-in request [:params] pp))))
 
 (def ring-routes
   ["/api" {:middleware [authentication/wrap]}
@@ -380,7 +369,20 @@
                       :parameters {:path {:id s/Str}}
                       :responses {403 {:body s/Any}
                                   204 {:body s/Any}}}
-             :patch (constantly todo)}]]
+             :patch {:summary "Get group by id"
+                     :description "Get group by id. Returns 404, if no such group exists."
+                     :swagger {:produces "application/json"}
+                     :content-type "application/json"
+                     :accept "application/json"
+                     :handler groups/handle_update-group
+                     :middleware [auth/wrap-authorize-admin!]
+                     :coercion reitit.coercion.schema/coercion
+                     :parameters {:path {:id s/Str} 
+                                  :body groups/schema_update-group}
+                     :responses {200 {:body s/Any };groups/schema_export-group}
+                                 404 {:body s/Any}} ; TODO error handling
+                     }
+             }]]
      ; groups-users/ring-routes 
    ["/groups/:group-id/users"
     ["/" {:get {:summary "Get group users by id"
@@ -426,10 +428,20 @@
                         :coercion reitit.coercion.schema/coercion
                         :parameters {:path {:group-id s/Str :user-id s/Str}}
                         :responses {200 {:body group-users/schema_export-group-user}
-                                    406 {:body s/Str} ; TODO error handling
+                                    404 {:body s/Any} ; TODO error handling
                                     }}
 
-                  :put (constantly todo)
+                  :put {:summary "Get group user by group-id and user-id"
+                        :description "Get group user by group-id and user-id."
+                        :swagger {:produces "application/json"}
+                        :content-type "application/json"
+                        :handler group-users/handle_add-group-user
+                        :middleware [auth/wrap-authorize-admin!]
+                        :coercion reitit.coercion.schema/coercion
+                        :parameters {:path {:group-id s/Str :user-id s/Str}}
+                        :responses {200 {:body group-users/schema_export-group-user-simple}
+                                    404 {:body s/Any} ; TODO error handling
+                                    }}
 
                   :delete {:summary "Deletes a group-user by group-id and user-id"
                            :description "Delete a group-user by group-id and user-id."
@@ -530,8 +542,9 @@
                                           :description "Get meta-data data-stream."
                                           :coercion reitit.coercion.schema/coercion
                                           :parameters {:path {:meta_datum_id s/Str}}
-                                          :responses {200 {:body s/Any}
-                                                      422 {:body s/Any}}}}]]
+                                          ;:responses {200 {:body s/Any}
+                                                      ;422 {:body s/Any}}
+                                          }}]] 
 
 
    ["/meta-data-roles/:meta_datum_id" {:get {:handler meta-datum/handle_get-meta-datum-role
@@ -669,25 +682,43 @@
 
     ; users/ring-routes
    ["/users"
-    ["/" {:get {:middleware [auth/wrap-authorize-admin!]
+    ["/" {:get {
                 :summary "Get list of users ids."
                 :description "Get list of users ids."
                 :swagger {:produces "application/json"}
                 :parameters {:query {(s/optional-key :page) s/Int}}
                 :content-type "application/json"
                 :handler users/index
+                :middleware [auth/wrap-authorize-admin!]
                 :coercion reitit.coercion.schema/coercion
-                :responses {200 {:body {:users [{:id s/Uuid}]}}}}
-          :post (constantly todo)}]
+                :responses {200 {:body {:users [{:id s/Uuid}]}}}
+                }
+          :post {:summary "Get list of users ids."
+                 :description "Get list of users ids."
+                 :swagger {:consumes "application/json" :produces "application/json"}
+                 :content-type "application/json"
+                 :accept "application/json"
+                 :handler users/handle_create-user
+                 :middleware [auth/wrap-authorize-admin!]
+                 :coercion reitit.coercion.schema/coercion
+                 :parameters {:body users/schema_update_user}
+                 :responses {201 {:body users/schema_create_user_result}
+                             406 {:body s/Any} ; TODO error handling
+                             }
+                 }
+          }
+     ]
     ["/:id" {:get {:middleware [auth/wrap-authorize-admin!]
                    :summary "Get user by id"
                    :description "Get a user by id. Returns 404, if no such users exists."
                    :swagger {:produces "application/json"}
                    :coercion reitit.coercion.schema/coercion
                    :content-type "application/json"
-                   :parameters {:path {:id s/Str}}
+                   :parameters {:path {:id s/Any}}
                    :handler users/handle_get-user
-                   :responses {200 {:body users/schema_export_user}}}
+                   :responses {200 {:body s/Any} ; TODO coercion
+                               404 {:body s/Any}} ; TODO coercion
+                   }
              :delete {:middleware [auth/wrap-authorize-admin!]
                       :summary "Delete user by id"
                       :description "Delete a user by id. Returns 404, if no such user exists."
@@ -696,8 +727,8 @@
                       :content-type "application/json"
                       :parameters {:path {:id s/Str}}
                       :handler users/handle_delete-user
-                      :responses {204 {:body s/Any}
-                                  404 {:body s/Any}}}
+                      :responses {204 {:body s/Any} ; TODO coercion
+                                  404 {:body s/Any}}} ; TODO coercion
              :patch {:middleware [auth/wrap-authorize-admin!]
                      :summary "Patch user with id"
                      :description "Patch a user with id. Returns 404, if no such user exists."
@@ -710,7 +741,7 @@
                                   :body users/schema_update_user}
                      :handler users/handle_patch-user
                      :responses {204 {:body users/schema_export_user}
-                                 404 {:body s/Any}}}}]]
+                                 404 {:body s/Any}}}}]] ; TODO coercion
     ; vocabularies/ring-routes
     ; TODO export schema
    ["/vocabularies"
@@ -734,7 +765,7 @@
                    :coercion reitit.coercion.schema/coercion
                    :parameters {:path {:id s/Str}}
                    :responses {200 {:body vocabularies-get/schema_export-vocabulary}
-                               404 {:body s/Any}}}}]]])
+                               404 {:body s/Any}}}}]]]) ; TODO coercion
 
 ;### Debug ####################################################################
 (debug/debug-ns *ns*)

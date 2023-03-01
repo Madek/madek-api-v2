@@ -222,6 +222,9 @@
                          rmp/parameters-middleware
                          muuntaja/format-negotiate-middleware
                          muuntaja/format-response-middleware
+                         ;(ring.middleware.json/wrap-json-body {:keywords? true})
+                         ;ring.middleware.json/wrap-json-response
+
                          wrap-exception
                          muuntaja/format-request-middleware
                          ;auth/wrap-auth-madek-deps

@@ -54,11 +54,15 @@
 
 
 ;### patch group ##############################################################
+(defn db_update-group [group-id body]
+  (let [query (groups/jdbc-update-group-id-where-clause group-id)
+         db-do (jdbc/update! (rdbms/get-ds) :groups body query)]
+     ;(logging/info "db_update-group" "\ngroup-id\n" group-id "\nbody\n" body "\nquery\n" query)
+     (first db-do)
+   ))
 
 (defn patch-group [{body :body {group-id :group-id} :params}]
-  (if (= 1 (first (jdbc/update! (rdbms/get-ds)
-                                :groups
-                                body (groups/jdbc-update-group-id-where-clause group-id))))
+   (if (= 1 (db_update-group group-id body))
     {:body (groups/find-group group-id)}
     {:status 404}))
 
@@ -97,6 +101,15 @@
    (s/optional-key :institutional_name) (s/maybe s/Str)
    (s/optional-key :person_id) (s/maybe s/Uuid)})
 
+(def schema_update-group
+  {(s/optional-key :id) s/Str
+   (s/optional-key :name) s/Str
+   ;:type (s/enum "Group" "AuthenticationGroup" "InstitutionalGroup")
+   (s/optional-key :type) (s/enum "Group" "AuthenticationGroup" "InstitutionalGroup")
+   (s/optional-key :institutional_id) (s/maybe s/Str)
+   (s/optional-key :institutional_name) (s/maybe s/Str)
+   (s/optional-key :person_id) (s/maybe s/Uuid)})
+
 (def schema_export-group
   {:id s/Uuid
    :name s/Str
@@ -125,6 +138,12 @@
 (defn handle_delete-group [req]
   (let [id (-> req :parameters :path :id)]
     (delete-group id)))
+
+(defn handle_update-group [req]
+  (let [id (-> req :parameters :path :id)
+        body (-> req :parameters :body)]
+    ;(logging/info "handle_update-group" "\nid\n" id "\nbody\n" body)
+    (patch-group {:params {:group-id id} :body body})))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -35,30 +35,15 @@
        first))
 
 (defn get-group-user [group-id user-id]
-  (when-let [user (find-group-user group-id user-id)]
-    {:body user}))
+  (if-let [user (find-group-user group-id user-id)]
+    {:body user}
+    {:status 404}))
 
-(def schema_export-group-user
-  {
-   :id s/Uuid
-   :email (s/maybe s/Str)
-   :institutional_id (s/maybe s/Str)
-   :login (s/maybe s/Str)
-   :created_at s/Inst
-   :updated_at s/Inst
-   :person_id s/Uuid
-  })
-
-(defn handle_get-group-user [req]
-  (let [group-id (shared/get-path-params req :group-id)
-        user-id (shared/get-path-params req :user-id)]
-    (logging/info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
-    (get-group-user group-id user-id)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn add-user [group-id user-id]
   (if-let [user (find-group-user group-id user-id)]
-    {:body user}
+    {:status 200 :body user}
     (let [group (groups/find-group group-id)
           user (users/find-user user-id)]
       (if-not (and group user)
@@ -66,7 +51,7 @@
         (do (jdbc/insert! (rdbms/get-ds)
                           :groups_users {:group_id (:id group)
                                          :user_id (:id user)})
-            {:body (find-group-user group-id user-id)})))))
+            {:status 200 :body (find-group-user group-id user-id)})))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,6 +164,30 @@
              [group-id :as {data :body}]
              (update-group-users group-id data))))
 
+(def schema_export-group-user
+  {:id s/Uuid
+   :email (s/maybe s/Str)
+   :institutional_id (s/maybe s/Str)
+   :login (s/maybe s/Str)
+   :created_at s/Inst
+   :updated_at s/Inst
+   :person_id s/Uuid})
+
+(def schema_export-group-user-simple
+  {:id s/Uuid
+   :email (s/maybe s/Str)
+   :institutional_id (s/maybe s/Str)
+   :login (s/maybe s/Str)
+   :created_at s/Any ; TODO use Inst here
+   :updated_at s/Any ; TODO use Inst here
+   :person_id s/Uuid})
+
+(defn handle_get-group-user [req]
+  (let [group-id (shared/get-path-params req :group-id)
+        user-id (shared/get-path-params req :user-id)]
+    (logging/info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
+    (get-group-user group-id user-id)))
+
 (defn handle_delete-group-user [req]
   (let [group-id (shared/get-path-params req :group-id)
         user-id (shared/get-path-params req :user-id)]
@@ -194,6 +203,11 @@
         data (-> req :parameters :body)]
     (logging/info "handle_update-group-users" "\nid\n" id "\ndata\n" data)
     (update-group-users id data)))
+
+(defn handle_add-group-user [req]
+  (let [group-id (-> req :parameters :path :group-id)
+        user-id (-> req :parameters :path :user-id)]
+    (add-user group-id user-id)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

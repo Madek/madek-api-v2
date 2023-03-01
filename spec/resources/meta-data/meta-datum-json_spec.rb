@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'json'
 require Pathname(File.expand_path('..', __FILE__)).join('shared')
 
 describe 'generated runs' do
@@ -38,6 +39,14 @@ describe 'generated runs' do
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_json.id}")
               end
 
+              let :value do
+                response.body['value']
+              end
+
+              let :json_value do
+                JSON.parse value
+              end
+
               it 'status, either 200 success or 403 forbidden, '\
                   'corresponds to the get_metadata_and_previews value' do
                 expect(response.status).to be == \
@@ -46,7 +55,7 @@ describe 'generated runs' do
 
               it 'holds the proper json value when the response is 200' do
                 if response.status == 200
-                  expect(response.body['value']).to be == meta_datum_json.json
+                  expect(json_value).to be == meta_datum_json.json
                 end
               end
             end
