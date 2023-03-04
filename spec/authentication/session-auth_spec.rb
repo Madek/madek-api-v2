@@ -71,7 +71,7 @@ describe 'Session/Cookie Authentication' do
 
       include_examples :responds_with_not_authorized
       it 'the body indicates that the session has expired' do
-        expect(response.body).to match(/has expired/)
+        expect(response.body.with_indifferent_access['message']).to match(/has expired/)
       end
     end
   end
