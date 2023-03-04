@@ -18,7 +18,12 @@
     (cpj/ANY "*" _ shared/dead-end-handler)))
 
 (defn handle_get-index [req]
-  (get-index req))
+  (let [query-params (-> req :parameters :query)
+        qreq (assoc-in req [:query-params] query-params)]
+    (logging/info "handle_get-index" "\nquery-params\n" query-params)
+    (get-index qreq)
+    )
+  )
 
 ;(defn handle_get-collection [req]
 ;  (get-collection req))

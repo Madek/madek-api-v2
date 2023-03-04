@@ -22,7 +22,12 @@
 
 (defn handle_get-index [req]
   (let [query-params (-> req :parameters :query)
-        qreq (assoc-in req [:query-params] query-params)]
+        q1 (-> req :query-params)
+        qreq (assoc-in req [:query-params] query-params)
+        q2 (-> qreq :query-params)
+        
+        ]
+    (logging/info "handle_get-index" "\nquery\n" query-params "\nq1\n" q1 "\nq2\n" q2 )
     (get-index qreq)))
 
 (defn handle_get-media-entry [req]

@@ -4,7 +4,7 @@ describe 'filtering collections' do
   
   def get_collections(filter = nil)
     # TODO remove ROA: filter
-    client.get('/api/collections/', filter).body['collections']
+    client.get('/api/collections/', filter).body.with_indifferent_access['collections']
   end
 
   context 'by collection_id' do

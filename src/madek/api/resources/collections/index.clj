@@ -33,8 +33,9 @@
     (-> query (sql/order-by [:collections.created-at :asc]))))
 
 (defn- build-query [request]
-  (let [query-params (:query-params request)
+  (let [query-params (:query-params request) ;(or (:query-params request) (-> request :parameters :query))
         authenticated-entity (:authenticated-entity request)]
+    (logging/info "build-query" "\nquery\n" query-params)
     (-> base-query
         (set-order query-params)
         (filter-by-collection-id query-params)

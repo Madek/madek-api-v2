@@ -188,14 +188,6 @@
       ))
 
 
-
-(def exception-middleware
-  (re/create-exception-middleware
-   (merge
-    re/default-handlers
-    {::re (fn [handler e request]
-            (logging/error e request)
-            (handler e request))})))
 (def app
   (rr/ring-handler
    (rr/router
@@ -220,11 +212,11 @@
      :data {:middleware [swagger/swagger-feature
 
                          rmp/parameters-middleware
+                         ;ring-wrap-parse-json-query-parameters 
                          muuntaja/format-negotiate-middleware
                          muuntaja/format-response-middleware
                          ;(ring.middleware.json/wrap-json-body {:keywords? true})
                          ;ring.middleware.json/wrap-json-response
-
                          wrap-exception
                          muuntaja/format-request-middleware
                          ;auth/wrap-auth-madek-deps
@@ -233,8 +225,6 @@
                          rrc/coerce-request-middleware
                          rrc/coerce-response-middleware
                          rrc/coerce-exceptions-middleware
-                         ;exception-middleware
-                         ;wrap-exception
                          ]
             :muuntaja m/instance}})
    (rr/routes

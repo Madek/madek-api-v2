@@ -22,5 +22,6 @@ RSpec.configure do |config|
     puts "SPEC_SEED #{@spec_seed} set env SPEC_SEED to force value"
   end
 
+  config.example_status_persistence_file_path = 'tmp/rspec_results.log.txt'
   config.include FactoryBot::Syntax::Methods
 end

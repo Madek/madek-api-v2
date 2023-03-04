@@ -8,7 +8,7 @@ describe 'a bunch of collections with different properties' do
     include_context :json_client_for_authenticated_user do
       describe 'the collections resource' do
         let :resource do
-          collections # force evaluation
+          #collections # force evaluation
           client.get('/api/collections/')
         end
 

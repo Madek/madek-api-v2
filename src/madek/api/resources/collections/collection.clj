@@ -12,5 +12,7 @@
   (when-let [collection (:media-resource request)]
     {:body (select-keys collection collection-keys)}))
 
+(defn handle_get-collection [req]
+   (get-collection req))
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

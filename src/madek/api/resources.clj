@@ -41,7 +41,7 @@
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
             [reitit.coercion.schema]
             [schema.core :as s]
-            
+            [cheshire.core :as cheshire]
             ))
 
 
@@ -108,6 +108,7 @@
   (fn [request]
     (ring-add-media-resource request handler)))
 
+; TODO move to params coercion
 (defn- wrap-check-uuid-syntax-conformity [handler]
   (letfn [(return-422-if-not-uuid-conform [request]
             (if (re-find shared/uuid-matcher (-> request :params :resource_id))
@@ -190,8 +191,8 @@
       (if-let [auth-entity (:authenticated-entity request)]
         (if (authorized? auth-entity media-resource)
           (handler request)
-          {:status 403})
-        {:status 401}))
+          {:status 403 :body {:message "Not authorized for media-resource"}})
+        {:status 401 :body {:message "Not authorized"}}))
     (let [response  {:status 500 :body "No media-resource in request."}]
       (logging/warn 'authorize-request-for-handler response [request handler])
       response)))
@@ -274,6 +275,21 @@
    :body {:api-version (semver/get-semver)
           :message "Hello Madek User!"}})
 
+(defn try-as-json [value]
+  (try (cheshire/parse-string value)
+       (catch Exception _
+         value)))
+
+(defn- *ring-wrap-parse-json-query-parameters [request handler]
+  ;((assoc-in request [:query-params2] (-> request :parameters :query))
+  (handler (assoc request :query-params
+                  (->> request :query-params
+                       (map (fn [[k v]] [k (try-as-json v)]))
+                       (into {})))))
+
+(defn- ring-wrap-parse-json-query-parameters [handler]
+  (fn [request]
+    (*ring-wrap-parse-json-query-parameters request handler)))
 
 ;(defn wrap-req-paramters-path-2-params [handler param-key]
 ;  (fn [request]
@@ -292,11 +308,20 @@
                 :summary "Get collection ids"
                 :description "Get collection id list."
                 :swagger {:produces "application/json"}
-                :parameters {:query {(s/optional-key :page) s/Int}}
+                ;:middleware [ring-wrap-add-media-resource ]
+                ;:middleware [ring-wrap-add-media-resource ring-wrap-authorization]
+                :parameters {:query {(s/optional-key :page) s/Str
+                                     (s/optional-key :collection_id) s/Str
+                                     (s/optional-key :order) s/Str
+                                     (s/optional-key :me_get_metadata_and_previews) s/Bool
+                                     (s/optional-key :public_get_metadata_and_previews) s/Bool
+                                     (s/optional-key :me_get_full_size) s/Bool
+                                     }
+                             }
                 :coercion reitit.coercion.schema/coercion
                 :responses {200 {:body {:collections [{:id s/Uuid :created_at s/Inst}]}}}}}]
 
-    ["/:collection_id" {:get {:handler rcollection/get-collection
+    ["/:collection_id" {:get {:handler rcollection/handle_get-collection
                               :middleware [ring-wrap-add-media-resource ring-wrap-authorization]
                               :summary "Get collection for id."
                               :swagger {:produces "application/json"}
@@ -478,15 +503,21 @@
                 :swagger {:produces "application/json"}
                 :content-type "application/json"
                 :handler media-entries/handle_get-index
-                ;:middleware [media-files/wrap-find-and-add-media-file media-files.auth/ring-wrap-authorize-metadata-and-previews]
+                :middleware [ring-wrap-parse-json-query-parameters]
                 :coercion reitit.coercion.schema/coercion
-                :parameters {:query {(s/optional-key :collection_id) s/Str}}}}]
+                :parameters {:query {(s/optional-key :collection_id) s/Str
+                                     (s/optional-key :order) s/Any ;(s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
+                                     (s/optional-key :filter_by) s/Any
+                                     (s/optional-key :me_get_metadata_and_previews) s/Bool
+                                     (s/optional-key :me_get_full_size) s/Bool
+                                     (s/optional-key :page) s/Str
+                                     }}}}]
     
     ["/:media_entry_id" {:get {:summary "Get media-entry for id."
                    :swagger {:produces "application/json"}
                    :content-type "application/json"
                    :handler media-entries/handle_get-media-entry
-                   :middleware [ring-wrap-add-media-resource]
+                   :middleware [ring-wrap-add-media-resource ring-wrap-authorization]
                    :coercion reitit.coercion.schema/coercion
                    :parameters {:path {:media_entry_id s/Str}}}}]]
 
