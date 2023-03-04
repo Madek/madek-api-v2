@@ -79,14 +79,11 @@
          (cpj/ANY "*" _ handler)) request))))
 
 (defn- ring-add-media-resource-preview [request handler]
-  (if-let [media-resource (get-media-entry-for-preview request)
-           ;media-resource #(assoc (get-media-entry-for-preview %) :type "MediaEntry" :table-name "media_entries")
-           ] 
+  (if-let [media-resource (get-media-entry-for-preview request)] 
     (let [mmr (assoc media-resource :type "MediaEntry" :table-name "media_entries")
-          request-with-media-resource (assoc request :preview mmr)]
-      (logging/info "ring-add-media-resource-preview" "\nmmr\n" mmr)
+          request-with-media-resource (assoc request :media-resource mmr)]
       (handler request-with-media-resource))
-    {:status 404 :body "No media-resource for preview"}))
+    {:status 404 :body {:message "No media-resource for preview"}}))
 
 (defn- ring-add-media-resource [request handler]
   (if-let [media-resource (get-media-resource request)]
@@ -527,13 +524,15 @@
                               :swagger {:produces "application/json"}
                               :content-type "application/json"
                               :handler media-files.file/get-media-file
-                              :middleware [media-files/wrap-find-and-add-media-file media-files.auth/ring-wrap-authorize-metadata-and-previews]
+                              :middleware [media-files/wrap-find-and-add-media-file
+                                           media-files.auth/ring-wrap-authorize-metadata-and-previews]
                               :coercion reitit.coercion.schema/coercion
                               :parameters {:path {:media_file_id s/Str}}}}]
     
     ["/:media_file_id/data-stream" {:get {:summary "Get media-file data-stream for id."
                                           :handler media-files.file/get-media-file-data-stream
-                                          :middleware [media-files/wrap-find-and-add-media-file media-files.auth/ring-wrap-authorize-metadata-and-previews]
+                                          :middleware [media-files/wrap-find-and-add-media-file
+                                                       media-files.auth/ring-wrap-authorize-full_size]
                                           :coercion reitit.coercion.schema/coercion
                                           :parameters {:path {:media_file_id s/Str}}}}]]
 
@@ -675,14 +674,20 @@
                            :swagger {:produces "application/json"}
                            :content-type "application/json"
                            :handler preview/get-preview
-                           ;:middleware [ring-wrap-add-media-resource-preview]
+                           :middleware [previews/ring-wrap-find-and-add-preview
+                                        ring-wrap-add-media-resource-preview 
+                                        ring-wrap-authorization
+                                        ]
                            :coercion reitit.coercion.schema/coercion
                            :parameters {:path {:preview_id s/Str}}
                            }}]
 
     ["/:preview_id/data-stream" {:get {:summary "Get preview data-stream for id."
                                        :handler preview/get-preview-file-data-stream
-                                       :middleware [ring-wrap-add-media-resource-preview]
+                                       :middleware [previews/ring-wrap-find-and-add-preview
+                                                    ring-wrap-add-media-resource-preview
+                                                    ring-wrap-authorization
+                                                    ]
                                        :coercion reitit.coercion.schema/coercion
                                        :parameters {:path {:preview_id s/Uuid}}}}]
     ]

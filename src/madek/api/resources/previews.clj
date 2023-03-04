@@ -34,5 +34,14 @@
         (cpj/ANY "*" _ shared/dead-end-handler))
       wrap-find-and-add-preview))
 
+(defn ring-wrap-find-and-add-preview
+  ([handler] #(ring-wrap-find-and-add-preview % handler))
+  ([request handler]
+   (when-let [preview-id (-> request :parameters :path :preview_id)]
+     ;(logging/info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id)
+     (when-let [preview (query-preview preview-id)]
+       (logging/info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
+       (handler (assoc request :preview preview))))))
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

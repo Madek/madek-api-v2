@@ -24,7 +24,7 @@
   (let [; TODO why is this needed for compojure
         ;filename (:filename preview)
         ; TODO why is this needed for reitit
-         filename (:filename_2 preview)
+         filename (:filename preview)
         [first-char] filename]
     (clojure.string/join
       (java.io.File/separator)
@@ -33,8 +33,9 @@
 (defn get-preview-file-data-stream [request]
   (catcher/snatch {}
     (when-let [preview (:preview request)]
+      (logging/info "get-preview-file-ds" "\npreview\n" preview)
       (when-let [file-path (preview-file-path preview)]
-        ;(logging/info "get-preview-file-ds" "\nfilepath\n" file-path)
+        (logging/info "get-preview-file-ds" "\nfilepath\n" file-path)
         (data-streaming/respond-with-file file-path
                                           (:content_type preview))))))
 

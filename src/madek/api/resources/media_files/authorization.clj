@@ -15,6 +15,7 @@
         media-entry (-> (jdbc/query (get-ds)
                                     [(str "SELECT * FROM media_entries WHERE id = ?")
                                      media-entry-id]) first)]
+    (logging/info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
     (if (get media-entry scope)
       (handler request)
       (if-let [auth-entity (:authenticated-entity request)]
@@ -32,6 +33,9 @@
 
 (defn ring-wrap-authorize-metadata-and-previews [handler]
   (fn [request] (authorize request handler :get_metadata_and_previews)))
+
+(defn ring-wrap-authorize-full_size [handler]
+  (fn [request] (authorize request handler :get_full_size)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

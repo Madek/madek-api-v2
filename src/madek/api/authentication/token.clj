@@ -77,7 +77,7 @@
     (if-let [user-token (find-user-token-by-some-secret [token-secret])]
       (authenticate user-token handler request)
       {:status 401
-       :body "No token for this token-secret found!"})
+       :body {:message "No token for this token-secret found!"}})
     (handler request)))
 
 (defn wrap [handler]
