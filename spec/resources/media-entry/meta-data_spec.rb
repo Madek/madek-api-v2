@@ -36,6 +36,10 @@ context 'A media-entry resource with get_metadata_and_previews permission' do
         #let :get_meta_data_relation do
         #  resource.relation('meta-data').get
         #end
+        let :meta_data_response do
+          plain_faraday_json_client.get("/api/meta-data/#{@media_entry.id}/by-media-entry-id")
+        end
+
 
         #it 'is a resource' do
         #  expect(get_meta_data_relation).to be_a JSON_ROA::Client::Resource
@@ -46,11 +50,11 @@ context 'A media-entry resource with get_metadata_and_previews permission' do
           #  get_meta_data_relation
           #end
 
-          #describe 'the response' do
-          #  it 'the status code indicates success' do
-          #    expect(meta_data_resource.response.status).to be == 200
-          #  end
-          #end
+          describe 'the response' do
+            it 'the status code indicates success' do
+              expect(meta_data_response.status).to be == 200
+            end
+          end
         end
       end
 

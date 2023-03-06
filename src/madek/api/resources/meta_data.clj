@@ -49,11 +49,28 @@
                                           ;:responses {200 {:body s/Any}
                                                       ;422 {:body s/Any}}
    ["/:meta_datum_id/role" {:get {:summary "Get meta-data role for id"
-                                            :handler meta-datum/handle_get-meta-datum-role
-                                            :description "Get meta-data role for id. TODO: should return 404, if no such meta-data role exists."
-                                            :coercion reitit.coercion.schema/coercion
-                                            :parameters {:path {:meta_datum_id s/Str}}
-                                            :responses {200 {:body s/Any}}}}]
-   ])
+                                  :handler meta-datum/handle_get-meta-datum-role
+                                  :description "Get meta-data role for id. TODO: should return 404, if no such meta-data role exists."
+                                  :coercion reitit.coercion.schema/coercion
+                                  :parameters {:path {:meta_datum_id s/Str}}
+                                  :responses {200 {:body s/Any}}}}]
+
+   ["/:collection_id/by-collection-id" {:get {:summary "Get meta-data for collection."
+                                                   :handler meta-data.index/get-index
+                                                   :middleware [sd/ring-wrap-add-media-resource
+                                                                sd/ring-wrap-authorization]
+                                                   ; TODO 401s test fails
+                                                   :coercion reitit.coercion.schema/coercion
+                                                   :parameters {:path {:collection_id s/Str}}
+                                                   :responses {200 {:body s/Any}}}}]
+
+   ["/:media_entry_id/by-media-entry-id" {:get {:summary "Get meta-data for media-entry."
+                                                      :handler meta-data.index/get-index
+                                                      ; TODO 401s test fails
+                                                      :middleware [sd/ring-wrap-add-media-resource
+                                                                   sd/ring-wrap-authorization]
+                                                      :coercion reitit.coercion.schema/coercion
+                                                      :parameters {:path {:media_entry_id s/Str}}
+                                                      :responses {200 {:body s/Any}}}}]])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

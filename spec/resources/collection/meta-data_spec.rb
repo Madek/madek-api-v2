@@ -24,7 +24,7 @@ context 'A collection resource with get_metadata_and_previews permission' do
     end
 
     describe 'resource' do
-      include_context :collection_resource_via_json_roa
+      include_context :collection_resource_via_json
       # TODO json roa remove: test links: collections relation meta data 
       #it 'has a meta-data relation' do
       #  expect(resource.relation('meta-data')).to \
@@ -32,54 +32,67 @@ context 'A collection resource with get_metadata_and_previews permission' do
       #end
 
       # TODO json roa remove: test links: collections relation meta data 
-      #describe 'get meta-data relation' do
+      describe 'get meta-data relation' do
       #  let :get_meta_data_relation do
       #    resource.relation('meta-data').get
       #  end
+      let :meta_data_response do
+        plain_faraday_json_client.get("/api/meta-data/#{CGI.escape(@collection.id)}/by-collection-id")
+      end
 
       #  it 'is a resource' do
       #    expect(get_meta_data_relation).to be_a JSON_ROA::Client::Resource
       #  end
 
-      #  describe 'meta_data the resource' do
+        describe 'meta_data the resource' do
       #    let :meta_data_resource do
       #      get_meta_data_relation
       #    end
 
-      #    describe 'the response' do
-      #      it 'the status code indicates success' do
-      #        expect(meta_data_resource.response.status).to be == 200
-      #      end
-      #    end
-      #  end
-      #end
+          describe 'the response' do
+            it 'the status code indicates success' do
+              expect(meta_data_response.status).to be == 200
+            end
+          end
+        end
+      end
 
-      #describe 'get meta-data relation with query parameters' do
-      #  describe 'set meta_keys to some string' do
+      describe 'get meta-data relation with query parameters' do
+        describe 'set meta_keys to some string' do
       #    let :get_meta_data_relation do
       #      resource.relation('meta-data').get("meta_keys" => "bogus")
       #    end
-      #    describe 'the response' do
-      #      it '422s' do
-      #        expect(get_meta_data_relation.response.status).to be == 422
-      #      end
-      #    end
-      #  end
-      #  describe 'set meta_keys to an json encoded array including the used key' do
+          let :get_meta_key do
+            plain_faraday_json_client.get("/api/meta-keys/bogus")
+          end
+
+
+          describe 'the response' do
+            it '422s' do
+              expect(get_meta_key.status).to be == 422
+            end
+          end
+        end
+        describe 'set meta_keys to an json encoded array including the used key' do
       #    let :get_meta_data_relation do
       #      resource.relation('meta-data') \
       #        .get("meta_keys" => [@meta_datum_text.meta_key_id].to_json)
       #    end
-      #    describe 'the response' do
-      #      it 'succeeds' do
-      #        expect(get_meta_data_relation.response.status).to be == 200
-      #      end
+          # TODO query by array
+          let :get_meta_key_response do
+            plain_faraday_json_client.get("/api/meta-keys/[#{@meta_datum_text.meta_key_id}]")
+          end
+
+          describe 'the response' do
+            it 'succeeds' do
+              expect(get_meta_key_response.status).to be == 200
+            end
       #      it 'contains the meta-datum ' do
       #        expect(get_meta_data_relation.data['meta-data'].map{|x| x[:id]}).to \
       #          include @meta_datum_text.id
       #      end
-      #    end
-      #  end
+          end
+        end
 
       #  describe 'set meta_keys to an json encoded array excluding the used key' do
       #    let :get_meta_data_relation do
@@ -95,7 +108,7 @@ context 'A collection resource with get_metadata_and_previews permission' do
       #          include @meta_datum_text.id
       #      end
       #    end
-      #  end
+        end
 
 
       #end

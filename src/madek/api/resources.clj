@@ -433,23 +433,23 @@
    media-files/ring-routes
 
    ;meta_data
-   ["/collections/:collection_id/meta-data" {:get {:summary "Get meta-data for collection."
-                                                   :handler meta-data-index/get-index
-                                                   :middleware [sd/ring-wrap-add-media-resource
-                                                                sd/ring-wrap-authorization]
-                                                   ; TODO 401s test fails
-                                                   :coercion reitit.coercion.schema/coercion
-                                                   :parameters {:path {:collection_id s/Str}}
-                                                   :responses {200 {:body s/Any}}}}]
+   ;["/collections/:collection_id/meta-data" {:get {:summary "Get meta-data for collection."
+   ;                                                :handler meta-data-index/get-index
+   ;                                                :middleware [sd/ring-wrap-add-media-resource
+   ;                                                             sd/ring-wrap-authorization]
+   ;                                                ; TODO 401s test fails
+   ;                                                :coercion reitit.coercion.schema/coercion
+   ;                                                :parameters {:path {:collection_id s/Str}}
+   ;                                                :responses {200 {:body s/Any}}}}]
 
-   ["/media-entries/:media_entry_id/meta-data" {:get {:summary "Get meta-data for media-entry."
-                                                      :handler meta-data-index/get-index
-                                                      ; TODO 401s test fails
-                                                      :middleware [sd/ring-wrap-add-media-resource
-                                                                   sd/ring-wrap-authorization]
-                                                      :coercion reitit.coercion.schema/coercion
-                                                      :parameters {:path {:media_entry_id s/Str}}
-                                                      :responses {200 {:body s/Any}}}}]
+   ;["/media-entries/:media_entry_id/meta-data" {:get {:summary "Get meta-data for media-entry."
+   ;                                                   :handler meta-data-index/get-index
+   ;                                                   ; TODO 401s test fails
+   ;                                                   :middleware [sd/ring-wrap-add-media-resource
+   ;                                                                sd/ring-wrap-authorization]
+   ;                                                   :coercion reitit.coercion.schema/coercion
+   ;                                                   :parameters {:path {:media_entry_id s/Str}}
+   ;                                                   :responses {200 {:body s/Any}}}}]
 
    meta-data/ring-routes
    
