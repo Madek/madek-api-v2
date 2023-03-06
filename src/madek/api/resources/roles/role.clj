@@ -37,17 +37,13 @@
 (defn export_role [db-role]
   (select-keys db-role [:id :labels :created_at]))
 
-(def schema_export-role
-  {:id s/Uuid
-   :labels s/Any;{{s/Any s/Any}}
-   :created_at s/Any
-   })
 
 (defn handle_get-role [request]
   (let [id (shared/get-path-params request :id)
         resultdb (db_role-find-one id)
         result (export_role resultdb)]
     {:status 200 :body result}))
+
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

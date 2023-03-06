@@ -56,28 +56,5 @@
    (assoc ; support old (singular) version of field
     :external_uri (first (keyword :external_uris)))))
 
-(def schema_export_keyword
-  {:id s/Uuid
-   :meta_key_id s/Str
-   :term s/Str
-   :description (s/maybe s/Str)
-   :external_uris s/Any
-   :external_uri s/Str
-   :rdf_class s/Str
-   :created_at s/Any}) ; TODO use s/Inst
-
-(defn handle_get-keyword
-  [request]
-  (let [id (shared/get-path-params request :id) 
-        keyword (db-keywords-get-one id)]
-    (if (= keyword nil) 
-      {:status 404 :body {:msg (apply str ["No such keyword (" id ")"])}}
-      {:status 200 :body (export-keyword keyword)})))
-
-(defn handle_query-keywords [request]
-  (let [ds (:db request)
-        result (db-keywords-query ds)]
-    {:status 200 :body { :keywords result}}))
-
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

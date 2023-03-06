@@ -7,8 +7,10 @@
     [madek.api.pagination :as pagination]
     [madek.api.resources.meta-data.index :as meta-data.index]
     [madek.api.resources.meta-data.meta-datum :as meta-datum]
-    [madek.api.resources.shared :as shared]
+    [madek.api.resources.shared :as sd]
     [madek.api.utils.rdbms :as rdbms]
+    [reitit.coercion.schema]
+    [schema.core :as s]
     ))
 
 (def routes
@@ -18,8 +20,40 @@
     (cpj/GET "/meta-data/:meta_datum_id" _ meta-datum/get-meta-datum)
     (cpj/GET "/meta-data/:meta_datum_id/data-stream" _ meta-datum/get-meta-datum-data-stream)
     (cpj/GET "/meta-data-roles/:meta_datum_id" _ meta-datum/get-meta-datum-role)
-    (cpj/ANY "*" _ shared/dead-end-handler)
+    (cpj/ANY "*" _ sd/dead-end-handler)
     ))
 
+(def ring-routes
+  ["/meta-data"
+   ["/:meta_datum_id" {:get {:handler meta-datum/get-meta-datum
+                             :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
+                                          sd/ring-wrap-authorization]
+                             :summary "Get meta-data for id"
+                             :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
+                             :coercion reitit.coercion.schema/coercion
+                             :parameters {:path {:meta_datum_id s/Str}}
+                              ; TODO coercion
+                             :responses {200 {:body s/Any}
+                                         401 {:body s/Any}
+                                         403 {:body s/Any}
+                                         500 {:body s/Any}}}}]
+
+   ["/:meta_datum_id/data-stream" {:get {:handler meta-datum/get-meta-datum-data-stream
+                                         ; TODO json meta-data: fix response conversion error
+                                         :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
+                                                      sd/ring-wrap-authorization]
+                                         :summary "Get meta-data data-stream."
+                                         :description "Get meta-data data-stream."
+                                         :coercion reitit.coercion.schema/coercion
+                                         :parameters {:path {:meta_datum_id s/Str}}}}]
+                                          ;:responses {200 {:body s/Any}
+                                                      ;422 {:body s/Any}}
+   ["/:meta_datum_id/role" {:get {:summary "Get meta-data role for id"
+                                            :handler meta-datum/handle_get-meta-datum-role
+                                            :description "Get meta-data role for id. TODO: should return 404, if no such meta-data role exists."
+                                            :coercion reitit.coercion.schema/coercion
+                                            :parameters {:path {:meta_datum_id s/Str}}
+                                            :responses {200 {:body s/Any}}}}]
+   ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

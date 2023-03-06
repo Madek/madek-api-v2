@@ -1,15 +1,13 @@
 (ns madek.api.resources.collection-media-entry-arcs
-  (:require
-    [clojure.java.jdbc :as jdbc]
-    [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
-    [logbug.catcher :as catcher]
-    [logbug.debug :as debug :refer [I> I>>]]
-    [madek.api.constants :refer [presence]]
-    [madek.api.pagination :as pagination]
-    [madek.api.utils.rdbms :as rdbms]
-    [madek.api.utils.sql :as sql]
-    ))
+  (:require [clojure.java.jdbc :as jdbc]
+            [compojure.core :as cpj]
+            [madek.api.constants :refer [presence]]
+            [madek.api.pagination :as pagination]
+            [madek.api.utils.rdbms :as rdbms]
+            [madek.api.utils.sql :as sql]
+            [reitit.coercion.schema]
+            [schema.core :as s]
+            ))
 
 
 (defn arc-query [request]
@@ -47,6 +45,21 @@
     (cpj/GET "/collection-media-entry-arcs/" [] #'arcs)
     ))
 
+(def ring-routes
+  ["/collection-media-entry-arcs"
+   ["/" {:get {:summary "Get collection media-entry arcs."
+               :handler arcs
+               :swagger {:produces "application/json"}
+               :coercion reitit.coercion.schema/coercion
+               :responses {200 {:body s/Any}}}}] ; TODO response coercion
+
+   ["/:id" {:get {:summary "Get collection media-entry arcs."
+                  :handler arc
+                  :swagger {:produces "application/json"}
+                  :coercion reitit.coercion.schema/coercion
+                  :parameters {:path {:id s/Str}}
+                  :responses {200 {:body s/Any}}}}] ; TODO response coercion
+   ])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

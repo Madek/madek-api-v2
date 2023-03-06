@@ -9,7 +9,7 @@
     [madek.api.utils.config :as config :refer [get-config]]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
-    [schema.core :as s]
+    
     ))
 
 (defn- add-fields-for-default-locale
@@ -39,37 +39,14 @@
       (sql/where (where-clause id user-id))
       (sql/format)))
 
+; TODO for admin do not remove internal keys (admin_comment)
 (defn get-vocabulary [request]
-  (let [id (-> request :params :id)
+  (let [id (or (-> request :params :id) (-> request :parameters :path :id))
         user-id (-> request :authenticated-entity :id)
         query (build-vocabulary-query id user-id)]
     (if-let [vocabulary (first (jdbc/query (rdbms/get-ds) query))]
       {:body (add-fields-for-default-locale (remove-internal-keys vocabulary))}
       {:status 404 :body {:message "Vocabulary could not be found!"}})))
-
-(def schema_export-vocabulary
-{
-  :id s/Str
-  :enabled_for_public_view s/Bool
-  :enabled_for_public_use s/Bool
-  :position s/Int
- ;TODO coercion schema
-  :labels {
-    :de s/Str 
-  }
- ;TODO coercion schema
-  :descriptions {
-    :de s/Str
-  }
-  :description s/Str
-  :label s/Str
-})
-
-
-(defn handle_get-vocabulary [req]
-  (let [pp (-> req :parameters :path)
-        wreq (assoc-in req [:params] pp)]
-    (get-vocabulary wreq)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

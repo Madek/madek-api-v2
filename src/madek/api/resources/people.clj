@@ -1,22 +1,15 @@
 (ns madek.api.resources.people
-  (:require
-    [clj-uuid]
-    [clojure.java.jdbc :as jdbc]
-    [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
-    [logbug.debug :as debug]
-    [madek.api.constants :refer [presence]]
-    [madek.api.pagination :as pagination]
-    [madek.api.resources.media-entries.index :refer [get-index]]
-    [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
-    [madek.api.resources.shared :as shared]
-    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-    [madek.api.utils.rdbms :as rdbms]
-    [madek.api.utils.sql :as sql]
-    [ring.util.codec :refer [url-decode]]
-    [schema.core :as s]
-    [clojure.tools.logging :as log]
-    ))
+  (:require [clj-uuid]
+            [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as log]
+            [compojure.core :as cpj]
+            [madek.api.pagination :as pagination]
+            [madek.api.resources.shared :as shared]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.rdbms :as rdbms]
+            [madek.api.utils.sql :as sql]
+            reitit.coercion.schema
+            [schema.core :as s]))
 
 
 (defn id-where-clause
@@ -269,3 +262,65 @@
         id (or (:id body) pid)]
     (log/info "handle_patch" "\nbody:\n" body "\nid:\n" id)
     (patch-person {:params {:id (str id)} :body body})))
+
+
+(def ring-routes
+  ["/people"
+   ["/people/" {:get {:summary "Get all people ids"
+                      :description "Get list of peoples ids. Paging is used as you get a limit of 100 entries."
+                      :handler index
+                      :swagger {:produces "application/json"}
+                      :parameters {:query {(s/optional-key :page) s/Int}}
+                ;:content-type "application/json"
+                ;:accept "application/json"
+                      :coercion reitit.coercion.schema/coercion
+                      :responses {200 {:body {:people [{:id s/Uuid}]}}}}
+
+                :post {:summary "Create a person"
+                       :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
+                       :handler handle_create-person
+                       :middleware [wrap-authorize-admin!]
+                       :swagger {:produces "application/json" :consumes "application/json"}
+                       :content-type "application/json"
+                       :accept "application/json"
+                       :coercion reitit.coercion.schema/coercion
+                       :parameters {:body schema_import_person}
+                       :responses {201 {:body schema_import_person_result} ;{:id s/Uuid}} ; api1 returns created data
+                                   500 {:body {:msg s/Any}} ; TODO error handling
+                                   400 {:body {:msg s/Any}}
+                                   401 {:body {:msg s/Any}}
+                                   403 {:body {:msg s/Any}}}}}]
+
+["/:id" {:get {:summary "Get person by id"
+                      :description "Get person by id. Returns 404, if no such person exists. TODO query params."
+                      :swagger {:produces "application/json"}
+                      :content-type "application/json"
+                      :accept "application/json"
+                      :handler handle_get-person
+                      :coercion reitit.coercion.schema/coercion
+                      :parameters {:path {:id s/Str}}
+                      :responses {200 {:body schema_export_person}
+                                  404 {:body s/Str}}}
+
+                :patch {:summary "Updates entities fields"
+                        :description "Updates the entities fields"
+                        :swagger {:consumes "application/json" :produces "application/json"}
+                        :content-type "application/json"
+                        :accept "application/json"
+                        :handler handle_patch-person
+                        :coercion reitit.coercion.schema/coercion
+                        :parameters {:path {:id s/Str} :body schema_update_person}
+                        :responses {200 {:body s/Any} ;schema_export_person}
+                                    404 {:body s/Str}}}
+
+                :delete {:summary "Deletes a person by id"
+                         :description "Delete a person by id"
+                         :swagger {:produces "application/json"}
+                         :content-type "application/json"
+                         :handler handle_delete-person
+                         :middleware [wrap-authorize-admin!]
+                         :coercion reitit.coercion.schema/coercion
+                         :parameters {:path {:id s/Uuid}}
+                         :responses {403 {:body s/Any}
+                                     204 {:body s/Any}}}}]
+   ])
