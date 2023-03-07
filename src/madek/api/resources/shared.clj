@@ -4,6 +4,7 @@
             [clojure.tools.logging :as logging]
             [compojure.core :as cpj]
             [logbug.catcher :as catcher]
+            [madek.api.utils.sql :as sql]
             [madek.api.authorization :refer [authorized?]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
             [madek.api.semver :as semver]
@@ -11,7 +12,14 @@
             [madek.api.utils.status :as status]))
 
 ; begin db-helpers
-
+(defn query-find-all
+  [table-name cols]
+  (let [db-query (-> (sql/select cols)
+                     (sql/from table-name)
+                     sql/format)
+        db-result (jdbc/query (rdbms/get-ds) db-query)]
+    (logging/info "query-find-all" "\ndb-query\n" db-query "\ndb-result\n" db-result)
+    db-result))
 
 (defn query-eq-find-all [table-name col-name row-data]
   ; we wrap this since badly formated media-file-id strings can cause an

@@ -1,13 +1,25 @@
 (ns madek.api.resources.admins
-  (:require
-   [madek.api.resources.shared :as sd]
-   [clojure.tools.logging :as logging]
-   [logbug.catcher :as catcher]
-   [clojure.java.jdbc :as jdbc]
-   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-   [reitit.coercion.schema]
-   [schema.core :as s]
-   ))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [madek.api.utils.sql :as sql]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
+
+
+
+
+(defn handle_list-admin
+  [req]
+  (let [full-data (true? (-> req :parameters :query :full-data ))
+        qd (if (true? full-data) :admins.* :admins.id)
+        db-result (sd/query-find-all :admins qd)]
+    ;(->> db-result (map :id) set)
+    (logging/info "handle_list-admin" "\nqd\n" qd "\nresult\n" db-result)
+    (sd/response_ok db-result)
+    )
+  )
 
 (defn handle_get-admin
   [req]
@@ -62,7 +74,10 @@
              :handler (constantly sd/no_impl)}
     ; admin list / query
       :get {:summary  (sd/sum_adm_todo "List admin users.")
-            :handler (constantly sd/no_impl)}}]
+            :handler handle_list-admin
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:query {(s/optional-key :full-data) s/Bool}}
+            }}]
     ; edit admin
     ["/:id" {:post {:summary (sd/sum_adm "Create admin for user with id.")
                     :handler handle_create-admin
@@ -106,7 +121,7 @@
    ; convenience to access via user
    ["/user" 
     ["/:user_id/admin" 
-     {:post {:summary (sd/sum_adm "Create admin for user with id.")
+     {:post {:summary (sd/sum_cnv_adm "Create admin for user with id.")
              :handler handle_create-admin
              :middleware [(wwrap-find-user :user_id)
                           (wwrap-find-admin :user_id "user_id" false)]
