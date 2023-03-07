@@ -7,7 +7,30 @@
             [madek.api.authorization :refer [authorized?]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
             [madek.api.semver :as semver]
-            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]))
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [madek.api.utils.status :as status]))
+
+; begin db-helpers
+
+
+(defn query-eq-find-all [table-name col-name row-data]
+  ; we wrap this since badly formated media-file-id strings can cause an
+  ; exception, note that 404 is in that case a correct response
+  (catcher/snatch {}
+                  (jdbc/query
+                   (get-ds)
+                   [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])))
+
+(defn query-eq-find-one [table-name col-name row-data]
+  ; we wrap this since badly formated media-file-id strings can cause an
+  ; exception, note that 404 is in that case a correct response
+  (catcher/snatch {}
+                  (-> (jdbc/query
+                       (get-ds)
+                       [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
+                      first)))
+
+; end db-helpers
 
 ; begin request response helpers
 
@@ -24,6 +47,16 @@
 (defn remove-internal-keys
   [resource]
   (apply dissoc resource internal-keys))
+
+(defn response_ok 
+  ;[msg] {:status 200 :body msg}
+  ([msg] (response_ok msg 200))
+  ([msg status] {:status status :body msg})
+  )
+
+(defn response_failed
+  ([msg status] {:status status :body msg}))
+
 
 (defn response_not_found [msg]
   {:status 404 :body {:message msg}})
@@ -53,6 +86,17 @@
 
 ; end request response helpers
 
+; begin generic path param find in db and assoc with request
+(defn req-find-data
+  [request handler path-param db_table db_col_name reqkey send404]
+  (let [search (-> request :parameters :path path-param)]
+    (if-let [result-db (query-eq-find-one db_table db_col_name search)]
+      (handler (assoc request reqkey result-db))
+      (if (= true send404)
+        (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search))
+        (handler request)))))
+
+; begin generic path param find in db and assoc with request
 
 ; begin media resources helpers
 (defn- get-media-resource
@@ -190,6 +234,8 @@
 
 (defn sum_adm [text] (apply str text " " s_req_adm))
 (defn sum_cnv [text] (apply str text " " s_cnv_acc))
+
+(defn sum_cnv_adm [text] (sum_adm (sum_cnv text)))
 
 (defn sum_cnv_todo [text] (sum_todo (sum_cnv text)))
 (defn sum_adm_todo [text] (sum_todo (sum_adm text)))
