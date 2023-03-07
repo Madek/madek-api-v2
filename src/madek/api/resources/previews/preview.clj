@@ -10,15 +10,20 @@
     [madek.api.utils.sql :as sql]
     ))
 
-(defn get-preview [request]
-  (let [id (or (-> request :params :preview_id) (-> request :parameters :path :preview_id))
-        query (-> (sql/select :*)
+(defn db-get-preview [id]
+  (let [query (-> (sql/select :*)
                   (sql/from :previews)
                   (sql/merge-where
-                    [:= :previews.id id])
+                   [:= :previews.id id])
                   (sql/format))]
-                  (logging/info "get-preview" "\nid\n" id)
-    {:body (first (jdbc/query (rdbms/get-ds) query))}))
+    (first (jdbc/query (rdbms/get-ds) query))
+    ))
+
+(defn get-preview [request]
+  (let [id (or (-> request :params :preview_id) (-> request :parameters :path :preview_id))
+        result (db-get-preview id)]
+                  (logging/info "get-preview" "\nid\n" id "\nresult\n" result)
+    {:body result}))
 
 (defn- preview-file-path [preview]
   (let [; TODO why is this needed for compojure
