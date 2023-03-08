@@ -20,9 +20,13 @@
                :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
                :handler get-index
                :swagger {:produces "application/json"}
-               :parameters {:query {(s/optional-key :page) s/Int}}
+               :parameters {:query {(s/optional-key :page) s/Int
+                                    (s/optional-key :full-data) s/Bool
+                                    (s/optional-key :vocabulary_id) s/Str}} ; TODO test
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
+               ; TODO response coercion for full data
+               ; TODO or better own link
                :responses {200 {:body {:meta-keys [{:id s/Str}]}}}}}]
 
    ["/:id" {:get {:summary "Get meta-key by id"
