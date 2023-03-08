@@ -33,8 +33,12 @@
                :parameters {:query {(s/optional-key :page) s/Int}}
                :content-type "application/json"
                 ;:accept "application/json"
-               :coercion reitit.coercion.schema/coercion}}]
+               :coercion reitit.coercion.schema/coercion}
                 ;:responses {200 {:body {:people [{:id s/Uuid}]}}}
+         ; TODO
+         :post {:summary (sd/sum_todo "Create role.")
+                :handler (constantly sd/no_impl)}
+         }]
 
    ["/:id" {:get {:summary "Get role by id"
             :description "Get a role by id. Returns 404, if no such role exists."

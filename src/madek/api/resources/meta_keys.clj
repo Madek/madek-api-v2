@@ -5,7 +5,8 @@
             [madek.api.resources.shared :as shared]
             [reitit.coercion.schema]
             [schema.core :as s]
-            ))
+            
+            [madek.api.resources.shared :as sd]))
 
 (def routes
   (cpj/routes
@@ -27,7 +28,11 @@
                :coercion reitit.coercion.schema/coercion
                ; TODO response coercion for full data
                ; TODO or better own link
-               :responses {200 {:body {:meta-keys [{:id s/Str}]}}}}}]
+               :responses {200 {:body {:meta-keys [{:id s/Str}]}}}}
+         ; TODO
+         :post {:summary (sd/sum_todo "Create meta-key.")
+                :handler (constantly sd/no_impl)}
+         }]
 
    ["/:id" {:get {:summary "Get meta-key by id"
                   :description "Get meta-key by id. Returns 404, if no such person exists."

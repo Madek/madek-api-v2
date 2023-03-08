@@ -10,7 +10,8 @@
     [madek.api.utils.rdbms :as rdbms]
     [reitit.coercion.schema]
     [schema.core :as s]
-    ))
+    
+    [madek.api.resources.shared :as sd]))
 
 
 (def routes
@@ -50,7 +51,11 @@
                :handler handle_query-keywords
                :coercion reitit.coercion.schema/coercion
                :responses {200 {:body {:keywords [{:id s/Uuid}]}}}
-               :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}}]
+               :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
+         ; TODO
+         :post {:summary (sd/sum_todo "Create keyword.")
+                :handler (constantly sd/no_impl)}
+         }]
 
    ["/:id" {:get {:summary "Get keyword for id"
                   :handler handle_get-keyword

@@ -52,7 +52,11 @@
                                     (s/optional-key :filter_by) s/Any
                                     (s/optional-key :me_get_metadata_and_previews) s/Bool
                                     (s/optional-key :me_get_full_size) s/Bool
-                                    (s/optional-key :page) s/Str}}}}]
+                                    (s/optional-key :page) s/Str}}}
+         ; TODO
+         :post {:summary (sd/sum_todo "Create media-entry.")
+                :handler (constantly sd/no_impl)}
+         }]
 
    ["/:media_entry_id" {:get {:summary "Get media-entry for id."
                               :handler handle_get-media-entry

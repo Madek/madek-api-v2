@@ -1,13 +1,15 @@
 (ns madek.api.resources.collection-media-entry-arcs
-  (:require [clojure.java.jdbc :as jdbc]
-            [compojure.core :as cpj]
-            [madek.api.constants :refer [presence]]
-            [madek.api.pagination :as pagination]
-            [madek.api.utils.rdbms :as rdbms]
-            [madek.api.utils.sql :as sql]
-            [reitit.coercion.schema]
-            [schema.core :as s]
-            ))
+  (:require
+   [clojure.java.jdbc :as jdbc]
+   [compojure.core :as cpj]
+   [madek.api.constants :refer [presence]]
+   [madek.api.pagination :as pagination]
+   [madek.api.utils.rdbms :as rdbms]
+   [madek.api.utils.sql :as sql]
+   [reitit.coercion.schema]
+   [schema.core :as s]
+   [madek.api.resources.shared :as sd]
+   ))
 
 
 (defn arc-query [request]
@@ -51,7 +53,11 @@
                :handler arcs
                :swagger {:produces "application/json"}
                :coercion reitit.coercion.schema/coercion
-               :responses {200 {:body s/Any}}}}] ; TODO response coercion
+               :responses {200 {:body s/Any}}}
+         ; TODO
+         :post {:summary (sd/sum_todo "Create collection media-entry arc")
+                :handler (constantly sd/no_impl)}
+         }] ; TODO response coercion
 
    ["/:id" {:get {:summary "Get collection media-entry arcs."
                   :handler arc

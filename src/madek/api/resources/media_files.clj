@@ -127,7 +127,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}}}}]
    
-   ["/media-entry/:media_entry_id/media-file/data-strea"
+   ["/media-entry/:media_entry_id/media-file/data-stream"
     {:get {:summary "TODO: Get media-file data-stream for media-entry id."
            :handler (constantly sd/no_impl)}}]
 

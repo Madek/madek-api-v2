@@ -131,7 +131,7 @@
 ;(defn handle_get-meta-datum
 ;  [req]
 ;  (let [id (-> req :parameters :path :meta_datum_id)
-;        ;meta-datum (db_meta-datum-find-one id)] ;TODO use request meta-datum
+;        ;meta-datum (db_meta-datum-find-one id)] ; TODO use request meta-datum
 ;        meta-datum (:meta-datum req)]
 ;  (logging/info "handle_get-meta-datum" "\nid:\n" id "\nmeta-datum\n" meta-datum)
 ;    {:status 200 :body (prepare-meta-datum meta-datum)}))

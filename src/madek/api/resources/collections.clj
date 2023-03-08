@@ -40,7 +40,10 @@
                                     (s/optional-key :public_get_metadata_and_previews) s/Bool
                                     (s/optional-key :me_get_full_size) s/Bool}}
                :coercion reitit.coercion.schema/coercion
-               :responses {200 {:body {:collections [{:id s/Uuid :created_at s/Inst}]}}}}}]
+               :responses {200 {:body {:collections [{:id s/Uuid :created_at s/Inst}]}}}}
+         ; TODO
+         :post {:summary (sd/sum_todo "Create ccollection")
+                :handler (constantly sd/no_impl)}}]
 
    ["/:collection_id" {:get {:handler handle_get-collection
                              :middleware [sd/ring-wrap-add-media-resource
