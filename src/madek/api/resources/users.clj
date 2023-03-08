@@ -181,64 +181,66 @@
 
 (def ring-routes
   ["/users"
-   ["/users/" {:get {:summary "Get list of users ids."
-                     :description "Get list of users ids."
-                     :swagger {:produces "application/json"}
-                     :parameters {:query {(s/optional-key :page) s/Int}}
-                     :content-type "application/json"
-                     :handler index
-                     :middleware [wrap-authorize-admin!]
-                     :coercion reitit.coercion.schema/coercion
-                     :responses {200 {:body {:users [{:id s/Uuid}]}}}}
+   ["/" 
+    {:get {:summary "Get list of users ids."
+           :description "Get list of users ids."
+           :swagger {:produces "application/json"}
+           :parameters {:query {(s/optional-key :page) s/Int}}
+           :content-type "application/json"
+           :handler index
+           :middleware [wrap-authorize-admin!]
+           :coercion reitit.coercion.schema/coercion
+           :responses {200 {:body {:users [{:id s/Uuid}]}}}}
 
-               :post {:summary "Get list of users ids."
-                      :description "Get list of users ids."
-                      :swagger {:consumes "application/json" :produces "application/json"}
-                      :content-type "application/json"
-                      :accept "application/json"
-                      :handler handle_create-user
-                      :middleware [wrap-authorize-admin!]
-                      :coercion reitit.coercion.schema/coercion
-                      :parameters {:body schema_update_user}
-                      :responses {201 {:body schema_create_user_result}
-                                  406 {:body s/Any}}}}] ; TODO error handling
+     :post {:summary "Get list of users ids."
+            :description "Get list of users ids."
+            :swagger {:consumes "application/json" :produces "application/json"}
+            :content-type "application/json"
+            :accept "application/json"
+            :handler handle_create-user
+            :middleware [wrap-authorize-admin!]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:body schema_update_user}
+            :responses {201 {:body schema_create_user_result}
+                        406 {:body s/Any}}}}] ; TODO error handling
 
-["/users/:id" {:get {:summary "Get user by id"
-                     :description "Get a user by id. Returns 404, if no such users exists."
-                     :handler handle_get-user
-                     :middleware [wrap-authorize-admin!]
-                     :swagger {:produces "application/json"}
-                     :coercion reitit.coercion.schema/coercion
-                     :content-type "application/json"
-                     :parameters {:path {:id s/Any}}
+["/:id"
+ {:get {:summary "Get user by id"
+        :description "Get a user by id. Returns 404, if no such users exists."
+        :handler handle_get-user
+        :middleware [wrap-authorize-admin!]
+        :swagger {:produces "application/json"}
+        :coercion reitit.coercion.schema/coercion
+        :content-type "application/json"
+        :parameters {:path {:id s/Any}}
 
-                     :responses {200 {:body s/Any} ; TODO coercion
-                                 404 {:body s/Any}}} ; TODO coercion
+        :responses {200 {:body s/Any} ; TODO coercion
+                    404 {:body s/Any}}} ; TODO coercion
 
-               :delete {:summary "Delete user by id"
-                        :description "Delete a user by id. Returns 404, if no such user exists."
-                        :handler handle_delete-user
-                        :middleware [wrap-authorize-admin!]
-                        :swagger {:produces "application/json"}
-                        :coercion reitit.coercion.schema/coercion
-                        :content-type "application/json"
-                        :parameters {:path {:id s/Str}}
+  :delete {:summary "Delete user by id"
+           :description "Delete a user by id. Returns 404, if no such user exists."
+           :handler handle_delete-user
+           :middleware [wrap-authorize-admin!]
+           :swagger {:produces "application/json"}
+           :coercion reitit.coercion.schema/coercion
+           :content-type "application/json"
+           :parameters {:path {:id s/Str}}
 
-                        :responses {204 {:body s/Any} ; TODO coercion
-                                    404 {:body s/Any}}} ; TODO coercion
+           :responses {204 {:body s/Any} ; TODO coercion
+                       404 {:body s/Any}}} ; TODO coercion
 
-               :patch {:middleware [wrap-authorize-admin!]
-                       :summary "Patch user with id"
-                       :description "Patch a user with id. Returns 404, if no such user exists."
-                       :swagger {:consumes "application/json" :produces "application/json"}
-                       :coercion reitit.coercion.schema/coercion
-                       :content-type "application/json"
-                       :accept "application/json"
-                       :parameters {:path {:id s/Str}
-                                    :body schema_update_user}
-                       :handler handle_patch-user
-                       :responses {204 {:body schema_export_user}
-                                   404 {:body s/Any}}}}] ; TODO coercion
+  :patch {:middleware [wrap-authorize-admin!]
+          :summary "Patch user with id"
+          :description "Patch a user with id. Returns 404, if no such user exists."
+          :swagger {:consumes "application/json" :produces "application/json"}
+          :coercion reitit.coercion.schema/coercion
+          :content-type "application/json"
+          :accept "application/json"
+          :parameters {:path {:id s/Str}
+                       :body schema_update_user}
+          :handler handle_patch-user
+          :responses {204 {:body schema_export_user}
+                      404 {:body s/Any}}}}] ; TODO coercion
    ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
