@@ -26,6 +26,7 @@
             [madek.api.resources.shared :as sd]
             [madek.api.resources.usage-terms :as usage-terms]
             [madek.api.resources.io-interfaces :as io-interfaces]
+            [madek.api.resources.io-mappings :as io-mappings]
             [madek.api.resources.users :as users]
             [madek.api.resources.vocabularies :as vocabularies]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -407,6 +408,7 @@
    groups/ring-routes
 
    io-interfaces/ring-routes
+   io-mappings/ring-routes
 
    keywords/ring-routes
    
