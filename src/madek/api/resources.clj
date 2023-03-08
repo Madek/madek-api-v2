@@ -10,6 +10,7 @@
             [madek.api.resources.auth-info :as auth-info]
             [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
             [madek.api.resources.collections :as collections]
+            [madek.api.resources.custom-urls :as custom-urls]
             [madek.api.resources.favorite-collections :as favorite-collections]
             [madek.api.resources.favorite-media-entries :as favorite-media-entries]
             [madek.api.resources.groups :as groups]
@@ -24,6 +25,7 @@
             [madek.api.resources.roles :as roles]
             [madek.api.resources.shared :as sd]
             [madek.api.resources.usage-terms :as usage-terms]
+            [madek.api.resources.io-interfaces :as io-interfaces]
             [madek.api.resources.users :as users]
             [madek.api.resources.vocabularies :as vocabularies]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -387,17 +389,25 @@
    
    admins/ring-routes
 
-   ["/auth-info" {:get {:handler auth-info/auth-info}}]
+   ["/auth-info" {:get {:summary "Authentication help and info."
+                        :handler auth-info/auth-info}}]
 
    ; collections
    collections/ring-routes
    collection-media-entry-arcs/ring-routes
 
+
+   custom-urls/ring-routes
+   custom-urls/media-entry-routes
+   custom-urls/collection-routes
+
    favorite-collections/ring-routes
    favorite-media-entries/ring-routes
 
    groups/ring-routes
-   
+
+   io-interfaces/ring-routes
+
    keywords/ring-routes
    
 
@@ -412,24 +422,6 @@
    media-files/ring-routes
 
    ;meta_data
-   ;["/collections/:collection_id/meta-data" {:get {:summary "Get meta-data for collection."
-   ;                                                :handler meta-data-index/get-index
-   ;                                                :middleware [sd/ring-wrap-add-media-resource
-   ;                                                             sd/ring-wrap-authorization]
-   ;                                                ; TODO 401s test fails
-   ;                                                :coercion reitit.coercion.schema/coercion
-   ;                                                :parameters {:path {:collection_id s/Str}}
-   ;                                                :responses {200 {:body s/Any}}}}]
-
-   ;["/media-entries/:media_entry_id/meta-data" {:get {:summary "Get meta-data for media-entry."
-   ;                                                   :handler meta-data-index/get-index
-   ;                                                   ; TODO 401s test fails
-   ;                                                   :middleware [sd/ring-wrap-add-media-resource
-   ;                                                                sd/ring-wrap-authorization]
-   ;                                                   :coercion reitit.coercion.schema/coercion
-   ;                                                   :parameters {:path {:media_entry_id s/Str}}
-   ;                                                   :responses {200 {:body s/Any}}}}]
-
    meta-data/ring-routes
    meta-data/collection-routes
    meta-data/media-entry-routes
