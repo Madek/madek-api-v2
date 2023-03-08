@@ -404,6 +404,7 @@
    ;links
 
    media-entries/ring-routes
+   
   ;media_entries
    
 
@@ -430,6 +431,8 @@
    ;                                                   :responses {200 {:body s/Any}}}}]
 
    meta-data/ring-routes
+   meta-data/collection-routes
+   meta-data/media-entry-routes
    
    meta-keys/ring-routes
 

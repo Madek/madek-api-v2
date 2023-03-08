@@ -266,61 +266,60 @@
 
 (def ring-routes
   ["/people"
-   ["/people/" {:get {:summary "Get all people ids"
-                      :description "Get list of peoples ids. Paging is used as you get a limit of 100 entries."
-                      :handler index
-                      :swagger {:produces "application/json"}
-                      :parameters {:query {(s/optional-key :page) s/Int}}
+   ["/" {:get {:summary "Get all people ids"
+               :description "Get list of peoples ids. Paging is used as you get a limit of 100 entries."
+               :handler index
+               :swagger {:produces "application/json"}
+               :parameters {:query {(s/optional-key :page) s/Int}}
                 ;:content-type "application/json"
                 ;:accept "application/json"
-                      :coercion reitit.coercion.schema/coercion
-                      :responses {200 {:body {:people [{:id s/Uuid}]}}}}
+               :coercion reitit.coercion.schema/coercion
+               :responses {200 {:body {:people [{:id s/Uuid}]}}}}
 
-                :post {:summary "Create a person"
-                       :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
-                       :handler handle_create-person
-                       :middleware [wrap-authorize-admin!]
-                       :swagger {:produces "application/json" :consumes "application/json"}
-                       :content-type "application/json"
-                       :accept "application/json"
-                       :coercion reitit.coercion.schema/coercion
-                       :parameters {:body schema_import_person}
-                       :responses {201 {:body schema_import_person_result} ;{:id s/Uuid}} ; api1 returns created data
-                                   500 {:body {:msg s/Any}} ; TODO error handling
-                                   400 {:body {:msg s/Any}}
-                                   401 {:body {:msg s/Any}}
-                                   403 {:body {:msg s/Any}}}}}]
+         :post {:summary "Create a person"
+                :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
+                :handler handle_create-person
+                :middleware [wrap-authorize-admin!]
+                :swagger {:produces "application/json" :consumes "application/json"}
+                :content-type "application/json"
+                :accept "application/json"
+                :coercion reitit.coercion.schema/coercion
+                :parameters {:body schema_import_person}
+                :responses {201 {:body schema_import_person_result} ;{:id s/Uuid}} ; api1 returns created data
+                            500 {:body {:msg s/Any}} ; TODO error handling
+                            400 {:body {:msg s/Any}}
+                            401 {:body {:msg s/Any}}
+                            403 {:body {:msg s/Any}}}}}]
 
-["/:id" {:get {:summary "Get person by id"
-                      :description "Get person by id. Returns 404, if no such person exists. TODO query params."
-                      :swagger {:produces "application/json"}
-                      :content-type "application/json"
-                      :accept "application/json"
-                      :handler handle_get-person
-                      :coercion reitit.coercion.schema/coercion
-                      :parameters {:path {:id s/Str}}
-                      :responses {200 {:body schema_export_person}
-                                  404 {:body s/Str}}}
+   ["/:id" {:get {:summary "Get person by id"
+                  :description "Get person by id. Returns 404, if no such person exists. TODO query params."
+                  :swagger {:produces "application/json"}
+                  :content-type "application/json"
+                  :accept "application/json"
+                  :handler handle_get-person
+                  :coercion reitit.coercion.schema/coercion
+                  :parameters {:path {:id s/Str}}
+                  :responses {200 {:body schema_export_person}
+                              404 {:body s/Str}}}
 
-                :patch {:summary "Updates entities fields"
-                        :description "Updates the entities fields"
-                        :swagger {:consumes "application/json" :produces "application/json"}
-                        :content-type "application/json"
-                        :accept "application/json"
-                        :handler handle_patch-person
-                        :coercion reitit.coercion.schema/coercion
-                        :parameters {:path {:id s/Str} :body schema_update_person}
-                        :responses {200 {:body s/Any} ;schema_export_person}
-                                    404 {:body s/Str}}}
+            :patch {:summary "Updates entities fields"
+                    :description "Updates the entities fields"
+                    :swagger {:consumes "application/json" :produces "application/json"}
+                    :content-type "application/json"
+                    :accept "application/json"
+                    :handler handle_patch-person
+                    :coercion reitit.coercion.schema/coercion
+                    :parameters {:path {:id s/Str} :body schema_update_person}
+                    :responses {200 {:body s/Any} ;schema_export_person}
+                                404 {:body s/Str}}}
 
-                :delete {:summary "Deletes a person by id"
-                         :description "Delete a person by id"
-                         :swagger {:produces "application/json"}
-                         :content-type "application/json"
-                         :handler handle_delete-person
-                         :middleware [wrap-authorize-admin!]
-                         :coercion reitit.coercion.schema/coercion
-                         :parameters {:path {:id s/Uuid}}
-                         :responses {403 {:body s/Any}
-                                     204 {:body s/Any}}}}]
-   ])
+            :delete {:summary "Deletes a person by id"
+                     :description "Delete a person by id"
+                     :swagger {:produces "application/json"}
+                     :content-type "application/json"
+                     :handler handle_delete-person
+                     :middleware [wrap-authorize-admin!]
+                     :coercion reitit.coercion.schema/coercion
+                     :parameters {:path {:id s/Uuid}}
+                     :responses {403 {:body s/Any}
+                                 204 {:body s/Any}}}}]])

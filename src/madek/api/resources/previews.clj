@@ -73,15 +73,15 @@
 (def preview-routes
   ["/previews"
    ["/:preview_id" 
-    {:get {:summary "Get preview for id."}
-     :swagger {:produces "application/json"}
-     :content-type "application/json"
-     :handler preview/get-preview
-     :middleware [ring-wrap-find-and-add-preview
-                  sd/ring-wrap-add-media-resource-preview
-                  sd/ring-wrap-authorization]
-     :coercion reitit.coercion.schema/coercion
-     :parameters {:path {:preview_id s/Uuid}}}]
+    {:get {:summary "Get preview for id."
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+           :handler preview/get-preview
+           :middleware [ring-wrap-find-and-add-preview
+                        sd/ring-wrap-add-media-resource-preview
+                        sd/ring-wrap-authorization]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:preview_id s/Uuid}}}}]
 
    ["/:preview_id/data-stream"
     {:get {:summary "Get preview data-stream for id."

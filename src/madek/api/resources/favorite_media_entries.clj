@@ -99,7 +99,7 @@
     ["/"
      {; favorite_collection list / query
       ; TODO query params
-      :get {:summary  (sd/sum_adm "List favorite_collection users.")
+      :get {:summary  (sd/sum_adm "List favorite_media_entries.")
             :handler handle_list-favorite_media_entries
             :coercion reitit.coercion.schema/coercion
             :parameters {:query {(s/optional-key :user_id) s/Uuid
@@ -108,21 +108,21 @@
 
     ; user self edit favorites 
    ["/:media_entry_id"
-    {:post {:summary (sd/sum_adm "Create favorite_collection for user and collection.")
+    {:post {:summary (sd/sum_adm "Create favorite_media_entry for authed user and media-entry.")
             :handler handle_create-favorite_media_entry
             :middleware [(wwrap-find-media_entry :media_entry_id)
                          (wwrap-find-favorite_media_entry-by-auth false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Uuid}}}
 
-     :get {:summary (sd/sum_adm "Get favorite_collection by user and collection id.")
+     :get {:summary (sd/sum_adm "Get favorite_media_entry for authed user and media-entry.")
            :handler handle_get-favorite_media_entry
            :middleware [(wwrap-find-media_entry :media_entry_id)
                         (wwrap-find-favorite_media_entry-by-auth true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}}
 
-     :delete {:summary (sd/sum_adm "Delete favorite_collection by user and collection id.")
+     :delete {:summary (sd/sum_adm "Delete favorite_media_entry for authed user and media-entry.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-favorite_media_entry
               :middleware [(wwrap-find-media_entry :media_entry_id)
@@ -130,7 +130,7 @@
               :parameters {:path {:media_entry_id s/Uuid}}}}]
     ; admin edit favorites
     ["/:media_entry_id/:user_id" 
-     {:post {:summary (sd/sum_adm "Create favorite_collection for user and collection.")
+     {:post {:summary (sd/sum_adm "Create favorite_media-entry for user and media-entry.")
              :handler handle_create-favorite_media_entry
              :middleware [(wwrap-find-user :user_id)
                           (wwrap-find-media_entry :media_entry_id)
@@ -139,7 +139,7 @@
              :parameters {:path {:user_id s/Uuid
                                  :media_entry_id s/Uuid}}}
 
-      :get {:summary (sd/sum_adm "Get favorite_collection by user and collection id.")
+      :get {:summary (sd/sum_adm "Get favorite_media-entry for user and media-entry.")
             :handler handle_get-favorite_media_entry
             :middleware [
                          (wwrap-find-favorite_media_entry true)]
@@ -147,11 +147,10 @@
             :parameters {:path {:user_id s/Uuid
                                 :media_entry_id s/Uuid}}}
 
-      :delete {:summary (sd/sum_adm "Delete favorite_collection by user and collection id.")
+      :delete {:summary (sd/sum_adm "Delete favorite_media-entry for user and media-entry.")
                :coercion reitit.coercion.schema/coercion
                :handler handle_delete-favorite_media_entry
                :middleware [(wwrap-find-favorite_media_entry true)]
                :parameters {:path {:user_id s/Uuid
                                    :media_entry_id s/Uuid}}}}]
-    ; convenience to access by user id
   ])
