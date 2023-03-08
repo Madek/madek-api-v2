@@ -37,7 +37,7 @@ context 'A collection resource with get_metadata_and_previews permission' do
       #    resource.relation('meta-data').get
       #  end
       let :meta_data_response do
-        plain_faraday_json_client.get("/api/meta-data/#{CGI.escape(@collection.id)}/by-collection-id")
+        plain_faraday_json_client.get("/api/collection/#{CGI.escape(@collection.id)}/meta-data")
       end
 
       #  it 'is a resource' do
@@ -62,6 +62,7 @@ context 'A collection resource with get_metadata_and_previews permission' do
       #    let :get_meta_data_relation do
       #      resource.relation('meta-data').get("meta_keys" => "bogus")
       #    end
+          
           let :get_meta_key do
             plain_faraday_json_client.get("/api/meta-keys/bogus")
           end
@@ -79,18 +80,23 @@ context 'A collection resource with get_metadata_and_previews permission' do
       #        .get("meta_keys" => [@meta_datum_text.meta_key_id].to_json)
       #    end
           # TODO query by array
+          let :meta_data_response do
+            plain_faraday_json_client.get("/api/collection/#{CGI.escape(@collection.id)}/meta-data")
+          end
+          
           let :get_meta_key_response do
-            plain_faraday_json_client.get("/api/meta-keys/[#{@meta_datum_text.meta_key_id}]")
+            plain_faraday_json_client.get("/api/meta-keys/#{CGI::escape(@meta_datum_text.meta_key_id)}")
           end
 
           describe 'the response' do
             it 'succeeds' do
               expect(get_meta_key_response.status).to be == 200
             end
-      #      it 'contains the meta-datum ' do
-      #        expect(get_meta_data_relation.data['meta-data'].map{|x| x[:id]}).to \
-      #          include @meta_datum_text.id
-      #      end
+            it 'contains the meta-datum ' do
+              #expect(meta_data_response.body['meta-data'].map{|x| x[:id]}).to \
+              expect(meta_data_response.body['meta-data'][0]['id']).to \
+                include @meta_datum_text.id
+            end
           end
         end
 
