@@ -22,7 +22,8 @@
             [madek.api.resources.people :as people]
             [madek.api.resources.previews :as previews]
             [madek.api.resources.roles :as roles]
-            [madek.api.resources.shared :as sd] ;[madek.api.resources.vocabularies.index :as vocabularies-index]
+            [madek.api.resources.shared :as sd]
+            [madek.api.resources.usage-terms :as usage-terms]
             [madek.api.resources.users :as users]
             [madek.api.resources.vocabularies :as vocabularies]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -370,10 +371,11 @@
                      :put {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
                      :delete {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}}]
 
-   ["usage-terms/" {:post {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
-                    :get {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
-                    :put {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
-                    :delete {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}}]
+   ;["usage-terms/" {:post {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
+   ;                 :get {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
+   ;                 :put {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
+   ;                 :delete {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}}]
+   usage-terms/ring-routes
 
    
 

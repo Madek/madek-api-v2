@@ -12,6 +12,14 @@
             [madek.api.utils.status :as status]))
 
 ; begin db-helpers
+(defn sql-query-find-eq 
+  [table-name col-name row-data]
+  [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
+
+(defn sql-update-clause
+  [col-name row-data]
+  [(str col-name " = ?") row-data]
+  )
 (defn query-find-all
   [table-name cols]
   (let [db-query (-> (sql/select cols)
@@ -27,7 +35,7 @@
   (catcher/snatch {}
                   (jdbc/query
                    (get-ds)
-                   [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])))
+                   (sql-query-find-eq table-name col-name row-data))))
 
 (defn query-eq-find-one [table-name col-name row-data]
   ; we wrap this since badly formated media-file-id strings can cause an
@@ -35,7 +43,7 @@
   (catcher/snatch {}
                   (-> (jdbc/query
                        (get-ds)
-                       [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
+                       (sql-query-find-eq table-name col-name row-data))
                       first)))
 
 ; end db-helpers
@@ -63,7 +71,7 @@
   )
 
 (defn response_failed
-  ([msg status] {:status status :body msg}))
+  ([msg status] {:status status :body {:message msg}}))
 
 
 (defn response_not_found [msg]
