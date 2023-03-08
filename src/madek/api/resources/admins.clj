@@ -73,7 +73,7 @@
      {:post {:summary (sd/sum_adm_todo "Create admin user.")
              :handler (constantly sd/no_impl)}
     ; admin list / query
-      :get {:summary  (sd/sum_adm_todo "List admin users.")
+      :get {:summary  (sd/sum_adm "List admin users.")
             :handler handle_list-admin
             :coercion reitit.coercion.schema/coercion
             :parameters {:query {(s/optional-key :full-data) s/Bool}}

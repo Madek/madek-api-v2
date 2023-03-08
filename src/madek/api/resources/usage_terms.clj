@@ -110,7 +110,8 @@
 ; TODO tests
 (def ring-routes
 
-  [["/usage_terms/"
+  ["/usage_terms" 
+   ["/"
     {:post {:summary (sd/sum_adm "Create usage_terms.")
             :handler handle_create-usage_terms
                    ;:middleware [(wwrap-find-usage_term :id "id" false)]
@@ -125,7 +126,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :full-data) s/Bool}}}}]
     ; edit usage_term
-   ["/usage_terms/:id"
+   ["/:id"
     {:get {:summary (sd/sum_adm "Get usage_terms by id.")
            :handler handle_get-usage_term
            :middleware [(wwrap-find-usage_term :id "id" true)]

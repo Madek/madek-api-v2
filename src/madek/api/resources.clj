@@ -1,7 +1,5 @@
 (ns madek.api.resources
-  (:require 
-            [cheshire.core :as cheshire]
-            [clojure.java.jdbc :as jdbc]
+  (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as logging]
             [compojure.core :as cpj]
             [logbug.catcher :as catcher]
@@ -12,6 +10,8 @@
             [madek.api.resources.auth-info :as auth-info]
             [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
             [madek.api.resources.collections :as collections]
+            [madek.api.resources.favorite-collections :as favorite-collections]
+            [madek.api.resources.favorite-media-entries :as favorite-media-entries]
             [madek.api.resources.groups :as groups]
             [madek.api.resources.keywords :as keywords]
             [madek.api.resources.media-entries :as media-entries]
@@ -27,9 +27,7 @@
             [madek.api.resources.users :as users]
             [madek.api.resources.vocabularies :as vocabularies]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-            [reitit.coercion.schema]
-            [schema.core :as s]
-            ))
+            [reitit.coercion.schema]))
             
 
 
@@ -306,6 +304,9 @@
                              :get (constantly sd/no_impl)
                              :put (constantly sd/no_impl)
                              :delete (constantly sd/no_impl)}]
+   
+   favorite-collections/ring-routes
+   favorite-media-entries/ring-routes
 
    ["full-texts/" {:post {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
                    :get {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
