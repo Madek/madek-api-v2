@@ -229,32 +229,21 @@
                     :put (constantly sd/no_impl)
                     :delete (constantly sd/no_impl)}]
 
-   ["api-tokens/" {:post (constantly sd/no_impl)
-                   :get (constantly sd/no_impl)
-                   :put (constantly sd/no_impl)
-                   :delete (constantly sd/no_impl)}]
+   ;["api-tokens/" {:post (constantly sd/no_impl)
+   ;                :get (constantly sd/no_impl)
+   ;                :put (constantly sd/no_impl)
+   ;                :delete (constantly sd/no_impl)}]
 
    ["app-settings" {;:post {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
                     :get {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
                     :put {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}}]
                     ;:delete {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
 
-
-   ;["collections/" {:post (constantly sd/no_impl)
-   ;                 ;:get (constantly sd/no_impl)
-   ;                 :put (constantly sd/no_impl)
-   ;                 :delete (constantly sd/no_impl)}]
-
-   ; convenience access to meta-data
-   ;["collections/meta-data/" {:post (constantly sd/no_impl)
-   ;                           :put (constantly sd/no_impl)
-   ;                           :delete (constantly sd/no_impl)}]
-
    ; data-type [collection, media-entry]
-   ["collections/:data-type/arcs/" {:post (constantly sd/no_impl)
-                                    :get (constantly sd/no_impl)
-                                    :put (constantly sd/no_impl)
-                                    :delete (constantly sd/no_impl)}]
+   ;["collections/:data-type/arcs/" {:post (constantly sd/no_impl)
+   ;                                 :get (constantly sd/no_impl)
+   ;                                 :put (constantly sd/no_impl)
+   ;                                 :delete (constantly sd/no_impl)}]
 
    ; convenience access to permissions
    ; perm-type [api-client, group, user] 
@@ -263,25 +252,25 @@
                                    :put (constantly sd/no_impl)
                                    :delete (constantly sd/no_impl)}]
 
-   ["confidential-links" {:post {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
-                          :get {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
-                          :put {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
-                          :delete {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}}]
+   ;["confidential-links" {:post {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
+   ;                       :get {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
+   ;                       :put {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
+   ;                       :delete {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}}]
 
-   ["context-keys/" {:post {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
-                     :get {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
-                     :put {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
-                     :delete {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}}]
+   ;["context-keys/" {:post {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
+   ;                  :get {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
+   ;                  :put {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
+   ;                  :delete {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}}]
 
-   ["context/" {:post {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
-                :get {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
-                :put {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
-                :delete {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}}]
+   ;["context/" {:post {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
+   ;             :get {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
+   ;             :put {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
+   ;             :delete {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}}]
 
-   ["custom-urls/" {:post {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
-                    :get {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
-                    :put {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
-                    :delete {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}}]
+   ;["custom-urls/" {:post {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
+   ;                 :get {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
+   ;                 :put {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
+   ;                 :delete {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}}]
 
    ["delegations/" {:post (constantly sd/no_impl)
                     :get (constantly sd/no_impl)
@@ -294,45 +283,43 @@
                               :put (constantly sd/no_impl)
                               :delete (constantly sd/no_impl)}]
 
-   ["edit-session/" {:post (constantly sd/no_impl)
-                     :get (constantly sd/no_impl)
-                     :put (constantly sd/no_impl)
-                     :delete (constantly sd/no_impl)}]
+   ;["edit-session/" {:post (constantly sd/no_impl)
+   ;                  :get (constantly sd/no_impl)
+   ;                  :put (constantly sd/no_impl)
+   ;                  :delete (constantly sd/no_impl)}]
 
    ; data-type [collections, media-entries]
-   ["favorites/:data-type/" {:post (constantly sd/no_impl)
-                             :get (constantly sd/no_impl)
-                             :put (constantly sd/no_impl)
-                             :delete (constantly sd/no_impl)}]
+   ;["favorites/:data-type/" {:post 2(constantly sd/no_impl)
+   ;                          :get 2(constantly sd/no_impl)
+   ;                          :put 2(constantly sd/no_impl)
+   ;                          :delete 2(constantly sd/no_impl)}]
    
-   favorite-collections/ring-routes
-   favorite-media-entries/ring-routes
+   
+   ;["full-texts/" {:post {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
+   ;                :get {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
+   ;                :put {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
+   ;                :delete {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}}]
 
-   ["full-texts/" {:post {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
-                   :get {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
-                   :put {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
-                   :delete {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}}]
+   ;["io-interfaces" {:post {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
+   ;                  :get {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
+   ;                  :put {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
+   ;                  :delete {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}}]
 
-   ["io-interfaces" {:post {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
-                     :get {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
-                     :put {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
-                     :delete {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}}]
-
-   ["io-mappings" {:post {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
-                   :get {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
-                   :put {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
-                   :delete {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}}]
+   ;["io-mappings" {:post {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
+   ;                :get {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
+   ;                :put {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
+   ;                :delete {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}}]
 
    ;["keywords" {:post (constantly sd/no_impl)
    ;;             :get (constantly sd/no_impl)
    ;             :put (constantly sd/no_impl)
    ;             :delete (constantly sd/no_impl)}]
 
-   ["media-files/" {:post (constantly sd/no_impl)
+   ;["media-files/" {:post (constantly sd/no_impl)
                     ;:get (constantly sd/no_impl)
-                    :put (constantly sd/no_impl)
+   ;                 :put (constantly sd/no_impl)
                     ;:delete (constantly sd/no_impl)
-                    }]
+   ;                }]
 
 
 
@@ -342,10 +329,12 @@
    ;               :delete (constantly sd/no_impl)}]
 
    ; data-type [keywords, meta-terms, people, roles] [text,json]
-   ["meta-data/:data-type/" {:post (constantly sd/no_impl)
-                             :get (constantly sd/no_impl)
-                             :put (constantly sd/no_impl)
-                             :delete (constantly sd/no_impl)}]
+   ;["meta-data/:data-type/" {:post (constantly sd/no_impl)
+;                             :get (constantly sd/no_impl)
+   ;                          :put (constantly sd/no_impl)
+;                             :delete (constantly sd/no_impl)
+   ;                          }
+   ; ]
 
    ;["meta-keys/" {:post (constantly sd/no_impl)
    ;               ;:get (constantly sd/no_impl)
@@ -367,24 +356,18 @@
                                       :put (constantly sd/no_impl)
                                       :delete (constantly sd/no_impl)}]
 
-   ["static-pages/" {:post {:summary (sd/sum_todo "Static pages") :handler (constantly sd/no_impl)}
-                     :get {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
-                     :put {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
-                     :delete {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}}]
-
-   ;["usage-terms/" {:post {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
-   ;                 :get {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
-   ;                 :put {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}
-   ;                 :delete {:summary (sd/sum_todo "Usage Terms") :handler (constantly sd/no_impl)}}]
-   usage-terms/ring-routes
+   ;["static-pages/" {:post {:summary (sd/sum_todo "Static pages") :handler (constantly sd/no_impl)}
+   ;                  :get {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
+   ;                  :put {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
+   ;                  :delete {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}}]
 
    
 
 
-   ["workflows/" {:post {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
-                  :get {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
-                  :put {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
-                  :delete {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}}]
+   ;["workflows/" {:post {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
+   ;               :get {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
+   ;               :put {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
+   ;               :delete {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}}]
 
 
    ; perm-type [api-client, group, user]
@@ -409,6 +392,9 @@
    ; collections
    collections/ring-routes
    collection-media-entry-arcs/ring-routes
+
+   favorite-collections/ring-routes
+   favorite-media-entries/ring-routes
 
    groups/ring-routes
    
@@ -449,9 +435,12 @@
 
    people/ring-routes
 
-   previews/ring-routes
+   previews/preview-routes
+   previews/media-entry-routes
 
    roles/ring-routes
+   
+   usage-terms/ring-routes
 
    users/ring-routes
    

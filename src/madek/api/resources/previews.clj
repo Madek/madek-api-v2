@@ -70,9 +70,8 @@
   (fn [request] (add-preview-for-media-file handler request)))
 
 
-(def ring-routes
-  [
-   ["/previews"
+(def preview-routes
+  ["/previews"
    ["/:preview_id" 
     {:get {:summary "Get preview for id."}
      :swagger {:produces "application/json"}
@@ -92,9 +91,12 @@
                         sd/ring-wrap-authorization]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:preview_id s/Uuid}}}}]
-   ]
+   ])
+  
+(def media-entry-routes
+  ["/media-entry"
    ; TODO auth
-   ["/media-entry/:media_entry_id/preview"
+   ["/:media_entry_id/preview"
     {:get {:summary "Get preview for media-entry id."
            :handler handle_get-preview
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
@@ -103,8 +105,8 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :query {(s/optional-key :size) s/Str}}}}]
-   
-   ["/media-entry/:media_entry_id/preview/data-stream"
+
+   ["/:media_entry_id/preview/data-stream"
     {:get {:summary "Get preview for media-entry id."
            :handler preview/get-preview-file-data-stream
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
@@ -113,7 +115,7 @@
                         ]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
-                        :query {(s/optional-key :size) s/Str}}}}]
-   ])
+                        :query {(s/optional-key :size) s/Str}}}}]])
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
