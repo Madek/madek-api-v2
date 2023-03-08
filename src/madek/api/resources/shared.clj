@@ -16,6 +16,11 @@
   [table-name col-name row-data]
   [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
 
+(defn sql-query-find-eq2
+  [table-name col-name row-data col-name2 row-data2]
+  [(str "SELECT * FROM " table-name " WHERE " col-name " = ? AND " col-name2 " = ? ")
+   row-data row-data2])
+
 (defn sql-update-clause
   [col-name row-data]
   [(str col-name " = ?") row-data]
@@ -44,6 +49,15 @@
                   (-> (jdbc/query
                        (get-ds)
                        (sql-query-find-eq table-name col-name row-data))
+                      first)))
+
+(defn query-eq2-find-one [table-name col-name row-data col-name2 row-data2]
+  ; we wrap this since badly formated media-file-id strings can cause an
+  ; exception, note that 404 is in that case a correct response
+  (catcher/snatch {}
+                  (-> (jdbc/query
+                       (get-ds)
+                       (sql-query-find-eq2 table-name col-name row-data col-name2 row-data2))
                       first)))
 
 ; end db-helpers
@@ -111,6 +125,29 @@
       (if (= true send404)
         (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search))
         (handler request)))))
+
+(defn req-find-data-search2
+  [request handler search search2 db_table db_col_name db_col_name2 reqkey send404]
+    ;(logging/info "req-find-data-search2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
+    (if-let [result-db (query-eq2-find-one db_table db_col_name search db_col_name2 search2)]
+      (handler (assoc request reqkey result-db))
+      (if (= true send404)
+        (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search " and " db_col_name2 " with " search2))
+        (handler request))))
+
+
+(defn req-find-data2
+  [request handler path-param path-param2 db_table db_col_name db_col_name2 reqkey send404]
+  (let [search (-> request :parameters :path path-param str)
+        search2 (-> request :parameters :path path-param2 str)]
+    
+    (logging/info "req-find-data2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
+    (if-let [result-db (query-eq2-find-one db_table db_col_name search db_col_name2 search2)]
+      (handler (assoc request reqkey result-db))
+      (if (= true send404)
+        (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search " and " db_col_name2 " with " search2))
+        (handler request)))))
+
 
 ; begin generic path param find in db and assoc with request
 
