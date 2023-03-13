@@ -27,6 +27,7 @@
             [madek.api.resources.usage-terms :as usage-terms]
             [madek.api.resources.io-interfaces :as io-interfaces]
             [madek.api.resources.io-mappings :as io-mappings]
+            [madek.api.resources.contexts :as contexts]
             [madek.api.resources.users :as users]
             [madek.api.resources.vocabularies :as vocabularies]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -265,16 +266,6 @@
    ;                  :put {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
    ;                  :delete {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}}]
 
-   ;["context/" {:post {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
-   ;             :get {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
-   ;             :put {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}
-   ;             :delete {:summary (sd/sum_todo "Context") :handler (constantly sd/no_impl)}}]
-
-   ;["custom-urls/" {:post {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
-   ;                 :get {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
-   ;                 :put {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}
-   ;                 :delete {:summary (sd/sum_todo "Custom URLs") :handler (constantly sd/no_impl)}}]
-
    ["delegations/" {:post (constantly sd/no_impl)
                     :get (constantly sd/no_impl)
                     :put (constantly sd/no_impl)
@@ -302,16 +293,6 @@
    ;                :get {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
    ;                :put {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
    ;                :delete {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}}]
-
-   ;["io-interfaces" {:post {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
-   ;                  :get {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
-   ;                  :put {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}
-   ;                  :delete {:summary (sd/sum_todo "IO Interfaces") :handler (constantly sd/no_impl)}}]
-
-   ;["io-mappings" {:post {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
-   ;                :get {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
-   ;                :put {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}
-   ;                :delete {:summary (sd/sum_todo "IO Mappings") :handler (constantly sd/no_impl)}}]
 
    ;["keywords" {:post (constantly sd/no_impl)
    ;;             :get (constantly sd/no_impl)
@@ -397,6 +378,7 @@
    collections/ring-routes
    collection-media-entry-arcs/ring-routes
 
+   contexts/ring-routes
 
    custom-urls/ring-routes
    custom-urls/media-entry-routes
@@ -416,7 +398,7 @@
    ;links
 
    media-entries/ring-routes
-   
+   media-entries/media-entry-routes
   ;media_entries
    
 

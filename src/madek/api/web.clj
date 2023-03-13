@@ -44,7 +44,8 @@
     [reitit.ring.coercion :as rrc]
     [reitit.coercion.schema]
     [ring.middleware.defaults :as ring-defaults]
-    ))
+    
+    [reitit.ring.middleware.multipart :as multipart]))
 
 ;### helper ###################################################################
 
@@ -152,6 +153,13 @@
         wrap-with-access-control-allow-credentials)
     handler))
 
+(defn ring-wrap-cors [handler]
+  (-> handler
+      (cors-middleware/wrap-cors
+       :access-control-allow-origin [#".*"]
+       :access-control-allow-methods [:get :put :post :delete]
+       :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization"])
+      wrap-with-access-control-allow-credentials))
 
 ;##############################################################################
 
@@ -211,6 +219,7 @@
      #_#_:compile coercion/compile-request-coercers
      :data {:middleware [swagger/swagger-feature
 
+                         ring-wrap-cors
                          rmp/parameters-middleware
                          ;ring-wrap-parse-json-query-parameters 
                          muuntaja/format-negotiate-middleware
@@ -222,9 +231,10 @@
                          ;auth/wrap-auth-madek-deps
                          authorization/wrap-authorize-http-method
                          ;authentication/wrap
-                         rrc/coerce-request-middleware
                          rrc/coerce-response-middleware
+                         rrc/coerce-request-middleware
                          rrc/coerce-exceptions-middleware
+                         multipart/multipart-middleware
                          ]
             :muuntaja m/instance}})
    (rr/routes
