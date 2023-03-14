@@ -14,6 +14,7 @@
    [reitit.ring.middleware.multipart :as multipart]
    [schema.core :as s]
    [pantomime.mime :refer [mime-type-of]]
+   [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
    )
   )
 
@@ -87,30 +88,46 @@
 ;end
 
 
-(defn store_uploaded_file_resp_ok
-  [file media-file media-entry]
+(defn handle_uploaded_file_resp_ok
+  [file media-file media-entry collection-id tx]
   (let [temp-file (-> file :tempfile)
         temp-path (.getPath temp-file)
         store-location (original-store-location media-file)]
-  ; TODO copy file
+    ; copy file
     (io/copy (io/file temp-path) (io/file store-location))
     ; return nested result data
-    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file) })))
+    
+    ; TODO extra data for me
+    ;(me_add-default-license new-mer)
+    ;(me_exract-and-store-metadata new-mer)
+    ;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
+    ;(if-let [collection (sd/query-eq-find-one "collections" "id" collection-id)]
+    ;  (if-let [add-col-res (collection-media-entry-arcs/create-col-me-arc collection-id (:id media-entry) {} tx)]
+    ;    (logging/info "handle_uploaded_file_resp_ok: added to collection: " collection-id "\nresult\n" add-col-res)
+    ;    (logging/error "Failed: handle_uploaded_file_resp_ok: add to collection: " collection-id))
+    ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file :collection_id collection-id)})
+    ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)}))
+      (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)})))
+  ;))
+    
+    
 
 ; TODO find keys and add
 ; TODO keywords and meta-data db access
 (defn me_add-default-license [media-entry]
    (
+    ; get from app setting 
     ; license getKeyword settings.media_entry_default_license_id
     ; lic-meta-key getMetaKey settings.media_entry_default_license_meta_key
     ; create-meta-datum me lic-meta-key.id license.id
+    ; get from app setting 
     ; usage_text getKeyword settings.media_entry_default_license_usage_text.presence
     ; use-meta-key getMetaKey settings.media_entry_default_license_usage_meta_key meta_datum_object_type 'MetaDatum::Text'
     ; create-meta-datum me use-meta-key.id usage_text
    ))
 
 (defn create-media_entry
-  [file auth-entity mime]
+  [file auth-entity mime collection-id]
   (let [user-id (:id auth-entity)
         new-me {:responsible_user_id (str user-id)
                 :creator_id (str user-id)
@@ -128,25 +145,22 @@
           (logging/info "\ncreate-me: " "\ncreated media-entry: " new-mer "\nnew media-file: " new-mf)
 
           (if-let [new-mfr (first (jdbc/insert! tx "media_files" new-mf))]
-            ;(
-             ;(logging/info "create-me: " "\ncreated media-file: " new-mfr)
-             (store_uploaded_file_resp_ok file new-mfr new-mer)
-             ; TODO extra data for me
-             ;(me_add-default-license new-mer)
-             ;(me_exract-and-store-metadata new-mer)
-             ;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
-             ;(sd/response_ok {:media_file new-mfr :media_entry new-mer})
-             ;)
+            (handle_uploaded_file_resp_ok file new-mfr new-mer collection-id tx)
             (sd/response_failed "Could not create media-file" 406)
             )
         )
         (sd/response_failed "Could not create media-entry" 406)
       )
-    )))
+    )
+
+    ))
+
+
 
 ; TODO 
 (defn handle_create-media-entry [req]
   (let [copy-md-id (-> req :parameters :query :copy_me_id)
+        collection-id (-> req :parameters :query :collection_id)
         ; TODO collection id
         file (-> req :parameters :multipart :file)
         file-content-type (-> file :content-type)
@@ -156,6 +170,7 @@
     (logging/info "handle_create-media-entry"
                   "\nauth\n" (:id auth)
                   "\ncopy_md\n" copy-md-id
+                  "\ncollection-id\n" collection-id
                   "\nfile\n" file
                   "\n content: " file-content-type
                   "\ntemppath\n" temppath)
@@ -164,28 +179,14 @@
       (logging/info "handle_create-media-entry" "\nmime-type\n" mime)
       (if (nil? auth)
         (sd/response_failed "Not authed" 406)
-        (create-media_entry file auth mime)))))
+        ; TODO move response handling here
+        ; TODO move coll create here
+        (create-media_entry file auth mime collection-id)))))
 
 ;(when-let [mime (mime-type-of tempfile)]
        ;  (sd/response_ok {:file file :mime-type mime}))
        ;(sd/response_ok {:file file :mime-type "none"}))
     ;(mime-type-of (java.io.File. "some/file/without/extension"))
-
-
-; TODO 
-(defn handle_create-media-entries [req]
-  (let [copy-md-id (-> req :parameters :query :copy_me_id)
-        ; TODO collection id
-        files (-> req :parameters :multipart)
-        auth (-> req :authenticated-entity)]
-
-    (logging/info "handle_create-media-entries"
-                  "\nauth\n" (:id auth)
-                  "\ncopy_md\n" copy-md-id
-                  "\nfiles\n" files
-                  )
-    (sd/response_ok {:message "Created file" :files files})
-    ))
 
 
 (def ring-routes 
@@ -205,15 +206,12 @@
                                 (s/optional-key :page) s/Str}}}
          ; TODO
      :post {:summary (sd/sum_todo "Create media-entries.")
-            :handler handle_create-media-entries
+            :handler handle_create-media-entry
             :swagger {:consumes "multipart/form-data"}
-            
-
            ;:middleware [authentication/wrap]
            ;:coercion reitit.coercion.schema/coercion
             :coercion reitit.coercion.spec/coercion
             :parameters {:query {:copy_me_id string?}
-                         ;:multipart {:files [multipart/temp-file-part]}}
                          :multipart {:file multipart/temp-file-part}
                          }}
          }
@@ -240,7 +238,12 @@
   ["/media-entry/"
    {:post {:summary (sd/sum_todo "Create media-entry.")
            :handler handle_create-media-entry
+           :swagger {:consumes "multipart/form-data"
+                     :produces "application/json"}
+           :content-type "application/json"
+           :accept "multipart/form-data"
            ;:middleware [authentication/wrap]
+           ; cannot use schema, need to use spec for multiplart
            ;:coercion reitit.coercion.schema/coercion
            :coercion reitit.coercion.spec/coercion
            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
