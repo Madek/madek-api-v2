@@ -19,21 +19,24 @@
   (let [mr (-> req :media-resource)
         user-id (-> req :authenticated-entity :id str)
         mr-type (-> mr :type)
+        mr-id (str (-> mr :id))
         meta-key-id (-> req :parameters :path :meta_key_id)
-        text-data (-> req :body :text)
+        text-data (-> req :parameters :body :text)
         ins-data {:meta_key_id meta-key-id
                   :type "MetaDatum::Text"
                   :string text-data
-                  :media_entry_id (:id mr)
-                  :created_by_id user-id}
-        
+                  :created_by_id user-id
+                  }
+        insf-data (if (= mr-type "Collection")
+                    (assoc ins-data :collection_id mr-id)
+                    (assoc ins-data :media_entry_id mr-id))
         ]
     (logging/info "handle_create-meta-data-text"
                   "\nmr\n" mr
                   "\ntype\n" mr-type
                   "\nmeta-key-id\n" meta-key-id
-                  "\nins-data\n" ins-data)
-    (if-let [ins-result (jdbc/insert! (rdbms/get-ds) :meta_data ins-data)]
+                  "\nins-data\n" insf-data)
+    (if-let [ins-result (jdbc/insert! (rdbms/get-ds) :meta_data insf-data)]
       (sd/response_ok ins-result)
       (sd/response_failed {:message "Failed to add meta data text"} 406))
     ))
@@ -262,18 +265,18 @@
            :parameters {:path {:collection_id s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta-key-id/text"
+   ["/:collection_id/meta-data/:meta_key_id/text"
     {:post {:summary "Create meta-data text for collection."
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
                          sd/ring-wrap-authorization]
             :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:media_entry_id s/Str
+            :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
                          :body {:text s/Str}}
             :responses {200 {:body s/Any}}}}]
 
-   ["/:collection_id/meta-data/:meta-key-id/text-date"
+   ["/:collection_id/meta-data/:meta_key_id/text-date"
     {:post {:summary "Create meta-data json for collection."
             :handler handle_create-meta-data-text-date
             :middleware [sd/ring-wrap-add-media-resource
@@ -284,7 +287,7 @@
                          :body {:json s/Str}}
             :responses {200 {:body s/Any}}}}]
 
-   ["/:collection_id/meta-data/:meta-key-id/json"
+   ["/:collection_id/meta-data/:meta_key_id/json"
     {:post {:summary "Create meta-data json for collection."
             :handler handle_create-meta-data-json
             :middleware [sd/ring-wrap-add-media-resource
@@ -295,7 +298,7 @@
                          :body {:json s/Str}}
             :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta-key-id/keyword/:keyword_id"
+   ["/:collection_id/meta-data/:meta_key_id/keyword/:keyword_id"
     {:post {:summary "Create meta-data keyword for collection."
             :handler handle_create-meta-data-keyword
             :middleware [wrap-add-keyword
@@ -307,7 +310,7 @@
                                 :keyword_id s/Str}}
             :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta-key-id/people/:person_id"
+   ["/:collection_id/meta-data/:meta_key_id/people/:person_id"
     {:post {:summary "Create meta-data people for media-entry"
             :handler handle_create-meta-data-people
             :middleware [wrap-add-person
@@ -319,7 +322,7 @@
                                 :person_id s/Str}}
             :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta-key-id/role/:role_id"
+   ["/:collection_id/meta-data/:meta_key_id/role/:role_id"
     {:post {:summary "Create meta-data role for media-entry"
             :handler handle_create-meta-data-role
             :middleware [wrap-add-role
