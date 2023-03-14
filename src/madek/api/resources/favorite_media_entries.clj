@@ -108,21 +108,21 @@
 
     ; user self edit favorites 
    ["/:media_entry_id"
-    {:post {:summary (sd/sum_adm "Create favorite_media_entry for authed user and media-entry.")
+    {:post {:summary (sd/sum_cnv "Create favorite_media_entry for authed user and media-entry.")
             :handler handle_create-favorite_media_entry
             :middleware [(wwrap-find-media_entry :media_entry_id)
                          (wwrap-find-favorite_media_entry-by-auth false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Uuid}}}
 
-     :get {:summary (sd/sum_adm "Get favorite_media_entry for authed user and media-entry.")
+     :get {:summary (sd/sum_cnv "Get favorite_media_entry for authed user and media-entry.")
            :handler handle_get-favorite_media_entry
            :middleware [(wwrap-find-media_entry :media_entry_id)
                         (wwrap-find-favorite_media_entry-by-auth true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}}
 
-     :delete {:summary (sd/sum_adm "Delete favorite_media_entry for authed user and media-entry.")
+     :delete {:summary (sd/sum_cnv "Delete favorite_media_entry for authed user and media-entry.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-favorite_media_entry
               :middleware [(wwrap-find-media_entry :media_entry_id)
