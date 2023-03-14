@@ -27,7 +27,7 @@
 
 (defn- base-query
   [user-id]
-  (-> (sql/select :meta_data.id :meta_data.type :meta_data.meta_key_id)
+  (-> (sql/select :*);:meta_data.id :meta_data.type :meta_data.meta_key_id)
       (sql/from :meta_data)
       (sql/merge-where [:in :meta_data.type
                         constants/SUPPORTED_META_DATA_TYPES])

@@ -8,6 +8,7 @@
             [madek.api.authorization :refer [authorized?]]
             [madek.api.resources.admins :as admins]
             [madek.api.resources.auth-info :as auth-info]
+            [madek.api.resources.collection-collection-arcs :as collection-collection-arcs]
             [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
             [madek.api.resources.collections :as collections]
             [madek.api.resources.custom-urls :as custom-urls]
@@ -377,6 +378,7 @@
    ; collections
    collections/ring-routes
    collection-media-entry-arcs/ring-routes
+   collection-collection-arcs/ring-routes
 
    contexts/ring-routes
 
