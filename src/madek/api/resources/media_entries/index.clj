@@ -1,13 +1,12 @@
 (ns madek.api.resources.media-entries.index
   (:refer-clojure :exclude [str keyword])
-  (:require [madek.api.utils.core :refer [str keyword]]
-            [cheshire.core :as json]
-            [cheshire.core :as cheshire])
   (:require
+    [madek.api.utils.core :refer [str keyword]]
+    [cheshire.core :as json]
     [clojure.core.match :refer [match]]
     [clojure.java.jdbc :as jdbc]
     [clojure.set :refer [rename-keys]]
-    [clojure.string :as str]
+    [clojure.string :as str :refer [blank?]]
     [clojure.tools.logging :as logging]
     [compojure.core :as cpj]
     [logbug.catcher :as catcher]
@@ -43,20 +42,23 @@
 (defn ^:private base-query [me-query]
   (let [sel (sql/select [:media_entries.id :media_entry_id]
                         [:media_entries.created_at :media_entry_created_at]
-                        [:media_entries.is_published :media_entry_is_published]
-                        [:media_entries.creator_id :media_entry_creator_id]
-                        :media_entries.responsible_user_id)
+                        ;[:media_entries.is_published :media_entry_is_published]
+                        ;[:media_entries.creator_id :media_entry_creator_id]
+                        ;:media_entries.responsible_user_id
+                        )
         is-pub (:is_published me-query)
         where1 (if (nil? is-pub)
                  sel
                  (sql/merge-where sel [:= :media_entries.is_published (= true is-pub)])
                  )
-        where2 (if (or (not (:creator-id me-query)) (nil? (:creator-id me-query)))
+        creator-id (:creator-id me-query)
+        where2 (if (blank? creator-id) ; or not uuid
                  where1
-                 (sql/merge-where where1 [:= :media_entries.creator-id (:creator-id me-query)]))
-        where3 (if (or (not (:responsible_user_id me-query)) (nil? (:responsible_user_id me-query)))
+                 (sql/merge-where where1 [:= :media_entries.creator-id creator-id]))
+        ru-id (:responsible_user_id me-query)
+        where3 (if (blank? ru-id) ; or not uuid
                  where2
-                 (sql/merge-where where2 [:= :media_entries.responsible_user_id (:responsible_user_id me-query)]))
+                 (sql/merge-where where2 [:= :media_entries.responsible_user_id ru-id]))
 
         from (sql/from where3 :media_entries)
         orig-query (-> (sql/select [:media_entries.id :media_entry_id]
@@ -69,8 +71,7 @@
                   "\nwhere2:\n" where2
                   "\nwhere3:\n" where3
                   "\nresult:\n" from
-                  "\norig:\n" orig-query
-                  )
+                  "\norig:\n" orig-query)
     from))
 
   ;(-> (sql/select [:media_entries.id :media_entry_id]
@@ -189,7 +190,7 @@
 (defn- build-query [request]
   (let [;query-params (or (:query-params request) (-> request :parameters :query))
         query-params (:query-params request)
-        filter-by (cheshire/decode (:filter_by query-params) true)
+        filter-by (json/decode (:filter_by query-params) true)
         props-by (:media-entry filter-by)
         authenticated-entity (:authenticated-entity request)
         query-res (I> identity-with-logging
