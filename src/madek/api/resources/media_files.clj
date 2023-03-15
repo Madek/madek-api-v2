@@ -115,7 +115,8 @@
     {:get {:summary "Get media-file for media-entry id."
            :handler media-file/get-media-file
            :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                        media-files.authorization/ring-wrap-authorize-metadata-and-previews]
+                        media-files.authorization/ring-wrap-authorize-metadata-and-previews
+                        ]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}}}}]
    
@@ -129,7 +130,11 @@
    
    ["/media-entry/:media_entry_id/media-file/data-stream"
     {:get {:summary "TODO: Get media-file data-stream for media-entry id."
-           :handler (constantly sd/no_impl)}}]
+           :handler media-file/get-media-file-data-stream
+           :middleware [wrap-find-and-add-media-file-by-media-entry-id
+                        media-files.authorization/ring-wrap-authorize-metadata-and-previews]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:media_entry_id s/Str}}}}]
 
    ])
 ;### Debug ####################################################################

@@ -71,7 +71,7 @@
            (jdbc/query (get-ds))))))
 
 (defn get-index [request]
-  (logging/info "get-index" "\nmedia-resource\n" (:media-resource request))
+  ;(logging/info "get-index" "\nmedia-resource\n" (:media-resource request))
   (if-let [media-resource (:media-resource request)]
     (when-let [meta-data (get-meta-data request media-resource)]
 

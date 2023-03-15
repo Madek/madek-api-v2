@@ -8,7 +8,7 @@
     (-> (ring.util.response/file-response file-path)
         (ring.util.response/header "X-Sendfile" file-path)
         (ring.util.response/header "content-type" content-type))
-    {:status 404 :body {:message "File could not be found!"}}))
+    {:status 404 :body {:message (str "File could not be found!\nPath: [" file-path "]")}}))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns 'madek.api.utils.rdbms)

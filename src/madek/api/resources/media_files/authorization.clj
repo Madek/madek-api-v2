@@ -15,7 +15,7 @@
         media-entry (-> (jdbc/query (get-ds)
                                     [(str "SELECT * FROM media_entries WHERE id = ?")
                                      media-entry-id]) first)]
-    (logging/info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
+    ;(logging/info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
     (if (get media-entry scope)
       (handler request)
       (if-let [auth-entity (:authenticated-entity request)]

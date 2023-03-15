@@ -1,7 +1,8 @@
 (ns madek.api.resources.media-entries.index
   (:refer-clojure :exclude [str keyword])
   (:require [madek.api.utils.core :refer [str keyword]]
-            [cheshire.core :as json])
+            [cheshire.core :as json]
+            [cheshire.core :as cheshire])
   (:require
     [clojure.core.match :refer [match]]
     [clojure.java.jdbc :as jdbc]
@@ -41,7 +42,9 @@
 
 (def ^:private base-query
   (-> (sql/select [:media_entries.id :media_entry_id]
-                  [:media_entries.created_at :media_entry_created_at])
+                  [:media_entries.created_at :media_entry_created_at]
+                  [:media_entries.is_published :media_entry_is_published]
+                  )
       (sql/from :media_entries)))
 
 (defn- order-by-media-entry-attribute [query [attribute order]]
@@ -150,17 +153,20 @@
 (defn- build-query [request]
   (let [;query-params (or (:query-params request) (-> request :parameters :query))
         query-params (:query-params request)
-        authenticated-entity (:authenticated-entity request)]
-    (logging/info "build-query" "\nquery-params\n" query-params)
-    (I> identity-with-logging
-        base-query
-        (set-order query-params)
-        (filter-by-collection-id query-params)
-        (permissions/filter-by-query-params query-params
-                                            authenticated-entity)
-        (advanced-filter/filter-by (:filter_by query-params))
-        (pagination/add-offset-for-honeysql query-params)
-        sql/format)))
+        filter-by (cheshire/decode (:filter_by query-params) true) 
+        authenticated-entity (:authenticated-entity request)
+        query-res (I> identity-with-logging
+                      base-query
+                      (set-order query-params)
+                      (filter-by-collection-id query-params)
+                      (permissions/filter-by-query-params query-params
+                                                          authenticated-entity)
+                      (advanced-filter/filter-by filter-by)
+                      (pagination/add-offset-for-honeysql query-params)
+                      sql/format)]
+    (logging/info "build-query" "\nquery-params:\n" query-params "\nquery-res:\n" query-res)
+    query-res
+    ))
 
 (defn- query-index-resources [request]
   (jdbc/query (rdbms/get-ds) (build-query request)))
