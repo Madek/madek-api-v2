@@ -11,10 +11,14 @@
             [madek.api.resources.collection-collection-arcs :as collection-collection-arcs]
             [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
             [madek.api.resources.collections :as collections]
+            [madek.api.resources.context-keys :as context_keys]
+            [madek.api.resources.contexts :as contexts]
             [madek.api.resources.custom-urls :as custom-urls]
             [madek.api.resources.favorite-collections :as favorite-collections]
             [madek.api.resources.favorite-media-entries :as favorite-media-entries]
             [madek.api.resources.groups :as groups]
+            [madek.api.resources.io-interfaces :as io-interfaces]
+            [madek.api.resources.io-mappings :as io-mappings]
             [madek.api.resources.keywords :as keywords]
             [madek.api.resources.media-entries :as media-entries]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
@@ -26,9 +30,6 @@
             [madek.api.resources.roles :as roles]
             [madek.api.resources.shared :as sd]
             [madek.api.resources.usage-terms :as usage-terms]
-            [madek.api.resources.io-interfaces :as io-interfaces]
-            [madek.api.resources.io-mappings :as io-mappings]
-            [madek.api.resources.contexts :as contexts]
             [madek.api.resources.users :as users]
             [madek.api.resources.vocabularies :as vocabularies]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -244,103 +245,49 @@
                     :put {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}}]
                     ;:delete {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
 
-   ; data-type [collection, media-entry]
-   ;["collections/:data-type/arcs/" {:post (constantly sd/no_impl)
-   ;                                 :get (constantly sd/no_impl)
-   ;                                 :put (constantly sd/no_impl)
-   ;                                 :delete (constantly sd/no_impl)}]
-
    ; convenience access to permissions
    ; perm-type [api-client, group, user] 
-   ["collections/:perm-type/perm" {:post (constantly sd/no_impl)
-                                   :get (constantly sd/no_impl)
-                                   :put (constantly sd/no_impl)
-                                   :delete (constantly sd/no_impl)}]
+   ;["collections/:perm-type/perm" {:post (constantly sd/no_impl)
+   ;                                :get (constantly sd/no_impl)
+   ;                                :put (constantly sd/no_impl)
+   ;                                :delete (constantly sd/no_impl)}]
 
-   ;["confidential-links" {:post {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
-   ;                       :get {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
-   ;                       :put {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}
-   ;                       :delete {:summary (sd/sum_todo "Confidential Links") :handler (constantly sd/no_impl)}}]
+   ; TODO confidential-links post, get, patch, delete
 
-   ;["context-keys/" {:post {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
-   ;                  :get {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
-   ;                  :put {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}
-   ;                  :delete {:summary (sd/sum_todo "Context Keys") :handler (constantly sd/no_impl)}}]
+   
+   ;["delegations/" {:post (constantly sd/no_impl)
+   ;                 :get (constantly sd/no_impl)
+   ;                 :put (constantly sd/no_impl)
+   ;                 :delete (constantly sd/no_impl)}]
 
-   ["delegations/" {:post (constantly sd/no_impl)
-                    :get (constantly sd/no_impl)
-                    :put (constantly sd/no_impl)
-                    :delete (constantly sd/no_impl)}]
+   ; TODO delegations post, get, patch, delete
+   ; TODO del-type [groups, users, workflows]
+   ;["delegations/:del-type/" {:post (constantly sd/no_impl)
+   ;                           :get (constantly sd/no_impl)
+   ;                           :put (constantly sd/no_impl)
+   ;                           :delete (constantly sd/no_impl)}]
 
-   ;; del-type [groups, users, workflows]
-   ["delegations/:del-type/" {:post (constantly sd/no_impl)
-                              :get (constantly sd/no_impl)
-                              :put (constantly sd/no_impl)
-                              :delete (constantly sd/no_impl)}]
-
+   ; TODO edit-session post, get, patch, delete   
    ;["edit-session/" {:post (constantly sd/no_impl)
    ;                  :get (constantly sd/no_impl)
    ;                  :put (constantly sd/no_impl)
    ;                  :delete (constantly sd/no_impl)}]
 
-   ; data-type [collections, media-entries]
-   ;["favorites/:data-type/" {:post 2(constantly sd/no_impl)
-   ;                          :get 2(constantly sd/no_impl)
-   ;                          :put 2(constantly sd/no_impl)
-   ;                          :delete 2(constantly sd/no_impl)}]
    
-   
+   ; TODO full-texts post, get, patch, delete   
    ;["full-texts/" {:post {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
    ;                :get {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
    ;                :put {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
    ;                :delete {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}}]
 
-   ;["keywords" {:post (constantly sd/no_impl)
-   ;;             :get (constantly sd/no_impl)
-   ;             :put (constantly sd/no_impl)
-   ;             :delete (constantly sd/no_impl)}]
-
-   ;["media-files/" {:post (constantly sd/no_impl)
-                    ;:get (constantly sd/no_impl)
-   ;                 :put (constantly sd/no_impl)
-                    ;:delete (constantly sd/no_impl)
-   ;                }]
-
-
-
-   ;["meta-data/" {:post (constantly sd/no_impl)
-   ;               :get (constantly sd/no_impl)
-   ;               :put (constantly sd/no_impl)
-   ;               :delete (constantly sd/no_impl)}]
-
-   ; data-type [keywords, meta-terms, people, roles] [text,json]
-   ;["meta-data/:data-type/" {:post (constantly sd/no_impl)
-;                             :get (constantly sd/no_impl)
-   ;                          :put (constantly sd/no_impl)
-;                             :delete (constantly sd/no_impl)
-   ;                          }
-   ; ]
-
-   ;["meta-keys/" {:post (constantly sd/no_impl)
-   ;               ;:get (constantly sd/no_impl)
-   ;               :put (constantly sd/no_impl)
-   ;               :delete (constantly sd/no_impl)}]
-
-   ;["media-entries/" {:post (constantly sd/no_impl)
-   ;                   ;:get (constantly sd/no_impl)
-   ;                   :put (constantly sd/no_impl)
-   ;                   :delete (constantly sd/no_impl)}]
-
-   ;["media-entries/meta-data" {:post (constantly sd/no_impl)
-   ;                   ;:get (constantly sd/no_impl)
-   ;                            :put (constantly sd/no_impl)
-   ;                            :delete (constantly sd/no_impl)}]
+  
    ; redirect to permissions
-   ["media-entries/:perm-type/perms" {:post (constantly sd/no_impl)
-                                      :get (constantly sd/no_impl)
-                                      :put (constantly sd/no_impl)
-                                      :delete (constantly sd/no_impl)}]
+   ;["media-entries/:perm-type/perms" {:post (constantly sd/no_impl)
+   ;                                   :get (constantly sd/no_impl)
+   ;                                   :put (constantly sd/no_impl)
+   ;                                   :delete (constantly sd/no_impl)}]
 
+   ; TODO static-pages post, get, patch, delete
    ;["static-pages/" {:post {:summary (sd/sum_todo "Static pages") :handler (constantly sd/no_impl)}
    ;                  :get {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
    ;                  :put {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
@@ -348,18 +295,20 @@
 
    
 
-
+   ; TODO workflows post, get, patch, delete
    ;["workflows/" {:post {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
    ;               :get {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
    ;               :put {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
    ;               :delete {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}}]
 
 
+   ; TODO permission edit
    ; perm-type [api-client, group, user]
-   ["permissions/:data-type/:perm-type/" {:post (constantly sd/no_impl)
-                                          :get (constantly sd/no_impl)
-                                          :put (constantly sd/no_impl)
-                                          :delete (constantly sd/no_impl)}]])
+   ;["permissions/:data-type/:perm-type/" {:post (constantly sd/no_impl)
+   ;                                       :get (constantly sd/no_impl)
+   ;                                       :put (constantly sd/no_impl)
+   ;                                       :delete (constantly sd/no_impl)}]
+   ])
    
    
 
@@ -367,9 +316,25 @@
 
 (def ring-routes
   ["/api" {:middleware [authentication/wrap]}
-   ["/admin" admins/ring-routes]
-   favorite-collections/admin-routes
-   (favorite-media-entries/admin-routes "/admin")
+   ["/admin"
+    admins/ring-routes
+    context_keys/ring-routes
+    contexts/ring-routes
+    favorite-collections/admin-routes
+    favorite-media-entries/admin-routes
+    groups/ring-routes
+    io-interfaces/ring-routes
+    io-mappings/ring-routes
+    meta-keys/ring-routes
+    people/ring-routes
+    roles/ring-routes
+    usage-terms/ring-routes
+    users/ring-routes
+    vocabularies/ring-routes]
+
+
+
+
 
    ["/auth-info" {:get {:summary "Authentication help and info."
                         :handler auth-info/auth-info}}]
@@ -384,29 +349,16 @@
    collection-collection-arcs/collection-routes
 
    collection-media-entry-arcs/ring-routes
-
    collection-collection-arcs/ring-routes
 
-
-
-   contexts/ring-routes
-
    custom-urls/ring-routes
-
-
+   ; favorites
    favorite-media-entries/favorite-routes
    favorite-collections/favorite-routes
 
-   groups/ring-routes
-
-   io-interfaces/ring-routes
-   io-mappings/ring-routes
-
    keywords/ring-routes
-   
 
-   ;links
-
+   ;media_entries
    media-entries/ring-routes
    media-entries/media-entry-routes
    previews/media-entry-routes
@@ -415,34 +367,15 @@
    favorite-media-entries/media-entry-routes
    media-files/media-entry-routes
 
-  ;media_entries
-   
-
    ;media_files
    media-files/media-file-routes
 
    ;meta_data
    meta-data/ring-routes
 
-
-
-   meta-keys/ring-routes
-
-   people/ring-routes
-
    previews/preview-routes
-
-
-   roles/ring-routes
    
-   usage-terms/ring-routes
-
-   users/ring-routes
-   
-   vocabularies/ring-routes
-
-   api2-routes
-    ])
+   api2-routes])
    
 
 ;### Debug ####################################################################

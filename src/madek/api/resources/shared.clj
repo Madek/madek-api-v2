@@ -34,7 +34,7 @@
                      sql/format)
         db-result (jdbc/query (rdbms/get-ds) db-query)
         ]
-    (logging/info "query-find-all" "\ndb-query\n" db-query "\ndb-result\n" db-result)
+    ;(logging/info "query-find-all" "\ndb-query\n" db-query "\ndb-result\n" db-result)
     db-result))
 
 (defn query-eq-find-all [table-name col-name row-data]

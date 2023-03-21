@@ -108,7 +108,7 @@
 ; TODO more checks
 ; TODO response coercion
 ; TODO docu
-; TODO tests
+; TODO tests io_mappings
 (def ring-routes
 
   ["/io-mappings" 

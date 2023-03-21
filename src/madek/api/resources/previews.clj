@@ -5,7 +5,6 @@
     [compojure.core :as cpj]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug]
-    [madek.api.pagination :as pagination]
     [madek.api.resources.previews.preview :as preview]
     [madek.api.resources.shared :as sd]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -17,7 +16,7 @@
     ))
 
 (defn- query-preview [preview-id]
-  ; we wrap this since badly formated media-file-id strings can cause an
+  ; we wrap this since badly formated preview-id strings can cause an
   ; exception, note that 404 is in that case a correct response
   (catcher/snatch {}
     (-> (jdbc/query
@@ -70,6 +69,7 @@
   (fn [request] (add-preview-for-media-file handler request)))
 
 
+; TODO tests
 (def preview-routes
   ["/previews"
    ["/:preview_id" 
@@ -92,10 +92,12 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:preview_id s/Uuid}}}}]
    ])
-  
+
+; TODO query addressing different previews is not rest.
+; TODO tests
 (def media-entry-routes
   ["/media-entry"
-   ; TODO auth
+   ; TODO media-entry preview auth
    ["/:media_entry_id/preview"
     {:get {:summary "Get preview for media-entry id."
            :handler handle_get-preview
@@ -105,7 +107,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :query {(s/optional-key :size) s/Str}}}}]
-
+   ; TODO media-entry preview auth
    ["/:media_entry_id/preview/data-stream"
     {:get {:summary "Get preview for media-entry id."
            :handler preview/get-preview-file-data-stream

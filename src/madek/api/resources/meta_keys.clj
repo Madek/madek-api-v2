@@ -15,6 +15,8 @@
     (cpj/ANY "*" _ shared/dead-end-handler)
     ))
 
+; TODO meta_keys post, patch, delete
+; TODO tests
 (def ring-routes
   ["/meta-keys"
    ["/" {:get {:summary "Get all meta-key ids"

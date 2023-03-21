@@ -24,6 +24,8 @@
    :labels s/Any;{{s/Any s/Any}}
    :created_at s/Any})
 
+; TODO roles post, patch, delete
+; TODO tests
 (def ring-routes
   ["/roles"
    ["/" {:get {:summary "Get list of roles."

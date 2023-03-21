@@ -15,20 +15,17 @@
 
 (defn handle_list-favorite_collection
   [req]
-  (let [;full-data (true? (-> req :parameters :query :full-data))
-        db-result (sd/query-find-all :favorite_collections :*)]
-    (logging/info "handle_list-favorite_collection" "\nresult\n" db-result)
+  (let [db-result (sd/query-find-all :favorite_collections :*)]
+    ;(logging/info "handle_list-favorite_collection" "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_list-favorite_collection-by-user
   [req]
-  (let [;full-data (true? (-> req :parameters :query :full-data))
-        user-id (-> req :authenticated-entity :id)
+  (let [user-id (-> req :authenticated-entity :id)
         db-result (sd/query-eq-find-all "favorite_collections" "user_id" user-id)
         id-set (map :collection_id db-result)]
-    (logging/info "handle_list-favorite_collection" "\nresult\n" db-result "\nid-set\n" id-set)
+    ;(logging/info "handle_list-favorite_collection-by-user" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:collection_ids id-set})
-    ;(if full-data (sd/response_ok db-result) (sd/response_ok {:collection_ids id-set}))
     ))
 
 
@@ -36,7 +33,6 @@
   [req]
   (let [favorite_collection (-> req res-req-name)]
     ;(logging/info "handle_get-favorite_collection" favorite_collection)
-    ; TODO hide some fields
     (sd/response_ok favorite_collection)))
 
 
@@ -105,55 +101,55 @@
    :updated_at s/Any
    :created_at s/Any})
 
-; TODO response coercion
 ; TODO docu
 ; TODO tests
 (def favorite-routes
-; favorite_collection list / query
-  ; TODO query params
   ["/favorite/collections"
    {:get
-    {:summary  (sd/sum_adm "List users favorite_collections.")
+    {:summary  (sd/sum_usr "List users favorite_collections.")
      :handler handle_list-favorite_collection-by-user
      :coercion reitit.coercion.schema/coercion
-            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
      :responses {200 {:body {:collection_ids [s/Uuid]}}}}}])
 
+; TODO docu
+; TODO tests
 (def collection-routes
   ["/collection/:collection_id/favorite"
-   {:post {:summary (sd/sum_adm "Create favorite_collection for authed user and collection.")
+   {:post {:summary (sd/sum_usr "Create favorite_collection for authed user and collection.")
            :handler handle_create-favorite_collection
            :middleware [(wwrap-find-collection :collection_id)
                         (wwrap-find-favorite_collection-by-auth false)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}}
 
-    :get {:summary (sd/sum_adm "Get favorite_collection for authed user and collection id.")
+    :get {:summary (sd/sum_usr "Get favorite_collection for authed user and collection id.")
           :handler handle_get-favorite_collection
           :middleware [(wwrap-find-favorite_collection-by-auth true)]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Uuid}}}
 
-    :delete {:summary (sd/sum_adm "Delete favorite_collection for authed user and collection id.")
+    :delete {:summary (sd/sum_usr "Delete favorite_collection for authed user and collection id.")
              :coercion reitit.coercion.schema/coercion
              :handler handle_delete-favorite_collection
              :middleware [(wwrap-find-favorite_collection-by-auth true)]
              :parameters {:path {:collection_id s/Uuid}}}}])
 
+; TODO tests
 (def admin-routes
   [
-   ["/admin/favorite/collections"
+   ["/favorite/collections"
     {:get
      {:summary  (sd/sum_adm "List favorite_collection users.")
       :handler handle_list-favorite_collection
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :user_id) s/Uuid
-                           (s/optional-key :collection_id) s/Uuid
+      ; TODO query params
+      :parameters {:query {;(s/optional-key :user_id) s/Uuid 
+                           ;(s/optional-key :collection_id) s/Uuid
                            (s/optional-key :full-data) s/Bool}}
       :responses {200 {:body [schema_favorite_collection_export]}}              
       }}]
-    ; edit favorite_collection
-    ["/admin/favorite/collections/:collection_id/:user_id" 
+    ; edit favorite collections for other users
+    ["/favorite/collections/:collection_id/:user_id" 
      {:post {:summary (sd/sum_adm "Create favorite_collection for user and collection.")
              :handler handle_create-favorite_collection
              :middleware [(wwrap-find-user :user_id)

@@ -14,8 +14,7 @@
   (let [full-data (true? (-> req :parameters :query :full-data))
         qd (if (true? full-data) :* :io_interfaces.id)
         db-result (sd/query-find-all :io_interfaces qd)]
-    ;(->> db-result (map :id) set)
-    (logging/info "handle_list-io_interface" "\nqd\n" qd "\nresult\n" db-result)
+    ;(logging/info "handle_list-io_interface" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_get-io_interface
@@ -98,7 +97,7 @@
 
 ; TODO response coercion
 ; TODO docu
-; TODO tests
+; TODO tests io_interfaces
 (def ring-routes
 
   ["/io_interfaces" 

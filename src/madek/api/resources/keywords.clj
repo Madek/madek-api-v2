@@ -44,7 +44,7 @@
         result (kw/db-keywords-query ds)]
     {:status 200 :body {:keywords result}}))
 
-
+; TODO keyword post, patch, delete
 (def ring-routes
   ["/keywords"
    ["/" {:get {:summary "Get all keywords ids"

@@ -108,6 +108,7 @@
 ; TODO response coercion
 ; TODO docu
 ; TODO tests
+; TODO user routes
 (def ring-routes
 
   ["/usage_terms" 

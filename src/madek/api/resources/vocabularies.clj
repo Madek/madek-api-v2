@@ -40,6 +40,7 @@
    :labels {:de s/Str :en s/Str s/Str s/Str}
    :descriptions {:de s/Str :en s/Str s/Str s/Str}})
 
+; TODO tests
 (def ring-routes
   ["/vocabularies"
    ["/" {:get {:summary "Get list of vocabularies ids."

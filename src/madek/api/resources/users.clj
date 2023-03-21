@@ -179,12 +179,15 @@
     (create-user breq)
     ))
 
+; TODO user routes
+; TODO tests
 (def ring-routes
   ["/users"
    ["/" 
-    {:get {:summary "Get list of users ids."
+    {:get {:summary (sd/sum_adm "Get list of users ids.")
            :description "Get list of users ids."
            :swagger {:produces "application/json"}
+           ; TODO query paging count and full-data
            :parameters {:query {(s/optional-key :page) s/Int}}
            :content-type "application/json"
            :handler index
@@ -192,8 +195,8 @@
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:body {:users [{:id s/Uuid}]}}}}
 
-     :post {:summary "Get list of users ids."
-            :description "Get list of users ids."
+     :post {:summary (sd/sum_adm "Create user.")
+            :description "Create user."
             :swagger {:consumes "application/json" :produces "application/json"}
             :content-type "application/json"
             :accept "application/json"
@@ -205,7 +208,7 @@
                         406 {:body s/Any}}}}] ; TODO error handling
 
 ["/:id"
- {:get {:summary "Get user by id"
+ {:get {:summary (sd/sum_adm "Get user by id")
         :description "Get a user by id. Returns 404, if no such users exists."
         :handler handle_get-user
         :middleware [wrap-authorize-admin!]
@@ -217,7 +220,7 @@
         :responses {200 {:body s/Any} ; TODO coercion
                     404 {:body s/Any}}} ; TODO coercion
 
-  :delete {:summary "Delete user by id"
+  :delete {:summary (sd/sum_adm "Delete user by id")
            :description "Delete a user by id. Returns 404, if no such user exists."
            :handler handle_delete-user
            :middleware [wrap-authorize-admin!]
@@ -230,7 +233,7 @@
                        404 {:body s/Any}}} ; TODO coercion
 
   :patch {:middleware [wrap-authorize-admin!]
-          :summary "Patch user with id"
+          :summary (sd/sum_adm "Patch user with id")
           :description "Patch a user with id. Returns 404, if no such user exists."
           :swagger {:consumes "application/json" :produces "application/json"}
           :coercion reitit.coercion.schema/coercion

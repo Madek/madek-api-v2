@@ -160,18 +160,18 @@
     }
   ])
 
-(defn admin-routes [prefix]
+(def admin-routes
   [
-   [(str prefix "/favorite/media-entries")
+   ["/favorite/media-entries"
     {:get
-    {:summary  (sd/sum_adm "Query favorite_media_entries.")
-     :handler handle_list-favorite_media_entries
-     :coercion reitit.coercion.schema/coercion
-     :parameters {:query {(s/optional-key :user_id) s/Uuid
-                          (s/optional-key :media_entry_id) s/Uuid
-                          (s/optional-key :full-data) s/Bool}}}}]
+     {:summary  (sd/sum_adm "Query favorite_media_entries.")
+      :handler handle_list-favorite_media_entries
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:query {(s/optional-key :user_id) s/Uuid
+                           (s/optional-key :media_entry_id) s/Uuid
+                           (s/optional-key :full-data) s/Bool}}}}]
    
-   [(str prefix "/favorite/media_entries/:media_entry_id/:user_id")
+   ["/favorite/media_entries/:media_entry_id/:user_id"
     {:post
      {:summary (sd/sum_adm "Create favorite_media-entry for user and media-entry.")
       :handler handle_create-favorite_media_entry
@@ -197,4 +197,4 @@
       :middleware [(wwrap-find-favorite_media_entry true)]
       :parameters {:path {:user_id s/Uuid
                           :media_entry_id s/Uuid}}}}]
-                          ])
+   ])
