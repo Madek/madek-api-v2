@@ -86,16 +86,17 @@
   {(s/optional-key :id) s/Str
    (s/optional-key :admin_comment) (s/maybe s/Str)
    (s/optional-key :labels) s/Any
-   (s/optional-key :descriptions) s/Any ; {s/Str s/Str}
+   (s/optional-key :descriptions) s/Str
     
    })
 
-; TODO Inst coercion
 (def schema_export_contexts
   {:id s/Str
    :admin_comment (s/maybe s/Str)
-   :labels s/Str
-   :descriptions s/Str
+   ; TODO as json
+   :labels s/Any
+   ; TODO as json
+   :descriptions s/Any
    })
 
 ; TODO more checks
@@ -126,7 +127,10 @@
            :handler handle_get-context
            :middleware [(wwrap-find-context :id "id" true)]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}}}
+           :parameters {:path {:id s/Str}}
+           :responses {200 {:body schema_export_contexts}
+                       404 {:body s/Any}}
+          }
      
      :put {:summary (sd/sum_adm "Update contexts with id.")
            ; TODO labels and descriptions

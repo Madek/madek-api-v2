@@ -13,9 +13,13 @@
             [madek.api.resources.collections :as collections]
             [madek.api.resources.context-keys :as context_keys]
             [madek.api.resources.contexts :as contexts]
+            [madek.api.resources.delegations :as delegations]
+            [madek.api.resources.delegations-users :as delegations_users]
+            [madek.api.resources.delegations-groups :as delegations_groups]
             [madek.api.resources.custom-urls :as custom-urls]
             [madek.api.resources.favorite-collections :as favorite-collections]
             [madek.api.resources.favorite-media-entries :as favorite-media-entries]
+            [madek.api.resources.full-texts :as full-texts]
             [madek.api.resources.groups :as groups]
             [madek.api.resources.io-interfaces :as io-interfaces]
             [madek.api.resources.io-mappings :as io-mappings]
@@ -254,32 +258,13 @@
 
    ; TODO confidential-links post, get, patch, delete
 
-   
-   ;["delegations/" {:post (constantly sd/no_impl)
-   ;                 :get (constantly sd/no_impl)
-   ;                 :put (constantly sd/no_impl)
-   ;                 :delete (constantly sd/no_impl)}]
-
-   ; TODO delegations post, get, patch, delete
-   ; TODO del-type [groups, users, workflows]
-   ;["delegations/:del-type/" {:post (constantly sd/no_impl)
-   ;                           :get (constantly sd/no_impl)
-   ;                           :put (constantly sd/no_impl)
-   ;                           :delete (constantly sd/no_impl)}]
+   ; TODO delegations workflows post, get, patch, delete
 
    ; TODO edit-session post, get, patch, delete   
    ;["edit-session/" {:post (constantly sd/no_impl)
    ;                  :get (constantly sd/no_impl)
    ;                  :put (constantly sd/no_impl)
    ;                  :delete (constantly sd/no_impl)}]
-
-   
-   ; TODO full-texts post, get, patch, delete   
-   ;["full-texts/" {:post {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
-   ;                :get {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
-   ;                :put {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}
-   ;                :delete {:summary (sd/sum_todo "Full Texts") :handler (constantly sd/no_impl)}}]
-
   
    ; redirect to permissions
    ;["media-entries/:perm-type/perms" {:post (constantly sd/no_impl)
@@ -332,10 +317,6 @@
     users/ring-routes
     vocabularies/ring-routes]
 
-
-
-
-
    ["/auth-info" {:get {:summary "Authentication help and info."
                         :handler auth-info/auth-info}}]
 
@@ -352,9 +333,18 @@
    collection-collection-arcs/ring-routes
 
    custom-urls/ring-routes
+
+   delegations/ring-routes
+
+   delegations_users/admin-routes
+   delegations_groups/admin-routes
+
    ; favorites
    favorite-media-entries/favorite-routes
    favorite-collections/favorite-routes
+
+   full-texts/query-routes
+   full-texts/admin-routes
 
    keywords/ring-routes
 
@@ -374,7 +364,7 @@
    meta-data/ring-routes
 
    previews/preview-routes
-   
+
    api2-routes])
    
 
