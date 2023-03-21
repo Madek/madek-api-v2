@@ -15,12 +15,22 @@
 
 (defn handle_list-favorite_media_entries
   [req]
-  (let [full-data (true? (-> req :parameters :query :full-data))
-        db-result (sd/query-find-all res-table-name :*)]
+  (let [;full-data (true? (-> req :parameters :query :full-data))
+        db-result (sd/query-find-all :favorite_media_entries :*)]
     ;(->> db-result (map :id) set)
-    ;(logging/info "handle_list-favorite_media_entry" "\nresult\n" db-result)
+    (logging/info "handle_list-favorite_media_entry" "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
+(defn handle_list-favorite_media_entries-by-user
+  [req]
+  (let [;full-data (true? (-> req :parameters :query :full-data))
+        user-id (-> req :authenticated-entity :id)
+        db-result (sd/query-eq-find-all "favorite_media_entries" "user_id" user-id)
+        id-set (map :media_entry_id db-result)]
+    (logging/info "handle_list-favorite_media_entry" "\nresult\n" db-result "\nid-set\n" id-set)
+    (sd/response_ok {:media_entry_ids id-set})
+    ;(if full-data (sd/response_ok db-result) (sd/response_ok {:media_entry_ids id-set})) 
+    ))
 
 (defn handle_get-favorite_media_entry
   [req]
@@ -39,7 +49,7 @@
       ; already has favorite_media_entry
       (sd/response_ok favorite_media_entry)
       ; create favorite_media_entry entry
-      (if-let [ins_res (jdbc/insert! (rdbms/get-ds) res-table-name data)]
+      (if-let [ins_res (first (jdbc/insert! (rdbms/get-ds) res-table-name data))]
         ; TODO clean result
         (sd/response_ok ins_res)
         (sd/response_failed "Could not create favorite_media_entry." 406)))))
@@ -90,67 +100,101 @@
   (fn [handler]
     (fn [request] (sd/req-find-data request handler param "media_entries" "id" :media_entry true))))
 
+(def schema_favorite_media_entries_export
+  {:user_id s/Uuid
+   :media_entry_id s/Uuid
+   :updated_at s/Any
+   :created_at s/Any})
+
 ; TODO response coercion
 ; TODO docu
 ; TODO tests
-(def ring-routes
+; user self edit favorites 
+(def favorite-routes
+  ["/favorite/media-entries"
+   {:get
+    {:summary  (sd/sum_adm "List users favorites media_entries ids.")
+     :handler handle_list-favorite_media_entries-by-user
+     :swagger {:produces "application/json"}
+     :coercion reitit.coercion.schema/coercion
+     ;:parameters {:query {;(s/optional-key :media_entry_id) s/Uuid
+     ;                     ;(s/optional-key :full-data) s/Bool
+     ;                     }}
+     :responses {200 {:body {:media_entry_ids [s/Uuid]}}}
+     }}])
 
-  ["/favorite_media_entries"
-    ["/"
-     {; favorite_collection list / query
-      ; TODO query params
-      :get {:summary  (sd/sum_adm "List favorite_media_entries.")
-            :handler handle_list-favorite_media_entries
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:query {(s/optional-key :user_id) s/Uuid
-                                 (s/optional-key :media_entry_id) s/Uuid
-                                 (s/optional-key :full-data) s/Bool}}}}]
-
-    ; user self edit favorites 
-   ["/:media_entry_id"
+(def media-entry-routes
+  ["/media-entry/:media_entry_id/favorite"
     {:post {:summary (sd/sum_cnv "Create favorite_media_entry for authed user and media-entry.")
             :handler handle_create-favorite_media_entry
             :middleware [(wwrap-find-media_entry :media_entry_id)
                          (wwrap-find-favorite_media_entry-by-auth false)]
+            :swagger {:produces "application/json"}
             :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:media_entry_id s/Uuid}}}
+            :parameters {:path {:media_entry_id s/Uuid}}
+            :responses {200 {:body schema_favorite_media_entries_export}
+                        404 {:body s/Any}
+                        406 {:body s/Any}}
+            }
 
      :get {:summary (sd/sum_cnv "Get favorite_media_entry for authed user and media-entry.")
            :handler handle_get-favorite_media_entry
            :middleware [(wwrap-find-media_entry :media_entry_id)
                         (wwrap-find-favorite_media_entry-by-auth true)]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid}}}
+           :parameters {:path {:media_entry_id s/Uuid}}
+           :responses {200 {:body schema_favorite_media_entries_export}
+                       404 {:body s/Any}
+                       406 {:body s/Any}}
+           }
 
      :delete {:summary (sd/sum_cnv "Delete favorite_media_entry for authed user and media-entry.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-favorite_media_entry
               :middleware [(wwrap-find-media_entry :media_entry_id)
                            (wwrap-find-favorite_media_entry-by-auth true)]
-              :parameters {:path {:media_entry_id s/Uuid}}}}]
-    ; admin edit favorites
-    ["/:media_entry_id/:user_id" 
-     {:post {:summary (sd/sum_adm "Create favorite_media-entry for user and media-entry.")
-             :handler handle_create-favorite_media_entry
-             :middleware [(wwrap-find-user :user_id)
-                          (wwrap-find-media_entry :media_entry_id)
-                          (wwrap-find-favorite_media_entry false)]
-             :coercion reitit.coercion.schema/coercion
-             :parameters {:path {:user_id s/Uuid
-                                 :media_entry_id s/Uuid}}}
-
-      :get {:summary (sd/sum_adm "Get favorite_media-entry for user and media-entry.")
-            :handler handle_get-favorite_media_entry
-            :middleware [
-                         (wwrap-find-favorite_media_entry true)]
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:user_id s/Uuid
-                                :media_entry_id s/Uuid}}}
-
-      :delete {:summary (sd/sum_adm "Delete favorite_media-entry for user and media-entry.")
-               :coercion reitit.coercion.schema/coercion
-               :handler handle_delete-favorite_media_entry
-               :middleware [(wwrap-find-favorite_media_entry true)]
-               :parameters {:path {:user_id s/Uuid
-                                   :media_entry_id s/Uuid}}}}]
+              :parameters {:path {:media_entry_id s/Uuid}}
+              :responses {200 {:body schema_favorite_media_entries_export}
+                          404 {:body s/Any}
+                          406 {:body s/Any}}}
+    }
   ])
+
+(defn admin-routes [prefix]
+  [
+   [(str prefix "/favorite/media-entries")
+    {:get
+    {:summary  (sd/sum_adm "Query favorite_media_entries.")
+     :handler handle_list-favorite_media_entries
+     :coercion reitit.coercion.schema/coercion
+     :parameters {:query {(s/optional-key :user_id) s/Uuid
+                          (s/optional-key :media_entry_id) s/Uuid
+                          (s/optional-key :full-data) s/Bool}}}}]
+   
+   [(str prefix "/favorite/media_entries/:media_entry_id/:user_id")
+    {:post
+     {:summary (sd/sum_adm "Create favorite_media-entry for user and media-entry.")
+      :handler handle_create-favorite_media_entry
+      :middleware [(wwrap-find-user :user_id)
+                   (wwrap-find-media_entry :media_entry_id)
+                   (wwrap-find-favorite_media_entry false)]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:user_id s/Uuid
+                          :media_entry_id s/Uuid}}}
+
+     :get
+     {:summary (sd/sum_adm "Get favorite_media-entry for user and media-entry.")
+      :handler handle_get-favorite_media_entry
+      :middleware [(wwrap-find-favorite_media_entry true)]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:user_id s/Uuid
+                          :media_entry_id s/Uuid}}}
+
+     :delete
+     {:summary (sd/sum_adm "Delete favorite_media-entry for user and media-entry.")
+      :coercion reitit.coercion.schema/coercion
+      :handler handle_delete-favorite_media_entry
+      :middleware [(wwrap-find-favorite_media_entry true)]
+      :parameters {:path {:user_id s/Uuid
+                          :media_entry_id s/Uuid}}}}]
+                          ])
