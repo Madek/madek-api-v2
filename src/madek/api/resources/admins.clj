@@ -66,80 +66,55 @@
 ; TODO docu
 ; TODO tests
 (def ring-routes
-  
   [
    ["/admins"
-    ["/"
-     {:post {:summary (sd/sum_adm_todo "Create admin user.")
-             :handler (constantly sd/no_impl)}
-    ; admin list / query
-      :get {:summary  (sd/sum_adm "List admin users.")
-            :handler handle_list-admin
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:query {(s/optional-key :full-data) s/Bool}}
-            }}]
+    {:get
+     {:summary  (sd/sum_adm "List admin users.")
+      :handler handle_list-admin
+       ; TODO require admin role
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:query {(s/optional-key :full-data) s/Bool}}}}
+   ]
     ; edit admin
-    ["/:id" {:post {:summary (sd/sum_adm "Create admin for user with id.")
-                    :handler handle_create-admin
-                    :middleware [(wwrap-find-user :id)
-                                 (wwrap-find-admin :id "user_id" false)]
-                    :coercion reitit.coercion.schema/coercion
-                    :parameters {:path {:id s/Uuid}}}
+   ["/admins/:id"
+     {
 
-             :get {:summary (sd/sum_adm "Get admin by id.")
-                   :handler handle_get-admin
-                   :middleware [(wwrap-find-admin :id "id" true)]
-                   :coercion reitit.coercion.schema/coercion
-                   :parameters {:path {:id s/Uuid}}}
+      :get
+      {:summary (sd/sum_adm "Get admin by id.")
+       :handler handle_get-admin
+       :middleware [(wwrap-find-admin :id "id" true)]
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:id s/Uuid}}}
 
-             :delete {:summary (sd/sum_adm "Delete admin by id.")
-                      :coercion reitit.coercion.schema/coercion
-                      :handler handle_delete-admin
-                      :middleware [(wwrap-find-admin :id "id" true)]
-                      :parameters {:path {:id s/Uuid}}}}]
-    ; convenience to access by user id
-    ["/by-user/:user_id/"
-     {:post {:summary (sd/sum_adm "Create admin for user with id.")
-             :handler handle_create-admin
-             :middleware [(wwrap-find-user :user_id)
-                          (wwrap-find-admin :user_id "user_id" false)]
-             :coercion reitit.coercion.schema/coercion
-             :parameters {:path {:id s/Uuid}}}
-
-      :get {:summary (sd/sum_cnv_adm "Get admin for user.")
-                                   ;:handler handle_get-admin-by-user
-            :handler handle_get-admin
-            :middleware [(wwrap-find-admin :user_id "user_id" true)]
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:user_id s/Uuid}}}
-
-      :delete {:summary (sd/sum_cnv_adm "Delete admin for user.")
-               :coercion reitit.coercion.schema/coercion
-               :handler handle_delete-admin
-               :middleware [(wwrap-find-admin :user_id "user_id" true)]
-               :parameters {:path {:user_id s/Uuid}}}}]]
+      :delete
+      {:summary (sd/sum_adm "Delete admin by id.")
+       :coercion reitit.coercion.schema/coercion
+       :handler handle_delete-admin
+       :middleware [(wwrap-find-admin :id "id" true)]
+       :parameters {:path {:id s/Uuid}}}}]
+    
    ; convenience to access via user
-   ["/user" 
-    ["/:user_id/admin" 
-     {:post {:summary (sd/sum_cnv_adm "Create admin for user with id.")
-             :handler handle_create-admin
-             :middleware [(wwrap-find-user :user_id)
-                          (wwrap-find-admin :user_id "user_id" false)]
-             :coercion reitit.coercion.schema/coercion
-             :parameters {:path {:user_id s/Uuid}}}
+   ["/admins/:user_id/user" 
+     {:post
+      {:summary (sd/sum_adm "Create admin for user with id.")
+       :handler handle_create-admin
+       :middleware [(wwrap-find-user :user_id)
+                    (wwrap-find-admin :user_id "user_id" false)]
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:user_id s/Uuid}}}
 
-      :get {:summary (sd/sum_cnv_adm "Get admin for user.")
-                                   ;:handler handle_get-admin-by-user
-            :handler handle_get-admin
-            :middleware [(wwrap-find-admin :user_id "user_id" true)]
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:user_id s/Uuid}}}
+      :get
+      {:summary (sd/sum_cnv_adm "Get admin for user.")
+       :handler handle_get-admin
+       :middleware [(wwrap-find-admin :user_id "user_id" true)]
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:user_id s/Uuid}}}
 
-      :delete {:summary (sd/sum_cnv_adm "Delete admin for user.")
-               :coercion reitit.coercion.schema/coercion
-               :handler handle_delete-admin
-               :middleware [(wwrap-find-admin :user_id "user_id" true)]
-               :parameters {:path {:user_id s/Uuid}}}}]
-
-    ]
-   ])
+      :delete
+      {:summary (sd/sum_cnv_adm "Delete admin for user.")
+       :coercion reitit.coercion.schema/coercion
+       :handler handle_delete-admin
+       :middleware [(wwrap-find-admin :user_id "user_id" true)]
+       :parameters {:path {:user_id s/Uuid}}}}
+   ]
+  ])

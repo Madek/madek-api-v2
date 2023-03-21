@@ -38,7 +38,7 @@
         sql/format)))
 
 (defn arcs [request]
-  (let [query (arcs-query (-> request :parameters :query))
+  (let [query (arcs-query (or (-> request :parameters :query) (-> request :parameters :path)))
         db-result (jdbc/query (rdbms/get-ds) query)]
     (sd/response_ok {:collection-media-entry-arcs db-result})))
 
@@ -106,28 +106,18 @@
 
 (def ring-routes
   ["/collection-media-entry-arcs"
-   ["/" {:get {:summary "Get collection media-entry arcs."
+   ["/" {:get {:summary "Query collection media-entry arcs."
                :handler arcs
                :swagger {:produces "application/json"}
                :coercion reitit.coercion.schema/coercion
+               ; TODO puery params
                :parameters {:query {(s/optional-key :collection_id) s/Uuid
                                     (s/optional-key :media_entry_id) s/Uuid}}
                :responses {200 {:body s/Any}} ; TODO response coercion
                }
-
-         :post {:summary (sd/sum_todo "Create collection media-entry arc")
-                :handler handle_create-col-me-arc
-                :swagger {:produces "application/json"}
-                :coercion reitit.coercion.schema/coercion
-                :parameters {:path {:collection_id s/Uuid
-                                    :media_entry_id s/Uuid}
-                             :body schema_collection-media-entry-arc-create}
-                :responses {200 {:body s/Any}
-                            406 {:body s/Any}}
-                }
          }]
 
-   ["/:id" {:get {:summary "Get collection media-entry arcs."
+   ["/:id" {:get {:summary "Get collection media-entry arc."
                   :handler arc
                   :swagger {:produces "application/json"}
                   :coercion reitit.coercion.schema/coercion
@@ -136,7 +126,7 @@
                               404 {:body s/Any}} ; TODO response coercion
                   }
             ; TODO
-            :put {:summary (sd/sum_todo "Update collection media-entry arc")
+            :patch {:summary (sd/sum_todo "Update collection media-entry arc")
                   :handler (constantly sd/no_impl)
                   :swagger {:produces "application/json"}
                   :coercion reitit.coercion.schema/coercion
@@ -160,5 +150,53 @@
    
    ])
 
+(def collection-routes
+  ["/collection/:collection_id"
+    ["/media-entry-arcs" 
+     {:get
+      {:summary "Get collection media-entry arcs."
+       :handler arcs
+       :swagger {:produces "application/json"}
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid}}
+       :responses {200 {:body s/Any}} ; TODO response coercion
+       }}]
+    ["/media-entry-arcs/:media_entry_id"
+     {:post
+      {:summary (sd/sum_usr "Create collection media-entry arc")
+       :handler handle_create-col-me-arc
+       :swagger {:produces "application/json"}
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid
+                           :media_entry_id s/Uuid}
+                    :body schema_collection-media-entry-arc-create}
+       :responses {200 {:body s/Any}
+                   406 {:body s/Any}}}
+       ; TODO
+      :patch
+      {:summary (sd/sum_todo "Update collection media-entry arc")
+       :handler (constantly sd/no_impl)
+       :swagger {:produces "application/json"}
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid
+                           :media_entry_id s/Uuid}
+                    :body schema_collection-media-entry-arc-update}
+       :responses {200 {:body s/Any}
+                   404 {:body s/Any}
+                   406 {:body s/Any}}}
+            ; TODO
+      :delete
+      {:summary (sd/sum_todo "Delete collection media-entry arc")
+       :handler (constantly sd/no_impl)
+       :swagger {:produces "application/json"}
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid
+                           :media_entry_id s/Uuid}}
+       :responses {200 {:body s/Any}
+                   404 {:body s/Any}
+                   406 {:body s/Any}}}}
+    
+   ]
+  ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

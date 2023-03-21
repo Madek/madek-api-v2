@@ -24,7 +24,7 @@
   ;        ["SELECT * FROM media_files WHERE id = ?" media-file-id])
   ;      first)))
 
-(defn- query-media-file-by-media-entry-id [media-entry-id]
+(defn- query-media-files-by-media-entry-id [media-entry-id]
   (sd/query-eq-find-one "media_files" "media_entry_id" media-entry-id))
   ; we wrap this since badly formated media-file-id strings can cause an
   ; exception, note that 404 is in that case a correct response
@@ -54,8 +54,8 @@
    adds queried media-file and its media_file_id to the request data."
   [request handler]
   (when-let [media-entry-id (or (-> request :route-params :media_entry_id) (-> request :parameters :path :media_entry_id))]
-     (if-let [media-file (query-media-file-by-media-entry-id media-entry-id)]
-       (handler (assoc request :media-file media-file :media_file_id (:id media-file)))
+     (if-let [media-files (query-media-files-by-media-entry-id media-entry-id)]
+       (handler (assoc request :media-file media-files))
        (sd/response_not_found "No media-file for media_entry_id"))))
 
 (defn wrap-find-and-add-media-file-by-media-entry-id
@@ -81,9 +81,8 @@
       wrap-find-and-add-media-file))
 
 
-(def ring-routes
-  [
-   ["/media-files"
+(def media-file-routes
+  ["/media-file"
    ["/:media_file_id" 
     {:get {:summary "Get media-file for id."
            :swagger {:produces "application/json"}
@@ -92,7 +91,8 @@
            :middleware [wrap-find-and-add-media-file
                         media-files.authorization/ring-wrap-authorize-metadata-and-previews]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_file_id s/Str}}}}]
+               :parameters {:path {:media_file_id s/Str}}}}
+   ]
 
    ["/:media_file_id/data-stream"
     {:get {:summary "Get media-file data-stream for id."
@@ -100,42 +100,29 @@
            :middleware [wrap-find-and-add-media-file
                         media-files.authorization/ring-wrap-authorize-full_size]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_file_id s/Str}}}}]
-   
-   ["/:media_entry_id/for-media-entry"
-    {:get {:summary "Get media-file for media-entry id."
-           :handler media-file/get-media-file
-           :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                        media-files.authorization/ring-wrap-authorize-metadata-and-previews]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Str}}}}]
+           :parameters {:path {:media_file_id s/Str}}}}
    ]
-   
-   ["/media-file/for-media-entry/:media_entry_id"
-    {:get {:summary "Get media-file for media-entry id."
-           :handler media-file/get-media-file
-           :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                        media-files.authorization/ring-wrap-authorize-metadata-and-previews
-                        ]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Str}}}}]
-   
-   ["/media-entry/:media_entry_id/media-file"
-    {:get {:summary "Get media-file for media-entry id."
-           :handler media-file/get-media-file
-           :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                        media-files.authorization/ring-wrap-authorize-metadata-and-previews]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Str}}}}]
-   
-   ["/media-entry/:media_entry_id/media-file/data-stream"
-    {:get {:summary "TODO: Get media-file data-stream for media-entry id."
-           :handler media-file/get-media-file-data-stream
-           :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                        media-files.authorization/ring-wrap-authorize-metadata-and-previews]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Str}}}}]
+  ])
 
-   ])
+(def media-entry-routes
+  ["/media-entry"
+   ["/:media_entry_id/media-file"
+    {:get
+     {:summary "Get media-file for media-entry id."
+      :handler media-file/get-media-file
+      :middleware [wrap-find-and-add-media-file-by-media-entry-id
+                   media-files.authorization/ring-wrap-authorize-metadata-and-previews]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:media_entry_id s/Str}}}}]
+   
+   ["/:media_entry_id/media-file/data-stream"
+    {:get
+     {:summary "TODO: Get media-file data-stream for media-entry id."
+      :handler media-file/get-media-file-data-stream
+      :middleware [wrap-find-and-add-media-file-by-media-entry-id
+                   media-files.authorization/ring-wrap-authorize-metadata-and-previews]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:media_entry_id s/Str}}}}]
+  ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

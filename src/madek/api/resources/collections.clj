@@ -77,6 +77,7 @@
                :description "Get collection id list."
                :swagger {:produces "application/json"}
                :parameters {:query {(s/optional-key :page) s/Str
+                                    (s/optional-key :full_data) s/Bool
                                     (s/optional-key :collection_id) s/Str
                                     (s/optional-key :order) s/Str
                                     (s/optional-key :me_get_metadata_and_previews) s/Bool

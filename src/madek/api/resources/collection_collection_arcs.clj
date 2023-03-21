@@ -25,6 +25,20 @@
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
 
+(defn arc-query-by-parent-and-child [request]
+  (-> (sql/select :*)
+      (sql/from :collection_collection_arcs)
+      (sql/merge-where [:= :parent_id (-> request :parameters :path :parent_id)])
+      (sql/merge-where [:= :child_id (-> request :parameters :path :child_id)]) 
+      sql/format))
+
+(defn handle_arc-by-parent-and-child [request]
+  (let [query (arc-query-by-parent-and-child request)
+        db-result (jdbc/query (rdbms/get-ds) query)]
+    (if-let [arc (first db-result)]
+      (sd/response_ok arc)
+      (sd/response_failed "No such collection-collection-arc" 404))))
+
 (defn arcs-query [query-params]
   (let [child-id (-> query-params :child_id presence)
         parent-id (-> query-params :parent_id presence)]
@@ -43,10 +57,11 @@
     (sd/response_ok {:collection-collection-arcs db-result})))
 
 (defn handle_create-col-me-arc [req]
-  (let [col-id (-> req :parameters :path :collection_id)
-        me-id (-> req :parameters :path :media_entry_id)
+  (let [parent-id (-> req :parameters :path :parent_id)
+        child-id (-> req :parameters :path :child_id)
+        
         data (-> req :parameters :body)
-        ins-data (assoc data :collection_id col-id :media_entry_id me-id)]
+        ins-data (assoc data :parent_id parent-id :child_id child-id)]
     (if-let [ins-res (jdbc/insert! (rdbms/get-ds) "collection_collection_arcs" ins-data)]
       (sd/response_ok ins-res)
       (sd/response_failed "Could not create collection-collection-arc" 406))
@@ -87,59 +102,109 @@
 
 (def ring-routes
   ["/collection-collection-arcs"
-   ["/" {:get {:summary "Get collection collection arcs."
-               :handler arcs
-               :swagger {:produces "application/json"}
-               :coercion reitit.coercion.schema/coercion
-               :parameters {:query {(s/optional-key :child_id) s/Uuid
-                                    (s/optional-key :parent_id) s/Uuid}}
-               :responses {200 {:body s/Any}} ; TODO response coercion
-               }
+   ["/" 
+    {:get
+     {:summary "Query collection collection arcs."
+      :handler arcs
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:query {(s/optional-key :child_id) s/Uuid
+                           (s/optional-key :parent_id) s/Uuid}}
+      :responses {200 {:body s/Any}} ; TODO response coercion
+      }
+    }
+   ]
 
-         :post {:summary (sd/sum_todo "Create collection collection arc")
-                :handler handle_create-col-me-arc
-                :swagger {:produces "application/json"}
-                :coercion reitit.coercion.schema/coercion
-                :parameters {:path {:collection_id s/Uuid
-                                    :media_entry_id s/Uuid}
-                             :body schema_collection-collection-arc-create}
-                :responses {200 {:body s/Any}
-                            406 {:body s/Any}}
-                }
-         }]
-
-   ["/:id" {:get {:summary "Get collection collection arcs."
-                  :handler arc
-                  :swagger {:produces "application/json"}
-                  :coercion reitit.coercion.schema/coercion
-                  :parameters {:path {:id s/Str}}
-                  :responses {200 {:body s/Any}
-                              404 {:body s/Any}} ; TODO response coercion
-                  }
+   ["/:id"
+    {:get
+     {:summary "Get collection collection arcs."
+      :handler arc
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:id s/Str}}
+      :responses {200 {:body s/Any}
+                  404 {:body s/Any}} ; TODO response coercion
+      }
             ; TODO
-            :put {:summary (sd/sum_todo "Update collection collection arc")
-                  :handler (constantly sd/no_impl)
-                  :swagger {:produces "application/json"}
-                  :coercion reitit.coercion.schema/coercion
+     :patch
+     {:summary (sd/sum_todo "Update collection collection arc")
+      :handler (constantly sd/no_impl)
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
                   ;:parameters {:path {:id s/Str}
                   ;             :body schema_collection-collection-arc-update}
-                  :responses {200 {:body s/Any}
-                              404 {:body s/Any}
-                              406 {:body s/Any}}
-                  }
+      :responses {200 {:body s/Any}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}
             ; TODO
-            :delete {:summary (sd/sum_todo "Delete collection collection arc")
-                     :handler (constantly sd/no_impl)
-                     :swagger {:produces "application/json"}
-                     :coercion reitit.coercion.schema/coercion
-                     :parameters {:path {:id s/Str}}
-                     :responses {200 {:body s/Any}
-                                 404 {:body s/Any}
-                                 406 {:body s/Any}}
-                     }
-            }] 
+     :delete
+     {:summary (sd/sum_todo "Delete collection collection arc")
+      :handler (constantly sd/no_impl)
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:id s/Str}}
+      :responses {200 {:body s/Any}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}}] 
    
    ])
 
+(def collection-routes
+  ["/collection/:parent_id"
+   ;["/collection-arcs"
+   ; {:get
+   ;  {:summary "List collection collection arcs."
+   ;   :handler arcs
+   ;   :swagger {:produces "application/json"}
+   ;   :coercion reitit.coercion.schema/coercion
+   ;   :parameters {:path {:parent_id s/Uuid}}
+   ;   :responses {200 {:body s/Any}} ; TODO response coercion
+   ;   }
+   ; }
+   ;]
+   ["/collection-arcs/:child_id"
+    {:post
+     {:summary (sd/sum_todo "Create collection collection arc")
+      :handler handle_create-col-me-arc
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:parent_id s/Uuid
+                          :child_id s/Uuid}
+                   :body schema_collection-collection-arc-create}
+      :responses {200 {:body s/Any}
+                  406 {:body s/Any}}}
+     :get
+     {:summary "Get collection collection arcs."
+      :handler handle_arc-by-parent-and-child
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:parent_id s/Uuid
+                          :child_id s/Uuid}}
+      :responses {200 {:body s/Any}
+                  404 {:body s/Any}} ; TODO response coercion
+     }
+            ; TODO
+     :patch
+     {:summary (sd/sum_todo "Update collection collection arc")
+      :handler (constantly sd/no_impl)
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
+                  ;:parameters {:path {:id s/Str}
+                  ;             :body schema_collection-collection-arc-update}
+      :responses {200 {:body s/Any}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}
+            ; TODO
+     :delete
+     {:summary (sd/sum_todo "Delete collection collection arc")
+      :handler (constantly sd/no_impl)
+      :swagger {:produces "application/json"}
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:id s/Str}}
+      :responses {200 {:body s/Any}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}}
+   ]
+  ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

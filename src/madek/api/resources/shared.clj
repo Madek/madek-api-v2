@@ -12,6 +12,8 @@
             [madek.api.utils.status :as status]))
 
 ; begin db-helpers
+; TODO move to sql file
+; TODO use honeysql
 (defn sql-query-find-eq 
   [table-name col-name row-data]
   [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
@@ -30,7 +32,8 @@
   (let [db-query (-> (sql/select cols)
                      (sql/from table-name)
                      sql/format)
-        db-result (jdbc/query (rdbms/get-ds) db-query)]
+        db-result (jdbc/query (rdbms/get-ds) db-query)
+        ]
     (logging/info "query-find-all" "\ndb-query\n" db-query "\ndb-result\n" db-result)
     db-result))
 
@@ -284,6 +287,7 @@
 (def s_cnv_acc "Convenience access.")
 
 (defn sum_todo [text] (apply str "TODO: " text))
+(defn sum_usr [text] (apply str "USER Context: " text))
 
 (defn sum_adm [text] (apply str text " " s_req_adm))
 (defn sum_cnv [text] (apply str text " " s_cnv_acc))

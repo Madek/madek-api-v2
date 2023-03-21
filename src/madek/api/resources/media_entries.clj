@@ -190,52 +190,27 @@
 
 (def ring-routes 
   ["/media-entries"
-   ["/" 
-    {:get {:summary "Get list media-entries."
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-           :handler handle_get-index
+    {:get
+     {:summary "Query media-entries."
+      :swagger {:produces "application/json"}
+      :content-type "application/json"
+      :handler handle_get-index
            ; TODO does not parse filter_by
-           :middleware [sd/ring-wrap-parse-json-query-parameters]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :collection_id) s/Str
-                                (s/optional-key :order) s/Any ;(s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
-                                (s/optional-key :filter_by) s/Any
-                                (s/optional-key :me_get_metadata_and_previews) s/Bool
-                                (s/optional-key :me_get_full_size) s/Bool
-                                (s/optional-key :page) s/Str}}}
-         ; TODO
-     :post {:summary (sd/sum_todo "Create media-entries.")
-            :handler handle_create-media-entry
-            :swagger {:consumes "multipart/form-data"}
-           ;:middleware [authentication/wrap]
-           ;:coercion reitit.coercion.schema/coercion
-            :coercion reitit.coercion.spec/coercion
-            :parameters {:query {:copy_me_id string?}
-                         :multipart {:file multipart/temp-file-part}
-                         }}
-         }
-    ]
-
-   
-   
-   ["/:media_entry_id"
-    {:get {:summary "Get media-entry for id."
-           :handler handle_get-media-entry
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Str}}}
-     
-    }]])
+      :middleware [sd/ring-wrap-parse-json-query-parameters]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:query {(s/optional-key :collection_id) s/Uuid
+                           (s/optional-key :order) s/Any ;(s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
+                           (s/optional-key :filter_by) s/Any
+                           (s/optional-key :me_get_metadata_and_previews) s/Bool
+                           (s/optional-key :me_get_full_size) s/Bool
+                           (s/optional-key :page) s/Str
+                           (s/optional-key :count) s/Int}}}}
+  ])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)
 (def media-entry-routes
-  ["/media-entry/"
+  ["/media-entry"
    {:post {:summary (sd/sum_todo "Create media-entry.")
            :handler handle_create-media-entry
            :swagger {:consumes "multipart/form-data"
@@ -247,6 +222,38 @@
            ;:coercion reitit.coercion.schema/coercion
            :coercion reitit.coercion.spec/coercion
            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
-                        :multipart {:file multipart/temp-file-part}}}}])
+                        :multipart {:file multipart/temp-file-part}}}}
+   
+   ["/:media_entry_id"
+    {:get {:summary "Get media-entry for id."
+           :handler handle_get-media-entry
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+
+           :middleware [sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:media_entry_id s/Str}}}}]
+  ])
+
+(def collection-routes
+  ["/collection/:collection_id/media-entries"
+   {:get {:summary "Query media-entries."
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+           :handler (constantly sd/no_impl)
+           ;:handler handle_get-index_by_collection
+           ; TODO does not parse filter_by
+           :middleware [sd/ring-wrap-parse-json-query-parameters]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:collection_id s/Uuid}
+                        :query {
+                                (s/optional-key :order) s/Any ;(s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
+                                (s/optional-key :filter_by) s/Any
+                                (s/optional-key :me_get_metadata_and_previews) s/Bool
+                                (s/optional-key :me_get_full_size) s/Bool
+                                (s/optional-key :page) s/Str
+                                (s/optional-key :count) s/Int}}}}
+   ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

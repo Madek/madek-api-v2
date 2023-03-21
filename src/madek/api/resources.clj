@@ -367,27 +367,35 @@
 
 (def ring-routes
   ["/api" {:middleware [authentication/wrap]}
-    ;["/" {:get (constantly sd/no_impl)}]
-   
-   
-   admins/ring-routes
+   ["/admin" admins/ring-routes]
+   favorite-collections/admin-routes
+   (favorite-media-entries/admin-routes "/admin")
 
    ["/auth-info" {:get {:summary "Authentication help and info."
                         :handler auth-info/auth-info}}]
 
    ; collections
    collections/ring-routes
+   meta-data/collection-routes
+   ;media-entries/collection-routes
+   custom-urls/collection-routes
+   favorite-collections/collection-routes
+   collection-media-entry-arcs/collection-routes
+   collection-collection-arcs/collection-routes
+
    collection-media-entry-arcs/ring-routes
+
    collection-collection-arcs/ring-routes
+
+
 
    contexts/ring-routes
 
    custom-urls/ring-routes
-   custom-urls/media-entry-routes
-   custom-urls/collection-routes
 
-   favorite-collections/ring-routes
-   favorite-media-entries/ring-routes
+
+   favorite-media-entries/favorite-routes
+   favorite-collections/favorite-routes
 
    groups/ring-routes
 
@@ -401,23 +409,29 @@
 
    media-entries/ring-routes
    media-entries/media-entry-routes
+   previews/media-entry-routes
+   meta-data/media-entry-routes
+   custom-urls/media-entry-routes
+   favorite-media-entries/media-entry-routes
+   media-files/media-entry-routes
+
   ;media_entries
    
 
    ;media_files
-   media-files/ring-routes
+   media-files/media-file-routes
 
    ;meta_data
    meta-data/ring-routes
-   meta-data/collection-routes
-   meta-data/media-entry-routes
-   
+
+
+
    meta-keys/ring-routes
 
    people/ring-routes
 
    previews/preview-routes
-   previews/media-entry-routes
+
 
    roles/ring-routes
    
