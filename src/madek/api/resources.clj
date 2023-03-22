@@ -332,7 +332,7 @@
    collection-media-entry-arcs/ring-routes
    collection-collection-arcs/ring-routes
 
-   custom-urls/ring-routes
+   custom-urls/query-routes
 
    delegations/ring-routes
 
