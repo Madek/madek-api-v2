@@ -11,6 +11,7 @@
     [madek.api.utils.rdbms :as rdbms]
     [reitit.coercion.schema]
     [schema.core :as s]
+    [cheshire.core :as cheshire]
     ))
 
 ; TODO tests, response coercion, error handling
@@ -44,22 +45,25 @@
 ; TODO tests, response coercion, error handling
 (defn handle_create-meta-data-text-date
   [req]
-  (let [mr (-> req :media-resource)
-        user-id (-> req :authenticated-entity :id str)
+  (let [user-id (-> req :authenticated-entity :id str)
+        mr (-> req :media-resource)
         mr-type (-> mr :type)
+        mr-id (str (-> mr :id))
         meta-key-id (-> req :parameters :path :meta_key_id)
-        text-data (-> req :body :text)
+        text-data (-> req :parameters :body :text)
         ins-data {:meta_key_id meta-key-id
                   :type "MetaDatum::TextDate"
                   :string text-data
-                  :media_entry_id (:id mr)
-                  :created_by_id user-id}]
+                  :created_by_id user-id}
+        insf-data (if (= mr-type "Collection")
+                    (assoc ins-data :collection_id mr-id)
+                    (assoc ins-data :media_entry_id mr-id))]
     (logging/info "handle_create-meta-data-text-date"
-                  "\nmr\n" mr
+                  ;"\nmr\n" mr
                   "\ntype\n" mr-type
                   "\nmeta-key-id\n" meta-key-id
-                  "\nins-data\n" ins-data)
-    (if-let [ins-result (jdbc/insert! (rdbms/get-ds) :meta_data ins-data)]
+                  "\nins-data\n" insf-data)
+    (if-let [ins-result (first (jdbc/insert! (rdbms/get-ds) :meta_data insf-data))]
       (sd/response_ok ins-result)
       (sd/response_failed {:message "Failed to add meta data text-date"} 406))))
 
@@ -69,19 +73,24 @@
   (let [mr (-> req :media-resource)
         user-id (-> req :authenticated-entity :id str)
         mr-type (-> mr :type)
+        mr-id (str (-> mr :id))
         meta-key-id (-> req :parameters :path :meta_key_id)
-        json-data (-> req :body :json)
+        json-data (-> req :parameters :body :json)
+        json-parsed (cheshire/parse-string json-data)
         ins-data {:meta_key_id meta-key-id
                   :type "MetaDatum::JSON"
-                  :json json-data
-                  :media_entry_id (:id mr)
-                  :created_by_id user-id}]
+                  :json json-parsed
+                  :created_by_id user-id}
+        
+        insf-data (if (= mr-type "Collection")
+                    (assoc ins-data :collection_id mr-id)
+                    (assoc ins-data :media_entry_id mr-id))]
     (logging/info "handle_create-meta-data-json"
                   "\nmr\n" mr
                   "\ntype\n" mr-type
                   "\nmeta-key-id\n" meta-key-id
-                  "\nins-data\n" ins-data)
-    (if-let [ins-result (jdbc/insert! (rdbms/get-ds) :meta_data ins-data)]
+                  "\nins-data\n" insf-data)
+    (if-let [ins-result (first (jdbc/insert! (rdbms/get-ds) :meta_data insf-data))]
       (sd/response_ok ins-result)
       (sd/response_failed {:message "Failed to add meta data json"} 406))))
 
@@ -91,20 +100,24 @@
   (let [mr (-> req :media-resource)
         user-id (-> req :authenticated-entity :id str)
         mr-type (-> mr :type)
+        mr-id (str (-> mr :id))
         meta-key-id (-> req :parameters :path :meta_key_id)
         keyword-data (-> req :keyword)
         ins-data {:meta_key_id meta-key-id
                   :type "MetaDatum::Keywords"
-                  (if (= mr-type "MediaEntry") :media_entry_id :collection_id) (-> mr :id str)
-                  :created_by_id user-id}]
+                  :created_by_id user-id}
+        insf-data (if (= mr-type "Collection")
+                    (assoc ins-data :collection_id mr-id)
+                    (assoc ins-data :media_entry_id mr-id))
+        ]
     (logging/info "handle_create-meta-data-keyword"
                   "\nmr\n" mr
                   "\ntype\n" mr-type
                   "\nmeta-key-id\n" meta-key-id
-                  "\nins-data\n" ins-data)
+                  "\nins-data\n" insf-data)
 
     (jdbc/with-db-transaction [tx (rdbms/get-ds)]
-      (if-let [ins-result (first (jdbc/insert! tx :meta_data ins-data))]
+      (if-let [ins-result (first (jdbc/insert! tx :meta_data insf-data))]
 
         (let [ip-data {:meta_datum_id (-> ins-result :id str)
                        :keyword_id (-> keyword-data :id str)
@@ -284,7 +297,7 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
-                         :body {:json s/Str}}
+                         :body {:text s/Str}}
             :responses {200 {:body s/Any}}}}]
 
    ["/:collection_id/meta-data/:meta_key_id/json"
