@@ -5,9 +5,9 @@
     [logbug.debug :as debug]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
-    [madek.api.resources.shared :as sd]
-    
-    [madek.api.pagination :as pagination]))
+    [madek.api.resources.shared :as sd] 
+    [madek.api.pagination :as pagination]
+    ))
 
 
 (defn- base-query [full-data]
@@ -59,6 +59,22 @@
   (let [dbq (query-keywords-sql query)]
     ; (logging/info "db-keywords-query" dbq)
     (jdbc/query (get-ds) dbq)))
+
+(defn db-keywords-create [data]
+  (->> (jdbc/insert! (get-ds) :keywords data) first))
+
+(defn db-keywords-update [id data]
+  (if-let [upd-res (jdbc/update! (get-ds) :keywords data (sd/sql-update-clause "id" id))]
+    (db-keywords-get-one id)
+    nil))
+
+(defn db-keywords-delete [id]
+  (if-let [data (db-keywords-get-one id)]
+    (if-let [del-res (jdbc/delete! (get-ds) :keywords (sd/sql-update-clause "id" id))]
+      data
+      nil)
+    nil)
+  )
 
 (defn export-keyword [keyword]
   (->
