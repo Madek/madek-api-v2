@@ -186,7 +186,7 @@
 
 ; test {"meta_data":[{"key":"any","match":"nitai"}]}
 ; test2 {"meta_data":[{"key":"test:string","match":"par tial"},{"key":"filter:7cq5ila0xxqlrc7wod2g","value":"3768574c-d4d8-4fac-ad73-0e2dbd4cc443"},{"key":"test:licenses"},{"not_key":"filter:1vq1h2t25y92yq8ojg11"},{"key":"test:people","value":"9f70e42c-8d01-4b2b-8f10-2719921797fc"},{"key":"any","type":"MetaDatum::Keywords","value":"694b858d-e8eb-4e51-8bee-f55fd8a0491b"}],"media_files":[{"key":"content_type","value":"image/jpeg"},{"key":"uploader_id","value":"7bf54b03-42e5-4dc8-8a36-309ca9b1563f"},{"key":"extension","value":"jpg"}],"permissions":[{"key":"responsible_user","value":"935e9257-b7a7-4783-bb11-553907ca67f6"},{"key":"public","value":"true"},{"key":"entrusted_to_user","value":"73fbb710-eedc-481d-a411-692705decd09"},{"key":"entrusted_to_group","value":"e8b962f6-df73-4b6f-b2b6-3f71230cd0aa"}]}
-
+; TODO test query and paging
 (defn- build-query [request]
   (let [;query-params (or (:query-params request) (-> request :parameters :query))
         query-params (:query-params request)

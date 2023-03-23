@@ -12,34 +12,40 @@
    ))
 
 
-(defn arc-query [request]
+(defn arc-query [id]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
-      (sql/merge-where [:= :id (or (-> request :params :id) (-> request :parameters :path :id))])
+      (sql/merge-where [:= :id id])
       sql/format))
 
 (defn arc [request]
-  (let [query (arc-query request)
-        db-result (jdbc/query (rdbms/get-ds) query)]
+  (let [id (or (-> request :params :id) (-> request :parameters :path :id))
+        db-query (arc-query id)
+        db-result (jdbc/query (rdbms/get-ds) db-query)]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
-      (sd/response_failed "No such collection-media-entry-arc" 404))))
+      (sd/response_not_found "No such collection-media-entry-arc"))))
 
+; TODO test query and paging
 (defn arcs-query [query-params]
-  (let [collection-id (-> query-params :collection_id presence)
-        media-entry-id (-> query-params :media_entry_id presence)]
+  ;(let [collection-id (-> query-params :collection_id presence)
+  ;      media-entry-id (-> query-params :media_entry_id presence)]
     (-> (sql/select :*)
         (sql/from :collection_media_entry_arcs)
-        (#(if collection-id
-            (sql/merge-where % [:= :collection_id collection-id]) %))
-        (#(if media-entry-id
-            (sql/merge-where % [:= :media_entry_id media-entry-id]) %))
+        (sd/build-query-param query-params :collection_id)
+        (sd/build-query-param query-params :media_entry_id)
+        ;(#(if collection-id
+        ;    (sql/merge-where % [:= :collection_id collection-id]) %))
+        ;(#(if media-entry-id
+        ;    (sql/merge-where % [:= :media_entry_id media-entry-id]) %))
         (pagination/add-offset-for-honeysql query-params)
-        sql/format)))
+        sql/format))
+;)
 
 (defn arcs [request]
-  (let [query (arcs-query (or (-> request :parameters :query) (-> request :parameters :path)))
-        db-result (jdbc/query (rdbms/get-ds) query)]
+  (let [query-params (or (-> request :parameters :query) (-> request :parameters :query))
+        db-query (arcs-query query-params)
+        db-result (jdbc/query (rdbms/get-ds) db-query)]
     (sd/response_ok {:collection-media-entry-arcs db-result})))
 
 (def routes

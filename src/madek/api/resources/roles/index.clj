@@ -8,6 +8,7 @@
     [madek.api.utils.sql :as sql]
     ))
 
+;TODO test paging
 (defn- query
   [query-params]
   (-> (sql/select :roles.*)

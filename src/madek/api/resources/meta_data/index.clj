@@ -8,11 +8,11 @@
     [madek.api.authorization :as authorization]
     [madek.api.constants :as constants]
     [madek.api.pagination :as pagination]
-    [madek.api.resources.shared :as shared]
+    
     [madek.api.resources.vocabularies.permissions :as permissions]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
-    [taoensso.timbre :refer [debug info warn error spy]]
+    
     ))
 
 
@@ -46,6 +46,8 @@
   (-> (base-query user-id)
       (sql/merge-where [:= :meta_data.collection_id  collection-id])))
 
+; TODO remove cpj
+; TODO add query param meta-keys as json list of strings
 (defn filter-meta-data-by-meta-key-ids [query request]
   (if-let [meta-keys (-> request :query-params :meta_keys)]
     (do

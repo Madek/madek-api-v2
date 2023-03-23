@@ -25,6 +25,7 @@
         (sql/merge-join :people_users [:= :people.id :people_users.person_id])
         (sql/merge-where [:= :people_users.user_id user-id]))))
 
+; TODO test paging
 (defn get-index
   [query-params]
   (let [query

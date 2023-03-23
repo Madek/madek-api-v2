@@ -36,6 +36,7 @@
     (-> query (sql/order-by [:collections.created-at :desc]))
     (-> query (sql/order-by [:collections.created-at :asc]))))
 
+; TODO test query and paging
 (defn- build-query [request]
   (let [query-params (:query-params request)
         authenticated-entity (:authenticated-entity request)]

@@ -9,6 +9,7 @@
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
             [madek.api.semver :as semver]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [madek.api.constants :as mc]
             [madek.api.utils.status :as status]))
 
 ; begin db-helpers
@@ -27,15 +28,39 @@
   [col-name row-data]
   [(str col-name " = ?") row-data]
   )
+
+(defn build-query-base [table-key col-keys]
+  (-> (sql/select col-keys) 
+      (sql/from table-key)))
+
+
+; TODO sql injection protection
+(defn build-query-param [query query-params param]
+  (let [pval (-> query-params param mc/presence)]
+    (if (nil? pval)
+      query
+      (-> query (sql/merge-where [:= param pval])))))
+
+; TODO sql injection protection
+(defn build-query-param-like [query query-params param]
+  (let [pval (-> query-params param mc/presence)
+        qval (str "%" pval "%")]
+    (if (nil? pval)
+      query
+      (-> query (sql/merge-where [:like param qval])))))
+
+
 (defn query-find-all
-  [table-name cols]
-  (let [db-query (-> (sql/select cols)
-                     (sql/from table-name)
+  [table-key col-keys]
+  (let [db-query (-> (build-query-base table-key col-keys)
                      sql/format)
         db-result (jdbc/query (rdbms/get-ds) db-query)
         ]
     ;(logging/info "query-find-all" "\ndb-query\n" db-query "\ndb-result\n" db-result)
     db-result))
+
+
+
 
 (defn query-eq-find-all [table-name col-name row-data]
   ; we wrap this since badly formated media-file-id strings can cause an

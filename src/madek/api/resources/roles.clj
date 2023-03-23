@@ -32,7 +32,8 @@
                :description "Get list of roles."
                :handler get-index
                :swagger {:produces "application/json"}
-               :parameters {:query {(s/optional-key :page) s/Int}}
+               :parameters {:query {(s/optional-key :page) s/Int
+                                    (s/optional-key :count) s/Int}}
                :content-type "application/json"
                 ;:accept "application/json"
                :coercion reitit.coercion.schema/coercion}

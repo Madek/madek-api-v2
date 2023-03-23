@@ -30,7 +30,7 @@
         ; or TODO data with id
         ]
         ; create context entry
-      (if-let [ins_res (jdbc/insert! (rdbms/get-ds) :contexts data)]
+      (if-let [ins_res (jdbc/insert! (get-ds) :contexts data)]
         ; TODO clean result
         (sd/response_ok (first ins_res))
         (sd/response_failed "Could not create context." 406))))
@@ -49,7 +49,7 @@
     (logging/info "handle_update-contexts: " "\nid\n" id "\ndwid\n" dwid
                   "\nold-data\n" old-data
                   "\nupd-query\n" upd-query)
-    (if-let [ins-res (jdbc/update! (rdbms/get-ds) :contexts dwid upd-query)]
+    (if-let [ins-res (jdbc/update! (get-ds) :contexts dwid upd-query)]
         ; TODO clean result
       ;(if (= 1 ins-res)
         (
@@ -65,7 +65,7 @@
   [req]
   (let [context (-> req :context)
         context-id (-> req :context :id)]
-    (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :contexts ["id = ?" context-id])))
+    (if (= 1 (first (jdbc/delete! (get-ds) :contexts ["id = ?" context-id])))
       (sd/response_ok context)
       (logging/error "Failed delete context " context-id))))
 

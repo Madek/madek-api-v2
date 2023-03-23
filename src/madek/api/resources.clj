@@ -37,7 +37,8 @@
             [madek.api.resources.users :as users]
             [madek.api.resources.vocabularies :as vocabularies]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-            [reitit.coercion.schema]))
+            [reitit.coercion.schema]
+            ))
             
 
 
@@ -233,21 +234,24 @@
   ["/" {:get (constantly sd/root)}
    ; admin routes
 
+   ; TODO api-clients
+   ;["api-clients/" {:post (constantly sd/no_impl)
+   ;                 :get (constantly sd/no_impl)
+   ;                 :put (constantly sd/no_impl)
+   ;                 :delete (constantly sd/no_impl)}]
 
-   ["api-clients/" {:post (constantly sd/no_impl)
-                    :get (constantly sd/no_impl)
-                    :put (constantly sd/no_impl)
-                    :delete (constantly sd/no_impl)}]
-
+   ; TODO api-tokens
    ;["api-tokens/" {:post (constantly sd/no_impl)
    ;                :get (constantly sd/no_impl)
    ;                :put (constantly sd/no_impl)
    ;                :delete (constantly sd/no_impl)}]
 
+   ; TODO app-settings
    ["app-settings" {;:post {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
                     :get {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
-                    :put {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}}]
+                    ;:patch {:summary (sd/sum_adm_todo "App Settings") :handler (constantly sd/no_impl)}}]
                     ;:delete {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
+   }]
 
    ; convenience access to permissions
    ; perm-type [api-client, group, user] 
@@ -265,7 +269,7 @@
    ;                  :get (constantly sd/no_impl)
    ;                  :put (constantly sd/no_impl)
    ;                  :delete (constantly sd/no_impl)}]
-  
+
    ; redirect to permissions
    ;["media-entries/:perm-type/perms" {:post (constantly sd/no_impl)
    ;                                   :get (constantly sd/no_impl)
@@ -278,7 +282,7 @@
    ;                  :put {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
    ;                  :delete {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}}]
 
-   
+
 
    ; TODO workflows post, get, patch, delete
    ;["workflows/" {:post {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
@@ -310,6 +314,7 @@
     groups/ring-routes
     io-interfaces/ring-routes
     io-mappings/ring-routes
+    keywords/admin-routes
     meta-keys/ring-routes
     people/ring-routes
     roles/ring-routes
@@ -346,7 +351,7 @@
    full-texts/query-routes
    full-texts/admin-routes
 
-   keywords/ring-routes
+   keywords/query-routes
 
    ;media_entries
    media-entries/ring-routes

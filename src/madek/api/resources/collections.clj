@@ -77,6 +77,7 @@
                :description "Get collection id list."
                :swagger {:produces "application/json"}
                :parameters {:query {(s/optional-key :page) s/Str
+                                    (s/optional-key :count) s/Int
                                     (s/optional-key :full_data) s/Bool
                                     (s/optional-key :collection_id) s/Str
                                     (s/optional-key :order) s/Str
@@ -85,7 +86,7 @@
                                     (s/optional-key :me_get_full_size) s/Bool}}
                :coercion reitit.coercion.schema/coercion
                :responses {200 {:body {:collections [{:id s/Uuid :created_at s/Inst}]}}}}
-         ; TODO
+         ; TODO collections post, patch, delete
          :post {:summary (sd/sum_todo "Create collection")
                 :handler handle_create-collection
                 :swagger {:produces "application/json"}

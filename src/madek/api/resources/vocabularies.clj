@@ -40,6 +40,8 @@
    :labels {:de s/Str :en s/Str s/Str s/Str}
    :descriptions {:de s/Str :en s/Str s/Str s/Str}})
 
+; TODO user routes
+; TODO post, patch, delete
 ; TODO tests
 (def ring-routes
   ["/vocabularies"

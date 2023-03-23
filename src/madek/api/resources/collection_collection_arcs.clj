@@ -1,10 +1,9 @@
 (ns madek.api.resources.collection-collection-arcs
   (:require
    [clojure.java.jdbc :as jdbc]
-   [compojure.core :as cpj]
    [madek.api.constants :refer [presence]]
    [madek.api.pagination :as pagination]
-   [madek.api.utils.rdbms :as rdbms]
+   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
    [madek.api.utils.sql :as sql]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -39,21 +38,25 @@
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
 
+; TODO test query and paging
 (defn arcs-query [query-params]
   (let [child-id (-> query-params :child_id presence)
         parent-id (-> query-params :parent_id presence)]
     (-> (sql/select :*)
         (sql/from :collection_collection_arcs)
-        (#(if child-id
-            (sql/merge-where % [:= :child_id child-id]) %))
-        (#(if parent-id
-            (sql/merge-where % [:= :parent_id parent-id]) %))
+        (sd/build-query-param query-params :child_id)
+        (sd/build-query-param query-params :parent_id)
+        ;(#(if child-id
+        ;    (sql/merge-where % [:= :child_id child-id]) %))
+        ;(#(if parent-id
+        ;    (sql/merge-where % [:= :parent_id parent-id]) %))
+
         (pagination/add-offset-for-honeysql query-params)
         sql/format)))
 
 (defn arcs [request]
   (let [query (arcs-query (-> request :parameters :query))
-        db-result (jdbc/query (rdbms/get-ds) query)]
+        db-result (jdbc/query (get-ds) query)]
     (sd/response_ok {:collection-collection-arcs db-result})))
 
 (defn handle_create-col-me-arc [req]
@@ -109,7 +112,9 @@
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:query {(s/optional-key :child_id) s/Uuid
-                           (s/optional-key :parent_id) s/Uuid}}
+                           (s/optional-key :parent_id) s/Uuid
+                           (s/optional-key :page) s/Int
+                           (s/optional-key :count) s/Int}}
       :responses {200 {:body s/Any}} ; TODO response coercion
       }
     }

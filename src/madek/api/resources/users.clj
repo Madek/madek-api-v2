@@ -4,13 +4,11 @@
     [clojure.java.jdbc :as jdbc]
     [clojure.tools.logging :as logging]
     [compojure.core :as cpj]
-    [logbug.debug :as debug]
-    [madek.api.constants :refer [presence]]
+    [logbug.debug :as debug] 
     [madek.api.pagination :as pagination]
     [madek.api.utils.auth :refer [wrap-authorize-admin!]]
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
-    [ring.util.codec :refer [url-decode]]
     [madek.api.resources.shared :as sd]
     [reitit.coercion.schema]
     [schema.core :as s]
@@ -96,7 +94,7 @@
 
 
 ;### index ####################################################################
-
+; TODO test query and paging
 (defn build-index-query [{query-params :query-params}]
   (-> (sql/select :id)
       (sql/from :users)
@@ -188,7 +186,8 @@
            :description "Get list of users ids."
            :swagger {:produces "application/json"}
            ; TODO query paging count and full-data
-           :parameters {:query {(s/optional-key :page) s/Int}}
+           :parameters {:query {(s/optional-key :page) s/Int
+                                (s/optional-key :count) s/Int}}
            :content-type "application/json"
            :handler index
            :middleware [wrap-authorize-admin!]

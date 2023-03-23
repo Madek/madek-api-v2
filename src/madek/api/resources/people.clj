@@ -109,7 +109,7 @@
     {:status 404}))
 
 ;### index ####################################################################
-
+; TODO test query and paging
 (defn build-index-query
   [{query-params :query-params}]
   (->
@@ -270,7 +270,8 @@
                :description "Get list of peoples ids. Paging is used as you get a limit of 100 entries."
                :handler index
                :swagger {:produces "application/json"}
-               :parameters {:query {(s/optional-key :page) s/Int}}
+               :parameters {:query {(s/optional-key :page) s/Int
+                                    (s/optional-key :count) s/Int}}
                 ;:content-type "application/json"
                 ;:accept "application/json"
                :coercion reitit.coercion.schema/coercion

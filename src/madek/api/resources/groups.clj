@@ -60,7 +60,7 @@
     {:status 404}))
 
 ;### index ####################################################################
-
+; TODO test query and paging
 (defn build-index-query [{query-params :query-params}]
   (-> (sql/select :id)
       (sql/from :groups)

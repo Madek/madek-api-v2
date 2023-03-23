@@ -61,7 +61,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;TODO test paging
 (defn group-users-query [group-id request]
   (-> (sql/select :users.id :users.institutional_id :users.email)
       (sql/from :users)
@@ -69,7 +69,7 @@
       (sql/merge-join :groups [:= :groups.id :groups_users.group_id])
       (sql/order-by [:users.id :asc])
       (groups/sql-merge-where-id group-id)
-      (pagination/add-offset-for-honeysql (:query-params request))
+      (pagination/add-offset-for-honeysql (-> request :parameters :query)); (:query-params request))
       sql/format))
 
 (defn group-users [group-id request]

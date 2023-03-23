@@ -1,18 +1,18 @@
 (ns madek.api.resources.meta-keys
-  (:require [compojure.core :as cpj]
-            [madek.api.resources.meta-keys.index :refer [get-index]]
-            [madek.api.resources.meta-keys.meta-key :refer [get-meta-key]]
-            [madek.api.resources.shared :as shared]
-            [reitit.coercion.schema]
-            [schema.core :as s]
-            
-            [madek.api.resources.shared :as sd]))
+  (:require
+   [compojure.core :as cpj]
+   [madek.api.resources.meta-keys.index :refer [get-index]]
+   [madek.api.resources.meta-keys.meta-key :refer [get-meta-key]]
+   [reitit.coercion.schema]
+   [schema.core :as s]
+   [madek.api.resources.shared :as sd]
+   ))
 
 (def routes
   (cpj/routes
     (cpj/GET "/meta-keys/" _ get-index)
     (cpj/GET "/meta-keys/:id" _ get-meta-key)
-    (cpj/ANY "*" _ shared/dead-end-handler)
+    (cpj/ANY "*" _ sd/dead-end-handler)
     ))
 
 ; TODO meta_keys post, patch, delete
