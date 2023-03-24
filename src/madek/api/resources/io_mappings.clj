@@ -40,7 +40,6 @@
   (let [data (-> req :parameters :body)
         id (-> req :parameters :path :id)
         dwid (assoc data :id id)
-        ;old-data (sd/query-eq-find-one "io-mappings" "id" id)
         old-data (-> req :io-mapping)
         upd-query (sd/sql-update-clause "id" (str id))
         ; or TODO data with id
@@ -53,7 +52,7 @@
         ; TODO clean result
       ;(if (= 1 ins-res)
         (
-         let [new-data (sd/query-eq-find-one "io_mappings" "id" id)]
+         let [new-data (sd/query-eq-find-one :io_mappings :id id)]
          (logging/info "handle_update-io-mappings:" "\nnew-data\n" new-data)
          (sd/response_ok new-data)
          )

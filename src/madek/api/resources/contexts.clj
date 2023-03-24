@@ -53,7 +53,7 @@
         ; TODO clean result
       ;(if (= 1 ins-res)
         (
-         let [new-data (sd/query-eq-find-one "contexts" "id" id)]
+         let [new-data (sd/query-eq-find-one :contexts :id id)]
          (logging/info "handle_update-contexts:" "\nnew-data\n" new-data)
          (sd/response_ok new-data)
          )

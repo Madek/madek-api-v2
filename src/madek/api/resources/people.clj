@@ -246,11 +246,11 @@
 
 (defn handle_get-person
   [req]
-  (let [id (shared/get-path-params req :id)]
+  (let [id (-> req :parameters :path :id)]
     (get-person (str id))))
 
 (defn handle_delete-person [req]
-  (let [id (shared/get-path-params req :id)]
+  (let [id (-> req :parameters :path :id)]
     (delete-person (str id))))
 
 (defn handle_patch-person

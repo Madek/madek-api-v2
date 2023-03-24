@@ -17,7 +17,7 @@
         ; TODO switch to shared/base_query
         col-sel (if full-data
                   (sql/select :*)
-                  (sql/select :id :context_id :meta_key_id :is_required :position))
+                  (sql/select :id:context_id :meta_key_id :is_required :position))
         db-query (-> col-sel
                      (sql/from :context_keys)
                      (sd/build-query-param req-query :id)
@@ -68,7 +68,7 @@
         ; TODO clean result
       ;(if (= 1 ins-res)
         (
-         let [new-data (sd/query-eq-find-one "context_keys" "id" id)]
+         let [new-data (sd/query-eq-find-one :context_keys :id id)]
          (logging/info "handle_update-context_keys:" "\nnew-data\n" new-data)
          (sd/response_ok new-data)
          )

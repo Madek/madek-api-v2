@@ -25,7 +25,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         user-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all "favorite_media_entries" "user_id" user-id)
+        db-result (sd/query-eq-find-all :favorite_media_entries :user_id user-id)
         id-set (map :media_entry_id db-result)]
     (logging/info "handle_list-favorite_media_entry" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:media_entry_ids id-set})

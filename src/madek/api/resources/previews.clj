@@ -51,7 +51,7 @@
   [req]
   (let [media-file (-> req :media-file)
         id (:id media-file)
-        previews (sd/query-eq-find-all  "previews" "media_file_id" id)
+        previews (sd/query-eq-find-all  :previews :media_file_id id)
         pfirst (first previews)]
     (logging/info "handle_get-preview" "\nid\n" id "\nmf\n" media-file "\npreviews\n" pfirst)
     (sd/response_ok pfirst)
@@ -60,7 +60,7 @@
 (defn add-preview-for-media-file [handler request]
   (let [media-file (-> request :media-file)
         id (:id media-file)
-        previews (sd/query-eq-find-all  "previews" "media_file_id" id)
+        previews (sd/query-eq-find-all  :previews :media_file_id id)
         pfirst (first previews)]
       (handler (assoc request :preview pfirst))
     ))

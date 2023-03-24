@@ -39,7 +39,7 @@
 
 
 (defn handle_get-role [request]
-  (let [id (shared/get-path-params request :id)
+  (let [id (-> request :parameters :path :id)
         resultdb (db_role-find-one id)
         result (export_role resultdb)]
     {:status 200 :body result}))

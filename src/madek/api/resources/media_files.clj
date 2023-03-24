@@ -15,7 +15,7 @@
 ;##############################################################################
 
 (defn- query-media-file [media-file-id]
-  (sd/query-eq-find-one "media_files" "id" media-file-id))
+  (sd/query-eq-find-one :media_files :id media-file-id))
   ; we wrap this since badly formated media-file-id strings can cause an
   ; exception, note that 404 is in that case a correct response
   ;(catcher/snatch {}
@@ -25,7 +25,7 @@
   ;      first)))
 
 (defn- query-media-files-by-media-entry-id [media-entry-id]
-  (sd/query-eq-find-one "media_files" "media_entry_id" media-entry-id))
+  (sd/query-eq-find-one :media_files :media_entry_id media-entry-id))
   ; we wrap this since badly formated media-file-id strings can cause an
   ; exception, note that 404 is in that case a correct response
   ;(catcher/snatch {} 

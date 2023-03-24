@@ -177,14 +177,14 @@
    :person_id s/Uuid})
 
 (defn handle_get-group-user [req]
-  (let [group-id (shared/get-path-params req :group-id)
-        user-id (shared/get-path-params req :user-id)]
+  (let [group-id (-> req :parameters :path req :group-id)
+        user-id (-> req :parameters :path req :user-id)]
     (logging/info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
     (get-group-user group-id user-id)))
 
 (defn handle_delete-group-user [req]
-  (let [group-id (shared/get-path-params req :group-id)
-        user-id (shared/get-path-params req :user-id)]
+  (let [group-id (-> req :parameters :path :group-id)
+        user-id (-> req :parameters :path :user-id)]
     (logging/info "handle_delete-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
     (remove-user group-id user-id)))
 

@@ -41,7 +41,6 @@
   (let [data (-> req :parameters :body)
         id (-> req :parameters :path :id)
         dwid (assoc data :id id)
-        ;old-data (sd/query-eq-find-one "usage_terms" "id" id)
         old-data (-> req :usage_term)
         upd-query (sd/sql-update-clause "id" (str id))
         ; or TODO data with id
@@ -54,7 +53,7 @@
         ; TODO clean result
       ;(if (= 1 ins-res)
         (
-         let [new-data (sd/query-eq-find-one "usage_terms" "id" id)]
+         let [new-data (sd/query-eq-find-one :usage_terms :id id)]
          (logging/info "handle_update-usage_terms:" "\nnew-data\n" new-data)
          (sd/response_ok new-data)
          )

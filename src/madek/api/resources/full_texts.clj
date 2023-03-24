@@ -41,7 +41,7 @@
         ;old-data (-> req :full_text)
         upd-query (sd/sql-update-clause "media_resource_id" (str mr-id))]
     (if-let [ins-res (jdbc/update! (rdbms/get-ds) :full_texts dwid upd-query)]
-      (let [new-data (sd/query-eq-find-one "full_texts" "media_resource_id" mr-id)]
+      (let [new-data (sd/query-eq-find-one :full_texts :media_resource_id mr-id)]
         (sd/response_ok new-data))
       (sd/response_failed "Could not update full_text." 406)))
   )
@@ -50,6 +50,7 @@
   [req]
   (let [full-text (-> req :full_text)
         mr-id (:media_resource_id full-text)]
+    ; TODO use shared update cl
     (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :full_texts ["media_resource_id = ?" mr-id])))
            (sd/response_ok full-text)
            (logging/error "Failed delete full_text " mr-id)

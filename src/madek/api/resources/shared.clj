@@ -10,25 +10,22 @@
             [madek.api.semver :as semver]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
             [madek.api.constants :as mc]
-            [madek.api.utils.status :as status]))
+            ))
 
 
 ; begin db-helpers
 ; TODO move to sql file
-
+; TODO sql injection protection
 (defn build-query-base [table-key col-keys]
   (-> (sql/select col-keys)
       (sql/from table-key)))
 
-
-; TODO sql injection protection
 (defn build-query-param [query query-params param]
   (let [pval (-> query-params param mc/presence)]
     (if (nil? pval)
       query
       (-> query (sql/merge-where [:= param pval])))))
 
-; TODO sql injection protection
 (defn build-query-param-like [query query-params param]
   (let [pval (-> query-params param mc/presence)
         qval (str "%" pval "%")]
@@ -38,39 +35,32 @@
 
 
 ; TODO use honeysql
-(defn sql-query-find-eq 
+(defn- sql-query-find-eq 
   [table-name col-name row-data] 
   (-> (build-query-base table-name :*)
       (sql/merge-where [:= col-name row-data])
       sql/format))
-  ;[(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
 
-(defn sql-query-find-eq2
+(defn- sql-query-find-eq2
   [table-name col-name row-data col-name2 row-data2]
   (-> (build-query-base table-name :*)
       (sql/merge-where [:= col-name row-data])
       (sql/merge-where [:= col-name2 row-data2])
       sql/format))
-  ;[(str "SELECT * FROM " table-name " WHERE " col-name " = ? AND " col-name2 " = ? ")
-  ; row-data row-data2])
 
 (defn sql-update-clause
   [col-name row-data]
   [(str col-name " = ?") row-data]
   )
 
-
 (defn query-find-all
   [table-key col-keys]
   (let [db-query (-> (build-query-base table-key col-keys)
                      sql/format)
-        db-result (jdbc/query (rdbms/get-ds) db-query)
+        db-result (jdbc/query (get-ds) db-query)
         ]
     ;(logging/info "query-find-all" "\ndb-query\n" db-query "\ndb-result\n" db-result)
     db-result))
-
-
-
 
 (defn query-eq-find-all [table-name col-name row-data]
   ; we wrap this since badly formated media-file-id strings can cause an
@@ -117,7 +107,6 @@
   (apply dissoc resource internal-keys))
 
 (defn response_ok 
-  ;[msg] {:status 200 :body msg}
   ([msg] (response_ok msg 200))
   ([msg status] {:status status :body msg})
   )
@@ -128,10 +117,6 @@
 
 (defn response_not_found [msg]
   {:status 404 :body {:message msg}})
-
-(defn get-path-params
-  ([req] (let [params (get-in req [:parameters :path])] params))
-  ([req pname] (let [param (get-in req [:parameters :path pname])] param)))
 
 
 (def root
@@ -318,18 +303,17 @@
 ;end wrappers
 
 ; begin swagger docu summary helpers
-(def s_req_adm "Requires role: admin.")
+
 (def s_cnv_acc "Convenience access.")
 
 (defn sum_todo [text] (apply str "TODO: " text))
+(defn sum_pub [text] (apply str "PUBLIC Context: " text))
 (defn sum_usr [text] (apply str "USER Context: " text))
+(defn sum_adm [text] (apply str "ADMIN Context: " text))
 
-(defn sum_adm [text] (apply str text " " s_req_adm))
 (defn sum_cnv [text] (apply str text " " s_cnv_acc))
 
 (defn sum_cnv_adm [text] (sum_adm (sum_cnv text)))
 
-(defn sum_cnv_todo [text] (sum_todo (sum_cnv text)))
 (defn sum_adm_todo [text] (sum_todo (sum_adm text)))
-(defn sum_cnv_adm_todo [text] (sum_todo (sum_cnv (sum_adm text))))
 ; end swagger docu summary helpers

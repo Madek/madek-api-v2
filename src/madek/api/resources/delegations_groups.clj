@@ -25,7 +25,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         group-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all "delegations_groups" "group_id" group-id)
+        db-result (sd/query-eq-find-all :delegations_groups :group_id group-id)
         id-set (map :delegation_id db-result)]
     (logging/info "handle_list-delegations_group" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:delegation_ids id-set})

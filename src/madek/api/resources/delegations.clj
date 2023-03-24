@@ -40,7 +40,6 @@
   (let [data (-> req :parameters :body)
         id (-> req :parameters :path :id)
         dwid (assoc data :id id)
-        ;old-data (sd/query-eq-find-one "delegations" "id" id)
         old-data (-> req :delegation)
         upd-query (sd/sql-update-clause "id" (str id))
         ; or TODO data with id
@@ -53,7 +52,7 @@
         ; TODO clean result
       ;(if (= 1 ins-res)
         (
-         let [new-data (sd/query-eq-find-one "delegations" "id" id)]
+         let [new-data (sd/query-eq-find-one :delegations :id id)]
          (logging/info "handle_update-delegations:" "\nnew-data\n" new-data)
          (sd/response_ok new-data)
          )
@@ -65,6 +64,7 @@
   [req]
   (let [delegation (-> req :delegation)
         delegation-id (-> req :delegation :id)]
+    ; TODO use shared update clause
     (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :delegations ["id = ?" delegation-id])))
       (sd/response_ok delegation)
       (logging/error "Failed delete delegation " delegation-id))))
@@ -105,7 +105,6 @@
     {:post {:summary (sd/sum_adm_todo "Create delegations.")
             ; TODO labels and descriptions
             :handler handle_create-delegations
-                   ;:middleware [(wwrap-find-delegation :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_delegations}
             :responses {200 {:body schema_export_delegations}

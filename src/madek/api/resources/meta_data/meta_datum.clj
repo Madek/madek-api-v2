@@ -115,7 +115,7 @@
 
 (defn handle_get-meta-datum-role
   [req]
-  (let [id (shared/get-path-params req :meta_datum_id)
+  (let [id (-> req :parameters :path :meta_datum_id)
         wreq (assoc-in req [:params :meta_datum_id] id)]
     (get-meta-datum-role wreq)))
 

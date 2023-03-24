@@ -22,7 +22,7 @@
 (defn handle_list-favorite_collection-by-user
   [req]
   (let [user-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all "favorite_collections" "user_id" user-id)
+        db-result (sd/query-eq-find-all :favorite_collections :user_id user-id)
         id-set (map :collection_id db-result)]
     ;(logging/info "handle_list-favorite_collection-by-user" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:collection_ids id-set})

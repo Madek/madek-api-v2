@@ -42,13 +42,13 @@
   (let [mr (-> req :media-resource)
         mr-type (-> mr :type)
         mr-id (-> mr :id str)
-        col-name (if (= mr-type "MediaEntry") "media_entry_id" "collection_id")]
+        col-name (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
     
     (logging/info "handle_get-custom-urls"
                   "\ntype\n" mr-type
                   "\nmr-id\n" mr-id
                   "\ncol-name\n" col-name)
-    (if-let [result (sd/query-eq-find-one "custom_urls" col-name mr-id)]
+    (if-let [result (sd/query-eq-find-one :custom_urls col-name mr-id)]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for " mr-type " with id: " mr-id)))
     ))
@@ -85,8 +85,8 @@
         mr-type (-> mr :type)
         mr-id (-> mr :id str)
         col-name (if (= mr-type "MediaEntry")
-                   "media_entry_id"
-                   "collection_id")
+                   :media_entry_id
+                   :collection_id)
         data (-> req :parameters :body)
         dwid (if (= mr-type "MediaEntry")
                (assoc data :media_entry_id mr-id :updator_id u-id)
@@ -97,12 +97,13 @@
                   "\nmr-id\n" mr-id
                   "\ndwid\n" dwid)
     (if-let [upd-res  (jdbc/update! (get-ds) :custom_urls dwid (sd/sql-update-clause col-name mr-id))]
-      (let [upd-data (sd/query-eq-find-one "custom_urls" col-name mr-id)]
+      (let [upd-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
         (logging/info "handle_update-custom-urls" "\nupd-data\n" upd-data)
         (sd/response_ok upd-data))
       
       (sd/response_failed "Could not update custom_url." 406))))
 
+; TODO use wrapper
 ; TODO check if own entity or auth is admin
 (defn handle_delete-custom-urls
   [req]
@@ -111,10 +112,10 @@
         mr-type (-> mr :type)
         mr-id (-> mr :id str)
         col-name (if (= mr-type "MediaEntry")
-                   "media_entry_id"
-                   "collection_id")
+                   :media_entry_id
+                   :collection_id)
         ]
-    (if-let [del-data (sd/query-eq-find-one "custom_urls" col-name mr-id)]
+    (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
       (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :custom_urls (sd/sql-update-clause col-name mr-id))))
         (sd/response_ok del-data)
         (sd/response_failed (str "Failed delete custom_url " col-name " : " mr-id) 406))
