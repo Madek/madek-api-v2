@@ -13,10 +13,11 @@
             [madek.api.resources.collections :as collections]
             [madek.api.resources.context-keys :as context_keys]
             [madek.api.resources.contexts :as contexts]
+            [madek.api.resources.custom-urls :as custom-urls]
             [madek.api.resources.delegations :as delegations]
             [madek.api.resources.delegations-users :as delegations_users]
             [madek.api.resources.delegations-groups :as delegations_groups]
-            [madek.api.resources.custom-urls :as custom-urls]
+            [madek.api.resources.edit-sessions :as edit-sessions]
             [madek.api.resources.favorite-collections :as favorite-collections]
             [madek.api.resources.favorite-media-entries :as favorite-media-entries]
             [madek.api.resources.full-texts :as full-texts]
@@ -265,10 +266,6 @@
    ; TODO delegations workflows post, get, patch, delete
 
    ; TODO edit-session post, get, patch, delete   
-   ;["edit-session/" {:post (constantly sd/no_impl)
-   ;                  :get (constantly sd/no_impl)
-   ;                  :put (constantly sd/no_impl)
-   ;                  :delete (constantly sd/no_impl)}]
 
    ; redirect to permissions
    ;["media-entries/:perm-type/perms" {:post (constantly sd/no_impl)
@@ -309,6 +306,7 @@
     admins/ring-routes
     context_keys/ring-routes
     contexts/ring-routes
+    edit-sessions/admin-routes
     favorite-collections/admin-routes
     favorite-media-entries/admin-routes
     groups/ring-routes
@@ -330,6 +328,7 @@
    meta-data/collection-routes
    ;media-entries/collection-routes
    custom-urls/collection-routes
+   edit-sessions/collection-routes
    favorite-collections/collection-routes
    collection-media-entry-arcs/collection-routes
    collection-collection-arcs/collection-routes
@@ -343,6 +342,8 @@
 
    delegations_users/admin-routes
    delegations_groups/admin-routes
+
+   edit-sessions/query-routes
 
    ; favorites
    favorite-media-entries/favorite-routes
@@ -359,6 +360,7 @@
    previews/media-entry-routes
    meta-data/media-entry-routes
    custom-urls/media-entry-routes
+   edit-sessions/media-entry-routes
    favorite-media-entries/media-entry-routes
    media-files/media-entry-routes
 

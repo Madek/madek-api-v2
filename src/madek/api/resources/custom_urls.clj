@@ -59,9 +59,6 @@
         mr (-> req :media-resource)
         mr-type (-> mr :type)
         mr-id (-> mr :id str)
-        col-name (if (= mr-type "MediaEntry")
-                   "media_entry_id"
-                   "collection_id")
         data (-> req :parameters :body)
         dwid (if (= mr-type "MediaEntry")
                (assoc data :media_entry_id mr-id :creator_id u-id :updator_id u-id)
@@ -69,7 +66,7 @@
         ]
     
     (logging/info "handle_create-custom-urls"
-                  "\ntype\n" mr-type "\ncol-name\n" col-name
+                  "\ntype\n" mr-type 
                   "\nmr-id\n" mr-id                  
                   "\ndwid\n" dwid)
     (if-let [ins-res (first (jdbc/insert! (rdbms/get-ds) :custom_urls dwid))]

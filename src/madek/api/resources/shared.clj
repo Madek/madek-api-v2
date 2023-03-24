@@ -79,6 +79,14 @@
                        (sql-query-find-eq table-name col-name row-data))
                       first)))
 
+(defn query-eq2-find-all [table-name col-name row-data col-name2 row-data2]
+  ; we wrap this since badly formated media-file-id strings can cause an
+  ; exception, note that 404 is in that case a correct response
+  (catcher/snatch {}
+                  (jdbc/query
+                   (get-ds)
+                   (sql-query-find-eq2 table-name col-name row-data col-name2 row-data2))))
+
 (defn query-eq2-find-one [table-name col-name row-data col-name2 row-data2]
   ; we wrap this since badly formated media-file-id strings can cause an
   ; exception, note that 404 is in that case a correct response
