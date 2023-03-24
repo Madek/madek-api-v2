@@ -56,11 +56,11 @@
 
 (defn wwrap-find-admin [param colname send404]
   (fn [handler] 
-    (fn [request] (sd/req-find-data request handler param "admins" colname :admin send404))))
+    (fn [request] (sd/req-find-data request handler param :admins colname :admin send404))))
 
 (defn wwrap-find-user [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "users" "id" :user true))))
+    (fn [request] (sd/req-find-data request handler param :users :id :user true))))
 
 ; TODO response coercion
 ; TODO docu
@@ -82,7 +82,7 @@
       :get
       {:summary (sd/sum_adm "Get admin by id.")
        :handler handle_get-admin
-       :middleware [(wwrap-find-admin :id "id" true)]
+       :middleware [(wwrap-find-admin :id :id true)]
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Uuid}}}
 
@@ -90,7 +90,7 @@
       {:summary (sd/sum_adm "Delete admin by id.")
        :coercion reitit.coercion.schema/coercion
        :handler handle_delete-admin
-       :middleware [(wwrap-find-admin :id "id" true)]
+       :middleware [(wwrap-find-admin :id :id true)]
        :parameters {:path {:id s/Uuid}}}}]
     
    ; convenience to access via user
@@ -99,14 +99,14 @@
       {:summary (sd/sum_adm "Create admin for user with id.")
        :handler handle_create-admin
        :middleware [(wwrap-find-user :user_id)
-                    (wwrap-find-admin :user_id "user_id" false)]
+                    (wwrap-find-admin :user_id :user_id false)]
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:user_id s/Uuid}}}
 
       :get
       {:summary (sd/sum_cnv_adm "Get admin for user.")
        :handler handle_get-admin
-       :middleware [(wwrap-find-admin :user_id "user_id" true)]
+       :middleware [(wwrap-find-admin :user_id :user_id true)]
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:user_id s/Uuid}}}
 
@@ -114,7 +114,7 @@
       {:summary (sd/sum_cnv_adm "Delete admin for user.")
        :coercion reitit.coercion.schema/coercion
        :handler handle_delete-admin
-       :middleware [(wwrap-find-admin :user_id "user_id" true)]
+       :middleware [(wwrap-find-admin :user_id :user_id true)]
        :parameters {:path {:user_id s/Uuid}}}}
    ]
   ])

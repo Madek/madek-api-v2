@@ -69,9 +69,10 @@
       (sd/response_ok io_interface)
       (logging/error "Failed delete io_interface " io_interface-id))))
 
-(defn wwrap-find-io_interface [param colname send404]
+(defn wwrap-find-io_interface [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "io_interfaces" colname :io_interface send404))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :io_interfaces :id :io_interface true))))
 
 
 (def schema_import_io_interfaces
@@ -104,7 +105,6 @@
    ["/"
     {:post {:summary (sd/sum_adm "Create io_interfaces.")
             :handler handle_create-io_interfaces
-                   ;:middleware [(wwrap-find-io_interface :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_io_interfaces}
             :responses {200 {:body schema_export_io_interfaces}
@@ -119,13 +119,13 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get io_interfaces by id.")
            :handler handle_get-io_interface
-           :middleware [(wwrap-find-io_interface :id "id" true)]
+           :middleware [(wwrap-find-io_interface :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}}
 
      :put {:summary (sd/sum_adm "Update io_interfaces with id.")
            :handler handle_update-io_interfaces
-           :middleware [(wwrap-find-io_interface :id "id" true)]
+           :middleware [(wwrap-find-io_interface :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_io_interfaces}
@@ -136,6 +136,6 @@
      :delete {:summary (sd/sum_adm "Delete io_interface by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-io_interface
-              :middleware [(wwrap-find-io_interface :id "id" true)]
+              :middleware [(wwrap-find-io_interface :id)]
               :parameters {:path {:id s/Str}}}}]]
    )

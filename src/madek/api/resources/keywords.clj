@@ -125,6 +125,7 @@
                        404 {:body {:msg s/Str}}}
            :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
 
+; TODO wrap auth admin
 (def admin-routes
   [
    ["/keyword"
@@ -135,7 +136,7 @@
            :responses {200 {:body s/Any}
                        406 {:body s/Any}}}}]
    ["/keyword/:id"
-    {:patch {:summary (sd/sum_todo "Update keyword.")
+    {:patch {:summary (sd/sum_adm "Update keyword.")
              :handler handle_update-keyword
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:id s/Uuid}
@@ -143,7 +144,7 @@
              :responses {200 {:body s/Any}
                          404 {:body {:msg s/Str}}
                          406 {:body s/Any}}}
-     :delete {:summary (sd/sum_todo "Delete keyword.")
+     :delete {:summary (sd/sum_adm "Delete keyword.")
               :handler handle_delete-keyword
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Uuid}}

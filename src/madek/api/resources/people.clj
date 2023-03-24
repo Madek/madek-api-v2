@@ -258,7 +258,7 @@
   ;(patch-person req)
   [req]
   (let [body (get-in req [:parameters :body])
-        pid (shared/get-path-params req :id)
+        pid (-> req :parameters :path :id)
         id (or (:id body) pid)]
     (log/info "handle_patch" "\nbody:\n" body "\nid:\n" id)
     (patch-person {:params {:id (str id)} :body body})))

@@ -72,8 +72,8 @@
       (sd/req-find-data2
        request handler
        :user_id :media_entry_id
-       res-table-name
-       "user_id" "media_entry_id"
+       :favorite_media_entries
+       :user_id :media_entry_id
        res-req-name
        send404))))
 
@@ -86,19 +86,23 @@
         (sd/req-find-data-search2
          request handler
          user-id me-id
-         res-table-name
-         "user_id" "media_entry_id"
+         :favorite_media_entries
+         :user_id :media_entry_id
          res-req-name
          send404))
       )))
 
 (defn wwrap-find-user [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "users" "id" :user true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :users :id
+                                    :user true))))
 
 (defn wwrap-find-media_entry [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "media_entries" "id" :media_entry true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :media_entries :id
+                                    :media_entry true))))
 
 (def schema_favorite_media_entries_export
   {:user_id s/Uuid

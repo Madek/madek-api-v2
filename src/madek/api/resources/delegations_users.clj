@@ -71,8 +71,8 @@
       (sd/req-find-data2
        request handler
        :user_id :delegation_id
-       res-table-name
-       "user_id" "delegation_id"
+       :delegations_users
+       :user_id :delegation_id
        res-req-name
        send404))))
 
@@ -85,18 +85,22 @@
         (sd/req-find-data-search2
          request handler
          user-id del-id
-         res-table-name
-         "user_id" "delegation_id"
+         :delegations_users
+         :user_id :delegation_id
          res-req-name
          send404)))))
 
 (defn wwrap-find-user [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "users" "id" :user true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :users :id
+                                    :user true))))
 
 (defn wwrap-find-delegation [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "delegations" "id" :delegation true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :delegations 
+                                    :id :delegation true))))
 
 (def schema_delegations_users_export
   {:user_id s/Uuid

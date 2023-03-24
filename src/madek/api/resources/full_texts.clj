@@ -58,7 +58,9 @@
 
 (defn wrap-find-full_text [param send404]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "full_texts" "media_resource_id" :full_text send404))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :full_texts :media_resource_id
+                                    :full_text send404))))
 
 ; TODO tests
 (def query-routes

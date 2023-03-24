@@ -69,9 +69,10 @@
       (sd/response_ok io-mapping)
       (logging/error "Failed delete io-mapping " io-mapping-id))))
 
-(defn wwrap-find-io-mapping [param colname send404]
+(defn wwrap-find-io-mapping [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "io_mappings" colname :io-mapping send404))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :io_mappings :id :io-mapping true))))
 
 
 (def schema_import_io-mappings
@@ -115,7 +116,6 @@
    ["/"
     {:post {:summary (sd/sum_adm "Create io-mappings.")
             :handler handle_create-io-mappings
-                   ;:middleware [(wwrap-find-io-mapping :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_io-mappings}
             :responses {200 {:body schema_export_io-mappings}
@@ -130,13 +130,13 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get io-mappings by id.")
            :handler handle_get-io-mapping
-           :middleware [(wwrap-find-io-mapping :id "id" true)]
+           :middleware [(wwrap-find-io-mapping :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}}
 
      :put {:summary (sd/sum_adm "Update io-mappings with id.")
            :handler handle_update-io-mappings
-           :middleware [(wwrap-find-io-mapping :id "id" true)]
+           :middleware [(wwrap-find-io-mapping :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_io-mappings}
@@ -147,6 +147,6 @@
      :delete {:summary (sd/sum_adm "Delete io-mapping by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-io-mapping
-              :middleware [(wwrap-find-io-mapping :id "id" true)]
+              :middleware [(wwrap-find-io-mapping :id)]
               :parameters {:path {:id s/Str}}}}]]
    )

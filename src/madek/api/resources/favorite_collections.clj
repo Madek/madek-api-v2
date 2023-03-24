@@ -68,8 +68,8 @@
       (sd/req-find-data2
        request handler
        :user_id :collection_id
-       "favorite_collections"
-       "user_id" "collection_id"
+       :favorite_collections
+       :user_id :collection_id
        res-req-name
        send404))))
 
@@ -82,18 +82,22 @@
          (sd/req-find-data-search2
           request handler
           user-id col-id
-          res-table-name
-          "user_id" "collection_id"
+          :favorite_collections
+          :user_id :collection_id
           res-req-name
           send404)))))
 
 (defn wwrap-find-user [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "users" "id" :user true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :users :id
+                                    :user true))))
 
 (defn wwrap-find-collection [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "collections" "id" :collection true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :collections :id
+                                    :collection true))))
 
 (def schema_favorite_collection_export
   {:user_id s/Uuid

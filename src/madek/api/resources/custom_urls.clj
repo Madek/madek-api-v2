@@ -33,7 +33,7 @@
 (defn handle_get-custom-url
   [req]
   (let [id (-> req :parameters :path :id)]
-    (if-let [result (sd/query-eq-find-one "custom_urls" "id" id)]
+    (if-let [result (sd/query-eq-find-one :custom_urls :id id)]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for id: " id)))))
 

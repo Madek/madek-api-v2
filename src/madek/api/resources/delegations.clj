@@ -71,7 +71,8 @@
 
 (defn wwrap-find-delegation [param colname send404]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "delegations" colname :delegation send404))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :delegations colname :delegation send404))))
 
 
 (def schema_import_delegations
@@ -119,14 +120,14 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get delegations by id.")
            :handler handle_get-delegation
-           :middleware [(wwrap-find-delegation :id "id" true)]
+           :middleware [(wwrap-find-delegation :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}}
      
      :put {:summary (sd/sum_adm "Update delegations with id.")
            ; TODO labels and descriptions
            :handler handle_update-delegations
-           :middleware [(wwrap-find-delegation :id "id" true)]
+           :middleware [(wwrap-find-delegation :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_delegations}
@@ -136,6 +137,6 @@
      :delete {:summary (sd/sum_adm_todo "Delete delegation by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-delegation
-              :middleware [(wwrap-find-delegation :id "id" true)]
+              :middleware [(wwrap-find-delegation :id :id true)]
               :parameters {:path {:id s/Str}}}}]]
    )

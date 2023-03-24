@@ -12,6 +12,7 @@
 (def res-table-name "delegations_groups")
 (def res-col-name :delegation_id)
 
+; TODO query
 (defn handle_list-delegations_groups
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
@@ -71,11 +72,12 @@
       (sd/req-find-data2
        request handler
        :group_id :delegation_id
-       res-table-name
-       "group_id" "delegation_id"
+       :delegations_groups
+       :group_id :delegation_id
        res-req-name
        send404))))
 
+; rubbish find by users groups
 (defn wwrap-find-delegations_group-by-auth [send404]
   (fn [handler]
     (fn [request]
@@ -85,18 +87,22 @@
         (sd/req-find-data-search2
          request handler
          group-id del-id
-         res-table-name
-         "group_id" "delegation_id"
+         :delegations_groups
+         :group_id :delegation_id
          res-req-name
          send404)))))
 
 (defn wwrap-find-group [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "groups" "id" :group true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :groups :id
+                                    :group true))))
 
 (defn wwrap-find-delegation [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "delegations" "id" :delegation true))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :delegations :id
+                                    :delegation true))))
 
 (def schema_delegations_groups_export
   {:group_id s/Uuid

@@ -70,9 +70,11 @@
       (sd/response_ok usage_term)
       (logging/error "Failed delete usage_term " usage_term-id))))
 
-(defn wwrap-find-usage_term [param colname send404]
+(defn wwrap-find-usage_term [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "usage_terms" colname :usage_term send404))))
+    (fn [request] (sd/req-find-data request handler param
+                                    :usage_terms :id
+                                    :usage_term true))))
 
 
 (def schema_import_usage_terms
@@ -130,13 +132,13 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get usage_terms by id.")
            :handler handle_get-usage_term
-           :middleware [(wwrap-find-usage_term :id "id" true)]
+           :middleware [(wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}}
 
      :put {:summary (sd/sum_adm "Update usage_terms with id.")
            :handler handle_update-usage_terms
-           :middleware [(wwrap-find-usage_term :id "id" true)]
+           :middleware [(wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update_usage_terms}
@@ -147,6 +149,6 @@
      :delete {:summary (sd/sum_adm "Delete usage_term by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-usage_term
-              :middleware [(wwrap-find-usage_term :id "id" true)]
+              :middleware [(wwrap-find-usage_term :id)]
               :parameters {:path {:id s/Uuid}}}}]]
    )

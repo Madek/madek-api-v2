@@ -199,8 +199,7 @@
   (fn [request] (sd/req-find-data
                  request handler
                  :keyword_id
-                 "keywords"
-                 "id"
+                 :keywords :id
                  :keyword
                  true)))
 
@@ -208,8 +207,7 @@
   (fn [request] (sd/req-find-data
                  request handler
                  :person_id
-                 "people"
-                 "id"
+                 :people :id
                  :person
                  true
                  )))
@@ -218,8 +216,7 @@
   (fn [request] (sd/req-find-data
                  request handler
                  :role_id
-                 "roles"
-                 "id"
+                 :roles :id
                  :role
                  true)))
 

@@ -12,25 +12,12 @@
             [madek.api.constants :as mc]
             [madek.api.utils.status :as status]))
 
+
 ; begin db-helpers
 ; TODO move to sql file
-; TODO use honeysql
-(defn sql-query-find-eq 
-  [table-name col-name row-data]
-  [(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
-
-(defn sql-query-find-eq2
-  [table-name col-name row-data col-name2 row-data2]
-  [(str "SELECT * FROM " table-name " WHERE " col-name " = ? AND " col-name2 " = ? ")
-   row-data row-data2])
-
-(defn sql-update-clause
-  [col-name row-data]
-  [(str col-name " = ?") row-data]
-  )
 
 (defn build-query-base [table-key col-keys]
-  (-> (sql/select col-keys) 
+  (-> (sql/select col-keys)
       (sql/from table-key)))
 
 
@@ -48,6 +35,29 @@
     (if (nil? pval)
       query
       (-> query (sql/merge-where [:like param qval])))))
+
+
+; TODO use honeysql
+(defn sql-query-find-eq 
+  [table-name col-name row-data] 
+  (-> (build-query-base table-name :*)
+      (sql/merge-where [:= col-name row-data])
+      sql/format))
+  ;[(str "SELECT * FROM " table-name " WHERE " col-name " = ?") row-data])
+
+(defn sql-query-find-eq2
+  [table-name col-name row-data col-name2 row-data2]
+  (-> (build-query-base table-name :*)
+      (sql/merge-where [:= col-name row-data])
+      (sql/merge-where [:= col-name2 row-data2])
+      sql/format))
+  ;[(str "SELECT * FROM " table-name " WHERE " col-name " = ? AND " col-name2 " = ? ")
+  ; row-data row-data2])
+
+(defn sql-update-clause
+  [col-name row-data]
+  [(str col-name " = ?") row-data]
+  )
 
 
 (defn query-find-all

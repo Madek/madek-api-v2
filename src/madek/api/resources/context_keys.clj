@@ -6,15 +6,31 @@
    [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
    [madek.api.utils.sql :as sql]
    [reitit.coercion.schema]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [madek.api.pagination :as pagination]))
 
 
 (defn handle_list-context_keys
   [req]
-  (let [full-data (true? (-> req :parameters :query :full-data))
-        qd (if (true? full-data) :* :context_keys.id)
-        db-result (sd/query-find-all :context_keys qd)]
-    ;(logging/info "handle_list-context_key" "\nqd\n" qd "\nresult\n" db-result)
+  (let [req-query (-> req :parameters :query)
+        full-data (true? (-> req-query :full-data))
+        ; TODO switch to shared/base_query
+        col-sel (if full-data
+                  (sql/select :*)
+                  (sql/select :id :context_id :meta_key_id :is_required :position))
+        db-query (-> col-sel
+                     (sql/from :context_keys)
+                     (sd/build-query-param req-query :id)
+                     (sd/build-query-param req-query :context_id)
+                     (sd/build-query-param req-query :meta_key_id)
+                     (sd/build-query-param req-query :is_required)
+                     (pagination/add-offset-for-honeysql req-query)
+                     sql/format)
+        db-result (jdbc/query (get-ds) db-query)
+        ]
+    (logging/info "handle_list-context_keys" "\ndb-query\n" db-query 
+                  ;"\nresult\n" db-result)
+    )
     (sd/response_ok db-result)))
 
 (defn handle_get-context_key
@@ -40,7 +56,6 @@
   (let [data (-> req :parameters :body)
         id (-> req :parameters :path :id)
         dwid (assoc data :id id)
-        ;old-data (sd/query-eq-find-one "context_keys" "id" id)
         old-data (-> req :context_key)
         upd-query (sd/sql-update-clause "id" (str id))
         ; or TODO data with id
@@ -71,7 +86,10 @@
 
 (defn wwrap-find-context_key [param colname send404]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "context_keys" colname :context_key send404))))
+    (fn [request] (sd/req-find-data request handler 
+                                    param
+                                    :context_keys colname
+                                    :context_key send404))))
 
 
 (def schema_import_context_keys
@@ -130,29 +148,34 @@
     {:post {:summary (sd/sum_adm_todo "Create context_keys.")
             ; TODO labels and descriptions
             :handler handle_create-context_keys
-                   ;:middleware [(wwrap-find-context_key :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_context_keys}
             :responses {200 {:body schema_export_context_keys}
                         406 {:body s/Any}}
             }
     ; context_key list / query
-     :get {:summary  (sd/sum_adm "List context_keys.")
+     :get {:summary  (sd/sum_adm "Query context_keys.")
            :handler handle_list-context_keys
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full-data) s/Bool}}}}]
+           :parameters {:query {(s/optional-key :full-data) s/Bool
+                                (s/optional-key :page) s/Int
+                                (s/optional-key :count) s/Int
+                                (s/optional-key :context_id) s/Str
+                                (s/optional-key :meta_key_id) s/Str
+                                (s/optional-key :is_required) s/Bool
+                                }}}}]
     ; edit context_key
    ["/:id"
     {:get {:summary (sd/sum_adm "Get context_keys by id.")
            :handler handle_get-context_key
-           :middleware [(wwrap-find-context_key :id "id" true)]
+           :middleware [(wwrap-find-context_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}}
      
      :put {:summary (sd/sum_adm "Update context_keys with id.")
            ; TODO labels and descriptions
            :handler handle_update-context_keys
-           :middleware [(wwrap-find-context_key :id "id" true)]
+           :middleware [(wwrap-find-context_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_context_keys}
@@ -162,6 +185,6 @@
      :delete {:summary (sd/sum_adm_todo "Delete context_key by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-context_key
-              :middleware [(wwrap-find-context_key :id "id" true)]
+              :middleware [(wwrap-find-context_key :id :id true)]
               :parameters {:path {:id s/Str}}}}]]
    )

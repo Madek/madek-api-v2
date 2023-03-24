@@ -9,6 +9,7 @@
    [schema.core :as s]))
 
 
+; TODO query
 (defn handle_list-contexts
   [req]
   (let [full-data (true? (-> req :parameters :query :full-data))
@@ -40,7 +41,6 @@
   (let [data (-> req :parameters :body)
         id (-> req :parameters :path :id)
         dwid (assoc data :id id)
-        ;old-data (sd/query-eq-find-one "contexts" "id" id)
         old-data (-> req :context)
         upd-query (sd/sql-update-clause "id" (str id))
         ; or TODO data with id
@@ -71,7 +71,10 @@
 
 (defn wwrap-find-context [param colname send404]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param "contexts" colname :context send404))))
+    (fn [request] (sd/req-find-data request handler
+                                    param
+                                    :contexts colname
+                                    :context send404))))
 
 
 (def schema_import_contexts
@@ -125,7 +128,7 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get contexts by id.")
            :handler handle_get-context
-           :middleware [(wwrap-find-context :id "id" true)]
+           :middleware [(wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
            :responses {200 {:body schema_export_contexts}
@@ -135,7 +138,7 @@
      :put {:summary (sd/sum_adm "Update contexts with id.")
            ; TODO labels and descriptions
            :handler handle_update-contexts
-           :middleware [(wwrap-find-context :id "id" true)]
+           :middleware [(wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_contexts}
@@ -145,6 +148,6 @@
      :delete {:summary (sd/sum_adm_todo "Delete context by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-context
-              :middleware [(wwrap-find-context :id "id" true)]
+              :middleware [(wwrap-find-context :id :id true)]
               :parameters {:path {:id s/Str}}}}]]
    )
