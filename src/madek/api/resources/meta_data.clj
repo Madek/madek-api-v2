@@ -234,7 +234,7 @@
   ["/meta-data"
    ["/:meta_datum_id" {:get {:handler meta-datum/get-meta-datum
                              :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
-                                          sd/ring-wrap-authorization]
+                                          sd/ring-wrap-authorization-view]
                              :summary "Get meta-data for id"
                              :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
                              :coercion reitit.coercion.schema/coercion
@@ -248,7 +248,7 @@
    ["/:meta_datum_id/data-stream" {:get {:handler meta-datum/get-meta-datum-data-stream
                                          ; TODO json meta-data: fix response conversion error
                                          :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
-                                                      sd/ring-wrap-authorization]
+                                                      sd/ring-wrap-authorization-view]
                                          :summary "Get meta-data data-stream."
                                          :description "Get meta-data data-stream."
                                          :coercion reitit.coercion.schema/coercion
@@ -269,7 +269,7 @@
     {:get {:summary "Get meta-data for collection."
            :handler meta-data.index/get-index
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-view]
                                                    ; TODO 401s test fails
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str}}
@@ -279,7 +279,7 @@
     {:post {:summary "Create meta-data text for collection."
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
@@ -290,7 +290,7 @@
     {:post {:summary "Create meta-data json for collection."
             :handler handle_create-meta-data-text-date
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
@@ -301,7 +301,7 @@
     {:post {:summary "Create meta-data json for collection."
             :handler handle_create-meta-data-json
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
@@ -313,7 +313,7 @@
             :handler handle_create-meta-data-keyword
             :middleware [wrap-add-keyword
                          sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str
@@ -325,7 +325,7 @@
             :handler handle_create-meta-data-people
             :middleware [wrap-add-person
                          sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str
@@ -337,7 +337,7 @@
             :handler handle_create-meta-data-role
             :middleware [wrap-add-role
                          sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str
@@ -352,7 +352,7 @@
            :handler meta-data.index/get-index
                                                       ; TODO 401s test fails
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}}
            :responses {200 {:body s/Any}}}}]
@@ -361,7 +361,7 @@
     {:post {:summary "Create meta-data text for media-entry"
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-edit-metadata]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str}
@@ -374,7 +374,7 @@
     {:post {:summary "Create meta-data json for media-entry"
             :handler handle_create-meta-data-text-date
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str}
@@ -385,7 +385,7 @@
     {:post {:summary "Create meta-data json for media-entry"
             :handler handle_create-meta-data-json
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str}
@@ -397,7 +397,7 @@
             :handler handle_create-meta-data-keyword
             :middleware [wrap-add-keyword
                          sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str
@@ -409,7 +409,7 @@
             :handler handle_create-meta-data-people
             :middleware [wrap-add-person
                          sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str
@@ -421,7 +421,7 @@
             :handler handle_create-meta-data-role
             :middleware [wrap-add-role
                          sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-view]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str

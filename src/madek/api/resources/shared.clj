@@ -255,17 +255,23 @@
 (defn- public? [resource]
   (-> resource :get_metadata_and_previews boolean))
 
-(defn- authorize-request-for-handler [request handler]
-  (if-let [media-resource (:media-resource request)]
-    (if (public? media-resource)
-      (handler request)
+(defn- authorize-request-for-media-resource [request handler scope]
+  ;((logging/info "auth-request-for-mr" "\nscope: " scope)
+   (if-let [media-resource (:media-resource request)]
+         
+     (if (and (public? media-resource) (= scope :view))
+      ;(
+      ; (logging/info "authorize-request-for-media-resource: public " "\nscope: " scope)
+       (handler request)
+       ;)
+
       (if-let [auth-entity (:authenticated-entity request)]
-        (if (authorized? auth-entity media-resource)
+        (if (authorized? auth-entity media-resource scope)
           (handler request)
           {:status 403 :body {:message "Not authorized for media-resource"}})
         {:status 401 :body {:message "Not authorized"}}))
     (let [response  {:status 500 :body {:message "No media-resource in request."}}]
-      (logging/warn 'authorize-request-for-handler response [request handler])
+      (logging/warn 'authorize-request-for-media-resource response [request handler])
       response)))
 
 ; end media-resource auth helpers
@@ -300,9 +306,21 @@
   (fn [request]
     (ring-add-meta-datum-with-media-resource request handler)))
 
-(defn ring-wrap-authorization [handler]
+(defn ring-wrap-authorization-view [handler]
   (fn [request]
-    (authorize-request-for-handler request handler)))
+    (authorize-request-for-media-resource request handler :view)))
+
+(defn ring-wrap-authorization-download [handler]
+  (fn [request]
+    (authorize-request-for-media-resource request handler :download)))
+
+(defn ring-wrap-authorization-edit-metadata [handler]
+  (fn [request]
+    (authorize-request-for-media-resource request handler :edit-md)))
+
+(defn ring-wrap-authorization-edit-permissions [handler]
+  (fn [request]
+    (authorize-request-for-media-resource request handler :edit-perm)))
 
 (defn ring-wrap-parse-json-query-parameters [handler]
   (fn [request]

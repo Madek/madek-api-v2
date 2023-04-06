@@ -15,5 +15,13 @@
   (mr-permissions/permission-by-auth-entity?
     resource auth-entity :get_full_size :mr-type "media_entry"))
 
+(defn editable-meta-data-by-auth-entity? [resource auth-entity]
+  (mr-permissions/permission-by-auth-entity?
+   resource auth-entity :edit_metadata :mr-type "media_entry"))
+
+(defn editable-permissions-by-auth-entity? [resource auth-entity]
+  (mr-permissions/permission-by-auth-entity?
+   resource auth-entity :edit_permissions :mr-type "media_entry"))
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -65,7 +65,7 @@
   (let [auth (-> req :authenticated-entity)
         auth-id (-> auth :id)
         req-data (-> req :parameters :body)
-        ins-data (assoc req-data :creator_id auth-id :responsible_user_id auth-id)] 
+        ins-data (assoc req-data :creator_id auth-id)] 
     (if-let [ins-result (jdbc/insert! (rdbms/get-ds) "collections" ins-data)]
       (sd/response_ok (first ins-result))
       (sd/response_failed "Could not create collection" 406))))
@@ -97,7 +97,7 @@
 
    ["/:collection_id" {:get {:handler handle_get-collection
                              :middleware [sd/ring-wrap-add-media-resource
-                                          sd/ring-wrap-authorization]
+                                          sd/ring-wrap-authorization-view]
                              :summary "Get collection for id."
                              :swagger {:produces "application/json"}
                              :coercion reitit.coercion.schema/coercion

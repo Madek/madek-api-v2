@@ -30,7 +30,7 @@
         ; or TODO data with id
         ]
         ; create delegation entry
-      (if-let [ins_res (jdbc/insert! (rdbms/get-ds) :delegations data)]
+      (if-let [ins_res (jdbc/insert! (get-ds) :delegations data)]
         ; TODO clean result
         (sd/response_ok (first ins_res))
         (sd/response_failed "Could not create delegation." 406))))
@@ -48,7 +48,7 @@
     (logging/info "handle_update-delegations: " "\nid\n" id "\ndwid\n" dwid
                   "\nold-data\n" old-data
                   "\nupd-query\n" upd-query)
-    (if-let [ins-res (jdbc/update! (rdbms/get-ds) :delegations dwid upd-query)]
+    (if-let [ins-res (jdbc/update! (get-ds) :delegations dwid upd-query)]
         ; TODO clean result
       ;(if (= 1 ins-res)
         (
@@ -65,7 +65,7 @@
   (let [delegation (-> req :delegation)
         delegation-id (-> req :delegation :id)]
     ; TODO use shared update clause
-    (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :delegations ["id = ?" delegation-id])))
+    (if (= 1 (first (jdbc/delete! (get-ds) :delegations ["id = ?" delegation-id])))
       (sd/response_ok delegation)
       (logging/error "Failed delete delegation " delegation-id))))
 

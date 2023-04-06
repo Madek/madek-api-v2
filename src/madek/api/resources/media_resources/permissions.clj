@@ -9,6 +9,7 @@
     [madek.api.utils.sql :as sql]
     ))
 
+
 (defn- build-api-client-permissions-query
   [media-resource-id api-client-id perm-name & {:keys [mr-type]}]
   (-> (sql/select :*)
@@ -18,6 +19,13 @@
                  [:= perm-name true])
       (sql/format)))
 
+(defn- build-api-client-permission-list-query
+  [media-resource-id & {:keys [mr-type]}]
+  (-> (sql/select :*)
+      (sql/from (keyword (str mr-type "_api_client_permissions")))
+      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
+      (sql/format)))
+
 (defn- build-user-permissions-query
   [media-resource-id user-id perm-name & {:keys [mr-type]}]
   (-> (sql/select :*)
@@ -25,6 +33,14 @@
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
                  [:= :user_id user-id]
                  [:= perm-name true])
+      (sql/format)))
+
+
+(defn- build-user-permission-list-query
+  [media-resource-id & {:keys [mr-type]}]
+  (-> (sql/select :*)
+      (sql/from (keyword (str mr-type "_user_permissions")))
+      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
       (sql/format)))
 
 (defn- build-user-groups-query [user-id]
@@ -45,6 +61,13 @@
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
                  [:in :group_id group-ids]
                  [:= perm-name true])
+      (sql/format)))
+
+(defn- build-group-permission-list-query
+  [media-resource-id & {:keys [mr-type]}]
+  (-> (sql/select :*)
+      (sql/from (keyword (str mr-type "_group_permissions")))
+      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
       (sql/format)))
 
 ; ============================================================
@@ -70,10 +93,22 @@
          (:id resource) api-client-id perm-name :mr-type mr-type)
        (jdbc/query (rdbms/get-ds))))
 
+(defn query-list-api-client-permissions
+  [resource & {:keys [mr-type]}]
+  (->> (build-api-client-permission-list-query
+        (:id resource) :mr-type mr-type)
+       (jdbc/query (rdbms/get-ds))))
+
 (defn- query-user-permissions
   [resource user-id perm-name & {:keys [mr-type]}]
   (->> (build-user-permissions-query
          (:id resource) user-id perm-name :mr-type mr-type)
+       (jdbc/query (rdbms/get-ds))))
+
+(defn query-list-user-permissions
+  [resource & {:keys [mr-type]}]
+  (->> (build-user-permission-list-query
+        (:id resource) :mr-type mr-type)
        (jdbc/query (rdbms/get-ds))))
 
 (defn- query-group-permissions
@@ -82,6 +117,12 @@
     (->> (build-group-permissions-query
            (:id resource) (map :id user-groups) perm-name :mr-type mr-type)
          (jdbc/query (rdbms/get-ds)))))
+
+(defn query-list-group-permissions
+  [resource & {:keys [mr-type]}]
+  (->> (build-group-permission-list-query
+          (:id resource) :mr-type mr-type)
+         (jdbc/query (rdbms/get-ds))))
 
 (defn permission-by-auth-entity? [resource auth-entity perm-name & {:keys [mr-type]}]
   (or (perm-name resource)

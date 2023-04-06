@@ -3,7 +3,6 @@
     [clojure.java.io :as io]
    [clojure.java.jdbc :as jdbc]
    [clojure.tools.logging :as logging]
-   [compojure.core :as cpj]
    [madek.api.resources.media-entries.index :refer [get-index]]
    [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
    [madek.api.resources.shared :as sd]
@@ -14,18 +13,8 @@
    [reitit.ring.middleware.multipart :as multipart]
    [schema.core :as s]
    [pantomime.mime :refer [mime-type-of]]
-   [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
    )
   )
-
-
-(def routes
-  (cpj/routes
-    (cpj/GET "/media-entries/" _ get-index)
-    (cpj/GET "/media-entries/:id" _ get-media-entry)
-    (cpj/ANY "*" _ sd/dead-end-handler)
-    ))
-
 
 (defn handle_get-index [req]
   (let [query-params (-> req :parameters :query)
@@ -187,6 +176,36 @@
        ;(sd/response_ok {:file file :mime-type "none"}))
     ;(mime-type-of (java.io.File. "some/file/without/extension"))
 
+(def schema_query_media_entries 
+  {(s/optional-key :collection_id) s/Uuid
+   ;(s/optional-key :order) s/Any 
+   (s/optional-key :order) (s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
+   (s/optional-key :filter_by) s/Str
+   ;(s/optional-key :filter_by)
+   ; {
+   ;  (s/optional-key :media_entry) {:is_published s/Bool
+   ;                                 :creator_id s/Uuid
+   ;                                 :responsible_user_id s/Uuid
+   ;                                 }
+   ;  (s/optional-key :media_files) {:keys :values}
+   ;  (s/optional-key :permissions) {(s/optional-key :public) s/Bool
+   ;                                 (s/optional-key :responsible_user) s/Uuid
+   ;                                 (s/optional-key :entrusted_to_user) s/Uuid
+   ;                                }
+   ;  (s/optional-key :meta_data) [{(s/optional-key :type) s/Str
+   ;                               (s/optional-key :key) s/Str
+   ;                               (s/optional-key :match) s/Str
+   ;                               (s/optional-key :value) s/Str}]
+   ;  (s/optional-key :search) s/Str
+   ;  }
+
+   (s/optional-key :me_get_metadata_and_previews) s/Bool
+   (s/optional-key :me_get_full_size) s/Bool
+   (s/optional-key :public_get_metadata_and_previews) s/Bool
+   (s/optional-key :public_get_full_size) s/Bool
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int})
+
 
 (def ring-routes 
   ["/media-entries"
@@ -198,13 +217,7 @@
            ; TODO does not parse filter_by
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :collection_id) s/Uuid
-                           (s/optional-key :order) s/Any ;(s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
-                           (s/optional-key :filter_by) s/Any
-                           (s/optional-key :me_get_metadata_and_previews) s/Bool
-                           (s/optional-key :me_get_full_size) s/Bool
-                           (s/optional-key :page) s/Str
-                           (s/optional-key :count) s/Int}}}}
+      :parameters {:query schema_query_media_entries}}}
   ])
 
 (sa/def ::copy_me_id string?)
@@ -231,9 +244,9 @@
            :content-type "application/json"
 
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Str}}}}]
+           :parameters {:path {:media_entry_id s/Uuid}}}}]
   ])
 
 (def collection-routes

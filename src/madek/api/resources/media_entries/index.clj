@@ -8,13 +8,11 @@
     [clojure.set :refer [rename-keys]]
     [clojure.string :as str :refer [blank?]]
     [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug :refer [I> I>> identity-with-logging]]
     [madek.api.pagination :as pagination]
     [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
-    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions :refer [filter-by-query-params]]
-    [madek.api.resources.shared :as shared]
+    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions :refer [filter-by-query-params]] 
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
     ))
@@ -184,8 +182,23 @@
       )
       (sql/merge-order-by :media_entries.id)))
 
+;{"meta_data": [{"key": "madek_core:title", "match": "Bildshirmfoto"}],
+; "permissions": [{"key":"public","value":"false"}]
+;}
 ; test {"meta_data":[{"key":"any","match":"nitai"}]}
-; test2 {"meta_data":[{"key":"test:string","match":"par tial"},{"key":"filter:7cq5ila0xxqlrc7wod2g","value":"3768574c-d4d8-4fac-ad73-0e2dbd4cc443"},{"key":"test:licenses"},{"not_key":"filter:1vq1h2t25y92yq8ojg11"},{"key":"test:people","value":"9f70e42c-8d01-4b2b-8f10-2719921797fc"},{"key":"any","type":"MetaDatum::Keywords","value":"694b858d-e8eb-4e51-8bee-f55fd8a0491b"}],"media_files":[{"key":"content_type","value":"image/jpeg"},{"key":"uploader_id","value":"7bf54b03-42e5-4dc8-8a36-309ca9b1563f"},{"key":"extension","value":"jpg"}],"permissions":[{"key":"responsible_user","value":"935e9257-b7a7-4783-bb11-553907ca67f6"},{"key":"public","value":"true"},{"key":"entrusted_to_user","value":"73fbb710-eedc-481d-a411-692705decd09"},{"key":"entrusted_to_group","value":"e8b962f6-df73-4b6f-b2b6-3f71230cd0aa"}]}
+; test2 {"meta_data":[{"key":"test:string","match":"par tial"},
+;                     {"key":"filter:7cq5ila0xxqlrc7wod2g","value":"3768574c-d4d8-4fac-ad73-0e2dbd4cc443"},
+;                     {"key":"test:licenses"},
+;                     {"not_key":"filter:1vq1h2t25y92yq8ojg11"},
+;                     {"key":"test:people","value":"9f70e42c-8d01-4b2b-8f10-2719921797fc"},
+;                     {"key":"any","type":"MetaDatum::Keywords","value":"694b858d-e8eb-4e51-8bee-f55fd8a0491b"}],
+;        "media_files":[{"key":"content_type","value":"image/jpeg"},
+;                     {"key":"uploader_id","value":"7bf54b03-42e5-4dc8-8a36-309ca9b1563f"},
+;                     {"key":"extension","value":"jpg"}],
+;        "permissions":[{"key":"responsible_user","value":"935e9257-b7a7-4783-bb11-553907ca67f6"},
+;                     {"key":"public","value":"true"},
+;                     {"key":"entrusted_to_user","value":"73fbb710-eedc-481d-a411-692705decd09"},
+;                     {"key":"entrusted_to_group","value":"e8b962f6-df73-4b6f-b2b6-3f71230cd0aa"}]}
 ; TODO test query and paging
 (defn- build-query [request]
   (let [;query-params (or (:query-params request) (-> request :parameters :query))
@@ -202,7 +215,10 @@
                       (advanced-filter/filter-by filter-by)
                       (pagination/add-offset-for-honeysql query-params)
                       sql/format)]
-    (logging/info "build-query" "\nquery-params:\n" query-params "\nquery-res:\n" query-res)
+    (logging/info "build-query" 
+                  "\nquery-params:\n" query-params
+                  "\nfilter-by json:\n" filter-by
+                  "\nquery-res:\n" query-res)
     query-res
     ))
 

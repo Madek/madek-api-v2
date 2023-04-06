@@ -93,7 +93,7 @@
                   "\ntype\n" mr-type "\ncol-name\n" col-name
                   "\nmr-id\n" mr-id
                   "\ndwid\n" dwid)
-    (if-let [upd-res  (jdbc/update! (get-ds) :custom_urls dwid (sd/sql-update-clause col-name mr-id))]
+    (if-let [upd-res  {}]; (jdbc/update! (get-ds) :custom_urls dwid (sd/sql-update-clause col-name mr-id))]
       (let [upd-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
         (logging/info "handle_update-custom-urls" "\nupd-data\n" upd-data)
         (sd/response_ok upd-data))
@@ -167,17 +167,17 @@
    {:get {:summary "Get custom_url for media entry."
           :handler handle_get-custom-urls
           :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization]
+                       sd/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}}
           :responses {200 {:body schema_export_custom_url}
                       404 {:body s/Any}}
           }
-    
+    ; TODO db schema allows multiple entries for multiple users
     :post {:summary (sd/sum_usr "Create custom_url for media entry.")
            :handler handle_create-custom-urls
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :body schema_create_custom_url}
@@ -187,7 +187,7 @@
     :patch {:summary (sd/sum_usr "Update custom_url for media entry.")
            :handler handle_update-custom-urls
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :body schema_update_custom_url}
@@ -197,7 +197,7 @@
     :delete {:summary (sd/sum_todo "Delete custom_url for media entry.")
              :handler handle_delete-custom-urls
              :middleware [sd/ring-wrap-add-media-resource
-                          sd/ring-wrap-authorization]
+                          sd/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:media_entry_id s/Str}}
              :responses {200 {:body schema_export_custom_url}
@@ -210,14 +210,14 @@
    {:get {:summary "Get custom_url for collection."
           :handler handle_get-custom-urls
           :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization]
+                       sd/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Str}}}
 
     :post {:summary (sd/sum_usr "Create custom_url for collection.")
            :handler handle_create-custom-urls
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str}
                         :body schema_create_custom_url}
@@ -227,7 +227,7 @@
     :patch {:summary (sd/sum_usr "Update custom_url for collection.")
             :handler handle_update-custom-urls
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization]
+                         sd/ring-wrap-authorization-edit-metadata]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}
                          :body schema_update_custom_url}
@@ -237,7 +237,7 @@
     :delete {:summary (sd/sum_todo "Delete custom_url for collection.")
              :handler handle_delete-custom-urls
              :middleware [sd/ring-wrap-add-media-resource
-                          sd/ring-wrap-authorization]
+                          sd/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:collection_id s/Str}}
              :responses {200 {:body schema_export_custom_url}

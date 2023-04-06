@@ -2,15 +2,13 @@
   (:require
     [clojure.java.jdbc :as jdbc]
     [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug]
     [madek.api.resources.media-entries.permissions :as me-permissions]
-    [madek.api.resources.shared :as shared]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     ))
 
-(defn- authorize [request handler scope]
+(defn- media-file-authorize [request handler scope]
   (let [media-entry-id (get-in request [:media-file :media_entry_id])
         media-entry (-> (jdbc/query (get-ds)
                                     [(str "SELECT * FROM media_entries WHERE id = ?")
@@ -28,14 +26,15 @@
           {:status 403})
         {:status 401}))))
 
-(defn wrap-authorize [handler scope]
-  (fn [request] (authorize request handler scope)))
+;(defn wrap-authorize [handler scope]
+;  (fn [request] (authorize request handler scope)))
 
-(defn ring-wrap-authorize-metadata-and-previews [handler]
-  (fn [request] (authorize request handler :get_metadata_and_previews)))
+(defn wrap-auth-media-file-metadata-and-previews [handler]
+  (fn [request] (media-file-authorize request handler :get_metadata_and_previews)))
 
-(defn ring-wrap-authorize-full_size [handler]
-  (fn [request] (authorize request handler :get_full_size)))
+(defn wrap-auth-media-file-full_size [handler]
+  (fn [request] (media-file-authorize request handler :get_full_size)))
+
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

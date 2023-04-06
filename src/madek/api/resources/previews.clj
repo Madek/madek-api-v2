@@ -79,7 +79,7 @@
            :handler preview/get-preview
            :middleware [ring-wrap-find-and-add-preview
                         sd/ring-wrap-add-media-resource-preview
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:preview_id s/Uuid}}}}]
 
@@ -88,11 +88,12 @@
            :handler preview/get-preview-file-data-stream
            :middleware [ring-wrap-find-and-add-preview
                         sd/ring-wrap-add-media-resource-preview
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:preview_id s/Uuid}}}}]
    ])
 
+; TODO auth
 ; TODO query addressing different previews is not rest.
 ; TODO tests
 (def media-entry-routes

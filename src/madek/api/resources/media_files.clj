@@ -1,7 +1,6 @@
 (ns madek.api.resources.media-files
   (:require
    [clojure.tools.logging :as logging]
-   [compojure.core :as cpj]
    [logbug.catcher :as catcher]
    [logbug.debug :as debug :refer [I>]]
    [logbug.ring :as logbug-ring :refer [wrap-handler-with-logging]]
@@ -16,23 +15,9 @@
 
 (defn- query-media-file [media-file-id]
   (sd/query-eq-find-one :media_files :id media-file-id))
-  ; we wrap this since badly formated media-file-id strings can cause an
-  ; exception, note that 404 is in that case a correct response
-  ;(catcher/snatch {}
-  ;  (-> (jdbc/query
-  ;        (get-ds)
-  ;        ["SELECT * FROM media_files WHERE id = ?" media-file-id])
-  ;      first)))
 
 (defn- query-media-files-by-media-entry-id [media-entry-id]
   (sd/query-eq-find-one :media_files :media_entry_id media-entry-id))
-  ; we wrap this since badly formated media-file-id strings can cause an
-  ; exception, note that 404 is in that case a correct response
-  ;(catcher/snatch {} 
-  ;  (-> (jdbc/query
-  ;       (get-ds)
-  ;       ["SELECT * FROM media_files WHERE media_entry_id = ?" media-entry-id])
-  ;      first)))
 
 (defn find-and-add-media-file
   "Extracts path parameter media_entry_id,
@@ -68,19 +53,6 @@
 
 ;##############################################################################
 
-(def routes
-  (I>  wrap-handler-with-logging
-      (cpj/routes
-        (cpj/GET "/media-files/:media_file_id" _
-                 #'media-file/get-media-file)
-        (cpj/GET "/media-files/:media_file_id/data-stream" _
-                 (media-files.authorization/wrap-authorize
-                   #'media-file/get-media-file-data-stream :get_full_size))
-        (cpj/ANY "*" _ sd/dead-end-handler))
-      (media-files.authorization/wrap-authorize :get_metadata_and_previews)
-      wrap-find-and-add-media-file))
-
-
 (def media-file-routes
   ["/media-file"
    ["/:media_file_id" 
@@ -89,7 +61,7 @@
            :content-type "application/json"
            :handler media-file/get-media-file
            :middleware [wrap-find-and-add-media-file
-                        media-files.authorization/ring-wrap-authorize-metadata-and-previews]
+                        media-files.authorization/wrap-auth-media-file-metadata-and-previews]
            :coercion reitit.coercion.schema/coercion
                :parameters {:path {:media_file_id s/Str}}}}
    ]
@@ -98,7 +70,7 @@
     {:get {:summary "Get media-file data-stream for id."
            :handler media-file/get-media-file-data-stream
            :middleware [wrap-find-and-add-media-file
-                        media-files.authorization/ring-wrap-authorize-full_size]
+                        media-files.authorization/wrap-auth-media-file-full_size]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_file_id s/Str}}}}
    ]
@@ -111,7 +83,9 @@
      {:summary "Get media-file for media-entry id."
       :handler media-file/get-media-file
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                   media-files.authorization/ring-wrap-authorize-metadata-and-previews]
+                   ; TODO switch to shared me auth
+                   ;sd/ring-wrap-authorization-view
+                   media-files.authorization/wrap-auth-media-file-metadata-and-previews]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}}}]
    
@@ -120,7 +94,9 @@
      {:summary "TODO: Get media-file data-stream for media-entry id."
       :handler media-file/get-media-file-data-stream
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                   media-files.authorization/ring-wrap-authorize-metadata-and-previews]
+                   ; TODO switch to shared me auth
+                   ;sd/ring-wrap-authorization-download
+                   media-files.authorization/wrap-auth-media-file-full_size]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}}}]
   ])

@@ -1,13 +1,11 @@
 (ns madek.api.resources.media-files.media-file
   (:require
-    [clojure.java.jdbc :as jdbc]
     [clojure.tools.logging :as logging]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug]
     [madek.api.constants]
     [madek.api.data-streaming :as data-streaming]
     [madek.api.resources.previews.index :as previews]
-    [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     ))
 
 (defn get-media-file [request]

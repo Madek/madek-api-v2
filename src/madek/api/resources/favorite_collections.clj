@@ -115,6 +115,7 @@
      :coercion reitit.coercion.schema/coercion
      :responses {200 {:body {:collection_ids [s/Uuid]}}}}}])
 
+; TODO media resource permissions
 ; TODO docu
 ; TODO tests
 (def collection-routes

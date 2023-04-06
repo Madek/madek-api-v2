@@ -25,11 +25,11 @@
         sql/format)))
 
 
-(defn handle_list-edit-sessions
+(defn handle_adm_list-edit-sessions
   [req]
   (let [db-query (build-query (-> req :parameters :query))
         db-result (jdbc/query (get-ds) db-query)]
-    (logging/info "handle_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
+    ;(logging/info "handle_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_usr_list-edit-sessions
@@ -39,7 +39,7 @@
         usr-query (assoc req-query :user_id user-id)
         db-query (build-query usr-query)
         db-result (jdbc/query (get-ds) db-query)]
-    (logging/info "handle_usr_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
+    ;(logging/info "handle_usr_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_adm_get-edit-session
@@ -64,11 +64,7 @@
         mr-type (-> mr :type)
         mr-id (-> mr :id str)
         col-name (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
-    
-    (logging/info "handle_get-edit-sessions"
-                  "\ntype\n" mr-type
-                  "\nmr-id\n" mr-id
-                  "\ncol-name\n" col-name)
+    ;(logging/info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
     (if-let [result (sd/query-eq2-find-all :edit_sessions col-name mr-id :user_id u-id)]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))
@@ -80,20 +76,12 @@
         mr (-> req :media-resource)
         mr-type (-> mr :type)
         mr-id (-> mr :id str)
-        ;col-name (if (= mr-type "MediaEntry")
-        ;           "media_entry_id"
-        ;           "collection_id")
         data (-> req :parameters :body)
         dwid (if (= mr-type "MediaEntry")
                (assoc data :media_entry_id mr-id :user_id u-id)
                (assoc data :collection_id mr-id :user_id u-id))
         ]
-    
-    (logging/info "handle_create-edit-sessions"
-                  "\ntype\n" mr-type 
-                  ;"\ncol-name\n" col-name
-                  "\nmr-id\n" mr-id                  
-                  "\ndwid\n" dwid)
+    ;(logging/info "handle_create-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ndwid\n" dwid)
     (if-let [ins-res (first (jdbc/insert! (get-ds) :edit_sessions dwid))]
       (sd/response_ok ins-res) 
       (sd/response_failed "Could not create edit_session." 406))))
@@ -123,11 +111,20 @@
         (sd/response_failed (str "Failed delete edit_session: " id) 406))
       (sd/response_failed (str "No such edit_session : " id) 404))))
 
-(def schema_query_edit_session
+(def schema_usr_query_edit_session
   {(s/optional-key :full-data) s/Bool
    (s/optional-key :page) s/Int
    (s/optional-key :count) s/Int
-   (s/optional-key :id) s/Str
+   (s/optional-key :id) s/Uuid
+   (s/optional-key :media_entry_id) s/Uuid
+   (s/optional-key :collection_id) s/Uuid})
+
+(def schema_adm_query_edit_session
+
+  {(s/optional-key :full-data) s/Bool
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int
+   (s/optional-key :id) s/Uuid
    (s/optional-key :user_id) s/Uuid
    (s/optional-key :media_entry_id) s/Uuid
    (s/optional-key :collection_id) s/Uuid})
@@ -144,9 +141,9 @@
   ["/edit_sessions"
    ["/"
     {:get {:summary (sd/sum_adm "List edit_sessions.")
-           :handler handle_list-edit-sessions
+           :handler handle_adm_list-edit-sessions
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query schema_query_edit_session}}}]
+           :parameters {:query schema_adm_query_edit_session}}}]
    ["/:id"
     {:get {:summary (sd/sum_adm "Get edit_session.")
            :handler handle_adm_get-edit-session
@@ -168,15 +165,8 @@
     {:get {:summary (sd/sum_usr "List authed users edit_sessions.")
            :handler handle_usr_list-edit-sessions
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full-data) s/Bool
-                                (s/optional-key :page) s/Int
-                                (s/optional-key :count) s/Int
-                                (s/optional-key :id) s/Str
-                                ;(s/optional-key :user_id) s/Uuid
-                                (s/optional-key :media_entry_id) s/Uuid
-                                (s/optional-key :collection_id) s/Uuid}}}
-    }]
-   ; TODO limit view for authed user ?
+           :parameters {:query schema_usr_query_edit_session}}}]
+   
    ["/:id"
     {:get {:summary (sd/sum_usr "Get edit_session.")
            :handler handle_usr_get-edit-session
@@ -196,7 +186,7 @@
    {:get {:summary "Get user edit_session list for media entry."
           :handler handle_usr_get-edit-sessions
           :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization]
+                       sd/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}}
           :responses {200 {:body [schema_export_edit_session]}
@@ -206,7 +196,7 @@
     :post {:summary (sd/sum_usr "Create edit_session for media entry.")
            :handler handle_usr_create-edit-sessions
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}}
            :responses {200 {:body schema_export_edit_session}
@@ -222,7 +212,7 @@
    {:get {:summary "Get authed users edit_session list for collection."
           :handler handle_usr_get-edit-sessions
           :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization]
+                       sd/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Str}}
           :responses {200 {:body [schema_export_edit_session]}
@@ -231,7 +221,7 @@
     :post {:summary (sd/sum_usr "Create edit_session for collection.")
            :handler handle_usr_create-edit-sessions
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str}}
            :responses {200 {:body schema_export_edit_session}
@@ -241,9 +231,11 @@
     ;:delete {:summary (sd/sum_todo "Delete edit_session for collection.")
     ;         :handler handle_delete-edit-sessions
     ;         :middleware [sd/ring-wrap-add-media-resource
-    ;                      sd/ring-wrap-authorization]
+    ;                      sd/ring-wrap-authorization-view]
     ;         :coercion reitit.coercion.schema/coercion
     ;         :parameters {:path {:collection_id s/Str}}
     ;         :responses {200 {:body schema_export_edit_session}
     ;                     404 {:body s/Any}}}
     }])
+
+; TODO tests
