@@ -176,7 +176,7 @@
 (defn build-site [context]
   (I> wrap-handler-with-logging
       dead-end-handler
-      madek.api.resources/wrap-api-routes
+      ; madek.api.resources/wrap-api-routes
       authorization/wrap-authorize-http-method
       authentication/wrap
       management/wrap
