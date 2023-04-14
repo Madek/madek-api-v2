@@ -9,19 +9,19 @@
 
 (defn viewable-by-auth-entity? [resource auth-entity]
   (mr-permissions/viewable-by-auth-entity?
-    resource auth-entity :mr-type "media_entry"))
+    resource auth-entity "media_entry"))
 
 (defn downloadable-by-auth-entity? [resource auth-entity]
   (mr-permissions/permission-by-auth-entity?
-    resource auth-entity :get_full_size :mr-type "media_entry"))
+    resource auth-entity :get_full_size "media_entry"))
 
 (defn editable-meta-data-by-auth-entity? [resource auth-entity]
   (mr-permissions/permission-by-auth-entity?
-   resource auth-entity :edit_metadata :mr-type "media_entry"))
+   resource auth-entity :edit_metadata "media_entry"))
 
 (defn editable-permissions-by-auth-entity? [resource auth-entity]
-  (mr-permissions/permission-by-auth-entity?
-   resource auth-entity :edit_permissions :mr-type "media_entry"))
+  (mr-permissions/edit-permissions-by-auth-entity?
+   resource auth-entity "media_entry"))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

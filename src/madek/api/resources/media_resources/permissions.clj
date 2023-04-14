@@ -6,12 +6,11 @@
     [logbug.debug :as debug]
     [logbug.thrown :as thrown]
     [madek.api.utils.rdbms :as rdbms]
-    [madek.api.utils.sql :as sql]
-    ))
+    [madek.api.utils.sql :as sql]))
 
 
 (defn- build-api-client-permissions-query
-  [media-resource-id api-client-id perm-name & {:keys [mr-type]}]
+  [media-resource-id api-client-id perm-name mr-type]
   (-> (sql/select :*)
       (sql/from (keyword (str mr-type "_api_client_permissions")))
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
@@ -20,14 +19,14 @@
       (sql/format)))
 
 (defn- build-api-client-permission-list-query
-  [media-resource-id & {:keys [mr-type]}]
+  [media-resource-id mr-type]
   (-> (sql/select :*)
       (sql/from (keyword (str mr-type "_api_client_permissions")))
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
       (sql/format)))
 
 (defn- build-user-permissions-query
-  [media-resource-id user-id perm-name & {:keys [mr-type]}]
+  [media-resource-id user-id perm-name mr-type]
   (-> (sql/select :*)
       (sql/from (keyword (str mr-type "_user_permissions")))
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
@@ -36,8 +35,16 @@
       (sql/format)))
 
 
+(defn- build-user-permission-get-query
+  [media-resource-id mr-type user-id]
+  (-> (sql/select :*)
+      (sql/from (keyword (str mr-type "_user_permissions")))
+      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
+                 [:= :user_id user-id])
+      (sql/format)))
+
 (defn- build-user-permission-list-query
-  [media-resource-id & {:keys [mr-type]}]
+  [media-resource-id mr-type]
   (-> (sql/select :*)
       (sql/from (keyword (str mr-type "_user_permissions")))
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
@@ -55,7 +62,7 @@
        (jdbc/query (rdbms/get-ds))))
 
 (defn- build-group-permissions-query
-  [media-resource-id group-ids perm-name & {:keys [mr-type]}]
+  [media-resource-id group-ids perm-name mr-type]
   (-> (sql/select :*)
       (sql/from (keyword (str mr-type "_group_permissions")))
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
@@ -64,7 +71,7 @@
       (sql/format)))
 
 (defn- build-group-permission-list-query
-  [media-resource-id & {:keys [mr-type]}]
+  [media-resource-id mr-type]
   (-> (sql/select :*)
       (sql/from (keyword (str mr-type "_group_permissions")))
       (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
@@ -88,43 +95,66 @@
 )
 
 (defn- query-api-client-permissions
-  [resource api-client-id perm-name & {:keys [mr-type]}]
+  [resource api-client-id perm-name mr-type]
   (->> (build-api-client-permissions-query
-         (:id resource) api-client-id perm-name :mr-type mr-type)
+         (:id resource) api-client-id perm-name mr-type)
        (jdbc/query (rdbms/get-ds))))
 
 (defn query-list-api-client-permissions
-  [resource & {:keys [mr-type]}]
+  [resource mr-type]
   (->> (build-api-client-permission-list-query
-        (:id resource) :mr-type mr-type)
+        (:id resource) mr-type)
        (jdbc/query (rdbms/get-ds))))
 
 (defn- query-user-permissions
-  [resource user-id perm-name & {:keys [mr-type]}]
+  [resource user-id perm-name mr-type]
   (->> (build-user-permissions-query
-         (:id resource) user-id perm-name :mr-type mr-type)
+         (:id resource) user-id perm-name mr-type)
        (jdbc/query (rdbms/get-ds))))
 
 (defn query-list-user-permissions
-  [resource & {:keys [mr-type]}]
+  [resource mr-type]
   (->> (build-user-permission-list-query
-        (:id resource) :mr-type mr-type)
+        (:id resource) mr-type)
        (jdbc/query (rdbms/get-ds))))
 
+(defn query-get-user-permissions
+  [resource mr-type user-id]
+  (->> (build-user-permission-get-query
+        (:id resource) mr-type user-id)
+       (jdbc/query (rdbms/get-ds))))
+
+(defn update-user-permissions
+  [resource mr-type user-id perm-name perm-val]
+  (let [mr-id (:id resource)
+        tname (keyword (str mr-type "_user_permissions"))
+        whcl (-> (sql/where [:= (keyword (str mr-type "_id")) mr-id]
+                            [:= :user_id user-id])
+                 (sql/format)
+                 (update-in [0] #(clojure.string/replace % "WHERE" "")))
+        perm-data {(keyword perm-name) perm-val}
+        ]
+    (logging/info "update user permissions"
+                  "\ntable\n" tname
+                  "\nwhcl\n" whcl
+                  "\nperm-data\n" perm-data)
+    (jdbc/update! (rdbms/get-ds) tname perm-data whcl))
+  )
+
 (defn- query-group-permissions
-  [resource user-id perm-name & {:keys [mr-type]}]
+  [resource user-id perm-name mr-type]
   (if-let [user-groups (seq (query-user-groups user-id))]
     (->> (build-group-permissions-query
-           (:id resource) (map :id user-groups) perm-name :mr-type mr-type)
+           (:id resource) (map :id user-groups) perm-name mr-type)
          (jdbc/query (rdbms/get-ds)))))
 
 (defn query-list-group-permissions
-  [resource & {:keys [mr-type]}]
+  [resource mr-type]
   (->> (build-group-permission-list-query
-          (:id resource) :mr-type mr-type)
+          (:id resource) mr-type)
          (jdbc/query (rdbms/get-ds))))
 
-(defn permission-by-auth-entity? [resource auth-entity perm-name & {:keys [mr-type]}]
+(defn permission-by-auth-entity? [resource auth-entity perm-name mr-type]
   (or (perm-name resource)
       (let [auth-entity-id (:id auth-entity)]
         (-> (case (:type auth-entity)
@@ -132,23 +162,32 @@
                          (some #(= (:responsible_delegation_id resource) %) (delegation-ids auth-entity-id))
                          (seq (query-user-permissions resource
                                                       auth-entity-id
-                                                      perm-name
-                                                      :mr-type mr-type))
+                                                      perm-name mr-type))
                          (seq (query-group-permissions resource
                                                        auth-entity-id
-                                                       perm-name
-                                                       :mr-type mr-type)))
+                                                       perm-name mr-type))
+                         )
               "ApiClient" (seq (query-api-client-permissions resource
                                                              auth-entity-id
-                                                             perm-name
-                                                             :mr-type mr-type)))
+                                                             perm-name mr-type)))
             boolean))))
 
-(defn viewable-by-auth-entity? [resource auth-entity & {:keys [mr-type]}]
+(defn edit-permissions-by-auth-entity? [resource auth-entity mr-type]
+  (let [auth-entity-id (:id auth-entity)]
+    (-> (case (:type auth-entity)
+          "User" (or (= auth-entity-id (:responsible_user_id resource))
+                     (some #(= (:responsible_delegation_id resource) %) (delegation-ids auth-entity-id))
+                     (seq (query-user-permissions resource
+                                                  auth-entity-id
+                                                  :edit_permissions
+                                                  mr-type))))
+        boolean)))
+
+(defn viewable-by-auth-entity? [resource auth-entity mr-type]
   (permission-by-auth-entity? resource
                               auth-entity
-                              :get_metadata_and_previews
-                              :mr-type mr-type))
+                              :get_metadata_and_previews 
+                              mr-type))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
