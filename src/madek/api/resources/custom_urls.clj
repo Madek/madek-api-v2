@@ -74,6 +74,7 @@
       (sd/response_failed "Could not create custom_url." 406))))
 
 
+; TODO
 ; TODO check if own entity or auth is admin
 (defn handle_update-custom-urls
   [req]

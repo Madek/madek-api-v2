@@ -6,7 +6,6 @@
     [madek.api.resources.locales :refer [add-field-for-default-locale]]
     [madek.api.resources.shared :refer [remove-internal-keys]]
     [madek.api.resources.vocabularies.permissions :as permissions]
-    [madek.api.utils.config :as config :refer [get-config]]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
     
@@ -40,11 +39,12 @@
       (sql/format)))
 
 ; TODO for admin do not remove internal keys (admin_comment)
+; TODO add flag for default locale
 (defn get-vocabulary [request]
-  (let [id (or (-> request :params :id) (-> request :parameters :path :id))
+  (let [id  (-> request :parameters :path :id)
         user-id (-> request :authenticated-entity :id)
         query (build-vocabulary-query id user-id)]
-    (if-let [vocabulary (first (jdbc/query (rdbms/get-ds) query))]
+    (if-let [vocabulary (first (jdbc/query (get-ds) query))]
       {:body (add-fields-for-default-locale (remove-internal-keys vocabulary))}
       {:status 404 :body {:message "Vocabulary could not be found!"}})))
 

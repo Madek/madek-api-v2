@@ -12,18 +12,12 @@
    [clojure.spec.alpha :as sa]
    [reitit.ring.middleware.multipart :as multipart]
    [schema.core :as s]
-   [pantomime.mime :refer [mime-type-of]]
+   ;[pantomime.mime :refer [mime-type-of]]
    )
   )
 
 (defn handle_get-index [req]
-  (let [query-params (-> req :parameters :query)
-        ;q1 (-> req :query-params)
-        qreq (assoc-in req [:query-params] query-params)
-        ;q2 (-> qreq :query-params)
-        ]
-    (logging/info "handle_get-index" "\nquery\n" query-params )
-    (get-index qreq)))
+  (get-index req))
 
 (defn handle_get-media-entry [req]
   (let [query-params (-> req :parameters :query)
@@ -146,6 +140,7 @@
 
 
 ; TODO 
+; use redirect to web-app
 (defn handle_create-media-entry [req]
   (let [copy-md-id (-> req :parameters :query :copy_me_id)
         collection-id (-> req :parameters :query :collection_id)
@@ -163,7 +158,9 @@
                   "\n content: " file-content-type
                   "\ntemppath\n" temppath)
 
-    (let [mime (or file-content-type (mime-type-of temppath) )]
+    (let [;mime (or file-content-type (mime-type-of temppath) )
+          mime file-content-type]
+          
       (logging/info "handle_create-media-entry" "\nmime-type\n" mime)
       (if (nil? auth)
         (sd/response_failed "Not authed" 406)
@@ -204,7 +201,11 @@
    (s/optional-key :public_get_metadata_and_previews) s/Bool
    (s/optional-key :public_get_full_size) s/Bool
    (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int})
+   (s/optional-key :count) s/Int
+   (s/optional-key :with-full-data) s/Bool
+   (s/optional-key :with-file-data) s/Bool
+   (s/optional-key :with-preview-data) s/Bool
+   (s/optional-key :with-meta-data) s/Bool})
 
 
 (def ring-routes 
@@ -224,7 +225,7 @@
 (sa/def ::collection_id string?)
 (def media-entry-routes
   ["/media-entry"
-   {:post {:summary (sd/sum_todo "Create media-entry.")
+   {:post {:summary (sd/sum_todo "Create media-entry. Use redirect to webapp until madek media-encoder lib is ready")
            :handler handle_create-media-entry
            :swagger {:consumes "multipart/form-data"
                      :produces "application/json"}

@@ -5,7 +5,7 @@
     [logbug.catcher :as catcher]
     [logbug.debug :as debug]
     [logbug.thrown :as thrown]
-    [madek.api.authentication.basic :refer [extract]]
+    ;[madek.api.authentication.basic :refer [extract]]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
     ))
@@ -26,14 +26,18 @@
       (map :group_id (execute-query query)))))
 
 (defn- user-permissions-query
-  [user-id]
-  (if user-id
-    (-> (sql/select :vocabulary_id)
-        (sql/from :vocabulary_user_permissions)
-        (sql/merge-where
+  ([user-id] (user-permissions-query user-id "view"))
+  ([user-id acc-type]
+   ; acc-type: "view" or "use"
+   (if user-id
+     (-> (sql/select :vocabulary_id)
+         (sql/from :vocabulary_user_permissions)
+         (sql/merge-where
           [:= :vocabulary_user_permissions.user_id user-id]
-          [:= :vocabulary_user_permissions.view true])
-        (sql/format))))
+          [:= (keyword ("vocabulary_user_permissions." acc-type)) true])
+         (sql/format))
+     nil))
+  )
 
 (defn- pluck-vocabulary-ids
   [query]
@@ -42,22 +46,28 @@
     (map :vocabulary_id (execute-query query))))
 
 (defn- group-permissions-query
-  [user-id]
-  (let [groups-ids-result (group-ids user-id)]
-    (if (empty? groups-ids-result)
-      nil
-      (-> (sql/select :vocabulary_id)
-          (sql/from :vocabulary_group_permissions)
-          (sql/where
+  ([user-id] (group-permissions-query user-id "view"))
+  ([user-id acc-type]
+   ; acc-type: "view" or "use"
+   (let [groups-ids-result (group-ids user-id)]
+     (if (empty? groups-ids-result)
+       nil
+       (-> (sql/select :vocabulary_id)
+           (sql/from :vocabulary_group_permissions)
+           (sql/where
             [:in :vocabulary_group_permissions.group_id (group-ids user-id)]
-            [:= :vocabulary_group_permissions.view true])
-          (sql/format)))))
+            [:= (keyword (apply str "vocabulary_group_permissions." acc-type)) true])
+           (sql/format)))))
+  )
 
 (defn accessible-vocabulary-ids
-  [user-id]
-  (concat
-    (pluck-vocabulary-ids (user-permissions-query user-id))
-    (pluck-vocabulary-ids (group-permissions-query user-id))))
+  ([user-id] (accessible-vocabulary-ids user-id "view"))
+  ([user-id acc-type]
+   ; acc-type: "view" or "edit"
+   (concat
+    (pluck-vocabulary-ids (user-permissions-query user-id acc-type))
+    (pluck-vocabulary-ids (group-permissions-query user-id acc-type))))
+  )
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

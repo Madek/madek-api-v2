@@ -16,39 +16,32 @@
 (defn- query-media-file [media-file-id]
   (sd/query-eq-find-one :media_files :id media-file-id))
 
-(defn- query-media-files-by-media-entry-id [media-entry-id]
-  (sd/query-eq-find-one :media_files :media_entry_id media-entry-id))
+(defn query-media-files-by-media-entry-id [media-entry-id]
+  (sd/query-eq-find-all :media_files :media_entry_id media-entry-id))
 
-(defn find-and-add-media-file
-  "Extracts path parameter media_entry_id,
-   adds queried media-file and its media_file_id to the request data."
-  [request handler]
-  (when-let [media-file-id (or (-> request :route-params :media_file_id) (-> request :parameters :path :media_file_id))]
-    (if-let [media-file (query-media-file media-file-id)]
-      (handler (assoc request :media-file media-file))
-      (sd/response_not_found "No media-file for media_file_id"))))
 
 (defn wrap-find-and-add-media-file
   "Extracts path parameter media_entry_id,
    adds queried media-file and its media_file_id to the request data."
   [handler]
-  (fn [request] (find-and-add-media-file request handler)))
+  (fn [request]
+    (when-let [media-file-id (-> request :parameters :path :media_file_id)]
+      (if-let [media-file (query-media-file media-file-id)]
+        (handler (assoc request :media-file media-file))
+        (sd/response_not_found "No media-file for media_file_id")))))
 
-(defn find-and-add-media-file-by-media-entry-id 
-  "Extracts path parameter media_entry_id,
-   adds queried media-file and its media_file_id to the request data."
-  [request handler]
-  (when-let [media-entry-id (or (-> request :route-params :media_entry_id) (-> request :parameters :path :media_entry_id))]
-     (if-let [media-files (query-media-files-by-media-entry-id media-entry-id)]
-       (handler (assoc request :media-file media-files))
-       (sd/response_not_found "No media-file for media_entry_id"))))
 
+       ; TODO only one file per entry ??
+       ; TODO only the first per entry ??
 (defn wrap-find-and-add-media-file-by-media-entry-id
   "Extracts path parameter media_entry_id,
    adds queried media-file and its media_file_id to the request data."
   [handler]
-  (fn [request] (find-and-add-media-file-by-media-entry-id request handler)))
-     
+  (fn [request]
+    (when-let [media-entry-id (-> request :parameters :path :media_entry_id)]
+       (if-let [media-files (query-media-files-by-media-entry-id media-entry-id)]
+         (handler (assoc request :media-file (first media-files)))
+         (sd/response_not_found "No media-file for media_entry_id")))))
 
 
 ;##############################################################################

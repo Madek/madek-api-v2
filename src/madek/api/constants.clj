@@ -19,6 +19,11 @@
       "MetaDatum::People"
       "MetaDatum::Roles"
       "MetaDatum::Text"
+      ; TODO check if multi-language implementation
+      ; is possible with new API2
+      ; and backwards compatible with current web-app
+      ; and does not require sql schema changes.
+      "MetaDatum::TextML"
       "MetaDatum::TextDate"
       "MetaDatum::Users"
       "MetaDatum::Vocables"

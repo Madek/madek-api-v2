@@ -16,7 +16,7 @@
     ))
 
 
-(defn- where-clause
+(defn md-vocab-where-clause
   [user-id]
   (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id)]
     (if (empty? vocabulary-ids)
@@ -27,13 +27,22 @@
 
 (defn- base-query
   [user-id]
-  (-> (sql/select :*);:meta_data.id :meta_data.type :meta_data.meta_key_id)
+  ;(-> (sql/select :*)
+  (-> (sql/select :meta_data.id :meta_data.type :meta_data.meta_key_id 
+                  :meta_data.media_entry_id
+                  :meta_data.collection_id
+                  :meta_data.string
+                  :meta_data.json
+                  :meta_data.other_media_entry_id
+                  )
       (sql/from :meta_data)
       (sql/merge-where [:in :meta_data.type
                         constants/SUPPORTED_META_DATA_TYPES])
+      ; TODO use in other md access
       (sql/merge-join :meta_keys [:= :meta_data.meta_key_id :meta_keys.id])
       (sql/merge-join :vocabularies [:= :meta_keys.vocabulary_id :vocabularies.id])
-      (sql/merge-where (where-clause user-id))
+      (sql/merge-where (md-vocab-where-clause user-id))
+
       (sql/order-by [:vocabularies.position :asc]
                     [:meta_keys.position :asc]
                     [:meta_data.id :asc])))
@@ -47,6 +56,7 @@
       (sql/merge-where [:= :meta_data.collection_id  collection-id])))
 
 ; TODO remove cpj
+; TODO test with json
 ; TODO add query param meta-keys as json list of strings
 (defn filter-meta-data-by-meta-key-ids [query request]
   (if-let [meta-keys (-> request :query-params :meta_keys)]
@@ -62,6 +72,16 @@
   (-> base-query
       (filter-meta-data-by-meta-key-ids request)
       sql/format))
+
+(defn get-media-entry-meta-data [id user-id]
+  (->> (meta-data-query-for-media-entry id user-id)
+       (build-query nil)
+       (jdbc/query (get-ds))))
+
+(defn get-collection-meta-data [id user-id]
+  (->> (meta-data-query-for-collection id user-id)
+       (build-query nil)
+       (jdbc/query (get-ds))))
 
 (defn get-meta-data [request media-resource]
   (let [user-id (-> request :authenticated-entity :id)]

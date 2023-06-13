@@ -9,7 +9,9 @@
 
 (def ^:private media-entry-keys
   [:id :created_at :responsible_user_id
-   :is_published :updated_at :edit_session_updated_at :meta_data_updated_at])
+   :is_published
+   :updated_at :edit_session_updated_at :meta_data_updated_at
+   ])
 
 (defn get-media-entry-for-preview [request]
   (let [preview-id (or (-> request :params :preview_id) (-> request :parameters :path :preview_id))
@@ -21,7 +23,6 @@
                   (sql/format))
         dbresult (first (jdbc/query (rdbms/get-ds) query))]
     ;(logging/info "get-media-entry-for-preview" "\npreview-id\n" preview-id "\ndbresult\n" dbresult)
-    ;(first (jdbc/query (rdbms/get-ds) query))
     dbresult
     ))
 

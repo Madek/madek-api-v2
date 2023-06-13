@@ -15,6 +15,9 @@
     [madek.api.resources.media-entries.advanced-filter.permissions :as permissions :refer [filter-by-query-params]] 
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
+    [madek.api.resources.shared :as sd]
+    [madek.api.resources.meta-data.index :as meta-data.index]
+    [madek.api.resources.media-files :as media-files]
     ))
 
 ;### collection_id ############################################################
@@ -38,11 +41,17 @@
 ;### query ####################################################################
 
 (defn ^:private base-query [me-query]
+  ; TODO make full-data selectable
   (let [sel (sql/select [:media_entries.id :media_entry_id]
                         [:media_entries.created_at :media_entry_created_at]
-                        ;[:media_entries.is_published :media_entry_is_published]
-                        ;[:media_entries.creator_id :media_entry_creator_id]
-                        ;:media_entries.responsible_user_id
+                        [:media_entries.updated_at :media_entry_updated_at]
+                        [:media_entries.edit_session_updated_at :media_entry_edit_session_at]
+                        [:media_entries.meta_data_updated_at :media_entry_meta_data_updated_at]
+                        [:media_entries.is_published :media_entry_is_published]
+                        [:media_entries.get_metadata_and_previews :media_entry_get_metadata_and_previews]
+                        [:media_entries.get_full_size :media_entry_get_full_size]
+                        [:media_entries.creator_id :media_entry_creator_id]
+                        [:media_entries.responsible_user_id :media_entry_responsible_user_id]
                         )
         is-pub (:is_published me-query)
         where1 (if (nil? is-pub)
@@ -58,10 +67,12 @@
                  where2
                  (sql/merge-where where2 [:= :media_entries.responsible_user_id ru-id]))
 
+        ; TODO updated/created after
         from (sql/from where3 :media_entries)
-        orig-query (-> (sql/select [:media_entries.id :media_entry_id]
-                                   [:media_entries.created_at :media_entry_created_at])
-                       (sql/from :media_entries))]
+;        orig-query (-> (sql/select [:media_entries.id :media_entry_id]
+;                                   [:media_entries.created_at :media_entry_created_at])
+;                       (sql/from :media_entries))
+                                   ]
     (logging/info "base-query"
                   "\nme-query:\n" me-query
                   "\nfrom:\n" sel
@@ -69,18 +80,9 @@
                   "\nwhere2:\n" where2
                   "\nwhere3:\n" where3
                   "\nresult:\n" from
-                  "\norig:\n" orig-query)
+                  ;"\norig:\n" orig-query
+                  )
     from))
-
-  ;(-> (sql/select [:media_entries.id :media_entry_id]
-  ;                [:media_entries.created_at :media_entry_created_at])
-  ;    (sql/from :media_entries))
-
-;    (sql/merge-where [:= :media_entries.is_published (:is_published me-query)])
-  ;    (when-let [creator-id (:creator_id me-query)]
-  ;      (sql/merge-where [:= :media_entries.creator_id creator-id])
-  ;      )
-  ;    (sql/merge-where [:= :media_entries.responsible_user_id (:responsible_user_id me-query)])
 
 (defn- order-by-media-entry-attribute [query [attribute order]]
   (let [order-by-arg (match [(keyword attribute) (keyword order)]
@@ -184,6 +186,9 @@
 
 ;{"meta_data": [{"key": "madek_core:title", "match": "Bildshirmfoto"}],
 ; "permissions": [{"key":"public","value":"false"}]
+; "media-entry": [{"key":"is_published", "value": "true"}
+;                 {"key":"creator-id", "value": "" }
+;                 {"key": "responsible_user_id", "value":""}]
 ;}
 ; test {"meta_data":[{"key":"any","match":"nitai"}]}
 ; test2 {"meta_data":[{"key":"test:string","match":"par tial"},
@@ -201,8 +206,7 @@
 ;                     {"key":"entrusted_to_group","value":"e8b962f6-df73-4b6f-b2b6-3f71230cd0aa"}]}
 ; TODO test query and paging
 (defn- build-query [request]
-  (let [;query-params (or (:query-params request) (-> request :parameters :query))
-        query-params (:query-params request)
+  (let [query-params (-> request :parameters :query)
         filter-by (json/decode (:filter_by query-params) true)
         props-by (:media-entry filter-by)
         authenticated-entity (:authenticated-entity request)
@@ -228,24 +232,87 @@
 
 ;### index ####################################################################
 
-(defn get-index [{{collection-id :collection_id} :query-params :as request}]
+(defn- get-me-list [data]
+  (let [me-list (->> data
+                     (map #(select-keys % [:media_entry_id
+                                           :media_entry_created_at
+                                           :media_entry_updated_at
+                                           :media_entry_edit_session_at
+                                           :media_entry_meta_data_updated_at
+                                           :media_entry_creator_id
+                                           :media_entry_responsible_user_id
+                                           :media_entry_is_published 
+                                           :media_entry_get_metadata_and_previews
+                                           :media_entry_get_full_size]))
+                     (map #(rename-keys % {:media_entry_id :id
+                                           :media_entry_created_at :created_at
+                                           :media_entry_updated_at :updated_at
+                                           :media_entry_edit_session_at :edit_session_at
+                                           :media_entry_meta_data_updated_at :meta_data_updated_at
+                                           :media_entry_creator_id :creator_id
+                                           :media_entry_responsible_user_id :responsible_user_id
+                                           :media_entry_is_published :is_published
+                                           :media_entry_get_metadata_and_previews :get_metadata_and_previews
+                                           :media_entry_get_full_size :get_full_size})))]
+    ;(logging/info "get-me-list" me-list)
+    me-list))
+
+(defn get-arc-list [data]
+  (->> data
+       (map #(select-keys % [:arc_id
+                             :media_entry_id
+                             :arc_order
+                             :arc_position
+                             :arc_created_at
+                             :arc_updated_at]))
+       (map #(rename-keys % {:arc_id :id
+                             :arc_order :order
+                             :arc_position :position
+                             :arc_created_at :created_at
+                             :arc_updated_at :updated_at}))))
+
+(defn get-files4me-list [melist]
+  (let [file-list (map #(media-files/query-media-files-by-media-entry-id (:id %)) melist)]
+    file-list))
+
+(defn get-preview-list [file-list]
+  (let [preview-list (map #(sd/query-eq-find-all :previews :media_file_id (:id %)) file-list)] 
+    preview-list))
+
+(defn get-md4me-list [melist user-id]
+  (let [md-list (map #(meta-data.index/get-media-entry-meta-data (:id %) user-id) melist)]
+    md-list)
+  )
+
+(defn build-result [collection-id user-id data]
+  (let [me-list (get-me-list data)
+            ; TODO compute only on demand
+        files (get-files4me-list me-list)
+        previews (get-preview-list files)
+        me-md (get-md4me-list me-list user-id)
+        col-md (meta-data.index/get-collection-meta-data collection-id user-id)
+        result (merge
+                {:media-entries me-list
+            ; TODO add on demand
+                 :meta-data me-md
+                 :media-files files
+                 :previews previews}
+
+                (when collection-id
+                  {:col-meta-data col-md
+                   :arcs (get-arc-list data)}))]
+    result
+    ))
+
+(defn get-index [{{{collection-id :collection_id} :query} :parameters :as request}]
   (catcher/with-logging {}
     (try
-      (let [data (query-index-resources request)]
+      (let [user-id (-> request :authenticated-entity :id)
+            data (query-index-resources request)
+            result (build-result collection-id user-id data)
+            ]
         {:body
-         (merge
-           {:media-entries (->> data
-                                (map #(select-keys % [:media_entry_id :media_entry_created_at]))
-                                (map #(rename-keys % {:media_entry_id :id
-                                                      :media_entry_created_at :created_at})))}
-           (when collection-id
-             {:arcs (->> data
-                         (map #(select-keys % [:arc_id :media_entry_id :arc_order :arc_position :arc_created_at :arc_updated_at]))
-                         (map #(rename-keys % {:arc_id :id
-                                               :arc_order :order
-                                               :arc_position :position
-                                               :arc_created_at :created_at
-                                               :arc_updated_at :updated_at})))}))})
+         result})
       (catch Exception e (merge (ex-data e) {:body {:message (.getMessage e)}}))
     )
   )

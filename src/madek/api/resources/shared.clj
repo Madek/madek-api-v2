@@ -6,7 +6,6 @@
             [logbug.catcher :as catcher]
             [madek.api.utils.sql :as sql]
             [madek.api.authorization :refer [authorized?]]
-            [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
             [madek.api.semver :as semver]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
             [madek.api.constants :as mc]
@@ -34,24 +33,26 @@
       (-> query (sql/merge-where [:like param qval])))))
 
 
-; TODO use honeysql
-(defn- sql-query-find-eq 
-  [table-name col-name row-data] 
-  (-> (build-query-base table-name :*)
-      (sql/merge-where [:= col-name row-data])
-      sql/format))
+(defn- sql-query-find-eq
+  ([table-name col-name row-data]
+   (-> (build-query-base table-name :*)
+       (sql/merge-where [:= col-name row-data])
+       sql/format))
+  ([table-name col-name row-data col-name2 row-data2]
+   (-> (build-query-base table-name :*)
+       (sql/merge-where [:= col-name row-data])
+       (sql/merge-where [:= col-name2 row-data2])
+       sql/format))
+  )
 
-(defn- sql-query-find-eq2
-  [table-name col-name row-data col-name2 row-data2]
-  (-> (build-query-base table-name :*)
-      (sql/merge-where [:= col-name row-data])
-      (sql/merge-where [:= col-name2 row-data2])
-      sql/format))
 
 (defn sql-update-clause
   [col-name row-data]
   [(str col-name " = ?") row-data]
   )
+
+(defn hsql-upd-clause-format [sql-cls]
+  (update-in sql-cls [0] #(clojure.string/replace % "WHERE" "")))
 
 (defn query-find-all
   [table-key col-keys]
@@ -71,13 +72,7 @@
                    (sql-query-find-eq table-name col-name row-data))))
 
 (defn query-eq-find-one [table-name col-name row-data]
-  ; we wrap this since badly formated media-file-id strings can cause an
-  ; exception, note that 404 is in that case a correct response
-  (catcher/snatch {}
-                  (-> (jdbc/query
-                       (get-ds)
-                       (sql-query-find-eq table-name col-name row-data))
-                      first)))
+  (first (query-eq-find-all table-name col-name row-data)))
 
 (defn query-eq2-find-all [table-name col-name row-data col-name2 row-data2]
   ; we wrap this since badly formated media-file-id strings can cause an
@@ -85,16 +80,10 @@
   (catcher/snatch {}
                   (jdbc/query
                    (get-ds)
-                   (sql-query-find-eq2 table-name col-name row-data col-name2 row-data2))))
+                   (sql-query-find-eq table-name col-name row-data col-name2 row-data2))))
 
 (defn query-eq2-find-one [table-name col-name row-data col-name2 row-data2]
-  ; we wrap this since badly formated media-file-id strings can cause an
-  ; exception, note that 404 is in that case a correct response
-  (catcher/snatch {}
-                  (-> (jdbc/query
-                       (get-ds)
-                       (sql-query-find-eq2 table-name col-name row-data col-name2 row-data2))
-                      first)))
+  (first (query-eq2-find-all table-name col-name row-data col-name2 row-data2)))
 
 ; end db-helpers
 
@@ -180,7 +169,21 @@
         (handler request)))))
 
 
-; begin generic path param find in db and assoc with request
+; end generic path param find in db and assoc with request
+
+; begin user and other util wrappers
+
+(defn is-admin [user-id]
+  (let [none (->
+              (jdbc/query
+               (get-ds)
+               ["SELECT * FROM admins WHERE user_id = ? " user-id]) empty?)
+        result (not none)]
+    ;(logging/info "is-admin: " user-id " : " result)
+    result
+    ))
+
+; end user and other util wrappers
 
 ; begin media resources helpers
 (defn- get-media-resource
@@ -195,14 +198,6 @@
                                          [(str "SELECT * FROM " table-name "
                                                WHERE id = ?") id]) first)]
        (assoc resource :type type :table-name table-name)))))
-
-
-(defn- ring-add-media-resource-preview [request handler]
-  (if-let [media-resource (get-media-entry-for-preview request)]
-    (let [mmr (assoc media-resource :type "MediaEntry" :table-name "media_entries")
-          request-with-media-resource (assoc request :media-resource mmr)]
-      (handler request-with-media-resource))
-    (response_not_found "No media-resource for preview")))
 
 
 (defn- ring-add-media-resource [request handler]
@@ -259,17 +254,28 @@
   ;((logging/info "auth-request-for-mr" "\nscope: " scope)
    (if-let [media-resource (:media-resource request)]
          
-     (if (and (public? media-resource) (= scope :view))
-      ;(
-      ; (logging/info "authorize-request-for-media-resource: public " "\nscope: " scope)
+     (if (and (= scope :view) (public? media-resource))
+       ; viewable if public
        (handler request)
-       ;)
 
-      (if-let [auth-entity (:authenticated-entity request)]
-        (if (authorized? auth-entity media-resource scope)
-          (handler request)
-          {:status 403 :body {:message "Not authorized for media-resource"}})
-        {:status 401 :body {:message "Not authorized"}}))
+       ;((logging/info "check auth" 
+        ;              "\nae\n" (-> request :authenticated-entity)
+        ;              "\nia\n" (-> request :is-admin))
+        
+        (if-let [auth-entity (-> request :authenticated-entity)]
+         (if (-> request :is-admin true?)
+          ; do all as admin
+           ;((logging/info "do as admin")
+            (handler request)
+           ;)
+          ; check user auth
+           (if (authorized? auth-entity media-resource scope)
+             (handler request)
+             {:status 403 :body {:message "Not authorized for media-resource"}}))
+
+         {:status 401 :body {:message "Not authorized"}})
+        ;)
+       )
     (let [response  {:status 500 :body {:message "No media-resource in request."}}]
       (logging/warn 'authorize-request-for-media-resource response [request handler])
       response)))
@@ -293,10 +299,6 @@
 ; end json query param helpers
 
 ; begin wrappers
-
-(defn ring-wrap-add-media-resource-preview [handler]
-  (fn [request]
-    (ring-add-media-resource-preview request handler)))
 
 (defn ring-wrap-add-media-resource [handler]
   (fn [request]
