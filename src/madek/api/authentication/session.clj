@@ -13,7 +13,8 @@
     [logbug.debug :as debug]
     [logbug.thrown :as thrown]
     [taoensso.timbre :refer [debug info warn error spy]]
-    ))
+    
+    [madek.api.resources.shared :as sd]))
 
 (defn- get-session-secret []
   (-> (get-config) :madek_master_secret))
@@ -27,7 +28,7 @@
 (defn- get-madek-session-cookie-name []
   (or (-> (get-config) :madek_session_cookie_name keyword)
       (throw (IllegalStateException.
-               ("The  madek_session_cookie_name is not configured.")))))
+              "The  madek_session_cookie_name is not configured."))))
 
 (defn- session-signature-valid? [user session-object]
   (valid? (-> session-object :signature)
@@ -84,6 +85,8 @@
               {:status 401 :body {:message "The session has expired!"}}
               (handler (assoc request
                               :authenticated-entity user
+                              ; TODO move into ae
+                              :is-admin (sd/is-admin (:id user))
                               :authentication-method "Session"
                               :session-expiration-seconds
                               (in-seconds now expiration-time))))))

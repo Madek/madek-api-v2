@@ -6,7 +6,8 @@
     [logbug.thrown :as thrown]
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
-    [pandect.algo.sha256 :as algo.sha256])
+    [pandect.algo.sha256 :as algo.sha256]
+    [madek.api.resources.shared :as sd])
   (:import
     [java.util Base64]))
 
@@ -64,7 +65,9 @@
                                       " i.e. to use unsafe http verbs.")}
     :else (handler
             (assoc request
-                   :authenticated-entity (assoc user-token :type "User")))))
+                   :authenticated-entity (assoc user-token :type "User")
+                   ; TODO move into ae
+                   :is-admin (sd/is-admin (:user_id user-token))))))
 
 
 (defn find-token-secret-in-header [request]

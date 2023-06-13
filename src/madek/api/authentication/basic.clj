@@ -9,6 +9,7 @@
     [logbug.thrown :as thrown]
     [madek.api.authentication.token :as token-authentication]
     [madek.api.utils.rdbms :as rdbms]
+    [madek.api.resources.shared :as sd]
     )
   (:import
     [java.util Base64]
@@ -59,6 +60,8 @@
                               {:login-or-email-address login-or-email})}
       (handler (assoc request
                       :authenticated-entity entity
+                      ; TODO move into ae
+                      :is-admin (sd/is-admin (or (:id entity) (:user_id entity) ))
                       :authentication-method "Basic Authentication")))
     {:status 401 :body (str "Neither User nor ApiClient exists for "
                             {:login-or-email-address login-or-email})}))

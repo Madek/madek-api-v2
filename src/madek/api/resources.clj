@@ -285,7 +285,7 @@
     roles/ring-routes
     usage-terms/ring-routes
     users/ring-routes
-    vocabularies/ring-routes]
+    vocabularies/admin-routes]
 
    ["/auth-info" {:get {:summary "Authentication help and info."
                         :handler auth-info/auth-info}}]
@@ -343,6 +343,7 @@
 
    previews/preview-routes
 
+   vocabularies/user-routes
    api2-routes])
    
 
