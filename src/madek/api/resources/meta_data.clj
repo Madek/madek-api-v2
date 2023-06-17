@@ -57,7 +57,11 @@
         db-type (:type db-result)]
     (if (or (= nil md-type) (= md-type db-type))
       db-result
-      (((logging/error "db-get-meta-data: type mismatch: requested [" md-type "] but got [" db-type "]"))
+      (((logging/error "db-get-meta-data: type mismatch: requested [" md-type "] but got [" db-type "]"
+                       "\nmr-id: " mr-id
+                       "\nmr-key: " mr-key
+                       "\nmk-id: " mk-id
+                       "\ndb-result: " db-result))
        db-result)
       )
     ))
@@ -80,15 +84,17 @@
 (defn- handle_update-meta-data-text-base
   [req md-type upd-data]
   (let [mr (-> req :media-resource)
+        upd-data2 (assoc upd-data (col-key-for-mr-type mr) (:id mr))
         meta-key-id (-> req :parameters :path :meta_key_id)
         upd-clause (sql-cls-upd-meta-data-typed-id mr meta-key-id md-type)
-        upd-result (jdbc/update! (rdbms/get-ds) :meta_data upd-data upd-clause)
-        result-data (db-get-meta-data mr meta-key-id md-type)]
+        upd-result (jdbc/update! (rdbms/get-ds) :meta_data upd-data2 upd-clause)
+        result-data (db-get-meta-data mr meta-key-id md-type)
+        ]
 
     (logging/info "handle_update-meta-data-text-base "
                   "\nmd-type\n" md-type
                   "\nmeta-key-id\n" meta-key-id
-                  "\nupd-data\n" upd-data
+                  "\nupd-data\n" upd-data2
                   "\nupd-clause\n" upd-clause
                   "\nupd-result\n" upd-result
                   )
@@ -265,7 +271,7 @@
         md-id (-> md :id)
         mdr (db-get-meta-data-keywords md-id)]
 
-    (logging/info "handle_delete-meta-data-role"
+    (logging/info "handle_delete-meta-data-keyword"
                   "\nmeta-data\n" md
                   "\nmeta-data-keywords\n" mdr)
     (sd/response_ok {:meta_data md :meta-data-keywords mdr})))
@@ -525,15 +531,6 @@
         (handler req)
         ))))
 
-;(def routes
-;  (cpj/routes
-;    (cpj/GET "/media-entries/:media_entry_id/meta-data/" _ meta-data.index/get-index)
-;    (cpj/GET "/collections/:collection_id/meta-data/" _ meta-data.index/get-index)
-;    (cpj/GET "/meta-data/:meta_datum_id" _ meta-datum/get-meta-datum)
-;    (cpj/GET "/meta-data/:meta_datum_id/data-stream" _ meta-datum/get-meta-datum-data-stream)
-;    (cpj/GET "/meta-data-roles/:meta_datum_id" _ meta-datum/get-meta-datum-role)
-;    (cpj/ANY "*" _ sd/dead-end-handler)
-;    ))
 
 (def ring-routes
   ["/meta-data"
@@ -580,16 +577,45 @@
            :parameters {:path {:collection_id s/Str}}
            :responses {200 {:body s/Any}}}}]
    
+   ["/:collection_id/meta-data/:meta_key_id"
+    {:get {:summary "Get meta-data for collection and meta-key."
+           :handler handle_get-meta-key-meta-data
+
+           :middleware [wrap-add-meta-key
+                        wrap-check-vocab
+                        sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:collection_id s/Str
+                               :meta_key_id s/Str}}
+           :responses {200 {:body s/Any}}}}]
+   
    ["/:collection_id/meta-data/:meta_key_id/text"
     {:post {:summary "Create meta-data text for collection."
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
                          sd/ring-wrap-authorization-edit-metadata]
+            :accept "application/json"
+            :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
-                         :body {:text s/Str}}
-            :responses {200 {:body s/Any}}}}]
+                         :body {:string s/Str}}
+            :responses {200 {:body s/Any}}}
+     :put {:summary "Update meta-data text for collection."
+           :handler handle_update-meta-data-text
+           :middleware [sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :accept "application/json"
+           :content-type "application/json"
+           :coercion reitit.coercion.schema/coercion
+           :swagger {:produces "application/json" :consumes "application/json"}
+           :parameters {:path {:collection_id s/Str
+                               :meta_key_id s/Str}
+                        :body {:string s/Str}
+                        }
+           :responses {200 {:body s/Any}}}
+     }]
 
    ["/:collection_id/meta-data/:meta_key_id/text-date"
     {:post {:summary "Create meta-data json for collection."
@@ -599,8 +625,18 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
-                         :body {:text s/Str}}
-            :responses {200 {:body s/Any}}}}]
+                         :body {:string s/Str}}
+            :responses {200 {:body s/Any}}}
+     :put {:summary "Update meta-data text-date for collection."
+           :handler handle_update-meta-data-text-date
+           :middleware [sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:collection_id s/Str
+                               :meta_key_id s/Str}
+                        :body {:string s/Str}}
+           :responses {200 {:body s/Any}}}
+     }]
 
    ["/:collection_id/meta-data/:meta_key_id/json"
     {:post {:summary "Create meta-data json for collection."
@@ -611,7 +647,17 @@
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
                          :body {:json s/Str}}
-            :responses {200 {:body s/Any}}}}]
+            :responses {200 {:body s/Any}}}
+     :put {:summary "Update meta-data json for collection."
+           :handler handle_update-meta-data-json
+           :middleware [sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:collection_id s/Str
+                               :meta_key_id s/Str}
+                        :body {:json s/Str}}
+           :responses {200 {:body s/Any}}}
+     }]
    
    ["/:collection_id/meta-data/:meta_key_id/keyword/:keyword_id"
     {:post {:summary "Create meta-data keyword for collection."
@@ -623,7 +669,18 @@
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str
                                 :keyword_id s/Str}}
-            :responses {200 {:body s/Any}}}}]
+            :responses {200 {:body s/Any}}}
+     :delete {:summary "Delete meta-data keyword for collection."
+              :handler handle_delete-meta-data-keyword
+              :middleware [wrap-add-keyword
+                           sd/ring-wrap-add-media-resource
+                           sd/ring-wrap-authorization-edit-metadata]
+              :coercion reitit.coercion.schema/coercion
+              :parameters {:path {:collection_id s/Str
+                                  :meta_key_id s/Str
+                                  :keyword_id s/Str}}
+              :responses {200 {:body s/Any}}}
+     }]
    
    ["/:collection_id/meta-data/:meta_key_id/people/:person_id"
     {:post {:summary "Create meta-data people for media-entry"
@@ -632,11 +689,23 @@
                          sd/ring-wrap-add-media-resource
                          sd/ring-wrap-authorization-edit-metadata]
             :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:media_entry_id s/Str
+            :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str
                                 :person_id s/Str}}
-            :responses {200 {:body s/Any}}}}]
-   
+            :responses {200 {:body s/Any}}}
+     
+     :delete {:summary "Delete meta-data people for collection."
+              :handler handle_delete-meta-data-people
+              :middleware [wrap-add-person
+                           sd/ring-wrap-add-media-resource
+                           sd/ring-wrap-authorization-edit-metadata]
+              :coercion reitit.coercion.schema/coercion
+              :parameters {:path {:collection_id s/Str
+                                  :meta_key_id s/Str
+                                  :person_id s/Str}}
+              :responses {200 {:body s/Any}}}
+     }]
+   ; TODO meta-data roles
    ["/:collection_id/meta-data/:meta_key_id/role/:role_id"
     {:post {:summary "Create meta-data role for media-entry"
             :handler handle_create-meta-data-role
@@ -754,7 +823,7 @@
            :responses {200 {:body s/Any}}}}]
    
    ["/:media_entry_id/meta-data/:meta_key_id/keyword/:keyword_id"
-    {:post {:summary "Create meta-data keyword for media-entry"
+    {:post {:summary "Create meta-data keyword for media-entry."
             :handler handle_create-meta-data-keyword
             :middleware [wrap-add-keyword
                          sd/ring-wrap-add-media-resource
@@ -765,7 +834,7 @@
                                 :keyword_id s/Str}}
             :responses {200 {:body s/Any}}}
      
-     :delete {:summary "Delete meta-data keyword for media-entry"
+     :delete {:summary "Delete meta-data keyword for media-entry."
               :handler handle_delete-meta-data-keyword
               :middleware [wrap-add-keyword
                            sd/ring-wrap-add-media-resource
@@ -778,7 +847,7 @@
      }]
    
    ["/:media_entry_id/meta-data/:meta_key_id/people"
-    {:get {:summary "Get meta-data people for media-entries meta-key"
+    {:get {:summary "Get meta-data people for media-entries meta-key."
            :handler handle_get-meta-data-people
            :middleware [wrap-me-add-meta-data
                         sd/ring-wrap-add-media-resource
@@ -801,7 +870,6 @@
                                 :person_id s/Str}}
             :responses {200 {:body s/Any}}}
      
-
      :delete {:summary "Delete meta-data people for media-entry"
               :handler handle_delete-meta-data-people
               :middleware [wrap-add-person
@@ -813,9 +881,9 @@
                                   :person_id s/Str}}
               :responses {200 {:body s/Any}}}
      }]
-   
+   ; TODO meta-data roles
    ["/:media_entry_id/meta-data/:meta_key_id/role/:role_id"
-    {:post {:summary "Create meta-data role for media-entry"
+    {:post {:summary "Create meta-data role for media-entry."
             :handler handle_create-meta-data-role
             :middleware [wrap-add-role
                          sd/ring-wrap-add-media-resource
@@ -826,7 +894,7 @@
                                 :role_id s/Str}}
             :responses {200 {:body s/Any}}}
      
-     :delete {:summary "Delete meta-data role for media-entry"
+     :delete {:summary "Delete meta-data role for media-entry."
               :handler handle_delete-meta-data-role
               :middleware [wrap-add-role
                            sd/ring-wrap-add-media-resource

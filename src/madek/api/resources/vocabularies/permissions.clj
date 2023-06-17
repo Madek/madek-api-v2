@@ -34,7 +34,7 @@
          (sql/from :vocabulary_user_permissions)
          (sql/merge-where
           [:= :vocabulary_user_permissions.user_id user-id]
-          [:= (keyword ("vocabulary_user_permissions." acc-type)) true])
+          [:= (keyword (apply str "vocabulary_user_permissions." acc-type)) true])
          (sql/format))
      nil))
   )
