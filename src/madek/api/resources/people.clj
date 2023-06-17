@@ -9,7 +9,8 @@
             [madek.api.utils.rdbms :as rdbms]
             [madek.api.utils.sql :as sql]
             reitit.coercion.schema
-            [schema.core :as s]))
+            [schema.core :as s]
+            [madek.api.resources.shared :as sd]))
 
 
 (defn id-where-clause
@@ -109,19 +110,46 @@
     {:status 404}))
 
 ;### index ####################################################################
+(defn- base-query [full-data]
+  (let [sel (if (true? full-data)
+              (sql/select :*)
+              (sql/select :id :first_name :last_name))]
+    (-> sel (sql/from :people))))
+
 ; TODO test query and paging
 (defn build-index-query
-  [{query-params :query-params}]
-  (->
-    (sql/select :id)
-    (sql/from :people)
-    (sql/order-by [:id :asc])
-    (pagination/add-offset-for-honeysql query-params)
-    sql/format))
+  [query-params]
+  (let [full-data (-> query-params :full-data)]
+    (->
+     (base-query full-data)
+     (sd/build-query-param-like query-params :searchable)
+     (sd/build-query-param-like query-params :description)
+     (sd/build-query-param-like query-params :institutional_id)
+     (sd/build-query-param-like query-params :pseudonym)
+     (sd/build-query-param-like query-params :first_name)
+     (sd/build-query-param-like query-params :last_name)
+     (sd/build-query-param query-params :subtype)
+     (pagination/add-offset-for-honeysql query-params)
+     sql/format
+     ))
+  )
+  ;[{query-params :query-params}]
+  ;(->
+  ;  (sql/select :id)
+  ;  (sql/from :people)
+  ;  (sql/order-by [:id :asc])
+  ;  (pagination/add-offset-for-honeysql query-params)
+  ;  sql/format))
 
 (defn index
   [request]
-  {:body {:people (jdbc/query (rdbms/get-ds) (build-index-query request))}})
+  (let [query-params (-> request :parameters :query)
+        sql-query (build-index-query query-params)
+        result (jdbc/query (rdbms/get-ds) sql-query)]
+    ;(sd/response_ok {:people result})
+    {:body {:people result}}
+    )
+  )
 
 
 ;### routes ###################################################################
@@ -270,7 +298,15 @@
                :description "Get list of peoples ids. Paging is used as you get a limit of 100 entries."
                :handler index
                :swagger {:produces "application/json"}
-               :parameters {:query {(s/optional-key :page) s/Int
+               :parameters {:query {(s/optional-key :full-data) s/Bool
+                                    (s/optional-key :searchable) s/Str
+                                    (s/optional-key :description) s/Str
+                                    (s/optional-key :first_name) s/Str
+                                    (s/optional-key :last_name) s/Str
+                                    (s/optional-key :pseudonym) s/Str
+                                    (s/optional-key :institutional_id) s/Str
+                                    (s/optional-key :subtype) s/Str
+                                    (s/optional-key :page) s/Int
                                     (s/optional-key :count) s/Int}}
                 ;:content-type "application/json"
                 ;:accept "application/json"
