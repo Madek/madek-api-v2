@@ -6,7 +6,7 @@
     [madek.api.utils.sql :as sql]
     ))
 
-(def DEFAULT_LIMIT 100)
+(def DEFAULT_LIMIT 1000)
 
 (defn page-number [params]
   (let [page (or (-> params :page) 0)]

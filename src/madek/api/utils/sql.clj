@@ -37,6 +37,7 @@
 (defalias columns helpers/columns)
 (defalias delete-from helpers/delete-from)
 (defalias from helpers/from)
+
 (defalias group helpers/group)
 (defalias insert-into helpers/insert-into)
 (defalias join helpers/join)
@@ -60,7 +61,7 @@
 ;#############################################################################
 
 
-  (def ->json json/generate-string)
+(def ->json json/generate-string)
 (def <-json #(json/parse-string % true))
 
 (def ->hstore #(HStoreConverter/toString (update-keys % name)))
@@ -81,6 +82,7 @@
   [^org.postgresql.util.PGobject v]
   (let [type  (.getType v)
         value (.getValue v)]
+    ;(logging/info "<-pgobject: \nmeta type\n " type " value " value)
     (condp contains? type
       #{"jsonb" "json"} (when value
                           (with-meta (<-json value) {:pgtype type}))

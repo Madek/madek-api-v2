@@ -210,7 +210,7 @@
  {:get {:summary (sd/sum_adm "Get user by id")
         :description "Get a user by id. Returns 404, if no such users exists."
         :handler handle_get-user
-        :middleware [wrap-authorize-admin!]
+        ;:middleware [wrap]
         :swagger {:produces "application/json"}
         :coercion reitit.coercion.schema/coercion
         :content-type "application/json"

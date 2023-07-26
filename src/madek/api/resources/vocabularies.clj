@@ -63,7 +63,7 @@
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :page) s/Int}}
-           :responses {200 {:body {:vocabularies [{:id s/Str}]}}}
+           :responses {200 {:body {:vocabularies [s/Any]}}};{:id s/Str}]}}}
            :swagger {:produces "application/json"}}
 
      :post {:summary (sd/sum_adm_todo "Create vocabulary.")

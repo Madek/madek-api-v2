@@ -84,7 +84,7 @@
    ])
      
 ; TODO tests
-(def admin-routes
+(def edit-routes
   [
    ["/full_text"
     {:post {:summary (sd/sum_adm "Create full_texts entry")

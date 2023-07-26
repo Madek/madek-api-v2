@@ -13,7 +13,8 @@
     [madek.api.utils.sql :as sql]
     [ring.util.response :as ring-response]
     [cheshire.core :as json]
-    ))
+    
+    [madek.api.resources.shared :as sd]))
 
 ;### people ###################################################################
 
@@ -33,7 +34,7 @@
                   (sql/merge-where
                     [:= :meta_data_people.meta_datum_id (:id meta-datum)])
                   (sql/format))]
-    (jdbc/query (rdbms/get-ds) query)))
+    (jdbc/query (get-ds) query)))
 
 
 
@@ -51,7 +52,7 @@
                   (sql/merge-where
                     [:= :meta_data_roles.meta_datum_id (:id meta-datum)])
                   (sql/format))]
-    (jdbc/query (rdbms/get-ds) query))
+    (jdbc/query (get-ds) query))
   )
 
 (defn- find-meta-datum-role
@@ -61,7 +62,7 @@
                   (sql/merge-where
                     [:= :meta_data_roles.id id])
                   (sql/format))]
-    (first (jdbc/query (rdbms/get-ds) query))))
+    (first (jdbc/query (get-ds) query))))
 
 (defn- prepare-meta-datum [meta-datum]
   (merge (select-keys meta-datum [:id :meta_key_id :type])
@@ -91,8 +92,8 @@
 (defn get-meta-datum [request]
   (let [meta-datum (:meta-datum request)
         result (prepare-meta-datum meta-datum)]
-    ;(logging/info "get-meta-datum" "\nresult\n" result)
-    {:body result}))
+    (logging/info "get-meta-datum" "\nresult\n" result)
+    (sd/response_ok result)))
 
 ; TODO Q? why no response status
 (defn get-meta-datum-data-stream [request]
@@ -107,34 +108,12 @@
                       (ring-response/header "Content-Type" content-type))
       :else {:body value})))
 
-; TODO Q? why no response status
-(defn get-meta-datum-role
-  [request]
-  (let [meta-datum-role-id (-> request :params :meta_datum_id)]
-    {:status 200 :body (prepare-meta-datum-role meta-datum-role-id)}))
 
 (defn handle_get-meta-datum-role
   [req]
   (let [id (-> req :parameters :path :meta_datum_id)
-        wreq (assoc-in req [:params :meta_datum_id] id)]
-    (get-meta-datum-role wreq)))
-
-;(defn query_meta-datum-find-one
-;  [id]
-;  [(str "SELECT * FROM meta_data "
-;        "WHERE id = ? ") id])
-
-;(defn db_meta-datum-find-one
-;  [id]
-;  (first (jdbc/query (get-ds) (query_meta-datum-find-one id))))
-
-;(defn handle_get-meta-datum
-;  [req]
-;  (let [id (-> req :parameters :path :meta_datum_id)
-;        ;meta-datum (db_meta-datum-find-one id)] ; TODO use request meta-datum
-;        meta-datum (:meta-datum req)]
-;  (logging/info "handle_get-meta-datum" "\nid:\n" id "\nmeta-datum\n" meta-datum)
-;    {:status 200 :body (prepare-meta-datum meta-datum)}))
+        result (prepare-meta-datum-role id)]
+    (sd/response_ok result)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

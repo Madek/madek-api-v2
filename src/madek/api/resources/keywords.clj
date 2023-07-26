@@ -1,22 +1,13 @@
 (ns madek.api.resources.keywords
   (:require
-    [clojure.java.jdbc :as jdbc]
     [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
     [logbug.debug :as debug]
     [madek.api.pagination :as pagination]
     [madek.api.resources.keywords.keyword :as kw]
     [reitit.coercion.schema]
     [schema.core :as s]
-    
     [madek.api.resources.shared :as sd]))
 
-
-(def routes
-  (cpj/routes
-    (cpj/GET "/keywords/:id" _ kw/get-keyword)
-    (cpj/ANY "*" _ sd/dead-end-handler)
-    ))
 
 ; TODO keyword external_uris
 (def schema_create_keyword
@@ -42,35 +33,80 @@
    ;(s/optional-key :external_uris) s/Any
    ;:external_uri s/Str
    ;(s/optional-key :rdf_class) s/Str
-   ;:creator_id (s/maybe s/Uuid)
+   
    ;:updated_at s/Any ; TODO use s/Inst
   })
 
-(def schema_export_keyword
+(def schema_export_keyword_usr
   {:id s/Uuid
    :meta_key_id s/Str
    :term s/Str
    :description (s/maybe s/Str)
-   :position s/Int
-   :external_uris s/Any
-   :external_uri s/Str
+   :position (s/maybe s/Int)
+   :external_uris [s/Any]
+   :external_uri (s/maybe s/Str)
+   :rdf_class s/Str
+   
+   })
+
+(def schema_export_keyword_adm
+  {:id s/Uuid
+   :meta_key_id s/Str
+   :term s/Str
+   :description (s/maybe s/Str)
+   :position (s/maybe s/Int)
+   :external_uris [s/Any]
+   :external_uri (s/maybe s/Str)
    :rdf_class s/Str
    :creator_id (s/maybe s/Uuid)
    :created_at s/Any
-   :updated_at s/Any
-   }) ; TODO use s/Inst
+   :updated_at s/Any})
+; TODO use s/Inst
 
-(defn handle_get-keyword
+
+(defn user-export-keyword [keyword]
+  (->
+   keyword
+   ;(select-keys
+   ; [:id :meta_key_id :term :description :external_uris :rdf_class
+   ;  :created_at])
+   (dissoc :creator_id :created_at :updated_at)
+   (assoc ; support old (singular) version of field
+    :external_uri (first (keyword :external_uris)))))
+
+(defn adm-export-keyword [keyword]
+  (->
+   keyword
+   (assoc ; support old (singular) version of field
+    :external_uri (first (keyword :external_uris)))))
+
+(defn handle_adm-get-keyword
   [request]
   (let [id (-> request :parameters :path :id)]
     (if-let [keyword (kw/db-keywords-get-one id)]
-      (sd/response_ok (kw/export-keyword keyword))
+      (sd/response_ok (adm-export-keyword keyword))
+      (sd/response_not_found (str "No such keyword (" id ")")))))
+
+(defn handle_usr-get-keyword
+  [request]
+  (let [id (-> request :parameters :path :id)]
+    (if-let [keyword (kw/db-keywords-get-one id)]
+      (sd/response_ok (user-export-keyword keyword))
       (sd/response_not_found (str "No such keyword (" id ")"))
       )))
 
-(defn handle_query-keywords [request]
+
+(defn handle_usr-query-keywords [request]
   (let [rq (-> request :parameters :query)
-        result (kw/db-keywords-query rq)]
+        db-result (kw/db-keywords-query rq)
+        result (map user-export-keyword db-result)]
+    (sd/response_ok {:keywords result})
+    ))
+
+(defn handle_adm-query-keywords [request]
+  (let [rq (-> request :parameters :query)
+        db-result (kw/db-keywords-query rq)
+        result (map adm-export-keyword db-result)]
     (sd/response_ok {:keywords result})))
 
 (defn handle_create-keyword [req]
@@ -103,40 +139,59 @@
   ["/keywords"
    ["/" 
     {:get {:summary "Query keywords"
-           :handler handle_query-keywords
+           :handler handle_usr-query-keywords
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full-data) s/Bool
-                                    ;:id s/Uuid
+           :parameters {:query {(s/optional-key :id) s/Uuid
                                 (s/optional-key :meta_key_id) s/Str
                                 (s/optional-key :term) s/Str
                                 (s/optional-key :description) s/Str
                                 (s/optional-key :page) s/Int
                                 (s/optional-key :count) s/Int}}
-           :responses {200 {:body s/Any}}
+           :responses {200 {:body {:keywords [ schema_export_keyword_usr ]}}}
            :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
          }]
 
    ["/:id"
     {:get {:summary "Get keyword for id"
-           :handler handle_get-keyword
+           :handler handle_usr-get-keyword
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body s/Any} ;schema_export_keyword}
+           :responses {200 {:body schema_export_keyword_usr}
                        404 {:body {:msg s/Str}}}
            :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
 
 ; TODO wrap auth admin
 (def admin-routes
   [
-   ["/keyword"
-   {:post {:summary (sd/sum_adm "Create keyword.")
+   ["/keywords/"
+   {:get {:summary "Query keywords"
+          :handler handle_adm-query-keywords
+          :coercion reitit.coercion.schema/coercion
+          :parameters {:query {(s/optional-key :id) s/Uuid
+                               (s/optional-key :meta_key_id) s/Str
+                               (s/optional-key :term) s/Str
+                               (s/optional-key :description) s/Str
+                               (s/optional-key :page) s/Int
+                               (s/optional-key :count) s/Int}}
+          :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+          :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
+    
+    :post {:summary (sd/sum_adm "Create keyword.")
            :coercion reitit.coercion.schema/coercion
            :handler handle_create-keyword
            :parameters {:body schema_create_keyword}
            :responses {200 {:body s/Any}
                        406 {:body s/Any}}}}]
-   ["/keyword/:id"
-    {:patch {:summary (sd/sum_adm "Update keyword.")
+   ["/keywords/:id"
+    {:get {:summary "Get keyword for id"
+           :handler handle_adm-get-keyword
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:id s/Uuid}}
+           :responses {200 {:body schema_export_keyword_adm}
+                       404 {:body {:msg s/Str}}}
+           :description "Get keyword for id. Returns 404, if no such keyword exists."}
+     
+     :patch {:summary (sd/sum_adm "Update keyword.")
              :handler handle_update-keyword
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:id s/Uuid}

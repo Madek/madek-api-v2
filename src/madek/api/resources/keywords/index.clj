@@ -21,7 +21,7 @@
         query (sql/format (cond-> query-base
                             (:keywords_alphabetical_order meta-mey)
                             (sql/order-by [:keywords.term :asc])))]
-    (jdbc/query (rdbms/get-ds) query)))
+    (jdbc/query (get-ds) query)))
 
 
 ;### Debug ####################################################################

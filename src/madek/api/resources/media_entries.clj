@@ -3,7 +3,8 @@
     [clojure.java.io :as io]
    [clojure.java.jdbc :as jdbc]
    [clojure.tools.logging :as logging]
-   [madek.api.resources.media-entries.index :refer [get-index]]
+   [madek.api.resources.app-settings :refer [db_get-app-settings]]
+   [madek.api.resources.media-entries.index :refer [get-index, get-index_related_data]]
    [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.rdbms :as rdbms]
@@ -16,14 +17,39 @@
    )
   )
 
-(defn handle_get-index [req]
+(defn handle_query_media_entry [req]
   (get-index req))
+
+(defn handle_query_media_entry-related-data [req] 
+  (get-index_related_data req))
 
 (defn handle_get-media-entry [req]
   (let [query-params (-> req :parameters :query)
         qreq (assoc-in req [:query-params] query-params)]
     (get-media-entry qreq)
   ))
+
+(defn handle_delete_media_entry [req]
+  (let [eid (-> req :parameters :path :media_entry_id)
+        
+        mr (-> req :media-resource)
+        fclause [ "media_entry_id = ?" eid]
+        fresult (jdbc/delete! (rdbms/get-ds) :media_files fclause)
+        dclause ["id = ?" eid]
+        dresult (jdbc/delete! (rdbms/get-ds) :media_entries dclause)
+        ]
+    (logging/info "handle_delete_media_entry"
+                  "\n eid: \n" eid
+                  "\n fclause: \n" fclause
+                  "\n fresult: \n" fresult
+                  "\n dclause: \n" dclause
+                  "\n dresult: \n" dresult
+                  )
+    (if (= 1 (first dresult))
+      (sd/response_ok {:deleted mr})
+      (sd/response_failed {:message "Failed to delete media entry"} 406))
+    ))
+
 
 (def Madek-Constants-Default-Mime-Type "application/octet-stream")
 
@@ -96,17 +122,19 @@
 
 ; TODO find keys and add
 ; TODO keywords and meta-data db access
-(defn me_add-default-license [media-entry]
-   (
-    ; get from app setting 
+; get from app setting 
     ; license getKeyword settings.media_entry_default_license_id
     ; lic-meta-key getMetaKey settings.media_entry_default_license_meta_key
-    ; create-meta-datum me lic-meta-key.id license.id
-    ; get from app setting 
+  ; create-meta-datum me lic-meta-key.id license.id
+; get from app setting 
     ; usage_text getKeyword settings.media_entry_default_license_usage_text.presence
     ; use-meta-key getMetaKey settings.media_entry_default_license_usage_meta_key meta_datum_object_type 'MetaDatum::Text'
-    ; create-meta-datum me use-meta-key.id usage_text
-   ))
+  ; create-meta-datum me use-meta-key.id usage_text
+(defn me_add-default-license [media-entry]
+   (
+    let [settings (db_get-app-settings)]
+    
+    ))
 
 (defn create-media_entry
   [file auth-entity mime collection-id]
@@ -173,9 +201,10 @@
        ;(sd/response_ok {:file file :mime-type "none"}))
     ;(mime-type-of (java.io.File. "some/file/without/extension"))
 
+
+
 (def schema_query_media_entries 
   {(s/optional-key :collection_id) s/Uuid
-   ;(s/optional-key :order) s/Any 
    (s/optional-key :order) (s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
    (s/optional-key :filter_by) s/Str
    ;(s/optional-key :filter_by)
@@ -193,6 +222,7 @@
    ;                               (s/optional-key :key) s/Str
    ;                               (s/optional-key :match) s/Str
    ;                               (s/optional-key :value) s/Str}]
+   ; TODO docu
    ;  (s/optional-key :search) s/Str
    ;  }
 
@@ -202,29 +232,41 @@
    (s/optional-key :public_get_full_size) s/Bool
    (s/optional-key :page) s/Int
    (s/optional-key :count) s/Int
-   (s/optional-key :with-full-data) s/Bool
-   (s/optional-key :with-file-data) s/Bool
-   (s/optional-key :with-preview-data) s/Bool
-   (s/optional-key :with-meta-data) s/Bool})
+   (s/optional-key :with_full_data) s/Bool
+   })
 
 
 (def ring-routes 
-  ["/media-entries"
+  ["/"
+   ["media-entries"
     {:get
      {:summary "Query media-entries."
       :swagger {:produces "application/json"}
       :content-type "application/json"
-      :handler handle_get-index
+      :handler handle_query_media_entry
            ; TODO does not parse filter_by
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}}}
+   ]
+   ["media-entries-related-data"
+    {:get
+     {:summary "Query media-entries with all related data."
+      :swagger {:produces "application/json"}
+      :content-type "application/json"
+      :handler handle_query_media_entry-related-data
+               ; TODO does not parse filter_by
+      :middleware [sd/ring-wrap-parse-json-query-parameters]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:query schema_query_media_entries}}}
+    ]
   ])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)
 (def media-entry-routes
-  ["/media-entry"
+  [
+   ["/media-entry"
    {:post {:summary (sd/sum_todo "Create media-entry. Use redirect to webapp until madek media-encoder lib is ready")
            :handler handle_create-media-entry
            :swagger {:consumes "multipart/form-data"
@@ -236,9 +278,9 @@
            ;:coercion reitit.coercion.schema/coercion
            :coercion reitit.coercion.spec/coercion
            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
-                        :multipart {:file multipart/temp-file-part}}}}
+                        :multipart {:file multipart/temp-file-part}}}}]
    
-   ["/:media_entry_id"
+   ["/media-entry/:media_entry_id"
     {:get {:summary "Get media-entry for id."
            :handler handle_get-media-entry
            :swagger {:produces "application/json"}
@@ -247,8 +289,23 @@
            :middleware [sd/ring-wrap-add-media-resource
                         sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid}}}}]
-  ])
+           :parameters {:path {:media_entry_id s/Uuid}}
+           }
+     
+     :delete {:summary "Delete media-entry for id."
+              :handler handle_delete_media_entry
+              :swagger {:produces "application/json"}
+              :content-type "application/json"
+              
+              :middleware [sd/ring-wrap-add-media-resource
+                           sd/ring-wrap-authorization-view]
+              :coercion reitit.coercion.schema/coercion
+              :parameters {:path {:media_entry_id s/Uuid}}
+              }
+     }
+    ]
+   ]
+  )
 
 (def collection-routes
   ["/collection/:collection_id/media-entries"
@@ -256,7 +313,7 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler (constantly sd/no_impl)
-           ;:handler handle_get-index_by_collection
+           ;:handler handle_query_media_entry_by_collection
            ; TODO does not parse filter_by
            :middleware [sd/ring-wrap-parse-json-query-parameters]
            :coercion reitit.coercion.schema/coercion

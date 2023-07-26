@@ -20,7 +20,7 @@
 
 (defn- base-query
   [user-id]
-  (-> (sql/select :id)
+  (-> (sql/select :*);:id)
       (sql/from :vocabularies)
       (sql/merge-where (where-clause user-id))
       sql/format))

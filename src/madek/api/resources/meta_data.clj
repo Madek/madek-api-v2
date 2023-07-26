@@ -9,6 +9,7 @@
     [madek.api.resources.shared :as sd]
     [madek.api.utils.rdbms :as rdbms]
     [reitit.coercion.schema]
+    [reitit.coercion.spec]
     [schema.core :as s]
     [cheshire.core :as cheshire]
     
@@ -57,27 +58,38 @@
         db-type (:type db-result)]
     (if (or (= nil md-type) (= md-type db-type))
       db-result
-      (((logging/error "db-get-meta-data: type mismatch: requested [" md-type "] but got [" db-type "]"
-                       "\nmr-id: " mr-id
-                       "\nmr-key: " mr-key
-                       "\nmk-id: " mk-id
-                       "\ndb-result: " db-result))
-       db-result)
+      ;(((logging/error "db-get-meta-data: type mismatch: requested [" md-type "] but got [" db-type "]"
+      ;                 "\nmr-id: " mr-id
+      ;                 "\nmr-key: " mr-key
+      ;                 "\nmk-id: " mk-id
+      ;                 "\ndb-result: " db-result))
+      ; nil)
+      nil
       )
     ))
 
 (defn- db-create-meta-data
   ([db meta-data]
+   (logging/info "db-create-meta-data: " meta-data)
 (let [result (first (jdbc/insert! db :meta_data meta-data))]
   (logging/info "db-create-meta-data: " result)
   result))
 
   ([db mr meta-key-id md-type user-id]
+   (logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: "user-id)
   (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
 
   ([db mr meta-key-id md-type user-id meta-data]
-   (db-create-meta-data db (-> (fabric-meta-data mr meta-key-id md-type user-id)
-                               merge meta-data)))
+   (logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
+   (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
+     (logging/info "db-create-meta-data: " 
+                   "MK-ID: " meta-key-id
+                   "Type:" md-type
+                   "User: " user-id 
+                   "MD: " meta-data
+                   "MD-new: " md)
+     (db-create-meta-data db md))
+   )
 
   )
 
@@ -205,6 +217,18 @@
                   "\nresult\n" result)
     result))
 
+(defn- db-delete-meta-data-keyword
+  [db md-id kw-id]
+  (let [query ["meta_datum_id = ? AND keyword_id = ?" md-id kw-id]
+        result (jdbc/delete! db :meta_data_keywords query)]
+    (logging/info "db-delete-meta-data-keyword"
+                  "\nmd-id\n" md-id
+                  "\nkw-id\n" kw-id
+                  "\nresult\n" result)
+    result
+    )
+  )
+
 ; TODO tests, response coercion, error handling
 (defn handle_create-meta-data-keyword
   [req]
@@ -213,38 +237,28 @@
         kw-id (-> req :parameters :path :keyword_id)
         user-id (-> req :authenticated-entity :id str)
         md-type "MetaDatum::Keywords"
-        meta-data (db-get-meta-data mr meta-key-id md-type)
+        meta-data (db-get-meta-data mr meta-key-id nil)
         ;mdnew-data (fabric-meta-data mr meta-key-id md-type user-id)
         ]
     (logging/info "handle_create-meta-data-keyword"
-                  "\nmr-id\n" (:id mr) "\nmeta-data\n" meta-data)
+                  "\nmr-id\n" (:id mr) 
+                  "\nmeta-data\n" meta-data)
 
-    (if-let [md-id (:id meta-data)]
+    (if-let [meta-data (db-get-meta-data mr meta-key-id md-type)]
+      ;[md-id (:id meta-data)]
       ; already has meta-data
       (if-let [result (db-create-meta-data-keyword (rdbms/get-ds) (:id meta-data) kw-id user-id)]
         (sd/response_ok {:meta_data meta-data :mdkeyword result})
-        (sd/response_failed {:message "Failed to add meta data people"} 406))
+        (sd/response_failed {:message "Failed to add meta data keyword"} 406))
       ; create meta-data and meta-data-people
       (jdbc/with-db-transaction [tx (rdbms/get-ds)]
         (if-let [mdins-result (db-create-meta-data tx mr meta-key-id md-type user-id)]
           (if-let [ip-result (db-create-meta-data-keyword tx (-> mdins-result :id str) kw-id user-id)]
-            (sd/response_ok {:meta_data mdins-result :mdpeople ip-result})
-            (sd/response_failed {:message "Failed to add meta data people"} 406))
-          (sd/response_failed {:message "Failed to add meta data for people"} 406))))))
+            (sd/response_ok {:meta_data mdins-result :mdkeyword ip-result})
+            (sd/response_failed {:message "Failed to add meta data keyword"} 406))
+          (sd/response_failed {:message "Failed to add meta data for keyword"} 406))))))
 
-    ;(jdbc/with-db-transaction [tx (rdbms/get-ds)]
-    ;  (if-let [mdins-result (first (jdbc/insert! tx :meta_data mdnew-data))]
-        ;(let [kwnew-data {:meta_datum_id (-> mdins-result :id str)
-        ;                  :keyword_id kw-id
-        ;                  :created_by_id user-id}]
-        ;  (logging/info "handle_create-meta-data-keyword"
-        ;                "\nmeta-data-result\n" mdins-result
-        ;                "\nkw-data\n" kwnew-data)
-        ;  (if-let [kw-result (jdbc/insert! tx :meta_data_keywords kwnew-data)]
-        ;    (sd/response_ok {:meta_data mdins-result :mdkeyword kw-result})
-        ;    (sd/response_failed {:message "Failed to add meta data keyword"} 406)))
-        ;(sd/response_failed {:message "Failed to add meta data for keyword"} 406)))))
-
+   
 (defn db-get-meta-data-keywords 
   [md-id]
   (sd/query-eq-find-all :meta_data_keywords :meta_datum_id md-id))
@@ -253,13 +267,20 @@
   [req]
   (let [mr (-> req :media-resource)
         meta-key-id (-> req :parameters :path :meta_key_id)
-        md-type "MetaDatum::Keywords"
-        md (db-get-meta-data mr meta-key-id md-type)
-        md-id (-> md :id)
-        mdr (db-get-meta-data-keywords md-id)
-        mdr-ids (map (-> :keyword_id) mdr)
-        keywords (map #(sd/query-eq-find-one :keywords :id %) mdr-ids)]
-    (sd/response_ok {:meta_data md :meta-data-keywords mdr :keywords keywords})))
+        full-data (-> req :parameters :path :full_data)
+        md-type "MetaDatum::Keywords"]
+    (if-let [md (db-get-meta-data mr meta-key-id md-type)]
+      (let [md-id (-> md :id)
+            mdr (db-get-meta-data-keywords md-id)
+            mdr-ids (map (-> :keyword_id) mdr)
+            keywords (map #(sd/query-eq-find-one :keywords :id %) mdr-ids)
+            result {:meta_data md
+                    :keyword_ids2 mdr-ids
+                    ;:meta-data-keywords mdr
+                    :keywords keywords}]
+        (sd/response_ok result))
+      (sd/response_failed "Not found" 404))
+    ))
 
 (defn handle_delete-meta-data-keyword
   [req]
@@ -269,11 +290,15 @@
         md-type "MetaDatum::Keywords"
         md (db-get-meta-data mr meta-key-id md-type)
         md-id (-> md :id)
+        
+        delete-result (db-delete-meta-data-keyword (rdbms/get-ds) md-id mdkw-id)
         mdr (db-get-meta-data-keywords md-id)]
 
     (logging/info "handle_delete-meta-data-keyword"
+                  "\ndelete-result\n" delete-result
                   "\nmeta-data\n" md
-                  "\nmeta-data-keywords\n" mdr)
+                  "\nmeta-data-keywords\n" mdr
+                  )
     (sd/response_ok {:meta_data md :meta-data-keywords mdr})))
     
     ;(jdbc/with-db-transaction [tx (rdbms/get-ds)]
@@ -340,8 +365,9 @@
         mdr (db-get-meta-data-people md-id)
         mdr-ids (map (-> :person_id) mdr)
         people (map #(sd/query-eq-find-one :people :id %) mdr-ids)]
-    (sd/response_ok {:meta_data md :meta-data-people mdr :people people})
+    (sd/response_ok {:meta_data md :people_ids mdr-ids :meta-data-people mdr :people people})
     ))
+
 
 (defn handle_delete-meta-data-people
   [req]
@@ -416,47 +442,62 @@
       )
     ))
 
+(defn- add-meta-data-extra [result]
+    (let [md-id (:id result)
+          md-type (:type result)
+            
+          md-type-kw (case md-type
+                       "MetaDatum::Keywords" "md_keywords"
+                       "MetaDatum::People" "md_people"
+                       "MetaDatum::Roles" "md_roles"
+                       "default" )
+  
+          md-type-kw-data (apply str md-type-kw "_data")
+  
+          mde (case md-type
+                "MetaDatum::Keywords" (db-get-meta-data-keywords md-id)
+                "MetaDatum::People" (db-get-meta-data-people md-id)
+                "MetaDatum::Roles" (db-get-meta-data-role md-id)
+                "default")
+  
+          mde-data (case md-type
+                     "MetaDatum::Keywords" (->>
+                                            mde
+                                            (map (-> :keyword_id))
+                                            (map #(sd/query-eq-find-one :keywords :id %)))
+                     "MetaDatum::People" (->>
+                                          mde
+                                          (map (-> :person_id))
+                                          (map #(sd/query-eq-find-one :people :id %)))
+                     "MetaDatum::Roles" (->>
+                                        mde
+                                        (map (-> :role_id))
+                                        (map #(sd/query-eq-find-one :roles :id %)))
+                     "default")
+          mde-result {:meta-data result
+                      (keyword md-type) mde
+                      (keyword md-type-kw) mde
+                      (keyword md-type-kw-data) mde-data
+                      (keyword (apply str md-type "-data")) mde-data}]
+      ;(logging/info "handle_get-meta-key-meta-data"
+      ;              "\nmedia id " md-id
+      ;              "meta-data " mde-result)
+      mde-result)
+)
+
 (defn handle_get-meta-key-meta-data
   [req]
   (let [mr (-> req :media-resource)
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        result (db-get-meta-data mr meta-key-id nil)
-        ]
-    (logging/info "handle_get-meta-key-meta-data"
-                  "\nmeta-key-id " meta-key-id
-                  "meta-data " result)
-    (if-let [md-id (:id result)]
-      (let [md-type (:type result)
-
-            mde (case md-type
-                  "MetaDatum::Keywords" (db-get-meta-data-keywords md-id)
-                  "MetaDatum::People" (db-get-meta-data-people md-id)
-                  "MetaDatum::Role" (db-get-meta-data-role md-id)
-                  "default")
-
-            mde-data (case md-type
-                       "MetaDatum::Keywords" (->>
-                                              mde
-                                              (map (-> :keyword_id))
-                                              (map #(sd/query-eq-find-one :keywords :id %)))
-                       "MetaDatum::People" (->>
-                                            mde
-                                            (map (-> :person_id))
-                                            (map #(sd/query-eq-find-one :people :id %)))
-                       "MetaDatum::Role" (->>
-                                          mde
-                                          (map (-> :role_id))
-                                          (map #(sd/query-eq-find-one :roles :id %)))
-                       "default")
-            ]
-        (sd/response_ok {:meta-data result
-                         (keyword md-type) mde
-                         (keyword (apply str md-type "-data")) mde-data})
-      ) 
-                            
-                            
-      (sd/response_failed "No such meta data" 404)
-    )
+        meta-key-id (-> req :parameters :path :meta_key_id)]
+    
+    (if-let [result (db-get-meta-data mr meta-key-id nil)]
+      (let [extra-result (add-meta-data-extra result)]
+        ;(logging/info "handle_get-meta-key-meta-data"
+        ;              "\nmeta-key-id " meta-key-id
+        ;              "meta-data " extra-result)
+        (sd/response_ok extra-result))
+      
+      (sd/response_failed "No such meta data" 404))
   )
 )
 
@@ -519,12 +560,11 @@
                            (sql/format))
           result (jdbc/query (rdbms/get-ds) vocab-clause)]
       
-      (logging/info "wrap-check-vocab"
-                    "\nmeta-key-id" (:id meta-key)
-                    ;"\nmeta-key" meta-key
-                    ;"\nuser-vocab-query" user-vocab-query
-                    "\nvocab-clause" vocab-clause
-                    "\nresult" result)
+      ;(logging/info "wrap-check-vocab"
+      ;              "\nmeta-key-id" (:id meta-key)
+      ;              "\nvocab-clause" vocab-clause
+      ;              ;"\nresult" result
+      ;              )
       
       (if (= 0 (count result))
         (sd/response_not_found "Invalid meta-key, or no vocabulary access.")
@@ -591,29 +631,40 @@
            :responses {200 {:body s/Any}}}}]
    
    ["/:collection_id/meta-data/:meta_key_id/text"
+    
     {:post {:summary "Create meta-data text for collection."
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-metadata]
+                         sd/ring-wrap-authorization-edit-metadata
+                         ]
             :accept "application/json"
             :content-type "application/json"
+            :swagger {:produces "application/json" :consumes "application/json"}
             :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:collection_id s/Str
+            :parameters {:path {:collection_id s/Uuid
                                 :meta_key_id s/Str}
-                         :body {:string s/Str}}
+                         :body {:string s/Str}
+                         }
             :responses {200 {:body s/Any}}}
+     
      :put {:summary "Update meta-data text for collection."
            :handler handle_update-meta-data-text
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        sd/ring-wrap-authorization-edit-metadata
+                        ]
            :accept "application/json"
            :content-type "application/json"
-           :coercion reitit.coercion.schema/coercion
            :swagger {:produces "application/json" :consumes "application/json"}
-           :parameters {:path {:collection_id s/Str
-                               :meta_key_id s/Str}
-                        :body {:string s/Str}
+           :coercion reitit.coercion.schema/coercion 
+           :parameters {:path {:collection_id s/Uuid
+                               :meta_key_id s/Str
+                               }
+                        :body {:string s/Str} 
                         }
+           ;:coercion reitit.coercion.spec/coercion
+           ;:parameters {:path {:collection_id string?
+           ;                    :meta_key_id string?}
+           ;             :body {:string string?}}
            :responses {200 {:body s/Any}}}
      }]
 
@@ -749,7 +800,8 @@
     {:post {:summary "Create meta-data text for media-entry"
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-metadata]
+                         sd/ring-wrap-authorization-edit-metadata
+                         ]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str}
@@ -759,7 +811,8 @@
      :put {:summary "Update meta-data text for media-entry"
            :handler handle_update-meta-data-text
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        sd/ring-wrap-authorization-edit-metadata
+                        ]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str
                                :meta_key_id s/Str}

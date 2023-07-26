@@ -15,7 +15,7 @@
     
     ))
 
-
+; TODO error if user-id is undefined (public)
 (defn md-vocab-where-clause
   [user-id]
   (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id)]
@@ -53,7 +53,7 @@
 
 (defn- meta-data-query-for-collection [collection-id user-id]
   (-> (base-query user-id)
-      (sql/merge-where [:= :meta_data.collection_id  collection-id])))
+      (sql/merge-where [:= :meta_data.collection_id collection-id])))
 
 ; TODO remove cpj
 ; TODO test with json
@@ -69,9 +69,11 @@
     query))
 
 (defn build-query [request base-query]
-  (-> base-query
-      (filter-meta-data-by-meta-key-ids request)
-      sql/format))
+  (let [query (-> base-query
+                  (filter-meta-data-by-meta-key-ids request)
+                  sql/format)]
+    ;(logging/info "MD:build-query:\n " query)
+    query))
 
 (defn get-media-entry-meta-data [id user-id]
   (->> (meta-data-query-for-media-entry id user-id)
@@ -79,9 +81,19 @@
        (jdbc/query (get-ds))))
 
 (defn get-collection-meta-data [id user-id]
-  (->> (meta-data-query-for-collection id user-id)
-       (build-query nil)
-       (jdbc/query (get-ds))))
+  (let [mdq (sql/format (meta-data-query-for-collection id user-id))
+        result (jdbc/query (get-ds) mdq)] 
+    ;(logging/info "get-collection-meta-data:"
+    ;              "\n col id: " id
+    ;              "\n user id: " user-id
+    ;              "\n query: " mdq
+    ;              "\n result: " result)
+    result))
+
+;(defn get-collection-meta-data [id user-id]
+;  (->> (meta-data-query-for-collection id user-id)
+;       (build-query nil)
+;       (jdbc/query (get-ds))))
 
 (defn get-meta-data [request media-resource]
   (let [user-id (-> request :authenticated-entity :id)]

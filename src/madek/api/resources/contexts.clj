@@ -9,20 +9,41 @@
    [schema.core :as s]))
 
 
-; TODO query
-(defn handle_list-contexts
-  [req]
-  (let [full-data (true? (-> req :parameters :query :full-data))
-        qd (if (true? full-data) :* :contexts.id)
-        db-result (sd/query-find-all :contexts qd)]
-    ;(logging/info "handle_list-context" "\nqd\n" qd "\nresult\n" db-result)
-    (sd/response_ok db-result)))
+(defn- context_transform_ml [context]
+  (assoc context
+         :labels (sd/transform_ml (:labels context))
+         :descriptions (sd/transform_ml (:descriptions context))))
 
-(defn handle_get-context
+(defn handle_adm-list-contexts
   [req]
-  (let [context (-> req :context)]
-    (logging/info "handle_get-context" context)
-    ; TODO hide some fields
+  (let [db-query (-> (sql/select :*)
+                     (sql/from :contexts)
+                     sql/format)
+        db-result (jdbc/query (get-ds) db-query)
+        result (map context_transform_ml db-result)]
+    ;(logging/info "handle_adm-list-context" "\nquery\n" db-query "\nresult\n" result)
+    (sd/response_ok result)))
+
+(defn handle_usr-list-contexts
+  [req]
+  (let [db-query (-> (sql/select :id :labels :descriptions)
+                     (sql/from :contexts)
+                     sql/format)
+        db-result (jdbc/query (get-ds) db-query)
+        result (map context_transform_ml db-result)]
+    ;(logging/info "handle_usr-list-context" "\nquery\n" db-query "\nresult\n" result)
+    (sd/response_ok result)))
+
+(defn handle_adm-get-context
+  [req]
+  (let [context (-> req :context context_transform_ml)]
+    ;(logging/info "handle_adm-get-context" context)
+    (sd/response_ok context)))
+
+(defn handle_usr-get-context
+  [req]
+  (let [context (-> req :context context_transform_ml sd/remove-internal-keys)]
+    ;(logging/info "handle_usr-get-context" context)
     (sd/response_ok context)))
 
 (defn handle_create-contexts
@@ -93,20 +114,23 @@
     
    })
 
-(def schema_export_contexts
+
+(def schema_export_contexts_usr
   {:id s/Str
-   :admin_comment (s/maybe s/Str)
-   ; TODO as json
-   :labels s/Any
-   ; TODO as json
-   :descriptions s/Any
-   })
+   :labels (s/maybe sd/schema_ml_list)
+   :descriptions (s/maybe sd/schema_ml_list)})
+
+(def schema_export_contexts_adm
+  {:id s/Str
+   :labels (s/maybe sd/schema_ml_list)
+   :descriptions (s/maybe sd/schema_ml_list)
+   :admin_comment (s/maybe s/Str)})
 
 ; TODO more checks
 ; TODO response coercion
 ; TODO docu
 ; TODO tests
-(def ring-routes
+(def admin-routes
 
   ["/contexts" 
    ["/"
@@ -116,22 +140,24 @@
                    ;:middleware [(wwrap-find-context :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_contexts}
-            :responses {200 {:body schema_export_contexts}
+            :responses {200 {:body schema_export_contexts_adm}
                         406 {:body s/Any}}
             }
     ; context list / query
      :get {:summary  (sd/sum_adm "List contexts.")
-           :handler handle_list-contexts
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full-data) s/Bool}}}}]
+           :handler handle_adm-list-contexts
+           :coercion reitit.coercion.schema/coercion 
+           ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
+           :responses {200 {:body [schema_export_contexts_adm]}
+                       406 {:body s/Any}}}}]
     ; edit context
    ["/:id"
     {:get {:summary (sd/sum_adm "Get contexts by id.")
-           :handler handle_get-context
+           :handler handle_adm-get-context
            :middleware [(wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export_contexts}
+           :responses {200 {:body schema_export_contexts_adm}
                        404 {:body s/Any}}
           }
      
@@ -151,3 +177,26 @@
               :middleware [(wwrap-find-context :id :id true)]
               :parameters {:path {:id s/Str}}}}]]
    )
+
+(def user-routes
+
+  ["/contexts"
+   ["/"
+    {:get {:summary  (sd/sum_usr "List contexts.")
+           :handler handle_usr-list-contexts
+           :coercion reitit.coercion.schema/coercion
+           ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
+           :responses {200 {:body [schema_export_contexts_usr]}
+                       406 {:body s/Any}}
+           }}]
+    ; edit context
+   ["/:id"
+    {:get {:summary (sd/sum_usr "Get contexts by id.")
+           :handler handle_usr-get-context
+           :middleware [(wwrap-find-context :id :id true)]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:id s/Str}}
+           :responses {200 {:body schema_export_contexts_usr}
+                       404 {:body s/Any}}}
+
+     }]])

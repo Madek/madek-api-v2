@@ -2,9 +2,7 @@
   (:require [clj-uuid]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
-            [compojure.core :as cpj]
             [madek.api.pagination :as pagination]
-            [madek.api.resources.shared :as shared]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.rdbms :as rdbms]
             [madek.api.utils.sql :as sql]
@@ -110,10 +108,10 @@
     {:status 404}))
 
 ;### index ####################################################################
-(defn- base-query [full-data]
+(defn- sql-base-query [full-data]
   (let [sel (if (true? full-data)
               (sql/select :*)
-              (sql/select :id :first_name :last_name))]
+              (sql/select :id :subtype :first_name :last_name :searchable))]
     (-> sel (sql/from :people))))
 
 ; TODO test query and paging
@@ -121,7 +119,7 @@
   [query-params]
   (let [full-data (-> query-params :full-data)]
     (->
-     (base-query full-data)
+     (sql-base-query full-data)
      (sd/build-query-param-like query-params :searchable)
      (sd/build-query-param-like query-params :description)
      (sd/build-query-param-like query-params :institutional_id)
@@ -141,33 +139,19 @@
   ;  (pagination/add-offset-for-honeysql query-params)
   ;  sql/format))
 
-(defn index
+(defn handle_query-people
   [request]
   (let [query-params (-> request :parameters :query)
         sql-query (build-index-query query-params)
         result (jdbc/query (rdbms/get-ds) sql-query)]
     ;(sd/response_ok {:people result})
     {:body {:people result}}
-    )
-  )
+    ))
 
 
 ;### routes ###################################################################
 
-(def admin-protected-routes
-  (->
-    (cpj/routes
-      (cpj/POST "/people/" [] create-person)
-      (cpj/DELETE "/people/:id" [id] (delete-person id))
-      (cpj/PATCH "/people/:id" [] patch-person))
-    wrap-authorize-admin!))
 
-(def routes
-  (->
-    (cpj/routes
-      (cpj/GET "/people/" [] index)
-      (cpj/GET "/people/:id" [id] (get-person id))
-      (cpj/ANY "*" _ admin-protected-routes))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
@@ -295,8 +279,8 @@
 (def ring-routes
   ["/people"
    ["/" {:get {:summary "Get all people ids"
-               :description "Get list of peoples ids. Paging is used as you get a limit of 100 entries."
-               :handler index
+               :description "Query list of people only for ids or full-data. Optional Paging."
+               :handler handle_query-people
                :swagger {:produces "application/json"}
                :parameters {:query {(s/optional-key :full-data) s/Bool
                                     (s/optional-key :searchable) s/Str
@@ -311,7 +295,7 @@
                 ;:content-type "application/json"
                 ;:accept "application/json"
                :coercion reitit.coercion.schema/coercion
-               :responses {200 {:body {:people [{:id s/Uuid}]}}}}
+               :responses {200 {:body {:people [ s/Any ]}}}} ;{:id s/Uuid}]}}}}
 
          :post {:summary "Create a person"
                 :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
@@ -322,7 +306,7 @@
                 :accept "application/json"
                 :coercion reitit.coercion.schema/coercion
                 :parameters {:body schema_import_person}
-                :responses {201 {:body schema_import_person_result} ;{:id s/Uuid}} ; api1 returns created data
+                :responses {201 {:body schema_import_person_result}
                             500 {:body {:msg s/Any}} ; TODO error handling
                             400 {:body {:msg s/Any}}
                             401 {:body {:msg s/Any}}
@@ -339,8 +323,8 @@
                   :responses {200 {:body schema_export_person}
                               404 {:body s/Str}}}
 
-            :patch {:summary "Updates entities fields"
-                    :description "Updates the entities fields"
+            :patch {:summary "Updates person entity fields"
+                    :description "Updates the person entity fields"
                     :swagger {:consumes "application/json" :produces "application/json"}
                     :content-type "application/json"
                     :accept "application/json"

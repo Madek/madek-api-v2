@@ -2,6 +2,7 @@
   (:require
    [clojure.java.jdbc :as jdbc]
    [compojure.core :as cpj]
+   [logbug.catcher :as catcher]
    [madek.api.constants :refer [presence]]
    [madek.api.pagination :as pagination]
    [madek.api.utils.rdbms :as rdbms]
@@ -66,13 +67,18 @@
   )
 
 (defn handle_create-col-me-arc [req]
-  (let [col-id (-> req :parameters :path :collection_id)
-        me-id (-> req :parameters :path :media_entry_id)
-        data (-> req :parameters :body)]
-    (if-let [ins-res (create-col-me-arc col-id me-id data )]
-      (sd/response_ok ins-res)
-      (sd/response_failed "Could not create collection-media-entry-arc" 406))
-    ))
+  (catcher/with-logging {}
+    (try 
+      (let [col-id (-> req :parameters :path :collection_id)
+            me-id (-> req :parameters :path :media_entry_id)
+            data (-> req :parameters :body)]
+        (if-let [ins-res (create-col-me-arc col-id me-id data)]
+          (sd/response_ok ins-res)
+          (sd/response_failed "Could not create collection-media-entry-arc" 406)))
+      (catch Exception e (merge (ex-data e) {:body {:message (.getMessage e)}}))
+    )
+  )
+)
 
 (def schema_collection-media-entry-arc-export
   {
@@ -171,7 +177,9 @@
      {:post
       {:summary (sd/sum_usr "Create collection media-entry arc")
        :handler handle_create-col-me-arc
-       :swagger {:produces "application/json"}
+       :swagger {:produces "application/json" :consumes "application/json"}
+       :accept "application/json"
+       :content-type "application/json"
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:collection_id s/Uuid
                            :media_entry_id s/Uuid}

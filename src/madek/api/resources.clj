@@ -4,8 +4,10 @@
             ;[compojure.core :as cpj]
             ;[logbug.catcher :as catcher]
             [logbug.debug :as debug]
+            [madek.api.utils.config :refer [get-config]]
             [madek.api.authentication :as authentication]
             [madek.api.resources.admins :as admins]
+            [madek.api.resources.app-settings :as app-settings]
             [madek.api.resources.auth-info :as auth-info]
             [madek.api.resources.collection-collection-arcs :as collection-collection-arcs]
             [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
@@ -215,11 +217,11 @@
    ;                :delete (constantly sd/no_impl)}]
 
    ; TODO app-settings
-   ["app-settings" {;:post {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
-                    :get {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
-                    ;:patch {:summary (sd/sum_adm_todo "App Settings") :handler (constantly sd/no_impl)}}]
-                    ;:delete {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
-   }]
+   ;["app-settings" {;:post {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
+   ;                 :get {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
+   ;                 ;:patch {:summary (sd/sum_adm_todo "App Settings") :handler (constantly sd/no_impl)}}]
+   ;                 ;:delete {:summary (sd/sum_todo "App Settings") :handler (constantly sd/no_impl)}
+   ;}]
 
    ; convenience access to permissions
    ; perm-type [api-client, group, user] 
@@ -262,33 +264,45 @@
    ;                                       :put (constantly sd/no_impl)
    ;                                       :delete (constantly sd/no_impl)}]
    ])
-   
-   
 
-   
-
-(def ring-routes
-  ["/api" {:middleware [authentication/wrap]}
-   ["/admin"
-    admins/ring-routes
-    context_keys/ring-routes
-    contexts/ring-routes
-    edit-sessions/admin-routes
-    favorite-collections/admin-routes
-    favorite-media-entries/admin-routes
-    groups/ring-routes
-    io-interfaces/ring-routes
-    io-mappings/ring-routes
-    keywords/admin-routes
-    meta-keys/ring-routes
-    people/ring-routes
-    roles/ring-routes
-    usage-terms/ring-routes
-    users/ring-routes
-    vocabularies/admin-routes]
-
+(def admin-routes
+  ; TODO use wrap admin
+  ["/api/admin" {:middleware [authentication/wrap]}
    ["/auth-info" {:get {:summary "Authentication help and info."
                         :handler auth-info/auth-info}}]
+   admins/ring-routes
+
+   context_keys/admin-routes
+   contexts/admin-routes
+
+   edit-sessions/admin-routes
+   favorite-collections/admin-routes
+   favorite-media-entries/admin-routes
+   
+   groups/ring-routes
+   io-interfaces/ring-routes
+   io-mappings/ring-routes
+   keywords/admin-routes
+   
+   meta-keys/admin-routes
+
+   people/ring-routes
+   roles/ring-routes
+   usage-terms/ring-routes
+   users/ring-routes
+   vocabularies/admin-routes]) 
+
+(def user-routes
+  ["/api" {:middleware [authentication/wrap]}
+   ["/auth-info" {:get {:summary "Authentication help and info."
+                        :handler auth-info/auth-info}}]
+
+   app-settings/user-routes
+   context_keys/user-routes
+   contexts/user-routes
+   keywords/query-routes
+   meta-keys/query-routes
+   
 
    ; collections
    collections/ring-routes
@@ -320,10 +334,8 @@
    favorite-collections/favorite-routes
 
    full-texts/query-routes
-   full-texts/admin-routes
-
-   keywords/query-routes
-
+   full-texts/edit-routes
+   
    ;media_entries
    media-entries/ring-routes
    media-entries/media-entry-routes
@@ -343,9 +355,8 @@
 
    previews/preview-routes
 
-   vocabularies/user-routes
-   api2-routes])
-   
+   vocabularies/user-routes]) 
+
 
 ;### Debug ####################################################################
 (debug/debug-ns *ns*)

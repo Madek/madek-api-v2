@@ -45,7 +45,7 @@
   (let [sel (sql/select [:media_entries.id :media_entry_id]
                         [:media_entries.created_at :media_entry_created_at]
                         [:media_entries.updated_at :media_entry_updated_at]
-                        [:media_entries.edit_session_updated_at :media_entry_edit_session_at]
+                        [:media_entries.edit_session_updated_at :media_entry_edit_session_updated_at]
                         [:media_entries.meta_data_updated_at :media_entry_meta_data_updated_at]
                         [:media_entries.is_published :media_entry_is_published]
                         [:media_entries.get_metadata_and_previews :media_entry_get_metadata_and_previews]
@@ -58,10 +58,10 @@
                  sel
                  (sql/merge-where sel [:= :media_entries.is_published (= true is-pub)])
                  )
-        creator-id (:creator-id me-query)
+        creator-id (:creator_id me-query)
         where2 (if (blank? creator-id) ; or not uuid
                  where1
-                 (sql/merge-where where1 [:= :media_entries.creator-id creator-id]))
+                 (sql/merge-where where1 [:= :media_entries.creator_id creator-id]))
         ru-id (:responsible_user_id me-query)
         where3 (if (blank? ru-id) ; or not uuid
                  where2
@@ -73,15 +73,15 @@
 ;                                   [:media_entries.created_at :media_entry_created_at])
 ;                       (sql/from :media_entries))
                                    ]
-    (logging/info "base-query"
-                  "\nme-query:\n" me-query
-                  "\nfrom:\n" sel
-                  "\nwhere1:\n" where1
-                  "\nwhere2:\n" where2
-                  "\nwhere3:\n" where3
-                  "\nresult:\n" from
-                  ;"\norig:\n" orig-query
-                  )
+;    (logging/info "base-query"
+;                  "\nme-query:\n" me-query
+;                  "\nfrom:\n" sel
+;                  "\nwhere1:\n" where1
+;                  "\nwhere2:\n" where2
+;                  "\nwhere3:\n" where3
+;                  "\nresult:\n" from
+;                  ;"\norig:\n" orig-query
+;                  )
     from))
 
 (defn- order-by-media-entry-attribute [query [attribute order]]
@@ -141,8 +141,8 @@
 
 (defn- order-by-string [query order collection-id]
   (case order
-    "asc" (sql/order-by query [:media_entries.created-at (keyword order)])
-    "desc" (sql/order-by query [:media_entries.created-at (keyword order)])
+    "asc" (sql/order-by query [:media_entries.created_at (keyword order)])
+    "desc" (sql/order-by query [:media_entries.created_at (keyword order)])
     "title_asc" (order-by-title query order)
     "title_desc" (order-by-title query order)
     "last_change" (order-by-media-entry-attribute query [:edit_session_updated_at :asc])
@@ -155,14 +155,14 @@
                                     "last_change" "manual_asc" "manual_desc"))
 
 (defn- default-order [query]
-  (sql/order-by query [:media_entries.created-at :asc]))
+  (sql/order-by query [:media_entries.created_at :asc]))
 
 (defn- order-by-collection-sorting [query collection-id]
   (handle-missing-collection-id collection-id
     (if-let [sorting (find-collection-default-sorting collection-id)]
       (let [prepared-sorting (->> (str/split (str/replace sorting "created_at " "") #" ") (str/join "_") str/lower-case)]
         (order-by-string query prepared-sorting collection-id))
-      (sql/order-by query [:media_entries.created-at :asc]))))
+      (sql/order-by query [:media_entries.created_at :asc]))))
 
 (def ^:private not-allowed-order-param-message
   (str "only the following values are allowed as order parameter: "
@@ -208,7 +208,7 @@
 (defn- build-query [request]
   (let [query-params (-> request :parameters :query)
         filter-by (json/decode (:filter_by query-params) true)
-        props-by (:media-entry filter-by)
+        props-by (:media_entry filter-by)
         authenticated-entity (:authenticated-entity request)
         query-res (I> identity-with-logging
                       (base-query props-by)
@@ -237,7 +237,7 @@
                      (map #(select-keys % [:media_entry_id
                                            :media_entry_created_at
                                            :media_entry_updated_at
-                                           :media_entry_edit_session_at
+                                           :media_entry_edit_session_updated_at
                                            :media_entry_meta_data_updated_at
                                            :media_entry_creator_id
                                            :media_entry_responsible_user_id
@@ -247,7 +247,7 @@
                      (map #(rename-keys % {:media_entry_id :id
                                            :media_entry_created_at :created_at
                                            :media_entry_updated_at :updated_at
-                                           :media_entry_edit_session_at :edit_session_at
+                                           :media_entry_edit_session_updated_at :edit_session_updated_at
                                            :media_entry_meta_data_updated_at :meta_data_updated_at
                                            :media_entry_creator_id :creator_id
                                            :media_entry_responsible_user_id :responsible_user_id
@@ -284,7 +284,16 @@
     md-list)
   )
 
-(defn build-result [collection-id user-id data]
+(defn build-result [collection-id data]
+  (let [me-list (get-me-list data)
+        result (merge
+                {:media_entries me-list }
+                (when collection-id
+                  {:col_arcs (get-arc-list data)}))]
+    result
+    ))
+
+(defn build-result-related-data [collection-id user-id data]
   (let [me-list (get-me-list data)
             ; TODO compute only on demand
         files (get-files4me-list me-list)
@@ -292,31 +301,42 @@
         me-md (get-md4me-list me-list user-id)
         col-md (meta-data.index/get-collection-meta-data collection-id user-id)
         result (merge
-                {:media-entries me-list
+                {:media_entries me-list
             ; TODO add on demand
-                 :meta-data me-md
-                 :media-files files
+                 :meta_data me-md
+                 :media_files files
                  :previews previews}
 
                 (when collection-id
-                  {:col-meta-data col-md
-                   :arcs (get-arc-list data)}))]
-    result
-    ))
+                  {:col_meta_data col-md
+                   :col_arcs (get-arc-list data)}))]
+    result))
 
 (defn get-index [{{{collection-id :collection_id} :query} :parameters :as request}]
   (catcher/with-logging {}
     (try
-      (let [user-id (-> request :authenticated-entity :id)
-            data (query-index-resources request)
-            result (build-result collection-id user-id data)
+      (let [data (query-index-resources request)
+            result (build-result collection-id data)
             ]
+        ;(logging/info "get-index" "\ndata\n" data "\nresult\n" result)
         {:body
          result})
       (catch Exception e (merge (ex-data e) {:body {:message (.getMessage e)}}))
     )
   )
 )
+
+(defn get-index_related_data [{{{collection-id :collection_id} :query} :parameters :as request}]
+  (catcher/with-logging {}
+    (try
+      (let [user-id (-> request :authenticated-entity :id)
+            data (query-index-resources request)
+            result (build-result-related-data collection-id user-id data)]
+        {:body
+         result})
+      (catch Exception e (merge (ex-data e) {:body {:message (.getMessage e)}})))))
+
+
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

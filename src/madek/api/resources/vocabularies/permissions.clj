@@ -8,10 +8,12 @@
     ;[madek.api.authentication.basic :refer [extract]]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
+    [clojure.string :as str]
     ))
 
 (defn- execute-query
   [query]
+  ;(logging/info "execute-query: \n" query)
   (jdbc/query (rdbms/get-ds) query))
 
 (defn- group-ids
@@ -26,17 +28,23 @@
       (map :group_id (execute-query query)))))
 
 (defn- user-permissions-query
-  ([user-id] (user-permissions-query user-id "view"))
+  ([user-id]
+   ;(logging/info "user-permissions-query:" user-id)
+   (user-permissions-query user-id "view"))
+  
   ([user-id acc-type]
+   ;(logging/info "user-permissions-query:" user-id ":" acc-type)
    ; acc-type: "view" or "use"
-   (if user-id
+   (if (str/blank? (str user-id))
+     nil
      (-> (sql/select :vocabulary_id)
          (sql/from :vocabulary_user_permissions)
          (sql/merge-where
           [:= :vocabulary_user_permissions.user_id user-id]
           [:= (keyword (apply str "vocabulary_user_permissions." acc-type)) true])
          (sql/format))
-     nil))
+     )
+   )
   )
 
 (defn- pluck-vocabulary-ids
@@ -55,7 +63,7 @@
        (-> (sql/select :vocabulary_id)
            (sql/from :vocabulary_group_permissions)
            (sql/where
-            [:in :vocabulary_group_permissions.group_id (group-ids user-id)]
+            [:in :vocabulary_group_permissions.group_id groups-ids-result]
             [:= (keyword (apply str "vocabulary_group_permissions." acc-type)) true])
            (sql/format)))))
   )
@@ -64,9 +72,14 @@
   ([user-id] (accessible-vocabulary-ids user-id "view"))
   ([user-id acc-type]
    ; acc-type: "view" or "edit"
-   (concat
-    (pluck-vocabulary-ids (user-permissions-query user-id acc-type))
-    (pluck-vocabulary-ids (group-permissions-query user-id acc-type))))
+   (if-not (str/blank? (str user-id))
+     (concat
+      (pluck-vocabulary-ids (user-permissions-query user-id acc-type))
+      (pluck-vocabulary-ids (group-permissions-query user-id acc-type)))
+     
+     '()
+     )
+   )
   )
 
 ;### Debug ####################################################################
