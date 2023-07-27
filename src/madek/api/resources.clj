@@ -8,7 +8,6 @@
             [madek.api.authentication :as authentication]
             [madek.api.resources.admins :as admins]
             [madek.api.resources.app-settings :as app-settings]
-            [madek.api.resources.auth-info :as auth-info]
             [madek.api.resources.collection-collection-arcs :as collection-collection-arcs]
             [madek.api.resources.collection-media-entry-arcs :as collection-media-entry-arcs]
             [madek.api.resources.collections :as collections]
@@ -268,8 +267,7 @@
 (def admin-routes
   ; TODO use wrap admin
   ["/api/admin" {:middleware [authentication/wrap]}
-   ["/auth-info" {:get {:summary "Authentication help and info."
-                        :handler auth-info/auth-info}}]
+   
    admins/ring-routes
 
    context_keys/admin-routes
@@ -294,8 +292,8 @@
 
 (def user-routes
   ["/api" {:middleware [authentication/wrap]}
-   ["/auth-info" {:get {:summary "Authentication help and info."
-                        :handler auth-info/auth-info}}]
+   ;["/auth-info" {:get {:summary "Authentication help and info."
+   ;                     :handler auth-info/auth-info}}]
 
    app-settings/user-routes
    context_keys/user-routes

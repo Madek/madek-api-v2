@@ -21,10 +21,7 @@
 
 (defn transform_ml [hashMap]
   "Builds Map with keys as keywords and values from HashMap (sql-hstore)"
-  
-    (keywordize-keys (zipmap (.keySet hashMap) (.values hashMap)))
-  
-  )
+  (keywordize-keys (zipmap (.keySet hashMap) (.values hashMap))))
 
 ; begin db-helpers
 ; TODO move to sql file
@@ -158,6 +155,11 @@
 ; begin request response helpers
 
 (def uuid-matcher #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" )
+
+(defn try-as-json [value]
+  (try (cheshire.core/parse-string value)
+       (catch Exception _
+         value)))
 
 (def dead-end-handler
   (cpj/routes

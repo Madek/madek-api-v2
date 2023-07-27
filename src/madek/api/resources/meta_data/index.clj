@@ -1,18 +1,16 @@
 (ns madek.api.resources.meta-data.index
   (:require
     [clojure.java.jdbc :as jdbc]
-    [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
+    ;[clojure.tools.logging :as logging]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug]
-    [madek.api.authorization :as authorization]
+    ;[madek.api.authorization :as authorization]
     [madek.api.constants :as constants]
-    [madek.api.pagination :as pagination]
-    
+    ;[madek.api.pagination :as pagination]
     [madek.api.resources.vocabularies.permissions :as permissions]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
-    
+    [madek.api.resources.shared :as sd]
     ))
 
 ; TODO error if user-id is undefined (public)
@@ -28,12 +26,15 @@
 (defn- base-query
   [user-id]
   ;(-> (sql/select :*)
-  (-> (sql/select :meta_data.id :meta_data.type :meta_data.meta_key_id 
+  (-> (sql/select :meta_data.id
+                  :meta_data.type
+                  :meta_data.meta_key_id 
                   :meta_data.media_entry_id
                   :meta_data.collection_id
                   :meta_data.string
                   :meta_data.json
                   :meta_data.other_media_entry_id
+                  :meta_data.meta_data_updated_at
                   )
       (sql/from :meta_data)
       (sql/merge-where [:in :meta_data.type
@@ -55,11 +56,11 @@
   (-> (base-query user-id)
       (sql/merge-where [:= :meta_data.collection_id collection-id])))
 
-; TODO remove cpj
+
 ; TODO test with json
 ; TODO add query param meta-keys as json list of strings
 (defn filter-meta-data-by-meta-key-ids [query request]
-  (if-let [meta-keys (-> request :query-params :meta_keys)]
+  (if-let [meta-keys (-> request :parameters :query :meta_keys sd/try-as-json)]
     (do
       (when-not (seq? meta-keys)
         String (throw (ex-info (str "The value of the meta-keys parameter"
@@ -70,6 +71,7 @@
 
 (defn build-query [request base-query]
   (let [query (-> base-query
+                  (sd/build-query-ts-after (-> request :parameters :query) :updated_after "meta_data.meta_data_updated_at")
                   (filter-meta-data-by-meta-key-ids request)
                   sql/format)]
     ;(logging/info "MD:build-query:\n " query)
@@ -98,15 +100,16 @@
 (defn get-meta-data [request media-resource]
   (let [user-id (-> request :authenticated-entity :id)]
     (when-let [id (:id media-resource)]
-      (->> (case (:type media-resource)
-             "MediaEntry" (meta-data-query-for-media-entry id user-id)
-             "Collection" (meta-data-query-for-collection id user-id))
-           (build-query request)
-           (jdbc/query (get-ds))))))
+      (let [db-query (build-query request
+                                  (case (:type media-resource)
+                                    "MediaEntry" (meta-data-query-for-media-entry id user-id)
+                                    "Collection" (meta-data-query-for-collection id user-id)))]
+        ;(logging/info "get-meta-data" "\n db-query \n" db-query)
+        (jdbc/query (get-ds) db-query)))))
 
 (defn get-index [request]
   ;(logging/info "get-index" "\nmedia-resource\n" (:media-resource request))
-  (if-let [media-resource (:media-resource request)]
+  (when-let [media-resource (:media-resource request)]
     (when-let [meta-data (get-meta-data request media-resource)]
 
       {:body

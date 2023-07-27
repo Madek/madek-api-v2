@@ -1,31 +1,32 @@
 (ns madek.api.web
   (:require
-    [clojure.data.json :as json]
-    [clojure.java.io :as io]
+    ;[clojure.data.json :as json]
+    ;[clojure.java.io :as io]
     [clojure.tools.logging :as logging]
     [clojure.walk :refer [keywordize-keys]]
     ;[compojure.core :as cpj :refer [defroutes GET PUT POST DELETE ANY]]
-    [compojure.handler :refer [site]]
+    ;[compojure.handler :refer [site]]
     ;[compojure.route :as route]
-    [environ.core :refer [env]]
-    [json-roa.ring-middleware.request :as json-roa_request]
-    [json-roa.ring-middleware.response :as json-roa_response]
+    ;[environ.core :refer [env]]
+    ;[json-roa.ring-middleware.request :as json-roa_request]
+    ;[json-roa.ring-middleware.response :as json-roa_response]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug :refer [I> I>>]]
     [logbug.ring :as logbug-ring :refer [wrap-handler-with-logging]]
     [logbug.thrown :as thrown]
     [madek.api.authentication :as authentication]
     [madek.api.authorization :as authorization]
+    [madek.api.resources.auth-info :as auth-info]
     [madek.api.json-protocol]
     [madek.api.json-roa]
     [madek.api.management :as management]
     [madek.api.resources]
-    [madek.api.semver :as semver]
+    ;[madek.api.semver :as semver]
     [madek.api.utils.config :refer [get-config]]
     [madek.api.utils.http-server :as http-server]
-    [madek.api.utils.status :as status]
-    [madek.api.web.browser :as web.browser]
-    [ring.adapter.jetty :as jetty]
+    ;[madek.api.utils.status :as status]
+    ;[madek.api.web.browser :as web.browser]
+    ;[ring.adapter.jetty :as jetty]
     [ring.middleware.cors :as cors-middleware]
     [ring.middleware.json]
 
@@ -49,9 +50,9 @@
 
 ;### helper ###################################################################
 
-(defn wrap-keywordize-request [handler]
-  (fn [request]
-    (-> request keywordize-keys handler)))
+;(defn wrap-keywordize-request [handler]
+;  (fn [request]
+;    (-> request keywordize-keys handler)))
 
 
 
@@ -110,15 +111,15 @@
   (fn [request]
     (add-access-control-allow-credentials (handler request))))
 
-(defn wrap-cors-if-configured [handler doit]
-  (if doit
-    (-> handler
-        (cors-middleware/wrap-cors
-          :access-control-allow-origin [#".*"]
-          :access-control-allow-methods [:get :put :post :delete]
-          :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization"])
-        wrap-with-access-control-allow-credentials)
-    handler))
+;(defn wrap-cors-if-configured [handler doit]
+;  (if doit
+;    (-> handler
+;        (cors-middleware/wrap-cors
+;          :access-control-allow-origin [#".*"]
+;          :access-control-allow-methods [:get :put :post :delete]
+;          :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization"])
+;        wrap-with-access-control-allow-credentials)
+;    handler))
 
 (defn ring-wrap-cors [handler]
   (-> handler
@@ -162,54 +163,71 @@
 ;      wrap-exception
 ;      ))
 
-(defn get-router-data []
-  (let [result (->>
-                [
-                 (when (= true (-> (get-config) :services :api :user_enabled))
-                   madek.api.resources/user-routes)
-                 
-                 (when (= true (-> (get-config) :services :api :admin_enabled))
-                   madek.api.resources/admin-routes)
-                 
-                 (when (= true (-> (get-config) :services :api :mgmt_enabled))
-                   management/api-routes)
 
-                 ["/test"
-                  ["/exception" {:get (fn [_] (throw (ex-info "test exception" {})))
-                                 :skip-auth true}]
-                  ["/ok" {:get (constantly {:status 200 :body {:ok "ok"}})
-                          :skip-auth true}]]
 
-       ;api/router
-                 ["" {:no-doc true
-                      :skip-auth true}
-                  ["/swagger.json" {:get (swagger/create-swagger-handler)}]
-                  ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]]]
-                (filterv some?))
-        ]
-    ;(logging/info "get-router-data:"
-    ;              " \n Config:\n" (get-config)
-    ;              ;"\n result \n " result
-    ;              )
-    result))
+(def auth-info-route
+  ["/api/auth-info" 
+   {:get
+    {:summary "Authentication help and info."
+     :handler auth-info/auth-info
+     :middleware [authentication/wrap]}}])
+
+(def test-routes
+  ["/test"
+   ["/exception"
+    {:get (fn [_] (throw (ex-info "test exception" {})))
+     :skip-auth true}]
+   ["/ok" 
+    {:get (constantly {:status 200 :body {:ok "ok"}})
+     :skip-auth true}]])
+
+(def swagger-routes
+  [""
+   {:no-doc true
+    :skip-auth true}
+   ["/swagger.json" {:get (swagger/create-swagger-handler)}]
+   ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]])
 
 (def get-router-data-all
   (->>
-   [madek.api.resources/user-routes
+   [auth-info-route
+    madek.api.resources/user-routes
     madek.api.resources/admin-routes
     management/api-routes
+    ;(when (true? (-> (get-config) :services :api :user_enabled))
+    ;  madek.api.resources/user-routes)
+    
+    ;(when (= true (-> (get-config) :services :api :admin_enabled))
+    ;  madek.api.resources/admin-routes)
+    
+    ;(when (= true (-> (get-config) :services :api :mgmt_enabled))
+    ;  management/api-routes)
   
-    ["/test"
-     ["/exception" {:get (fn [_] (throw (ex-info "test exception" {})))
-                    :skip-auth true}]
-     ["/ok" {:get (constantly {:status 200 :body {:ok "ok"}})
-             :skip-auth true}]]
-  
-         ;api/router
-    ["" {:no-doc true
-         :skip-auth true}
-     ["/swagger.json" {:get (swagger/create-swagger-handler)}]
-     ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]]]
+    test-routes
+    swagger-routes
+    ]
+   (filterv some?)))
+
+(def get-router-data-user
+  (->>
+   [auth-info-route
+    madek.api.resources/user-routes
+    management/api-routes
+
+    test-routes
+    swagger-routes
+    ]
+   (filterv some?)))
+
+(def get-router-data-admin
+  (->>
+   [auth-info-route
+    madek.api.resources/admin-routes
+    management/api-routes
+
+    test-routes
+    swagger-routes
+    ]
    (filterv some?)))
 
 (def get-router-options
@@ -235,13 +253,6 @@
                        multipart/multipart-middleware]
           :muuntaja m/instance}})
 
-(defn app []
-  (rr/ring-handler
-   (rr/router (get-router-data) get-router-options
-    )
-   (rr/routes
-    (rr/redirect-trailing-slash-handler)
-    (rr/create-default-handler))))
 
 (def app-all 
   (rr/ring-handler
@@ -250,10 +261,21 @@
     (rr/redirect-trailing-slash-handler)
     (rr/create-default-handler))))
 
-(def reloadable-app
-  (wrap-reload (app))
-  ;(wrap-reload #'app)
-  )
+(def app-user
+  (rr/ring-handler
+   (rr/router get-router-data-user get-router-options)
+   (rr/routes
+    (rr/redirect-trailing-slash-handler)
+    (rr/create-default-handler))))
+
+(def app-admin
+  (rr/ring-handler
+   (rr/router get-router-data-admin get-router-options)
+   (rr/routes
+    (rr/redirect-trailing-slash-handler)
+    (rr/create-default-handler))))
+
+
 
 (def api-defaults
   (-> ring-defaults/api-defaults
@@ -277,37 +299,43 @@
 
 ;### server ###################################################################
 
-;(defonce server (atom nil))
+(defn initialize-all [http-conf is_reloadable]
+  (if (true? is_reloadable)
+    (http-server/start http-conf (middleware (wrap-reload #'app-all)))
+    (http-server/start http-conf (middleware app-all))))
 
-;(defn start-server [& [port]]
-;  (catcher/with-logging {}
-;    (when @server
-;      (.stop @server)
-;      (reset! server nil))
-;    (let [port (Integer. (or port
-;                             (env :http-port)
-;                             (-> (get-config) :api_service :port)
-;                             3100))]
-;      (reset! server
-;              (jetty/run-jetty (build-site)
-;                               {:port port
-;                                :host "localhost"
-;                                :join? false})))))
+(defn initialize-adm [http-conf is_reloadable]
+  (if (true? is_reloadable)
+    (http-server/start http-conf (middleware (wrap-reload #'app-admin)))
+    (http-server/start http-conf (middleware app-admin))))
 
+(defn initialize-user [http-conf is_reloadable]
+  (if (true? is_reloadable)
+    (http-server/start http-conf (middleware (wrap-reload #'app-user)))
+    (http-server/start http-conf (middleware app-user))))
 
 (defn initialize []
   (let [http-conf (-> (get-config) :services :api :http)
         is_reloadable (-> (get-config) :services :api :is_reloadable)
-        context (str (:context http-conf) (:sub_context http-conf))]
+        context (str (:context http-conf) (:sub_context http-conf))
+        is_start_user (-> (get-config) :services :api :user_enabled)
+        is_start_adm (-> (get-config) :services :api :admin_enabled)
+        is_app_all (and is_start_user is_start_adm)
+        ]
     (logging/info "initialize with "
-                  " reload " (= true is_reloadable)
+                  " reload " is_reloadable
+                  " start adm " is_start_adm
+                  " start user " is_start_user
+                  " start all " is_app_all
                   "\nconfig: \n" (get-config))
     ;(http-server/start http-conf (middleware app ds))
-    (if (= true is_reloadable)
-      (http-server/start http-conf (middleware (wrap-reload #'app-all))) ;(middleware reloadable-app ds))
-      (http-server/start http-conf (app)) ;(middleware app ds)))
-      
-      )))
+    (if (true? is_app_all)
+      ; start all
+      (initialize-all http-conf is_reloadable)
+      (if (true? is_start_adm)
+        (initialize-adm http-conf is_reloadable)
+        (initialize-user http-conf is_reloadable)))
+  ))
       
 
 ;### Debug ####################################################################

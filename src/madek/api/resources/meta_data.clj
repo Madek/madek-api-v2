@@ -614,7 +614,9 @@
                         sd/ring-wrap-authorization-view]
                                                    ; TODO 401s test fails
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Str}}
+           :parameters {:path {:collection_id s/Str}
+                        :query {(s/optional-key :updated_after) s/Str
+                                (s/optional-key :meta_keys) s/Str}}
            :responses {200 {:body s/Any}}}}]
    
    ["/:collection_id/meta-data/:meta_key_id"
@@ -779,7 +781,9 @@
            :middleware [sd/ring-wrap-add-media-resource
                         sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Str}}
+           :parameters {:path {:media_entry_id s/Str}
+                        :query {(s/optional-key :updated_after) s/Str
+                                (s/optional-key :meta_keys) s/Str}}
            :responses {200 {:body s/Any}}}}]
    
    ["/:media_entry_id/meta-data/:meta_key_id"
