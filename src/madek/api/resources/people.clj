@@ -161,7 +161,7 @@
    :first_name (s/maybe s/Str)
    :last_name (s/maybe s/Str)
    :description (s/maybe s/Str)
-   :subtype s/Str
+   :subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    :institutional_id (s/maybe s/Str) ;(s/maybe s/Uuid)
    :pseudonym (s/maybe s/Str)
    
@@ -174,7 +174,7 @@
    }) ; TODO use s/Inst TODO json middleware
 
 (def schema_import_person
-  {:subtype s/Str
+  {:subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    (s/optional-key :id) s/Uuid
 
    (s/optional-key :first_name) (s/maybe s/Str)
@@ -192,7 +192,7 @@
    }) ; TODO use s/Inst TODO json middleware
 
 (def schema_import_person_result
-  {:subtype s/Str
+  {:subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    :id s/Uuid
    (s/optional-key :institutional_id) (s/maybe s/Str) ;s/Uuid
    (s/optional-key :description) (s/maybe s/Str)
@@ -228,20 +228,25 @@
 
 
 
-(def schema_query_person
-  {(s/optional-key :subtype) s/Str
+(def schema_query_people
+  {
    (s/optional-key :id) s/Uuid
+   (s/optional-key :subtype) (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
+
+   (s/optional-key :full-data) s/Bool
+   (s/optional-key :searchable) s/Str
+   (s/optional-key :description) s/Str
 
    (s/optional-key :first_name) s/Str
    (s/optional-key :last_name) s/Str
    (s/optional-key :pseudonym) s/Str
 
-   (s/optional-key :description) s/Str
+   (s/optional-key :institutional_id) s/Str
 
-   (s/optional-key :institutional_id) s/Uuid
-
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int
    ;(s/optional-key :external_uri) s/Str
-}) ; TODO use s/Inst TODO json middleware
+   }) ; TODO use s/Inst TODO json middleware
 
 
 (defn handle_create-person
@@ -275,32 +280,38 @@
     (log/info "handle_patch" "\nbody:\n" body "\nid:\n" id)
     (patch-person {:params {:id (str id)} :body body})))
 
+(def schema_export_people
+  {:id s/Uuid
+   :subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
+   :first_name s/Str
+   :last_name s/Str
+   :searchable s/Str
 
-(def ring-routes
+   (s/optional-key :institutional_id) (s/maybe s/Str)
+   (s/optional-key :description) (s/maybe s/Str)
+   (s/optional-key :external_uris) [ s/Str ]
+   (s/optional-key :pseudonym) (s/maybe s/Str)
+
+   (s/optional-key :created_at) s/Str
+   (s/optional-key :updated_at) s/Str
+
+   })
+(def admin-routes
   ["/people"
    ["/" {:get {:summary "Get all people ids"
                :description "Query list of people only for ids or full-data. Optional Paging."
                :handler handle_query-people
                :swagger {:produces "application/json"}
-               :parameters {:query {(s/optional-key :full-data) s/Bool
-                                    (s/optional-key :searchable) s/Str
-                                    (s/optional-key :description) s/Str
-                                    (s/optional-key :first_name) s/Str
-                                    (s/optional-key :last_name) s/Str
-                                    (s/optional-key :pseudonym) s/Str
-                                    (s/optional-key :institutional_id) s/Str
-                                    (s/optional-key :subtype) s/Str
-                                    (s/optional-key :page) s/Int
-                                    (s/optional-key :count) s/Int}}
-                ;:content-type "application/json"
+               :parameters {:query schema_query_people}
+                :content-type "application/json"
                 ;:accept "application/json"
                :coercion reitit.coercion.schema/coercion
-               :responses {200 {:body {:people [ s/Any ]}}}} ;{:id s/Uuid}]}}}}
+               :responses {200 {:body {:people [ schema_export_people ]}}}} 
 
          :post {:summary "Create a person"
                 :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
                 :handler handle_create-person
-                :middleware [wrap-authorize-admin!]
+                ;:middleware [wrap-authorize-admin!]
                 :swagger {:produces "application/json" :consumes "application/json"}
                 :content-type "application/json"
                 :accept "application/json"
@@ -339,8 +350,36 @@
                      :swagger {:produces "application/json"}
                      :content-type "application/json"
                      :handler handle_delete-person
-                     :middleware [wrap-authorize-admin!]
+                     ;:middleware [wrap-authorize-admin!]
                      :coercion reitit.coercion.schema/coercion
                      :parameters {:path {:id s/Uuid}}
                      :responses {403 {:body s/Any}
                                  204 {:body s/Any}}}}]])
+
+
+(def user-routes
+  ["/people"
+   ["/" {:get {:summary "Get all people ids"
+               :description "Query list of people only for ids or full-data. Optional Paging."
+               :handler handle_query-people
+               :swagger {:produces "application/json"}
+               :parameters {:query schema_query_people}
+                ;:content-type "application/json"
+                ;:accept "application/json"
+               :coercion reitit.coercion.schema/coercion
+               :responses {200 {:body {:people [schema_export_people]}}}} ;{:id s/Uuid}]}}}}
+
+         }]
+
+   ["/:id" {:get {:summary "Get person by id"
+                  :description "Get person by id. Returns 404, if no such person exists. TODO query params."
+                  :swagger {:produces "application/json"}
+                  :content-type "application/json"
+                  :accept "application/json"
+                  :handler handle_get-person
+                  :coercion reitit.coercion.schema/coercion
+                  :parameters {:path {:id s/Str}}
+                  :responses {200 {:body schema_export_person}
+                              404 {:body s/Str}}}
+
+            }]])
