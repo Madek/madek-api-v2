@@ -18,6 +18,18 @@
              ;:descriptions_2 (sd/transform_ml (:descriptions_2 meta-key))
              )))
 
+(defn adm-export-meta-key-list [meta-key]
+  (-> meta-key
+
+      (assoc :hints (sd/transform_ml (:hints meta-key))
+             :labels (sd/transform_ml (:labels meta-key))
+             :descriptions (sd/transform_ml (:descriptions meta-key))
+             :documentation_urls (sd/transform_ml (:documentation_urls meta-key))
+
+             :labels_2 (sd/transform_ml (:labels_2 meta-key))
+             :descriptions_2 (sd/transform_ml (:descriptions_2 meta-key))
+             )))
+
 (defn user-export-meta-key [meta-key]
   (-> meta-key
       (dissoc :admin_comment :admin_comment_2)
@@ -28,17 +40,28 @@
 
              ;:labels_2 (sd/transform_ml (:labels_2 meta-key))
              ;:descriptions_2 (sd/transform_ml (:descriptions_2 meta-key))
-             )
-      ))
+             )))
+
+(defn user-export-meta-key-list [meta-key]
+  (-> meta-key
+      (dissoc :admin_comment :admin_comment_2)
+      (assoc :hints (sd/transform_ml (:hints meta-key))
+             :labels (sd/transform_ml (:labels meta-key))
+             :descriptions (sd/transform_ml (:descriptions meta-key))
+             :documentation_urls (sd/transform_ml (:documentation_urls meta-key))
+
+             :labels_2 (sd/transform_ml (:labels_2 meta-key))
+             :descriptions_2 (sd/transform_ml (:descriptions_2 meta-key))
+             )))
 
 (defn handle_adm-query-meta-keys [req]
   (let [db-result (mkindex/db-query-meta-keys req) 
-        result (map adm-export-meta-key db-result)]
+        result (map adm-export-meta-key-list db-result)]
     (sd/response_ok {:meta-keys result})))
 
 (defn handle_usr-query-meta-keys [req]
   (let [db-result (mkindex/db-query-meta-keys req)
-        result (map user-export-meta-key db-result)]
+        result (map user-export-meta-key-list db-result)]
     (sd/response_ok {:meta-keys result})))
 
 (defn handle_adm-get-meta-key [req]
@@ -52,6 +75,7 @@
         result (mk/include-io-mappings
                 (user-export-meta-key mk) (:id mk))]
     (sd/response_ok result)))
+
 
 (defn handle_create_meta-key [req]
   (let [result {}]
