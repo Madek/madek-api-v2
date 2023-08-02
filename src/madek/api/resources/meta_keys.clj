@@ -4,7 +4,10 @@
    [reitit.coercion.schema]
    [schema.core :as s]
    [madek.api.resources.shared :as sd]
-   [madek.api.resources.meta-keys.meta-key :as mk]))
+   [madek.api.resources.meta-keys.meta-key :as mk]
+   [clojure.java.jdbc :as jdbc]
+   [madek.api.utils.rdbms :as rdbms]
+   [clojure.tools.logging :as logging]))
 
 (defn adm-export-meta-key [meta-key]
   (-> meta-key
@@ -78,16 +81,38 @@
 
 
 (defn handle_create_meta-key [req]
-  (let [result {}]
-    (sd/response_ok result)))
+  (let [data (-> req :parameters :body)
+        db-result (jdbc/insert! (rdbms/get-ds) :meta_keys data)]
+    
+    (sd/response_ok (first db-result))
+    ))
 
 (defn handle_update_meta-key [req]
-  (let [result {}]
-    (sd/response_ok result)))
+  (let [;old-data (-> req :meta_key)
+        data (-> req :parameters :body)
+        id (-> req :parameters :path :id)
+        dwid (assoc data :id id) 
+        ]
+    (logging/info "handle_update_meta-key:"
+                  "\nid: " id
+                  "\ndwid\n" dwid)
+    (if-let [db-result (jdbc/update! (rdbms/get-ds)
+                        :meta_keys dwid ["id = ?" id])]
+      (let [new-data (sd/query-eq-find-one :meta_keys :id id)]
+        (logging/info "handle_update_meta-key:" 
+                      "\ndb-result:\n" db-result
+                      "\nnew-data:\n" new-data)
+        (sd/response_ok new-data))
+      (sd/response_failed "Could not update meta_key." 406))
+  ))
 
 (defn handle_delete_meta-key [req]
-  (let [result {}]
-    (sd/response_ok result)))
+  (let [meta-key (-> req :meta_key)
+        db-result (jdbc/delete! (rdbms/get-ds) :meta_keys ["id = ?" (:id meta-key)])]
+    (if (= 1 (first db-result))
+      (sd/response_ok meta-key)
+      (sd/response_failed "Could not delete meta-key." 406))
+    ))
 
 (def schema_create-meta-key
   {:id s/Str
@@ -104,7 +129,7 @@
    :is_enabled_for_collections s/Bool
    :vocabulary_id s/Str
 
-   :allowed_people_subtypes [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
+   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
    :text_type s/Str
    :allowed_rdf_class (s/maybe s/Str)
 
@@ -116,6 +141,32 @@
    :admin_comment (s/maybe s/Str)
 
    })
+
+(def schema_update-meta-key
+  {;:id s/Str
+   (s/optional-key :is_extensible_list) s/Bool
+   ;:meta_datum_object_type (s/enum "MetaDatum::Text"
+   ;                                "MetaDatum::TextDate"
+   ;                                "MetaDatum::JSON"
+   ;                                "MetaDatum::Keywords"
+   ;                                "MetaDatum::People"
+   ;                                "MetaDatum::Roles")
+   (s/optional-key :keywords_alphabetical_order) s/Bool
+   (s/optional-key :position) s/Int
+   (s/optional-key :is_enabled_for_media_entries) s/Bool
+   (s/optional-key :is_enabled_for_collections) s/Bool
+   ;:vocabulary_id s/Str
+
+   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
+   (s/optional-key :text_type) s/Str ; TODO enum
+   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
+
+   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
+   (s/optional-key :hints) (s/maybe sd/schema_ml_list)
+   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
+
+   (s/optional-key :admin_comment) (s/maybe s/Str)})
 
 (def schema_export-meta-key-usr 
   {:id s/Str
@@ -186,7 +237,7 @@
             :parameters {:body schema_create-meta-key}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body s/Any }
+            :responses {200 {:body s/Any } ; TODO response coersion
                         406 {:body s/Any }}
             }
               
@@ -206,19 +257,21 @@
            :responses {200 {:body schema_export-meta-key-adm}
                        404 {:body {:message s/Str}}
                        422 {:body {:message s/Str}}}}
-     :put {:summary (sd/sum_todo "Create meta-key.")
+     
+     :put {:summary (sd/sum_todo "Update meta-key.")
            :handler handle_update_meta-key
            :swagger {:produces "application/json" :consumes "application/json"}
            :middleware [(sd/wrap-check-valid-meta-key :id)
                         (wwrap-find-meta_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export-meta-key-adm}
+           :parameters {:path {:id s/Str}
+                        :body schema_update-meta-key}
+           :responses {200 {:body s/Any} ; TODO response coercion
                        404 {:body {:message s/Str}}
                        422 {:body {:message s/Str}}}
            }
      
-     :delete {:summary (sd/sum_todo "Create meta-key.")
+     :delete {:summary (sd/sum_todo "Delete meta-key.")
               :handler handle_delete_meta-key
               :swagger {:produces "application/json" :consumes "application/json"}
               :middleware [(sd/wrap-check-valid-meta-key :id)

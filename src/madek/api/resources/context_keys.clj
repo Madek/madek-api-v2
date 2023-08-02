@@ -140,12 +140,14 @@
    (s/optional-key :labels) (s/maybe sd/schema_ml_list)
    (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
    (s/optional-key :hints) (s/maybe sd/schema_ml_list)
-   (s/optional-key :documentation_urls) s/Str
+   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
    })
 
 (def schema_update_context_keys
-  {(s/optional-key :id) s/Str
-   (s/optional-key :meta_key_id) s/Str
+  {
+   ;(s/optional-key :id) s/Str
+   ;:context_id s/Str
+   ;(s/optional-key :meta_key_id) s/Str
    (s/optional-key :is_required) s/Bool
    (s/optional-key :length_max) (s/maybe s/Int)
    (s/optional-key :length_min) (s/maybe s/Int)
@@ -207,13 +209,13 @@
             :handler handle_create-context_keys
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_context_keys}
-            :responses {200 {:body schema_export_context_key_admin}
+            :responses {200 {:body s/Any}
                         406 {:body s/Any}}
             }
     ; context_key list / query
      :get {:summary  (sd/sum_adm "Query context_keys.")
            :handler handle_adm-list-context_keys
-           :middleware [wrap-authorize-admin!]
+           ;:middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {
                                 (s/optional-key :changed_after) s/Str
@@ -233,7 +235,7 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get context_key by id.")
            :handler handle_adm-get-context_key
-           :middleware [wrap-authorize-admin!
+           :middleware [;wrap-authorize-admin!
                         (wwrap-find-context_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}

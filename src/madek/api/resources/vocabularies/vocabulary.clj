@@ -4,12 +4,17 @@
     [clojure.tools.logging :as logging]
     [logbug.debug :as debug]
     [madek.api.resources.locales :refer [add-field-for-default-locale]]
-    [madek.api.resources.shared :refer [remove-internal-keys]]
     [madek.api.resources.vocabularies.permissions :as permissions]
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-    [madek.api.utils.sql :as sql]
-    
+    [madek.api.utils.sql :as sql] 
+    [madek.api.resources.shared :as sd]
     ))
+
+(defn transform_ml [vocab]
+  (assoc vocab 
+         :labels (sd/transform_ml (:labels vocab))
+         :descriptions (sd/transform_ml (:descriptions vocab))))
+
 
 (defn- add-fields-for-default-locale
   [result]
@@ -45,8 +50,10 @@
         user-id (-> request :authenticated-entity :id)
         query (build-vocabulary-query id user-id)]
     (if-let [vocabulary (first (jdbc/query (get-ds) query))]
-      {:body (add-fields-for-default-locale (remove-internal-keys vocabulary))}
-      {:status 404 :body {:message "Vocabulary could not be found!"}})))
+      ;{:body (add-fields-for-default-locale (remove-internal-keys vocabulary))}
+      (sd/response_ok (transform_ml (sd/remove-internal-keys vocabulary)))
+      (sd/response_failed "Vocabulary could not be found!" 404)
+      )))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

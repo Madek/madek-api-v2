@@ -7,42 +7,75 @@
     [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
     [reitit.coercion.schema]
     [schema.core :as s]
+    
+    [clojure.java.jdbc :as jdbc]
+    [madek.api.utils.rdbms :as rdbms]))
+
+
+(defn handle_create-vocab [req]
+  (let [data (-> req :parameters :body)]
+    (if-let [ins-res (jdbc/insert! (rdbms/get-ds) :vocabularies data)]
+      (sd/response_ok (first ins-res))
+      (sd/response_failed "Could not create vocabulary." 406))))
+
+(defn handle_update-vocab [req]
+  (let [data (-> req :parameters :body)
+        id (-> req :parameters :path :id)
+        dwid (assoc data :id id)]
+    (logging/info "handle_update-vocab"
+                  "\nid\n" id "\ndwid\n" dwid
+                  )
+    (if-let [upd-res (jdbc/update! (rdbms/get-ds) :vocabularies dwid ["id = ?" id])]
+      (let [new-data (sd/query-eq-find-one :vocabularies :id id)]
+        (logging/info "handle_update-vocab"
+                      "\nid: " id "\nnew-data:\n" new-data)
+        (sd/response_ok new-data))
+      (sd/response_failed "Could not update vocabulary." 406)
+      )
     ))
 
-;(def routes
-;  (cpj/routes
-;    (cpj/GET "/vocabularies/" _ get-index)
-;    (cpj/GET "/vocabularies/:id" _ get-vocabulary)
-;    (cpj/ANY "*" _ sd/dead-end-handler)
-;    ))
-
-
+(defn handle_delete-vocab [req]
+  (let [id (-> req :parameters :path :id)
+        old-data (sd/query-eq-find-one :vocabularies :id id)
+        db-result (jdbc/delete! (rdbms/get-ds) :vocabularies ["id = ?" id])]
+    (if (= 1 (first db-result))
+      (sd/response_ok old-data)
+      (sd/response_failed "Could not delete vocabulary." 406))
+    ))
 
 (def schema_export-vocabulary
   {:id s/Str
    :enabled_for_public_view s/Bool
    :enabled_for_public_use s/Bool
    :position s/Int
-   :labels {:de s/Str :en s/Str s/Str s/Str}
-   :descriptions {:de s/Str :en s/Str s/Str s/Str}
+   :labels (s/maybe sd/schema_ml_list)
+   :descriptions (s/maybe sd/schema_ml_list)
 
-   :description s/Str
-   :label s/Str})
+   (s/optional-key :admin_comment) (s/maybe s/Str)
+   ;:description s/Str
+   ;:label s/Str
+   })
 
 (def schema_import-vocabulary
-  {:id s/Str
+  {
+   :id s/Str
    :enabled_for_public_view s/Bool
    :enabled_for_public_use s/Bool
    :position s/Int
-   :labels {:de s/Str :en s/Str s/Str s/Str}
-   :descriptions {:de s/Str :en s/Str s/Str s/Str}})
+   :labels (s/maybe sd/schema_ml_list)
+   :descriptions (s/maybe sd/schema_ml_list)
+   (s/optional-key :admin_comment) (s/maybe s/Str)
+   })
 
 (def schema_update-vocabulary
-  {(s/optional-key :enabled_for_public_view) s/Bool
+  {
+   (s/optional-key :enabled_for_public_view) s/Bool
    (s/optional-key :enabled_for_public_use) s/Bool
    (s/optional-key :position) s/Int
-   (s/optional-key :labels) {:de s/Str :en s/Str s/Str s/Str}
-   (s/optional-key :descriptions) {:de s/Str :en s/Str s/Str s/Str}})
+   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
+   (s/optional-key :admin_comment) (s/maybe s/Str)
+   })
 
 (def schema_perms-update
   {(s/optional-key :enabled_for_public_view) s/Bool
@@ -62,17 +95,19 @@
            :handler get-index
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :page) s/Int}}
-           :responses {200 {:body {:vocabularies [s/Any]}}};{:id s/Str}]}}}
+           :parameters {:query {(s/optional-key :page) s/Int
+                                (s/optional-key :count) s/Int
+                                }}
+           :responses {200 {:body {:vocabularies [schema_export-vocabulary]}}} ; TODO response coercion
            :swagger {:produces "application/json"}}
 
      :post {:summary (sd/sum_adm_todo "Create vocabulary.")
-            :handler (constantly sd/no_impl)
+            :handler handle_create-vocab
             :content-type "application/json"
             :accept "application/json"
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import-vocabulary}
-            :responses {200 {:body schema_export-vocabulary}
+            :responses {200 {:body s/Any} ; TODO response coercion
                         406 {:body s/Any}}
             :swagger {:consumes "application/json" :produces "application/json"}}}]
 
@@ -88,18 +123,19 @@
                        404 {:body s/Any}}}
 
      :put {:summary (sd/sum_adm_todo "Update vocabulary.")
-           :handler (constantly sd/no_impl)
+           :handler handle_update-vocab
            :content-type "application/json"
            :accept "application/json"
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str} :body schema_update-vocabulary}
-           :responses {200 {:body schema_export-vocabulary}
+           :parameters {:path {:id s/Str} 
+                        :body schema_update-vocabulary}
+           :responses {200 {:body s/Any}
                        404 {:body s/Any}
                        500 {:body s/Any}}
            :swagger {:consumes "application/json" :produces "application/json"}}
 
      :delete {:summary (sd/sum_adm_todo "Delete vocabulary.")
-              :handler (constantly sd/no_impl)
+              :handler handle_delete-vocab
               :content-type "application/json"
               :accept "application/json"
               :coercion reitit.coercion.schema/coercion
@@ -120,27 +156,27 @@
        :responses {200 {:body s/Any}
                    404 {:body s/Any}}}}]
 
-    ["/resource"
-     {:get
-      {:summary (sd/sum_adm_todo "Get vocabulary resource permissions")
-       :handler (constantly sd/no_impl)
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str}}
-       :responses {200 {:body s/Any}
-                   404 {:body s/Any}}}
+    ;["/resource"
+    ; {:get
+    ;  {:summary (sd/sum_adm_todo "Get vocabulary resource permissions")
+    ;   :handler (constantly sd/no_impl)
+    ;   :content-type "application/json"
+    ;   :accept "application/json"
+    ;   :coercion reitit.coercion.schema/coercion
+    ;   :parameters {:path {:id s/Str}}
+    ;   :responses {200 {:body s/Any}
+    ;               404 {:body s/Any}}}
 
-      :put
-      {:summary (sd/sum_adm_todo "Update vocabulary resource permissions")
-       :handler (constantly sd/no_impl)
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str}
-                    :body schema_perms-update}
-       :responses {200 {:body s/Any}
-                   404 {:body s/Any}}}}]
+    ;  :put
+    ;  {:summary (sd/sum_adm_todo "Update vocabulary resource permissions")
+    ;   :handler (constantly sd/no_impl)
+    ;   :content-type "application/json"
+    ;   :accept "application/json"
+    ;   :coercion reitit.coercion.schema/coercion
+    ;   :parameters {:path {:id s/Str}
+    ;                :body schema_perms-update}
+    ;   :responses {200 {:body s/Any}
+    ;               404 {:body s/Any}}}}]
 
     ["/user"
      {:get
@@ -270,7 +306,7 @@
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
                :parameters {:query {(s/optional-key :page) s/Int}}
-               :responses {200 {:body {:vocabularies [{:id s/Str}]}}}
+               :responses {200 {:body {:vocabularies [ schema_export-vocabulary ]}}}
                :swagger {:produces "application/json"}}}]
 
    ["/:id" {:get {:summary "Get vocabulary by id."
