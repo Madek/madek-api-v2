@@ -14,7 +14,9 @@
    [reitit.ring.middleware.multipart :as multipart]
    [schema.core :as s]
    ;[pantomime.mime :refer [mime-type-of]]
-   )
+   
+   [madek.api.resources.app-settings :as app-settings]
+   [madek.api.resources.context-keys :as context_keys])
   )
 
 (defn handle_query_media_entry [req]
@@ -50,6 +52,59 @@
       (sd/response_failed {:message "Failed to delete media entry"} 406))
     ))
 
+(defn- get-context-keys-4-context [contextId]
+  (map :meta_key_id
+       (sd/query-eq-find-all :context_keys :context_id contextId)
+       ))
+
+(defn- check-has-meta-data-for-context-key [meId mkId]
+ (let [md (sd/query-eq2-find-one :meta_data :media_entry_id (str meId) :meta_key_id mkId)
+       hasMD (not (nil? md))
+       result {(keyword mkId) hasMD}]
+   ;(logging/info "check-has-meta-data-for-context-key:" meId  ":"  result)
+   result
+   ))
+
+(defn handle_try-publish-media-entry [req]
+  (let [eid (-> req :parameters :path :media_entry_id)
+        mr (-> req :media-resource)
+        
+        validationContexts (-> (sd/query-find-all :app_settings :contexts_for_entry_validation)
+                               first
+                               :contexts_for_entry_validation)
+        contextKeys (first (map get-context-keys-4-context validationContexts))
+        hasMetaData (for [cks contextKeys]
+                      (check-has-meta-data-for-context-key eid cks))
+        tf (for [elem hasMetaData] (vals elem) )
+        publishable (reduce (fn [tfresult tfval] (and tfresult (first tfval))) [true] tf)
+        ]
+    
+    (logging/info "handle_try-publish-media-entry"
+                  "\n eid: \n" eid
+                  "\n validationContexts: \n" validationContexts
+                  "\n contextKeys: \n" contextKeys
+                  "\n hasMetaData: \n" hasMetaData
+                  "\n tf: \n" tf
+                  "\n publishable: \n" publishable
+                  )
+    (if (true? publishable)
+      (let [data {:is_published true}
+            dresult (jdbc/update! (rdbms/get-ds) :media_entries data ["id = ?" eid])]
+        (logging/info "handle_try-publish-media-entry"
+                      "\n published: entry_id: \n" eid
+                      ;"\n data: \n" data
+                      "\n dresult: \n" dresult)
+        (if (= 1 (first dresult))
+          (sd/response_ok (sd/query-eq-find-one :media_entries :id eid))
+          (sd/response_failed "Could not publish media_entry." 500)
+        )
+      )
+
+      (sd/response_failed {:is_publishable publishable
+                           :media_entry_id eid 
+                           :has_meta_data hasMetaData} 406)
+    )))
+
 
 (def Madek-Constants-Default-Mime-Type "application/octet-stream")
 
@@ -58,7 +113,7 @@
   (let [match (re-find #"\.[A-Za-z0-9]+$" filename )]
     ;(logging/info "xtract-x: " filename "\nmatch\n " match)
     match)
-  )
+  ) 
 
 (defn new_media_file_attributes
   [file user-id mime]
@@ -235,6 +290,86 @@
    (s/optional-key :with_full_data) s/Bool
    })
 
+(def schema_export_media_entry
+  {
+   :id s/Uuid
+   :creator_id s/Uuid
+   :responsible_user_id s/Uuid
+   :get_full_size s/Bool
+   :get_metadata_and_previews s/Bool
+   :is_published s/Bool
+
+   :created_at s/Any
+   :updated_at s/Any
+   
+   :edit_session_updated_at s/Any
+   :meta_data_updated_at s/Any
+
+   :responsible_delegation_id (s/maybe s/Uuid)
+  })
+
+(def schema_export_col_arc
+  {:media_entry_id s/Uuid
+   :id s/Uuid
+   :order (s/maybe s/Str)
+   :position s/Int
+   :created_at s/Any
+   :updated_at s/Any})
+
+
+
+(def schema_query_media_entries_result
+  {:media_entries [ schema_export_media_entry]
+   (s/optional-key :col-arcs) [schema_export_col_arc]})
+
+(def schema_export_media_file
+  {
+   :id s/Uuid
+   :media_entry_id s/Uuid
+   :conversion_profiles [ s/Any ]
+   :media_type (s/maybe s/Str) ; TODO enum
+   :width (s/maybe s/Int)
+   :height (s/maybe s/Int)
+   :meta_data (s/maybe s/Str)
+   :size s/Int
+   :uploader_id s/Uuid
+   :content_type s/Str
+   :access_hash s/Str
+   :extension s/Str
+   :filename s/Str
+   :guid s/Str
+   :uploaded_at s/Any
+   :created_at s/Any
+  })
+
+(def schema_export_preview
+  { })
+
+(def schema_export_meta_data
+  {:id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id (s/maybe s/Uuid)
+
+   :type s/Str
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :json (s/maybe s/Str)
+
+   :meta_data_updated_at s/Any
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+(def schema_query_media_entries_related_result
+  {:media_entries [schema_export_media_entry]
+   :meta_data [ [ schema_export_meta_data]]
+   :media_files [[ schema_export_media_file ]]
+   :previews [[ s/Any]] ; schema_export_preview]]
+   (s/optional-key :col-arcs) [schema_export_col_arc]})
+
+
+(def schema_publish_failed
+  {:message {:is_publishable s/Bool
+             :media_entry_id s/Uuid
+             :has_meta_data [{s/Any s/Bool}]}})
 
 (def ring-routes 
   ["/"
@@ -247,7 +382,8 @@
            ; TODO does not parse filter_by
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}}}
+      :parameters {:query schema_query_media_entries}
+      :responses { 200 { :body schema_query_media_entries_result}}}}
    ]
    ["media-entries-related-data"
     {:get
@@ -258,7 +394,8 @@
                ; TODO does not parse filter_by
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}}}
+      :parameters {:query schema_query_media_entries}
+      :responses { 200 { :body schema_query_media_entries_related_result}}}}
     ]
   ])
 
@@ -292,6 +429,8 @@
            :parameters {:path {:media_entry_id s/Uuid}}
            }
      
+
+     
      :delete {:summary "Delete media-entry for id."
               :handler handle_delete_media_entry
               :swagger {:produces "application/json"}
@@ -304,6 +443,19 @@
               }
      }
     ]
+   
+   ["/media-entry/:media_entry_id/publish"
+    {:put {:summary "Try publish media-entry for id."
+           :handler handle_try-publish-media-entry
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+   
+           :middleware [sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:media_entry_id s/Uuid}}
+           :responses { 200 {:body schema_export_media_entry}
+                        406 {:body schema_publish_failed}}}}]
    ]
   )
 
