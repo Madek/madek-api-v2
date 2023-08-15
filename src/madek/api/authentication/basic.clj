@@ -61,7 +61,7 @@
       (handler (assoc request
                       :authenticated-entity entity
                       ; TODO move into ae
-                      :is-admin (sd/is-admin (or (:id entity) (:user_id entity) ))
+                      :is_admin (sd/is-admin (or (:id entity) (:user_id entity) ))
                       :authentication-method "Basic Authentication")))
     {:status 401 :body (str "Neither User nor ApiClient exists for "
                             {:login-or-email-address login-or-email})}))

@@ -86,7 +86,7 @@
               (handler (assoc request
                               :authenticated-entity user
                               ; TODO move into ae
-                              :is-admin (sd/is-admin (:id user))
+                              :is_admin (sd/is-admin (:id user))
                               :authentication-method "Session"
                               :session-expiration-seconds
                               (in-seconds now expiration-time))))))

@@ -67,7 +67,7 @@
             (assoc request
                    :authenticated-entity (assoc user-token :type "User")
                    ; TODO move into ae
-                   :is-admin (sd/is-admin (:user_id user-token))))))
+                   :is_admin (sd/is-admin (:user_id user-token))))))
 
 
 (defn find-token-secret-in-header [request]

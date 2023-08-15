@@ -7,7 +7,7 @@
     [logbug.debug :as debug]
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
-    [ring.util.codec :refer [url-decode]]
+    
     ))
 
 ;### admin check ##############################################################
@@ -19,15 +19,18 @@
   Throws a ExceptionInfo with status 403 otherwise. "
   (handler
     (or
-      (if (contains? (-> request :authenticated-entity) :is_admin)
-        (when (-> request :authenticated-entity :is_admin) request)
+      ;(if (contains? (-> request :authenticated-entity) :is_admin)
+     (if (contains? request :is_admin)
+        ;(when (-> request :authenticated-entity :is_admin) request)
+        (when (-> request :is_admin) request)
         (when (->> (-> (sql/select [true :is_admin])
                        (sql/from :admins)
                        (sql/merge-where [:= :admins.user_id (-> request :authenticated-entity :id)])
                        sql/format)
                    (jdbc/query (rdbms/get-ds))
                    first :is_admin)
-          (assoc-in request [:authenticated-entity :is_admin] true)))
+          ;(assoc-in request [:authenticated-entity :is_admin] true)))
+          (assoc-in request [:is_admin] true)))
       (throw
         (ex-info
           "Only administrators are allowed to access this resource."
