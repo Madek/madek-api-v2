@@ -4,29 +4,23 @@
     ;[clojure.java.io :as io]
     [clojure.tools.logging :as logging]
     [clojure.walk :refer [keywordize-keys]]
-    ;[compojure.core :as cpj :refer [defroutes GET PUT POST DELETE ANY]]
-    ;[compojure.handler :refer [site]]
-    ;[compojure.route :as route]
     ;[environ.core :refer [env]]
-    ;[json-roa.ring-middleware.request :as json-roa_request]
-    ;[json-roa.ring-middleware.response :as json-roa_response]
+    
     [logbug.catcher :as catcher]
     [logbug.debug :as debug :refer [I> I>>]]
     [logbug.ring :as logbug-ring :refer [wrap-handler-with-logging]]
     [logbug.thrown :as thrown]
     [madek.api.authentication :as authentication]
-    [madek.api.authorization :as authorization]
+    ;[madek.api.authorization :as authorization]
     [madek.api.resources.auth-info :as auth-info]
     [madek.api.json-protocol]
-    [madek.api.json-roa]
+    
     [madek.api.management :as management]
     [madek.api.resources]
     ;[madek.api.semver :as semver]
     [madek.api.utils.config :refer [get-config]]
     [madek.api.utils.http-server :as http-server]
-    ;[madek.api.utils.status :as status]
-    ;[madek.api.web.browser :as web.browser]
-    ;[ring.adapter.jetty :as jetty]
+        
     [ring.middleware.cors :as cors-middleware]
     [ring.middleware.json]
 
@@ -111,36 +105,16 @@
   (fn [request]
     (add-access-control-allow-credentials (handler request))))
 
-;(defn wrap-cors-if-configured [handler doit]
-;  (if doit
-;    (-> handler
-;        (cors-middleware/wrap-cors
-;          :access-control-allow-origin [#".*"]
-;          :access-control-allow-methods [:get :put :post :delete]
-;          :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization"])
-;        wrap-with-access-control-allow-credentials)
-;    handler))
-
 (defn ring-wrap-cors [handler]
   (-> handler
       (cors-middleware/wrap-cors
        :access-control-allow-origin [#".*"]
-       :access-control-allow-methods [:get :put :post :delete]
-       :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization"])
+       :access-control-allow-methods [:options :get :put :post :delete]
+       :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization", "Credentials" "Cookie"])
       wrap-with-access-control-allow-credentials))
 
 ;##############################################################################
 
-;(defn wrap-roa-req-if-configured [handler doit]
-;  (if doit
-;    (-> handler (json-roa_request/wrap madek.api.json-roa/handler))
-;    handler));
-
-;(defn wrap-roa-res-if-configured [handler doit]
-;   (if doit
-;     (-> handler json-roa_response/wrap)
-;     handler))
- 
 ;(defn build-site [context]
 ;  (I> wrap-handler-with-logging
 ;      dead-end-handler
@@ -170,7 +144,8 @@
    {:get
     {:summary "Authentication help and info."
      :handler auth-info/auth-info
-     :middleware [authentication/wrap]}}])
+     :middleware [authentication/wrap]
+     }}])
 
 (def test-routes
   ["/test"
@@ -245,8 +220,11 @@
                        wrap-exception
                        muuntaja/format-request-middleware
                            ;auth/wrap-auth-madek-deps
-                       authorization/wrap-authorize-http-method
-                           ;authentication/wrap
+                       ;authorization/wrap-authorize-http-method 
+                       
+                       authentication/wrap
+                       authentication/wrap-audit
+
                        rrc/coerce-exceptions-middleware
                        rrc/coerce-request-middleware
                        rrc/coerce-response-middleware

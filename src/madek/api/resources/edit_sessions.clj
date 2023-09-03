@@ -1,19 +1,19 @@
 (ns madek.api.resources.edit-sessions
-    (:require
+  (:require
    [clojure.java.jdbc :as jdbc]
    [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
    [madek.api.utils.sql :as sql]
    [clojure.tools.logging :as logging]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.resources.shared :as sd]
    [reitit.coercion.schema]
    [schema.core :as s]
-   
    [madek.api.pagination :as pagination]))
 
 ; TODO create edit session as timestamp for meta-data updates
 
 (defn build-query [query-params]
-  (let [col-sel (if (true? (-> query-params :full-data))
+  (let [col-sel (if (true? (-> query-params :full_data))
                   (sql/select :*)
                   (sql/select :id, :media_entry_id, :collection_id))]
     (-> col-sel
@@ -113,7 +113,7 @@
 ;      (sd/response_failed (str "No such edit_session : " id) 404))))
 
 (def schema_usr_query_edit_session
-  {(s/optional-key :full-data) s/Bool
+  {(s/optional-key :full_data) s/Bool
    (s/optional-key :page) s/Int
    (s/optional-key :count) s/Int
    (s/optional-key :id) s/Uuid
@@ -122,7 +122,7 @@
 
 (def schema_adm_query_edit_session
 
-  {(s/optional-key :full-data) s/Bool
+  {(s/optional-key :full_data) s/Bool
    (s/optional-key :page) s/Int
    (s/optional-key :count) s/Int
    (s/optional-key :id) s/Uuid
@@ -143,15 +143,18 @@
    ["/"
     {:get {:summary (sd/sum_adm "List edit_sessions.")
            :handler handle_adm_list-edit-sessions
+           :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            :parameters {:query schema_adm_query_edit_session}}}]
    ["/:id"
     {:get {:summary (sd/sum_adm "Get edit_session.")
            :handler handle_adm_get-edit-session
+           :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}}
      :delete {:summary (sd/sum_adm "Delete edit_session.")
               :handler handle_adm_delete-edit-sessions
+              :middleware [wrap-authorize-admin!]
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Str}}
               :responses {200 {:body schema_export_edit_session}
@@ -174,12 +177,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}}
      
-     ;:delete {:summary (sd/sum_usr "Delete authed users edit_session for id.")
-     ;         :handler handle_usr_delete-edit-sessions
-     ;         :coercion reitit.coercion.schema/coercion
-     ;         :parameters {:path {:id s/Str}}
-     ;         :responses {200 {:body schema_export_edit_session}
-     ;                     404 {:body s/Any}}}
+     
      }]
    ])
      
@@ -195,19 +193,9 @@
                       404 {:body s/Any}}
           }
     
-    ;:post {:summary (sd/sum_usr "Create edit_session for media entry.")
-    ;       :handler handle_usr_create-edit-sessions
-    ;       :middleware [sd/ring-wrap-add-media-resource
-    ;                    sd/ring-wrap-authorization-view]
-    ;       :coercion reitit.coercion.schema/coercion
-    ;       :parameters {:path {:media_entry_id s/Str}}
-    ;       :responses {200 {:body schema_export_edit_session}
-    ;                   406 {:body s/Any}}}
-    
-
-    
     }])
 
+; TODO Frage: when is edit-session created (in madek-web-interface)
 
 (def collection-routes
   ["/collection/:collection_id/edit_session"
@@ -219,25 +207,6 @@
           :parameters {:path {:collection_id s/Str}}
           :responses {200 {:body [schema_export_edit_session]}
                       404 {:body s/Any}}}
-
-    ;:post {:summary (sd/sum_usr "Create edit_session for collection.")
-    ;       :handler handle_usr_create-edit-sessions
-    ;       :middleware [sd/ring-wrap-add-media-resource
-    ;                    sd/ring-wrap-authorization-view]
-    ;       :coercion reitit.coercion.schema/coercion
-    ;       :parameters {:path {:collection_id s/Str}}
-    ;       :responses {200 {:body schema_export_edit_session}
-    ;                   406 {:body s/Any}}}
-    
-   
-    ;:delete {:summary (sd/sum_todo "Delete edit_session for collection.")
-    ;         :handler handle_delete-edit-sessions
-    ;         :middleware [sd/ring-wrap-add-media-resource
-    ;                      sd/ring-wrap-authorization-view]
-    ;         :coercion reitit.coercion.schema/coercion
-    ;         :parameters {:path {:collection_id s/Str}}
-    ;         :responses {200 {:body schema_export_edit_session}
-    ;                     404 {:body s/Any}}}
     }])
 
 ; TODO tests

@@ -22,6 +22,27 @@
   [req]
   (sd/response_ok (db_get-app-settings)))
 
+; TODO def schema import export
+
+(def admin-routes 
+  [
+   ["/app-settings"
+    {:get {:summary "Get App Settings."
+           :handler handle_get-app-settings
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+           :coercion reitit.coercion.schema/coercion
+           :responses {200 {:body s/Any}}}
+     ; TODO app-settings update
+     :put {:summary "Update App Settings."
+           :handler handle_get-app-settings
+           :swagger {:produces "application/json"
+                     :consumes  "application/json"}
+           :content-type "application/json"
+           :coercion reitit.coercion.schema/coercion
+           :responses {200 {:body s/Any}}
+           }}]
+  ])
 
 (def user-routes 
   [

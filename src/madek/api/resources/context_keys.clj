@@ -77,47 +77,47 @@
 
 (defn handle_create-context_keys
   [req]
-  (let [data (-> req :parameters :body)
-        ; or TODO data with id
-        ]
-        ; create context_key entry
-      (if-let [ins_res (jdbc/insert! (rdbms/get-ds) :context_keys data)]
+  (try
+    (let [data (-> req :parameters :body)
+          ins-res (jdbc/insert! (rdbms/get-ds) :context_keys data)]
+      
+      (logging/info "handle_create-context_keys: " "\new-data:\n" data "\nresult:\n" ins-res)
+
+      (if-let [result (first ins-res)]
         ; TODO clean result
-        (sd/response_ok (first ins_res))
-        (sd/response_failed "Could not create context_key." 406))))
+        (sd/response_ok result)
+        (sd/response_failed "Could not create context_key." 406)))
+    (catch Exception ex (sd/response_exception ex))))
+    
 
 (defn handle_update-context_keys
   [req]
-  (let [data (-> req :parameters :body)
-        id (-> req :parameters :path :id)
-        dwid (assoc data :id id)
-        old-data (-> req :context_key)
-        upd-query (sd/sql-update-clause "id" (str id))
-        ; or TODO data with id
-        ]
-        ; create context_key entry
-    (logging/info "handle_update-context_keys: " "\nid\n" id "\ndwid\n" dwid
-                  "\nold-data\n" old-data
-                  "\nupd-query\n" upd-query)
-    (if-let [ins-res (jdbc/update! (rdbms/get-ds) :context_keys dwid upd-query)]
-        ; TODO clean result
-      ;(if (= 1 ins-res)
-        (
-         let [new-data (sd/query-eq-find-one :context_keys :id id)]
-         (logging/info "handle_update-context_keys:" "\nnew-data\n" new-data)
-         (sd/response_ok new-data)
-         )
-       ; (sd/response_failed "Could not update context_key." 406)
-       ; )
-      (sd/response_failed "Could not update context_key." 406))))
+  (try
+    (let [data (-> req :parameters :body)
+          id (-> req :parameters :path :id)
+          dwid (assoc data :id id)
+          ;old-data (-> req :context_key)
+          upd-query (sd/sql-update-clause "id" (str id))
+          upd-result (jdbc/update! (rdbms/get-ds) :context_keys dwid upd-query)]
+      
+      (logging/info "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result\n" upd-result)
+
+      (if (= 1 (first upd-result))
+        (sd/response_ok (sd/query-eq-find-one :context_keys :id id))
+        (sd/response_failed "Could not update context_key." 406)))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_delete-context_key
   [req]
-  (let [context_key (-> req :context_key)
-        context_key-id (-> req :context_key :id)]
-    (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :context_keys ["id = ?" context_key-id])))
-      (sd/response_ok context_key)
-      (logging/error "Failed delete context_key " context_key-id))))
+  (try
+    (let [context_key (-> req :context_key)
+          id (-> req :context_key :id)
+          del-query (sd/sql-update-clause "id" id)
+          del-result (jdbc/delete! (rdbms/get-ds) :context_keys del-query)]
+      (if (= 1 (first del-result))
+        (sd/response_ok context_key)
+        (logging/error "Could not delete context_key: " id)))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn wwrap-find-context_key [param colname send404]
   (fn [handler]
@@ -207,6 +207,7 @@
     {:post {:summary (sd/sum_adm_todo "Create context_key")
             ; TODO labels and descriptions
             :handler handle_create-context_keys
+            :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_context_keys}
             :responses {200 {:body s/Any}
@@ -215,7 +216,7 @@
     ; context_key list / query
      :get {:summary  (sd/sum_adm "Query context_keys.")
            :handler handle_adm-list-context_keys
-           ;:middleware [wrap-authorize-admin!]
+           :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {
                                 (s/optional-key :changed_after) s/Str
@@ -235,7 +236,7 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get context_key by id.")
            :handler handle_adm-get-context_key
-           :middleware [;wrap-authorize-admin!
+           :middleware [wrap-authorize-admin!
                         (wwrap-find-context_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
@@ -245,7 +246,8 @@
      :put {:summary (sd/sum_adm "Update context_keys with id.")
            ; TODO labels and descriptions
            :handler handle_update-context_keys
-           :middleware [(wwrap-find-context_key :id :id true)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-context_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_context_keys}
@@ -255,7 +257,8 @@
      :delete {:summary (sd/sum_adm_todo "Delete context_key by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-context_key
-              :middleware [(wwrap-find-context_key :id :id true)]
+              :middleware [wrap-authorize-admin!
+                           (wwrap-find-context_key :id :id true)]
               :parameters {:path {:id s/Str}}}}]]
    )
 
@@ -271,10 +274,7 @@
      :get {:summary  (sd/sum_usr "Query / List context_keys.")
            :handler handle_usr-list-context_keys
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {;(s/optional-key :full-data) s/Bool
-                                ;(s/optional-key :page) s/Int
-                                ;(s/optional-key :count) s/Int
-                                (s/optional-key :id) s/Str
+           :parameters {:query {(s/optional-key :id) s/Str
                                 (s/optional-key :context_id) s/Str
                                 (s/optional-key :meta_key_id) s/Str
                                 (s/optional-key :is_required) s/Bool}}
@@ -289,9 +289,6 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
            :responses {200 {:body schema_export_context_key}
-                       406 {:body s/Any}}
+                       404 {:body s/Any}}
            }}]
-   
-   ;["/:context_id/:meta_key_id"
-   ; {:get {:summary (sd/sum_usr "Get context_key by context_id and meta_key_id.")}]
-   ])
+  ])

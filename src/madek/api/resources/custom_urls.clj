@@ -11,12 +11,12 @@
 
 
 (defn build-query [query-params]
-  (let [col-sel (if (true? (-> query-params :full-data))
+  (let [col-sel (if (true? (-> query-params :full_data))
                   (sql/select :*)
                   (sql/select :id, :media_entry_id, :collection_id))]
     (-> col-sel
         (sql/from :custom_urls)
-        (sd/build-query-param query-params :id)
+        (sd/build-query-param-like query-params :id)
         (sd/build-query-param query-params :collection_id)
         (sd/build-query-param query-params :media_entry_id)
         sql/format)))
@@ -55,71 +55,84 @@
 
 (defn handle_create-custom-urls
   [req]
-  (let [u-id (-> req :authenticated-entity :id)
-        mr (-> req :media-resource)
-        mr-type (-> mr :type)
-        mr-id (-> mr :id str)
-        data (-> req :parameters :body)
-        dwid (if (= mr-type "MediaEntry")
-               (assoc data :media_entry_id mr-id :creator_id u-id :updator_id u-id)
-               (assoc data :collection_id mr-id :creator_id u-id :updator_id u-id))
-        ]
-    
-    (logging/info "handle_create-custom-urls"
-                  "\ntype\n" mr-type 
-                  "\nmr-id\n" mr-id                  
-                  "\ndwid\n" dwid)
-    (if-let [ins-res (first (jdbc/insert! (rdbms/get-ds) :custom_urls dwid))]
-      (sd/response_ok ins-res) 
-      (sd/response_failed "Could not create custom_url." 406))))
+  (try
+    (let [u-id (-> req :authenticated-entity :id)
+          mr (-> req :media-resource)
+          mr-type (-> mr :type)
+          mr-id (-> mr :id str)
+          data (-> req :parameters :body)
+          dwid (if (= mr-type "MediaEntry")
+                 (assoc data :media_entry_id mr-id :creator_id u-id :updator_id u-id)
+                 (assoc data :collection_id mr-id :creator_id u-id :updator_id u-id))
+          ins-res (jdbc/insert! (rdbms/get-ds) :custom_urls dwid)]
+      
+      (sd/logwrite req (str "handle_create-custom-urls"
+                            "mr-type: " mr-type
+                            "mr-id: " mr-id
+                            "\nnew-data\n" dwid
+                            "\nresult:\n" ins-res))
+
+      (if-let [result (first ins-res)]
+        (sd/response_ok result)
+        (sd/response_failed "Could not create custom_url." 406)))
+    (catch Exception ex (sd/response_exception ex))))
 
 
-; TODO
 ; TODO check if own entity or auth is admin
 (defn handle_update-custom-urls
   [req]
-  (let [u-id (-> req :authenticated-entity :id)
-        mr (-> req :media-resource)
-        mr-type (-> mr :type)
-        mr-id (-> mr :id str)
-        col-name (if (= mr-type "MediaEntry")
-                   :media_entry_id
-                   :collection_id)
-        data (-> req :parameters :body)
-        dwid (if (= mr-type "MediaEntry")
-               (assoc data :media_entry_id mr-id :updator_id u-id)
-               (assoc data :collection_id mr-id :updator_id u-id))]
+  (try
+    (let [u-id (-> req :authenticated-entity :id)
+          mr (-> req :media-resource)
+          mr-type (-> mr :type)
+          mr-id (-> mr :id str)
+          col-name (if (= mr-type "MediaEntry")
+                     :media_entry_id
+                     :collection_id)
+          data (-> req :parameters :body)
+          dwid (if (= mr-type "MediaEntry")
+                 (assoc data :media_entry_id mr-id :updator_id u-id)
+                 (assoc data :collection_id mr-id :updator_id u-id))
+          upd-result (jdbc/update! (get-ds) :custom_urls dwid (sd/sql-update-clause col-name mr-id))]
 
-    (logging/info "handle_update-custom-urls"
-                  "\ntype\n" mr-type "\ncol-name\n" col-name
-                  "\nmr-id\n" mr-id
-                  "\ndwid\n" dwid)
-    (if-let [upd-res  {}]; (jdbc/update! (get-ds) :custom_urls dwid (sd/sql-update-clause col-name mr-id))]
-      (let [upd-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
-        (logging/info "handle_update-custom-urls" "\nupd-data\n" upd-data)
-        (sd/response_ok upd-data))
-      
-      (sd/response_failed "Could not update custom_url." 406))))
+      (sd/logwrite req (str "handle_update-custom-urls"
+                            "\nmr-type: " mr-type
+                            "\nmr-id: " mr-id
+                            "\nnew-data\n" dwid
+                            "\nresult:\n" upd-result))
 
-; TODO use wrapper
+      (if (= 1 (first upd-result))
+        (sd/response_ok (sd/query-eq-find-one :custom_urls col-name mr-id))
+        (sd/response_failed "Could not update custom_url." 406)))
+    (catch Exception ex (sd/response_exception ex))))
+
+; TODO use wrapper? no
 ; TODO check if own entity or auth is admin
 (defn handle_delete-custom-urls
   [req]
-  (let [u-id (-> req :authenticated-entity :id)
-        mr (-> req :media-resource)
-        mr-type (-> mr :type)
-        mr-id (-> mr :id str)
-        col-name (if (= mr-type "MediaEntry")
-                   :media_entry_id
-                   :collection_id)
-        ]
-    (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
-      (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :custom_urls (sd/sql-update-clause col-name mr-id))))
-        (sd/response_ok del-data)
-        (sd/response_failed (str "Failed delete custom_url " col-name " : " mr-id) 406))
-      (sd/response_failed (str "No such custom_url " col-name " : " mr-id) 404))
-    
-    ))
+  (try
+    (let [u-id (-> req :authenticated-entity :id)
+          mr (-> req :media-resource)
+          mr-type (-> mr :type)
+          mr-id (-> mr :id str)
+          col-name (if (= mr-type "MediaEntry")
+                     :media_entry_id
+                     :collection_id)]
+      (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
+        (let [del-result (jdbc/delete! (rdbms/get-ds)
+                                       :custom_urls
+                                       (sd/sql-update-clause col-name mr-id))]
+          
+          (sd/logwrite req (str "handle_delete-custom-urls:"
+                                "\nmr-type: " mr-type
+                                "\nmr-id: " mr-id
+                                "\nresult:\n" del-result))
+          
+          (if (= 1 (first del-result))
+            (sd/response_ok del-data)
+            (sd/response_failed (str "Could not delete custom_url " col-name " : " mr-id) 406)))
+        (sd/response_failed (str "No such custom_url " col-name " : " mr-id) 404)))
+    (catch Exception ex (sd/response_exception ex))))
 
 (def schema_create_custom_url
   {:id s/Str
@@ -142,13 +155,14 @@
    :collection_id (s/maybe s/Uuid)
    })
 
+; TODO custom urls response coercion
 (def query-routes
   ["/custom_urls"
    ["/"
-    {:get {:summary (sd/sum_usr "List custom_urls.")
+    {:get {:summary (sd/sum_usr "Query and list custom_urls.")
            :handler handle_list-custom-urls
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full-data) s/Bool
+           :parameters {:query {(s/optional-key :full_data) s/Bool
                                 (s/optional-key :id) s/Str
                                 (s/optional-key :media_entry_id) s/Uuid
                                 (s/optional-key :collection_id) s/Uuid}}}
@@ -185,7 +199,7 @@
            :responses {200 {:body schema_export_custom_url}
                        406 {:body s/Any}}}
     
-    :patch {:summary (sd/sum_usr "Update custom_url for media entry.")
+    :put {:summary (sd/sum_usr "Update custom_url for media entry.")
            :handler handle_update-custom-urls
            :middleware [sd/ring-wrap-add-media-resource
                         sd/ring-wrap-authorization-edit-metadata]
@@ -225,7 +239,7 @@
            :responses {200 {:body schema_export_custom_url}
                        406 {:body s/Any}}}
 
-    :patch {:summary (sd/sum_usr "Update custom_url for collection.")
+    :put {:summary (sd/sum_usr "Update custom_url for collection.")
             :handler handle_update-custom-urls
             :middleware [sd/ring-wrap-add-media-resource
                          sd/ring-wrap-authorization-edit-metadata]

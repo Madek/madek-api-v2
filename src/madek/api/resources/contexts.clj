@@ -3,6 +3,7 @@
    [clojure.java.jdbc :as jdbc]
    [clojure.tools.logging :as logging]
    [madek.api.resources.shared :as sd]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
    [madek.api.utils.sql :as sql]
    [reitit.coercion.schema]
@@ -14,6 +15,7 @@
          :labels (sd/transform_ml (:labels context))
          :descriptions (sd/transform_ml (:descriptions context))))
 
+
 (defn handle_adm-list-contexts
   [req]
   (let [db-query (-> (sql/select :*)
@@ -23,6 +25,7 @@
         result (map context_transform_ml db-result)]
     ;(logging/info "handle_adm-list-context" "\nquery\n" db-query "\nresult\n" result)
     (sd/response_ok result)))
+
 
 (defn handle_usr-list-contexts
   [req]
@@ -40,55 +43,60 @@
     ;(logging/info "handle_adm-get-context" context)
     (sd/response_ok context)))
 
+
 (defn handle_usr-get-context
   [req]
   (let [context (-> req :context context_transform_ml sd/remove-internal-keys)]
     ;(logging/info "handle_usr-get-context" context)
     (sd/response_ok context)))
 
+
 (defn handle_create-contexts
   [req]
-  (let [data (-> req :parameters :body)
-        ; or TODO data with id
-        ]
-        ; create context entry
-      (if-let [ins_res (jdbc/insert! (get-ds) :contexts data)]
+  (try
+    (let [data (-> req :parameters :body)
+          ins-res (jdbc/insert! (get-ds) :contexts data)]
+
+      (sd/logwrite req (str "handle_create-contexts: " "\nnew-data:\n" data "\nresult:\n" ins-res))
+
+      (if-let [result (first ins-res)]
         ; TODO clean result
-        (sd/response_ok (first ins_res))
-        (sd/response_failed "Could not create context." 406))))
+        (sd/response_ok (context_transform_ml result))
+        (sd/response_failed "Could not create context." 406)))
+    (catch Exception ex (sd/response_exception ex))))
+
 
 (defn handle_update-contexts
   [req]
-  (let [data (-> req :parameters :body)
-        id (-> req :parameters :path :id)
-        dwid (assoc data :id id)
-        old-data (-> req :context)
-        upd-query (sd/sql-update-clause "id" (str id))
-        ; or TODO data with id
-        ]
-        ; create context entry
-    (logging/info "handle_update-contexts: " "\nid\n" id "\ndwid\n" dwid
-                  "\nold-data\n" old-data
-                  "\nupd-query\n" upd-query)
-    (if-let [ins-res (jdbc/update! (get-ds) :contexts dwid upd-query)]
-        ; TODO clean result
-      ;(if (= 1 ins-res)
-        (
-         let [new-data (sd/query-eq-find-one :contexts :id id)]
-         (logging/info "handle_update-contexts:" "\nnew-data\n" new-data)
-         (sd/response_ok new-data)
-         )
-       ; (sd/response_failed "Could not update context." 406)
-       ; )
-      (sd/response_failed "Could not update context." 406))))
+  (try
+    (let [data (-> req :parameters :body)
+          id (-> req :parameters :path :id)
+          dwid (assoc data :id id)
+        ;old-data (-> req :context)
+          upd-query (sd/sql-update-clause "id" (str id))
+          upd-result (jdbc/update! (get-ds) :contexts dwid upd-query)]
+
+      (sd/logwrite req (str "handle_update-contexts: " id "\nnew-data:\n" dwid "\nupd-result\n" upd-result))
+
+      (if (= 1 (first upd-result))
+        (sd/response_ok (context_transform_ml (sd/query-eq-find-one :contexts :id id)))
+        (sd/response_failed "Could not update context." 406)))
+    (catch Exception ex (sd/response_exception ex))))
+
 
 (defn handle_delete-context
   [req]
-  (let [context (-> req :context)
-        context-id (-> req :context :id)]
-    (if (= 1 (first (jdbc/delete! (get-ds) :contexts ["id = ?" context-id])))
-      (sd/response_ok context)
-      (logging/error "Failed delete context " context-id))))
+  (try
+    (let [context (-> req :context)
+          id (-> req :context :id)
+          del-result (jdbc/delete! (get-ds) :contexts ["id = ?" id])]
+      
+      (sd/logwrite req (str "handle_delete-context: " id " result: " del-result))
+
+      (if (= 1 (first del-result))
+        (sd/response_ok (context_transform_ml context))
+        (logging/error "Could not delete context " id)))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn wwrap-find-context [param colname send404]
   (fn [handler]
@@ -102,16 +110,16 @@
   {
    :id s/Str
    :admin_comment (s/maybe s/Str)
-   :labels s/Str
-   :descriptions s/Str
+   :labels (s/maybe sd/schema_ml_list)
+   :descriptions (s/maybe sd/schema_ml_list)
    })
 
 (def schema_update_contexts
-  {(s/optional-key :id) s/Str
+  {
+   ;(s/optional-key :id) s/Str
    (s/optional-key :admin_comment) (s/maybe s/Str)
-   (s/optional-key :labels) s/Any
-   (s/optional-key :descriptions) s/Str
-    
+   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
    })
 
 
@@ -137,6 +145,7 @@
     {:post {:summary (sd/sum_adm_todo "Create contexts.")
             ; TODO labels and descriptions
             :handler handle_create-contexts
+            :middleware [wrap-authorize-admin!]
                    ;:middleware [(wwrap-find-context :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_contexts}
@@ -146,6 +155,7 @@
     ; context list / query
      :get {:summary  (sd/sum_adm "List contexts.")
            :handler handle_adm-list-contexts
+           :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion 
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
            :responses {200 {:body [schema_export_contexts_adm]}
@@ -154,7 +164,8 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get contexts by id.")
            :handler handle_adm-get-context
-           :middleware [(wwrap-find-context :id :id true)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
            :responses {200 {:body schema_export_contexts_adm}
@@ -164,20 +175,30 @@
      :put {:summary (sd/sum_adm "Update contexts with id.")
            ; TODO labels and descriptions
            :handler handle_update-contexts
-           :middleware [(wwrap-find-context :id :id true)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_contexts}
-           :responses {200 {:body s/Any} ;schema_export_contexts}
-                       406 {:body s/Any}}}
+           :responses {200 {:body schema_export_contexts_adm}
+                       404 {:body s/Any}
+                       406 {:body s/Any}
+                       500 {:body s/Any}}}
 
      :delete {:summary (sd/sum_adm_todo "Delete context by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-context
-              :middleware [(wwrap-find-context :id :id true)]
-              :parameters {:path {:id s/Str}}}}]]
+              :middleware [wrap-authorize-admin!
+                           (wwrap-find-context :id :id true)]
+              :parameters {:path {:id s/Str}}
+              :responses {200 {:body schema_export_contexts_adm}
+                          404 {:body s/Any}
+                          406 {:body s/Any}
+                          500 {:body s/Any}}
+              }}]]
    )
 
+; TODO docu and tests
 (def user-routes
 
   ["/contexts"
