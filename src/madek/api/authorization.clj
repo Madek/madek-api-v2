@@ -6,7 +6,8 @@
     [logbug.thrown :as thrown]
     [madek.api.resources.collections.permissions :as collection-perms :only [viewable-by-auth-entity?]]
     [madek.api.resources.media-entries.permissions :as media-entry-perms :only [viewable-by-auth-entity?]]
-  
+    [madek.api.resources.media-resources.permissions :as mr-permissions]
+    [ring.middleware.resource :as resource]
   ))
 
 (defn authorized-view? [auth-entity resource]
@@ -29,6 +30,8 @@
                                  resource auth-entity)
                    "Collection" (collection-perms/editable-meta-data-by-auth-entity?
                                  resource auth-entity)
+                   ;"Collection" (mr-permissions/permission-by-auth-entity?
+                   ;              resource auth-entity :edit_metadata_and_relations "collection")
                    false)]
     (logging/info "auth-edit-metadata" auth-res)
     auth-res))
