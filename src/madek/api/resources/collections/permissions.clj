@@ -12,7 +12,7 @@
 
 (defn editable-meta-data-by-auth-entity? [resource auth-entity]
   (mr-permissions/permission-by-auth-entity?
-   resource auth-entity :edit_metadata "collection"))
+   resource auth-entity :edit_metadata_and_relations "collection"))
 
 (defn editable-permissions-by-auth-entity? [resource auth-entity]
   (mr-permissions/edit-permissions-by-auth-entity?

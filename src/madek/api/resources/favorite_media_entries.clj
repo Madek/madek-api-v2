@@ -1,13 +1,12 @@
 (ns madek.api.resources.favorite-media-entries
-  (:require
-   [clojure.java.jdbc :as jdbc]
-   [clojure.tools.logging :as logging]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-   [madek.api.utils.sql :as sql]
-   [reitit.coercion.schema]
-   [schema.core :as s]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [madek.api.authorization :as authorization]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 
 (def res-req-name :favorite_media_entry)
@@ -122,6 +121,7 @@
    {:get
     {:summary  (sd/sum_adm "List users favorites media_entries ids.")
      :handler handle_list-favorite_media_entries-by-user
+     :middleware [authorization/wrap-authorized-user]
      :swagger {:produces "application/json"}
      :coercion reitit.coercion.schema/coercion
      ;:parameters {:query {;(s/optional-key :media_entry_id) s/Uuid
@@ -134,8 +134,9 @@
   ["/media-entry/:media_entry_id/favorite"
     {:post {:summary (sd/sum_cnv "Create favorite_media_entry for authed user and media-entry.")
             :handler handle_create-favorite_media_entry
-            ; TODO permission with mr and wrapper auth
-            :middleware [(wwrap-find-media_entry :media_entry_id)
+           
+            :middleware [authorization/wrap-authorized-user
+                         (wwrap-find-media_entry :media_entry_id)
                          (wwrap-find-favorite_media_entry-by-auth false)]
             :swagger {:produces "application/json"}
             :coercion reitit.coercion.schema/coercion
@@ -147,8 +148,9 @@
 
      :get {:summary (sd/sum_cnv "Get favorite_media_entry for authed user and media-entry.")
            :handler handle_get-favorite_media_entry
-           ; TODO permission with mr and wrapper auth
-           :middleware [(wwrap-find-media_entry :media_entry_id)
+           
+           :middleware [authorization/wrap-authorized-user
+                        (wwrap-find-media_entry :media_entry_id)
                         (wwrap-find-favorite_media_entry-by-auth true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
@@ -160,8 +162,9 @@
      :delete {:summary (sd/sum_cnv "Delete favorite_media_entry for authed user and media-entry.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-favorite_media_entry
-              ; TODO permission with mr and wrapper auth
-              :middleware [(wwrap-find-media_entry :media_entry_id)
+              
+              :middleware [authorization/wrap-authorized-user
+                           (wwrap-find-media_entry :media_entry_id)
                            (wwrap-find-favorite_media_entry-by-auth true)]
               :parameters {:path {:media_entry_id s/Uuid}}
               :responses {200 {:body schema_favorite_media_entries_export}

@@ -7,7 +7,8 @@
    [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
    [madek.api.utils.sql :as sql]
    [reitit.coercion.schema]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [madek.api.authorization :as authorization]))
 
 
 (def res-req-name :favorite_collection)
@@ -119,6 +120,7 @@
    {:get
     {:summary  (sd/sum_usr "List users favorite_collections.")
      :handler handle_list-favorite_collection-by-user
+     :middleware [authorization/wrap-authorized-user]
      :coercion reitit.coercion.schema/coercion
      :responses {200 {:body {:collection_ids [s/Uuid]}}}}}])
 
@@ -129,21 +131,24 @@
   ["/collection/:collection_id/favorite"
    {:post {:summary (sd/sum_usr "Create favorite_collection for authed user and collection.")
            :handler handle_create-favorite_collection
-           :middleware [(wwrap-find-collection :collection_id)
+           :middleware [authorization/wrap-authorized-user
+                        (wwrap-find-collection :collection_id)
                         (wwrap-find-favorite_collection-by-auth false)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}}
 
     :get {:summary (sd/sum_usr "Get favorite_collection for authed user and collection id.")
           :handler handle_get-favorite_collection
-          :middleware [(wwrap-find-favorite_collection-by-auth true)]
+          :middleware [authorization/wrap-authorized-user
+                       (wwrap-find-favorite_collection-by-auth true)]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Uuid}}}
 
     :delete {:summary (sd/sum_usr "Delete favorite_collection for authed user and collection id.")
              :coercion reitit.coercion.schema/coercion
              :handler handle_delete-favorite_collection
-             :middleware [(wwrap-find-favorite_collection-by-auth true)]
+             :middleware [authorization/wrap-authorized-user
+                          (wwrap-find-favorite_collection-by-auth true)]
              :parameters {:path {:collection_id s/Uuid}}}}])
 
 ; TODO tests

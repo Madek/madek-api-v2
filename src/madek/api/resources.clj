@@ -147,7 +147,7 @@
    meta-keys/admin-routes
 
    people/admin-routes
-   roles/ring-routes
+   roles/admin-routes
    usage-terms/admin-routes
 
    users/admin-routes
@@ -214,6 +214,8 @@
 
    previews/preview-routes
 
+   roles/user-routes
+   
    users/user-routes
    usage-terms/user-routes
 

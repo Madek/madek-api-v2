@@ -70,7 +70,7 @@
 (defn ->pgobject
   [x]
   (let [pgtype (or (:pgtype (meta x)) "hstore")] ;"jsonb")]
-    (logging/info "->pgobject: \nmeta type\n " (:pgtype (meta x)))
+    ;(logging/info "->pgobject: \nmeta type\n " (:pgtype (meta x)) ":" pgtype)
     (doto (org.postgresql.util.PGobject.)
       (.setType pgtype)
       (.setValue (condp contains? pgtype

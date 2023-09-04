@@ -6,22 +6,11 @@
     [madek.api.pagination :as pagination]
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
+   [madek.api.resources.shared :as sd]
     ))
 
-;TODO test paging
-(defn- query
-  [query-params]
-  (-> (sql/select :roles.*)
-      (sql/from :roles)
-      (pagination/add-offset-for-honeysql query-params)
-      (sql/format)))
 
-(defn get-index
-  [request]
-  (let [query-params (-> request :query-params)]
-    {:body
-      {:roles
-        (jdbc/query (rdbms/get-ds) (query query-params))}}))
+
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

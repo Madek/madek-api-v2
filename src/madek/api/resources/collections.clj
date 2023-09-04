@@ -9,7 +9,8 @@
     [schema.core :as s]
     [clojure.java.jdbc :as jdbc]
     [madek.api.utils.rdbms :as rdbms]
-    ))
+    
+    [madek.api.authorization :as authorization]))
 
 
 (defn handle_get-collection [request]
@@ -30,35 +31,35 @@
     )
   )
 
-; TODO try carch
+
 (defn handle_create-collection [req]
-  (let [auth (-> req :authenticated-entity)
-        auth-id (-> auth :id)
-        req-data (-> req :parameters :body)
-        ins-data (assoc req-data :creator_id auth-id :responsible_user_id auth-id)]
-    (if-let [ins-result (jdbc/insert! (rdbms/get-ds) "collections" ins-data)]
-      (sd/response_ok (first ins-result))
-      (sd/response_failed "Could not create collection" 406))))
+  (try
+    (if-let [auth-id (-> req :authenticated-entity :id)]
+      (let [req-data (-> req :parameters :body)
+            ins-data (assoc req-data :creator_id auth-id :responsible_user_id auth-id)
+            ins-result (jdbc/insert! (rdbms/get-ds) "collections" ins-data)]
+        (sd/logwrite req (str "handle_create-collection: " ins-result))
+        (if-let [result (first ins-result)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create collection" 406)))
+      (sd/response_failed "Could not create collection. Not logged in." 406))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-collection [req]
   (try
     (let [collection (:media-resource req)
           col-id (:id collection)
           data (-> req :parameters :body)
-          ;upd-data (assoc data )
           whcl ["id = ? " col-id]
           result (jdbc/update! (rdbms/get-ds) :collections data whcl)]
+
+      (sd/logwrite req (str "handle_update-collection: " col-id result))
+
       (if (= 1 (first result))
         (sd/response_ok (sd/query-eq-find-one :collections :id col-id))
-        (sd/response_failed "Could not update collection." 422))
-      )
-    (catch Exception ex 
-      (
-       (logging/error "Could not update collection." (ex-message ex))
-       (sd/response_failed "Could not update collection." 500)
-      ))
-    )
-  )
+        (sd/response_failed "Could not update collection." 422)))
+    (catch Exception ex
+      (sd/response_exception ex))))
 
 (defn handle_delete-collection [req]
   (try
@@ -66,7 +67,7 @@
           col-id (:id collection)
           delquery ["id = ? " col-id]
           delresult (jdbc/delete! (rdbms/get-ds) :collections delquery)]
-      (logging/info "handle_delete-collection" col-id delresult)
+      (sd/logwrite req (str "handle_delete-collection: " col-id delresult))
       (if (= 1 (first delresult))
         (sd/response_ok collection)
         (sd/response_failed (str "Could not delete collection: " col-id) 422)
@@ -80,27 +81,40 @@
     )
   )
 
+; TODO :layout and :sorting are special types
+(def schema_layout_types
+  (s/enum "grid" "list" "miniature" "tiles"))
+
+(def schema_sorting_types
+  (s/enum "created_at ASC"
+          "created_at DESC"
+          "title ASC"
+          "title DESC"
+          "last_change"
+          "manual ASC"
+          "manual DESC"))
+
 (def schema_collection-import 
   {
    ;(s/optional-key :id) s/Uuid
    (s/optional-key :get_metadata_and_previews) s/Bool
 
-   (s/optional-key :layout) s/Str ; TODO enum grid or ?
+   (s/optional-key :layout) schema_layout_types
    (s/optional-key :is_master) s/Bool
-   (s/optional-key :sorting) s/Str ; TODO enum
+   (s/optional-key :sorting) schema_sorting_types
    (s/optional-key :default_context_id) (s/maybe s/Uuid)
    (s/optional-key :responsible_user_id) s/Uuid
-   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
+   ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
    (s/optional-key :workflow_id) (s/maybe s/Uuid)
-   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
+   ;(s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
    })
 
 (def schema_collection-update
   {
    
-   (s/optional-key :layout) s/Str ; TODO enum grid or ? 'grid', 'list', 'miniature' 'tiles'
+   (s/optional-key :layout) schema_layout_types
    (s/optional-key :is_master) s/Bool
-   (s/optional-key :sorting) s/Str
+   (s/optional-key :sorting) schema_sorting_types
    (s/optional-key :default_context_id) (s/maybe s/Uuid)
 
    ;(s/optional-key :get_metadata_and_previews) s/Bool
@@ -128,9 +142,9 @@
    :id s/Uuid
    :get_metadata_and_previews s/Bool
    
-   :layout s/Str ; TODO enum grid or ? 'grid', 'list', 'miniature' 'tiles'
+   :layout schema_layout_types
    :is_master s/Bool
-   :sorting s/Str
+   :sorting schema_sorting_types
    
    :responsible_user_id s/Uuid
    :creator_id s/Uuid
@@ -159,16 +173,16 @@
                :summary (sd/sum_usr "Get collection ids")
                :description "Get collection id list."
                :swagger {:produces "application/json"}
-               :parameters {:query schema_collection-query
-                            }
+               :parameters {:query schema_collection-query}
                :coercion reitit.coercion.schema/coercion
                :responses {200 {:body {:collections [schema_collection-export]}}}}
-         ; TODO collections post, patch, delete
+         
          :post {:summary (sd/sum_usr "Create collection")
                 :handler handle_create-collection
                 :swagger {:produces "application/json"
                           :consumes "application/json"}
                 :parameters {:body schema_collection-import}
+                :middleware [authorization/wrap-authorized-user]
                 :coercion reitit.coercion.schema/coercion
                 :responses {200 {:body schema_collection-export }}
                 }}]

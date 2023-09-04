@@ -58,21 +58,21 @@
         db-result (jdbc/query (get-ds) db-query)
         tf (map context_key_transform_ml db-result)]
     
-    (logging/info "handle_usr-list-context_keys" "\ndb-query\n" db-query)
+    ;(logging/info "handle_usr-list-context_keys" "\ndb-query\n" db-query)
     (sd/response_ok tf)))
 
 
 (defn handle_adm-get-context_key
   [req]
   (let [result (-> req :context_key context_key_transform_ml)]
-    (logging/info "handle_get-context_key: result: " result)
+    ;(logging/info "handle_get-context_key: result: " result)
     (sd/response_ok result)))
 
 (defn handle_usr-get-context_key
   [req]
   (let [context_key (-> req :context_key context_key_transform_ml)
         result (dissoc context_key :admin_comment :updated_at :created_at)]
-    (logging/info "handle_usr-get-context_key" "\nbefore\n" context_key "\nresult\n" result)
+    ;(logging/info "handle_usr-get-context_key" "\nbefore\n" context_key "\nresult\n" result)
     (sd/response_ok result)))
 
 (defn handle_create-context_keys
@@ -100,7 +100,7 @@
           upd-query (sd/sql-update-clause "id" (str id))
           upd-result (jdbc/update! (rdbms/get-ds) :context_keys dwid upd-query)]
       
-      (logging/info "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result\n" upd-result)
+      (logging/info "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result)
 
       (if (= 1 (first upd-result))
         (sd/response_ok (sd/query-eq-find-one :context_keys :id id))
@@ -114,6 +114,8 @@
           id (-> req :context_key :id)
           del-query (sd/sql-update-clause "id" id)
           del-result (jdbc/delete! (rdbms/get-ds) :context_keys del-query)]
+
+      (logging/info "handle_delete-context_key: " id " result: " del-result)
       (if (= 1 (first del-result))
         (sd/response_ok context_key)
         (logging/error "Could not delete context_key: " id)))

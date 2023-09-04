@@ -7,7 +7,6 @@
     [madek.api.resources.collections.permissions :as collection-perms :only [viewable-by-auth-entity?]]
     [madek.api.resources.media-entries.permissions :as media-entry-perms :only [viewable-by-auth-entity?]]
     [madek.api.resources.media-resources.permissions :as mr-permissions]
-    [ring.middleware.resource :as resource]
   ))
 
 (defn authorized-view? [auth-entity resource]
@@ -59,6 +58,12 @@
     auth-res)
   )
   
+(defn wrap-authorized-user [handler]
+  (fn [request]
+    (if-let [id (-> request :authenticated-entity :id)]
+      (handler request)
+      {:status 401 :body {:message "Not authorized. Please login."}})))
+
 (def destructive-methods #{:post :put :delete})
 
 (defn wrap-authorize-http-method [handler]

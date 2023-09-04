@@ -110,13 +110,18 @@
        sql/format))
   )
 
-; TODO use hsql
+
 (defn sql-update-clause
-  [col-name row-data]
-  [(str col-name " = ?") row-data]
+  "Generates an sql update clause"
+  ([col-name row-data]
+  [(str col-name " = ?") row-data])
+  ([col-name row-data col-name2 row-data2]
+   [(str col-name " = ? AND " col-name2 " = ? ") row-data row-data2])
   )
 
-(defn hsql-upd-clause-format [sql-cls]
+(defn hsql-upd-clause-format
+  "Transforms honey sql to sql update clause"
+  [sql-cls]
   (update-in sql-cls [0] #(clojure.string/replace % "WHERE" "")))
 
 (defn query-find-all
@@ -128,9 +133,7 @@
     ;(logging/info "query-find-all" "\ndb-query\n" db-query "\ndb-result\n" db-result)
     db-result))
 
-(defn query-eq-find-all [table-name col-name row-data]
-  ; we wrap this since badly formated media-file-id strings can cause an
-  ; exception, note that 404 is in that case a correct response
+(defn query-eq-find-all [table-name col-name row-data] 
   (catcher/snatch {}
                   (jdbc/query
                    (get-ds)
@@ -140,8 +143,6 @@
   (first (query-eq-find-all table-name col-name row-data)))
 
 (defn query-eq2-find-all [table-name col-name row-data col-name2 row-data2]
-  ; we wrap this since badly formated media-file-id strings can cause an
-  ; exception, note that 404 is in that case a correct response
   (catcher/snatch {}
                   (jdbc/query
                    (get-ds)
@@ -152,26 +153,22 @@
 
 ; end db-helpers
 
-; begin request response helpers
+; begin request/response/utils helpers
 
-(def uuid-matcher #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" )
+;(def uuid-matcher #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" )
 
-(defn try-as-json [value]
-  (try (cheshire.core/parse-string value)
-       (catch Exception _
-         value)))
+;(defn try-as-json [value]
+;  (try (cheshire.core/parse-string value)
+;       (catch Exception _
+;         value)))
 
-(def dead-end-handler
-  (cpj/routes
-    (cpj/GET "*" _ {:status 404 :body {:message "404 NOT FOUND"}})
-    (cpj/ANY "*" _ {:status 501 :body {:message "501 NOT IMPLEMENTED"}})
-    ))
 
 (def internal-keys [:admin_comment])
 
 (defn remove-internal-keys
   [resource]
   (apply dissoc resource internal-keys))
+
 
 (defn response_ok 
   ([msg] (response_ok msg 200))
@@ -185,6 +182,9 @@
 (defn response_not_found [msg]
   {:status 404 :body {:message msg}})
 
+(defn response_exception [ex]
+  (merge (ex-data ex) {:status 500
+                      :body {:message (.getMessage ex)}}))
 
 (def root
   {:status 200
@@ -206,8 +206,34 @@
 
 ; end request response helpers
 
+; log helper
+(defn logwrite
+  "Logs requests authed user id "
+  [request msg] 
+  (let [auth-entity (-> request :authenticated-entity)]
+   (logging/info
+    "WRITE: "
+    (if (nil? auth-entity)
+      "anonymous; "
+      (str "user: " (:id auth-entity) "; "))
+    "M: " msg)))
+  
+  ;([auth-entity msg entity]
+  ; (logging/info
+  ;  "WRITE: "
+  ;  (if (nil? auth-entity)
+  ;    "anonymous; "
+  ;    (str "user: " (:id auth-entity) "; "))
+  ;  "E: " entity
+  ;  "M: " msg)))
+
+
 ; begin generic path param find in db and assoc with request
+
 (defn req-find-data
+  "Extracts requests path-param, searches on db_table in col_name for its value.
+   It does send404 if set true and no such entity is found.
+   If it exists it is associated with the request as reqkey"
   [request handler path-param db_table db_col_name reqkey send404]
   (let [search (-> request :parameters :path path-param)]
     (if-let [result-db (query-eq-find-one db_table db_col_name search)]
@@ -217,8 +243,11 @@
         (handler request)))))
 
 (defn req-find-data-search2
+  "Searches on db_table in col_name/2 for values search and search2.
+   It does send404 if set true and no such entity is found.
+   If it exists it is associated with the request as reqkey"
   [request handler search search2 db_table db_col_name db_col_name2 reqkey send404]
-    ;(logging/info "req-find-data-search2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
+    (logging/info "req-find-data-search2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
     (if-let [result-db (query-eq2-find-one db_table db_col_name search db_col_name2 search2)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)
@@ -227,6 +256,10 @@
 
 
 (defn req-find-data2
+  "Extracts requests path-params (1/2),
+   searches on db_table in col_names (1/2) for its value.
+   It does send404 if set true and no such entity is found.
+   If it exists it is associated with the request as reqkey"
   [request handler path-param path-param2 db_table db_col_name db_col_name2 reqkey send404]
   (let [search (-> request :parameters :path path-param str)
         search2 (-> request :parameters :path path-param2 str)]
@@ -257,10 +290,12 @@
 
 ; begin media resources helpers
 (defn- get-media-resource
-  
+  "First checks for collection_id, then for media_entry_id.
+   If creating collection-media-entry-arc, the collection permission is checked."
   ([request]
-     (or (get-media-resource request :media_entry_id "media_entries" "MediaEntry")
-         (get-media-resource request :collection_id "collections" "Collection")))
+     (or (get-media-resource request :collection_id "collections" "Collection")
+         (get-media-resource request :media_entry_id "media_entries" "MediaEntry")
+         ))
    
   ([request id-key table-name type]
    (try
@@ -334,35 +369,42 @@
   (-> resource :get_metadata_and_previews boolean))
 
 (defn- authorize-request-for-media-resource [request handler scope]
-  ;((logging/info "auth-request-for-mr" "\nscope: " scope)
+  ;(
+   ;(logging/info "auth-request-for-mr" 
+   ;              "\nscope: " scope
+   ;              "\nauth entity:\n" (-> request :authenticated-entity)
+   ;              "\nis-admin:\n" (-> request :is_admin)
+   ;              )
    (if-let [media-resource (:media-resource request)]
-         
+
      (if (and (= scope :view) (public? media-resource))
        ; viewable if public
        (handler request)
 
-       ;((logging/info "check auth" 
-        ;              "\nae\n" (-> request :authenticated-entity)
-        ;              "\nia\n" (-> request :is-admin))
-        
-        (if-let [auth-entity (-> request :authenticated-entity)]
-          (if (-> request :is-admin true?)
+       (if-let [auth-entity (-> request :authenticated-entity)]
+          (if (-> request :is_admin true?)
             ; do all as admin
-            ;(logging/info "authorize-request-for-media-resource: do as admin")
             (handler request)
-
 
             ; if not admin check user auth
             (if (authorized? auth-entity media-resource scope)
               (handler request)
-              {:status 403 :body {:message "Not authorized for media-resource"}}))
+              ;else
+              {:status 403 :body {:message "Not authorized for media-resource"}}
+            )
+          )
 
-          {:status 401 :body {:message "Not authorized"}})
-        ;)
+        ;else
+        {:status 401 :body {:message "Not authorized"}}
        )
-    (let [response  {:status 500 :body {:message "No media-resource in request."}}]
-      (logging/warn 'authorize-request-for-media-resource response [request handler])
-      response)))
+     )
+     ; else
+     (let [response  {:status 500 :body {:message "No media-resource in request."}}]
+       (logging/warn 'authorize-request-for-media-resource response [request handler])
+       response)
+   )
+  ;)
+)
 
 ; end media-resource auth helpers
 
