@@ -22,11 +22,17 @@
 (defn init-test-user []
   (let [result (dbinsert :users td/user1)] result))
 
+(defn init-test-auth []
+  (let [result (dbinsert :auth_systems_users td/auth1)] result))
+
 (defn init-test-admin []
   (let [result (dbinsert :admins td/admin1)] result))
 
 (defn del-test-person []
   (when-let [result (db-del-by-id :people td/person1id)] result))
+
+(defn del-test-auth1 []
+  (when-let [result (db-del-by-id :auth_syste_users td/auth1id)] result)))
 
 (defn del-test-user []
   (when-let [result (db-del-by-id :users td/user1id)] result))
@@ -40,8 +46,14 @@
 (defn init-test-user2 []
   (let [result (dbinsert :users td/user2)] result))
 
+(defn init-test-auth2 []
+  (let [result (dbinsert :auth_systems_users td/auth2)] result))
+
 (defn del-test-person2 []
   (when-let [result (db-del-by-id :people td/person2id)] result))
+
+(defn del-test-auth2 []
+   (when-let [result (db-del-by-id :auth_syste_users td/auth2id)] result)))
 
 (defn del-test-user2 []
   (when-let [result (db-del-by-id :users td/user2id)] result))
