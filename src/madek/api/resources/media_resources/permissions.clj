@@ -10,6 +10,17 @@
     
     ))
 
+(defn- user-table
+  [mr-type]
+  (keyword (str mr-type "_user_permissions")))
+
+(defn- group-table
+  [mr-type]
+  (keyword (str mr-type "_group_permissions")))
+
+(defn- resource-key
+  [mr-type]
+  (keyword (str mr-type "_id")))
 
 ;(defn- build-api-client-permissions-query
 ;  [media-resource-id api-client-id perm-name mr-type]
@@ -42,8 +53,8 @@
 (defn- build-user-permissions-query
   [media-resource-id user-id perm-name mr-type]
   (-> (sql/select :*)
-      (sql/from (keyword (str mr-type "_user_permissions")))
-      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
+      (sql/from (user-table mr-type))
+      (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :user_id user-id]
                  [:= perm-name true])
       (sql/format)))
@@ -52,16 +63,16 @@
 (defn- build-user-permission-get-query
   [media-resource-id mr-type user-id]
   (-> (sql/select :*)
-      (sql/from (keyword (str mr-type "_user_permissions")))
-      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
+      (sql/from (user-table mr-type))
+      (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :user_id user-id])
       (sql/format)))
 
 (defn- build-user-permission-list-query
   [media-resource-id mr-type]
   (-> (sql/select :*)
-      (sql/from (keyword (str mr-type "_user_permissions")))
-      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
+      (sql/from (user-table mr-type))
+      (sql/where [:= (resource-key mr-type) media-resource-id])
       (sql/format)))
 
 (defn- build-user-groups-query [user-id]
@@ -78,8 +89,8 @@
 (defn- build-group-permissions-query
   [media-resource-id group-ids perm-name mr-type]
   (-> (sql/select :*)
-      (sql/from (keyword (str mr-type "_group_permissions")))
-      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
+      (sql/from (group-table mr-type))
+      (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:in :group_id group-ids]
                  [:= perm-name true])
       (sql/format)))
@@ -87,16 +98,16 @@
 (defn- build-group-permission-get-query
   [media-resource-id mr-type group-id]
   (-> (sql/select :*)
-      (sql/from (keyword (str mr-type "_group_permissions")))
-      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id]
+      (sql/from (group-table mr-type))
+      (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :group_id group-id])
       (sql/format)))
 
 (defn- build-group-permission-list-query
   [media-resource-id mr-type]
   (-> (sql/select :*)
-      (sql/from (keyword (str mr-type "_group_permissions")))
-      (sql/where [:= (keyword (str mr-type "_id")) media-resource-id])
+      (sql/from (group-table mr-type))
+      (sql/where [:= (resource-key mr-type) media-resource-id])
       (sql/format)))
 
 ; ============================================================
@@ -129,7 +140,7 @@
 ;       (jdbc/query (rdbms/get-ds))))
 
 
-
+; TODO try catch logwrite
 (defn update-resource-permissions
   [resource perm-data]
   (let [mr-id (-> resource :id str)
@@ -139,7 +150,6 @@
         whcl (-> (sql/where [:= :id mr-id])
                  (sql/format)
                  (update-in [0] #(clojure.string/replace % "WHERE" "")))
-        ;perm-data {(keyword perm-name) perm-val}
         ]
     (logging/info "update resource permissions"
                   "\ntable\n" tname
@@ -166,26 +176,56 @@
         (:id resource) mr-type user-id)
        (jdbc/query (rdbms/get-ds))))
 
+(defn- sql-cls-resource-and
+  [mr-type mr-id and-key and-id]
+  (-> (sql/where [:= (resource-key mr-type) mr-id]
+                 [:= and-key and-id])
+      (sql/format)
+      (update-in [0] #(clojure.string/replace % "WHERE" ""))))
+
+
+;TODO
 (defn create-user-permissions
-  [resource mr-type user-id data])
+  [resource mr-type user-id data]
+  (try
+    (let [mr-id (:id resource)
+          tname (user-table mr-type)
+          insdata (assoc data :user_id user-id (resource-key mr-type) mr-id)]
+      (logging/info "create-user-permissions" mr-id mr-type user-id tname insdata)
+      (if-let [insresult (jdbc/insert! (rdbms/get-ds) tname insdata)]
+        (first insresult)
+        nil))
+    (catch Exception ex
+      (logging/error "Could not create resource user permissions." (ex-message ex)))))
+
 
 (defn delete-user-permissions
-  [resource mr-type user-id])
+  [resource mr-type user-id]
+  (try
+    (let [mr-id (:id resource)
+          tname (user-table mr-type)
+          delquery (sql-cls-resource-and mr-type mr-id :user_id user-id)
+          delresult (jdbc/delete! (rdbms/get-ds) tname delquery)]
+      (logging/info "delete-user-permissions: " mr-id user-id delresult)
+      (if (= 1 (first delresult))
+        true
+        false))
+    (catch Exception ex
+      ((logging/error "Could not delete resource user permissions." (ex-message ex))
+       
+       false))))
 
-(defn create-group-permissions
-  [resource mr-type group-id data])
-
-(defn delete-group-permissions
-  [resource mr-type group-id])
-
+; TODO try
 (defn update-user-permissions
   [resource mr-type user-id perm-name perm-val]
+
   (let [mr-id (:id resource)
-        tname (keyword (str mr-type "_user_permissions"))
-        whcl (-> (sql/where [:= (keyword (str mr-type "_id")) mr-id]
-                            [:= :user_id user-id])
-                 (sql/format)
-                 (update-in [0] #(clojure.string/replace % "WHERE" "")))
+        tname (user-table mr-type)
+        whcl (sql-cls-resource-and mr-type mr-id :user_id user-id)
+        ;whcl (-> (sql/where [:= (resource-key mr-type) mr-id]
+        ;                    [:= :user_id user-id])
+        ;         (sql/format)
+        ;         (update-in [0] #(clojure.string/replace % "WHERE" "")))
         perm-data {(keyword perm-name) perm-val}
         ]
     (logging/info "update user permissions"
@@ -215,14 +255,45 @@
           (:id resource) mr-type)
          (jdbc/query (rdbms/get-ds))))
 
+(defn create-group-permissions
+  [resource mr-type group-id data]
+  (try
+    (let [mr-id (:id resource)
+          tname (group-table mr-type)
+          insdata (assoc data :group_id group-id (resource-key mr-type) mr-id)]
+      (logging/info "create-group-permissions" mr-id mr-type group-id tname insdata)
+      (if-let [insresult (jdbc/insert! (rdbms/get-ds) tname insdata)]
+        (first insresult)
+        nil))
+    (catch Exception ex
+      (logging/error "ERROR: Could not create resource group permissions." (ex-message ex)))))
+
+
+(defn delete-group-permissions
+  [resource mr-type group-id]
+  (try
+    (let [mr-id (:id resource)
+          tname (group-table mr-type)
+          delquery (sql-cls-resource-and mr-type mr-id :group_id group-id)
+          delresult (jdbc/delete! (rdbms/get-ds) tname delquery)]
+      (logging/info "delete-group-permissions: " mr-id group-id delresult)
+      (if (= 1 (first delresult))
+        true
+        false))
+    (catch Exception ex
+      ((logging/error "ERROR: Could not delete resource group permissions." (ex-message ex))
+       false))))
+
+; TODO try catch
 (defn update-group-permissions
   [resource mr-type group-id perm-name perm-val]
   (let [mr-id (:id resource)
-        tname (keyword (str mr-type "_group_permissions"))
-        whcl (-> (sql/where [:= (keyword (str mr-type "_id")) mr-id]
-                            [:= :group_id group-id])
-                 (sql/format)
-                 (update-in [0] #(clojure.string/replace % "WHERE" "")))
+        tname (group-table mr-type)
+        whcl (sql-cls-resource-and mr-type mr-id :group_id group-id)
+        ;whcl (-> (sql/where [:= (resource-key mr-type) mr-id]
+        ;                    [:= :group_id group-id])
+        ;         (sql/format)
+        ;         (update-in [0] #(clojure.string/replace % "WHERE" "")))
         perm-data {(keyword perm-name) perm-val}]
     (logging/info "update group permissions"
                   "\ntable\n" tname

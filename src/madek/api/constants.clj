@@ -13,13 +13,13 @@
   #{
       "MetaDatum::Groups" ; old: migrated to: people
       "MetaDatum::JSON"
-      "MetaDatum::Keywords" ; TODO feature multi language ?
+      "MetaDatum::Keywords" ; TODO Frage: feature multi language ?
       "MetaDatum::Licenses" ; old: migrated to: keywords
-      ;"MetaDatum::MediaEntry"
+      ;"MetaDatum::MediaEntry" ; TODO reintegrate
       "MetaDatum::People"
       "MetaDatum::Roles" ; are multi language via h-store
       "MetaDatum::Text"
-      ; TODO check if multi-language implementation
+      ; TODO future: check if multi-language implementation
       ; is possible with new API2
       ; and backwards compatible with current web-app
       ; and does not require sql schema changes.

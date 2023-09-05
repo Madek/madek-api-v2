@@ -16,7 +16,8 @@
    ;[pantomime.mime :refer [mime-type-of]]
    
    [madek.api.resources.app-settings :as app-settings]
-   [madek.api.resources.context-keys :as context_keys])
+   [madek.api.resources.context-keys :as context_keys]
+   [madek.api.authorization :as authorization])
   )
 
 (defn handle_query_media_entry [req]
@@ -31,6 +32,7 @@
     (get-media-entry qreq)
   ))
 
+; TODO try catch
 (defn handle_delete_media_entry [req]
   (let [eid (-> req :parameters :path :media_entry_id)
         
@@ -66,6 +68,9 @@
    ))
 
 (defn handle_try-publish-media-entry [req]
+  "Checks all Contexts in AppSettings-contexts_for_entry_validation.
+   All the meta-data for the meta-keys have to be set.
+   In that case, the is_publishable of the entry is set to true."
   (let [eid (-> req :parameters :path :media_entry_id)
         mr (-> req :media-resource)
         
@@ -90,13 +95,14 @@
     (if (true? publishable)
       (let [data {:is_published true}
             dresult (jdbc/update! (rdbms/get-ds) :media_entries data ["id = ?" eid])]
+        
         (logging/info "handle_try-publish-media-entry"
                       "\n published: entry_id: \n" eid
-                      ;"\n data: \n" data
                       "\n dresult: \n" dresult)
+        
         (if (= 1 (first dresult))
           (sd/response_ok (sd/query-eq-find-one :media_entries :id eid))
-          (sd/response_failed "Could not publish media_entry." 500)
+          (sd/response_failed "Could not update publish on media_entry." 406)
         )
       )
 
@@ -109,11 +115,8 @@
 (def Madek-Constants-Default-Mime-Type "application/octet-stream")
 
 (defn extract-extension [filename]
-  ;(. java.io.File (getFileExtension filename))
-  (let [match (re-find #"\.[A-Za-z0-9]+$" filename )]
-    ;(logging/info "xtract-x: " filename "\nmatch\n " match)
-    match)
-  ) 
+  (let [match (re-find #"\.[A-Za-z0-9]+$" filename)]
+    match)) 
 
 (defn new_media_file_attributes
   [file user-id mime]
@@ -132,35 +135,22 @@
 (defn original-store-location [mf]
   (let [guid (:guid mf)
         loc (apply str MC-FILE_STORAGE_DIR "/" (first guid) "/" guid)]
-    (logging/info "\nstore-location\n"
-                  "\nmf\n" mf
-                  "\nguid\n" guid
-                  "\nloc\n" loc)
-    loc
-    
-    )
-  )
-;  def original_store_location
-;path = File.join (Madek::Constants::FILE_STORAGE_DIR, guid.first, guid)
-;path_for_env (path)
-;end
-
-;def thumbnail_store_location
-;path = File.join (Madek::Constants::THUMBNAIL_STORAGE_DIR, guid.first, guid)
-;path_for_env (path)
-;end
+    ;(logging/info "\nstore-location\n" "\nmf\n" mf "\nguid\n" guid "\nloc\n" loc)
+    loc))
 
 
 (defn handle_uploaded_file_resp_ok
+  "Handles the uploaded file and sends an ok response."
   [file media-file media-entry collection-id tx]
   (let [temp-file (-> file :tempfile)
         temp-path (.getPath temp-file)
         store-location (original-store-location media-file)]
     ; copy file
     (io/copy (io/file temp-path) (io/file store-location))
-    ; return nested result data
-    
-    ; TODO extra data for me
+    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)})))
+
+    ; We dont do add meta-data or collection.
+    ; This is done via front-end.
     ;(me_add-default-license new-mer)
     ;(me_exract-and-store-metadata new-mer)
     ;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
@@ -170,28 +160,14 @@
     ;    (logging/error "Failed: handle_uploaded_file_resp_ok: add to collection: " collection-id))
     ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file :collection_id collection-id)})
     ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)}))
-      (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)})))
+      
   ;))
     
     
 
-; TODO find keys and add
-; TODO keywords and meta-data db access
-; get from app setting 
-    ; license getKeyword settings.media_entry_default_license_id
-    ; lic-meta-key getMetaKey settings.media_entry_default_license_meta_key
-  ; create-meta-datum me lic-meta-key.id license.id
-; get from app setting 
-    ; usage_text getKeyword settings.media_entry_default_license_usage_text.presence
-    ; use-meta-key getMetaKey settings.media_entry_default_license_usage_meta_key meta_datum_object_type 'MetaDatum::Text'
-  ; create-meta-datum me use-meta-key.id usage_text
-(defn me_add-default-license [media-entry]
-   (
-    let [settings (db_get-app-settings)]
-    
-    ))
 
 (defn create-media_entry
+  "Only for testing. Does not trigger media convert. So previews are missing."
   [file auth-entity mime collection-id]
   (let [user-id (:id auth-entity)
         new-me {:responsible_user_id (str user-id)
@@ -222,7 +198,7 @@
 
 
 
-; TODO 
+; TODO try catch
 ; use redirect to web-app
 (defn handle_create-media-entry [req]
   (let [copy-md-id (-> req :parameters :query :copy_me_id)
@@ -305,7 +281,7 @@
    :edit_session_updated_at s/Any
    :meta_data_updated_at s/Any
 
-   :responsible_delegation_id (s/maybe s/Uuid)
+   ;:responsible_delegation_id (s/maybe s/Uuid)
   })
 
 (def schema_export_col_arc
@@ -379,7 +355,6 @@
       :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry
-           ; TODO does not parse filter_by
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
@@ -391,7 +366,6 @@
       :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry-related-data
-               ; TODO does not parse filter_by
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
@@ -404,15 +378,14 @@
 (def media-entry-routes
   [
    ["/media-entry"
-   {:post {:summary (sd/sum_todo "Create media-entry. Use redirect to webapp until madek media-encoder lib is ready")
+   {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready")
            :handler handle_create-media-entry
            :swagger {:consumes "multipart/form-data"
                      :produces "application/json"}
            :content-type "application/json"
            :accept "multipart/form-data"
-           ;:middleware [authentication/wrap]
+           :middleware [authorization/wrap-authorized-user]
            ; cannot use schema, need to use spec for multiplart
-           ;:coercion reitit.coercion.schema/coercion
            :coercion reitit.coercion.spec/coercion
            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
                         :multipart {:file multipart/temp-file-part}}}}]
@@ -430,14 +403,14 @@
            }
      
 
-     
+     ; TODO Frage: wer kann einen Eintrag löschen
      :delete {:summary "Delete media-entry for id."
               :handler handle_delete_media_entry
               :swagger {:produces "application/json"}
               :content-type "application/json"
               
               :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-view]
+                           sd/ring-wrap-authorization-edit-permissions]
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:media_entry_id s/Uuid}}
               }
@@ -459,24 +432,5 @@
    ]
   )
 
-(def collection-routes
-  ["/collection/:collection_id/media-entries"
-   {:get {:summary "Query media-entries."
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-           :handler (constantly sd/no_impl)
-           ;:handler handle_query_media_entry_by_collection
-           ; TODO does not parse filter_by
-           :middleware [sd/ring-wrap-parse-json-query-parameters]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Uuid}
-                        :query {
-                                (s/optional-key :order) s/Any ;(s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
-                                (s/optional-key :filter_by) s/Any
-                                (s/optional-key :me_get_metadata_and_previews) s/Bool
-                                (s/optional-key :me_get_full_size) s/Bool
-                                (s/optional-key :page) s/Str
-                                (s/optional-key :count) s/Int}}}}
-   ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

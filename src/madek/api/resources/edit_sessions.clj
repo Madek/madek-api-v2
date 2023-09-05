@@ -8,14 +8,15 @@
    [madek.api.resources.shared :as sd]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [madek.api.pagination :as pagination]))
+   [madek.api.pagination :as pagination]
+   [madek.api.authorization :as authorization]
+   [logbug.catcher :as catcher]))
 
-; TODO create edit session as timestamp for meta-data updates
 
 (defn build-query [query-params]
   (let [col-sel (if (true? (-> query-params :full_data))
                   (sql/select :*)
-                  (sql/select :id, :media_entry_id, :collection_id))]
+                  (sql/select :id, :media_entry_id, :collection_id, :created_at))]
     (-> col-sel
         (sql/from :edit_sessions)
         (sd/build-query-param query-params :id)
@@ -58,7 +59,18 @@
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for id: " id)))))
 
-(defn handle_usr_get-edit-sessions
+(defn handle_get-edit-sessions
+  [req]
+  (let [mr (-> req :media-resource)
+        mr-type (-> mr :type)
+        mr-id (-> mr :id str)
+        col-key (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
+    ;(logging/info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
+    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id)]
+      (sd/response_ok result)
+      (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))))
+
+(defn handle_authed-usr_get-edit-sessions
   [req]
   (let [u-id (-> req :authenticated-entity :id)
         mr (-> req :media-resource)
@@ -71,46 +83,47 @@
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))
     ))
 
-;(defn handle_usr_create-edit-sessions
-;  [req]
-;  (let [u-id (-> req :authenticated-entity :id)
-;        mr (-> req :media-resource)
-;        mr-type (-> mr :type)
-;        mr-id (-> mr :id str)
-;        data (-> req :parameters :body)
-;        dwid (if (= mr-type "MediaEntry")
-;               (assoc data :media_entry_id mr-id :user_id u-id)
-;               (assoc data :collection_id mr-id :user_id u-id))
-;        ]
-;    ;(logging/info "handle_create-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ndwid\n" dwid)
-;    (if-let [ins-res (first (jdbc/insert! (get-ds) :edit_sessions dwid))]
-;      (sd/response_ok ins-res) 
-;      (sd/response_failed "Could not create edit_session." 406))))
 
 
-; TODO use wrapper
-; TODO check if own entity or auth is admin
+(defn handle_create-edit-session
+  [req]
+  (try
+    (catcher/with-logging {}
+      (let [u-id (-> req :authenticated-entity :id)
+            mr (-> req :media-resource)
+            mr-type (-> mr :type)
+            mr-id (-> mr :id str)
+            data {:user_id u-id}
+            dwid (if (= mr-type "MediaEntry")
+                   (assoc data :media_entry_id mr-id)
+                   (assoc data :collection_id mr-id))
+            ins-result (jdbc/insert! (get-ds) :edit_sessions dwid)]
+
+        (sd/logwrite req (str "handle_create-edit-session:" "\nnew-data: " dwid "\nresult: " ins-result))
+
+        (if-let [result (first ins-result)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create edit session." 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+
 (defn handle_adm_delete-edit-sessions
   [req]
-  (let [id (-> req :parameters :path :id)]
-    (if-let [del-data (sd/query-eq-find-one :edit_sessions :id id)]
-      (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :edit_sessions (sd/sql-update-clause :id id))))
-        (sd/response_ok del-data)
-        (sd/response_failed (str "Failed delete edit_session: " id) 406))
-      (sd/response_failed (str "No such edit_session : " id) 404))
-    
-    ))
+  (try
+    (catcher/with-logging {}
+      (let [id (-> req :parameters :path :id)]
+        (if-let [del-data (sd/query-eq-find-one :edit_sessions :id id)]
+          (let [del-clause (sd/sql-update-clause "id" id)
+                del-result (jdbc/delete! (rdbms/get-ds) :edit_sessions del-clause)]
 
-;(defn handle_usr_delete-edit-sessions
-;  [req]
-;  (let [id (-> req :parameters :path :id)
-;        u-id (-> req :authenticated-entity :id)
-;        ]
-;    (if-let [del-data (sd/query-eq2-find-one :edit_sessions :id id :user_id u-id)]
-;      (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :edit_sessions (sd/sql-update-clause :id id))))
-;        (sd/response_ok del-data)
-;        (sd/response_failed (str "Failed delete edit_session: " id) 406))
-;      (sd/response_failed (str "No such edit_session : " id) 404))))
+            (sd/logwrite req (str "handle_adm_delete-edit-sessions:" "\ndelete data: " del-data "\nresult: " del-result))
+
+            (if (= 1 (first del-result))
+              (sd/response_ok del-data)
+              (sd/response_failed (str "Failed delete edit_session: " id) 406)))
+          (sd/response_failed (str "No such edit_session : " id) 404))))
+    (catch Exception ex (sd/response_exception ex))))
+
 
 (def schema_usr_query_edit_session
   {(s/optional-key :full_data) s/Bool
@@ -168,45 +181,62 @@
    ["/"
     {:get {:summary (sd/sum_usr "List authed users edit_sessions.")
            :handler handle_usr_list-edit-sessions
+           :middleware [authorization/wrap-authorized-user]
            :coercion reitit.coercion.schema/coercion
            :parameters {:query schema_usr_query_edit_session}}}]
    
    ["/:id"
     {:get {:summary (sd/sum_usr "Get edit_session.")
            :handler handle_usr_get-edit-session
+           :middleware [authorization/wrap-authorized-user]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}}}
+           :parameters {:path {:id s/Uuid}}}
      
      
      }]
    ])
      
 (def media-entry-routes
-  ["/media-entry/:media_entry_id/edit_session"
-   {:get {:summary "Get user edit_session list for media entry."
-          :handler handle_usr_get-edit-sessions
+  ["/media-entry/:media_entry_id/edit_sessions"
+   {:get {:summary (sd/sum_usr_pub "Get edit_session list for media entry.")
+          :handler handle_get-edit-sessions
           :middleware [sd/ring-wrap-add-media-resource
                        sd/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
-          :parameters {:path {:media_entry_id s/Str}}
+          :parameters {:path {:media_entry_id s/Uuid}}
           :responses {200 {:body [schema_export_edit_session]}
                       404 {:body s/Any}}
           }
-    
+    :post {:summary (sd/sum_usr "Create edit session for media entry and authed user.")
+           :handler handle_create-edit-session
+           :middleware [;authorization/wrap-authorized-user
+                        sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:media_entry_id s/Uuid}}
+           :responses {200 {:body schema_export_edit_session}
+                       404 {:body s/Any}}}
     }])
 
-; TODO Frage: when is edit-session created (in madek-web-interface)
 
 (def collection-routes
-  ["/collection/:collection_id/edit_session"
-   {:get {:summary "Get authed users edit_session list for collection."
-          :handler handle_usr_get-edit-sessions
+  ["/collection/:collection_id/edit_sessions"
+   {:get {:summary (sd/sum_usr_pub "Get edit_session list for collection.")
+          :handler handle_get-edit-sessions
           :middleware [sd/ring-wrap-add-media-resource
                        sd/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
-          :parameters {:path {:collection_id s/Str}}
+          :parameters {:path {:collection_id s/Uuid}}
           :responses {200 {:body [schema_export_edit_session]}
                       404 {:body s/Any}}}
+    
+    :post {:summary (sd/sum_usr "Create edit session for collection and authed user.")
+           :handler handle_create-edit-session
+           :middleware [;authorization/wrap-authorized-user
+                        sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:collection_id s/Uuid}}
+           :responses {200 {:body schema_export_edit_session}
+                       404 {:body s/Any}}}
     }])
-
-; TODO tests

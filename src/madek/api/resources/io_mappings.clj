@@ -1,11 +1,11 @@
 (ns madek.api.resources.io-mappings
-  (:require
-   [clojure.java.jdbc :as jdbc]
-   [clojure.tools.logging :as logging]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-   [reitit.coercion.schema]
-   [schema.core :as s]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 
 (defn handle_list-io-mappings
@@ -16,12 +16,13 @@
     ;(logging/info "handle_list-io-mapping" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
+
 (defn handle_get-io-mapping
   [req]
   (let [io-mapping (-> req :io-mapping)]
     ;(logging/info "handle_get-io-mapping" io-mapping)
-    ; TODO hide some fields
     (sd/response_ok io-mapping)))
+
 
 (defn handle_create-io-mappings
   [req]
@@ -31,10 +32,10 @@
       (logging/info "handle_create-io-mappings: " "\ndata:\n" data "\nresult:\n" ins-res)
         ; create io-mapping entry
       (if-let [result (first ins-res)]
-              ; TODO clean result
         (sd/response_ok result)
         (sd/response_failed "Could not create io-mapping." 406)))
     (catch Exception ex (sd/response_exception ex))))
+
 
 (defn handle_update-io-mappings
   [req]
@@ -52,6 +53,7 @@
         (sd/response_ok (sd/query-eq-find-one :io_mappings :id id))
         (sd/response_failed "Could not update io-mapping." 406)))
     (catch Exception ex (sd/response_exception ex))))
+
 
 (defn handle_delete-io-mapping
   [req]
@@ -105,16 +107,16 @@
    :created_at s/Any
    :updated_at s/Any})
 
-; TODO wrap admin auth
 ; TODO user routes ?
 ; TODO docu
 ; TODO tests io_mappings
-(def ring-routes
+(def admin-routes
 
   ["/io-mappings" 
    ["/"
     {:post {:summary (sd/sum_adm "Create io-mappings.")
             :handler handle_create-io-mappings
+            :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_io-mappings}
             :responses {200 {:body schema_export_io-mappings}
@@ -123,6 +125,7 @@
     ; io-mapping list / query
      :get {:summary  (sd/sum_adm "List io-mappings.")
            :handler handle_list-io-mappings
+           :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
            :responses {200 {:body [schema_export_io-mappings]}}}
@@ -132,14 +135,16 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get io-mappings by id.")
            :handler handle_get-io-mapping
-           :middleware [(wwrap-find-io-mapping :id)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-io-mapping :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
            :responses {200 {:body schema_export_io-mappings}}}
 
      :put {:summary (sd/sum_adm "Update io-mappings with id.")
            :handler handle_update-io-mappings
-           :middleware [(wwrap-find-io-mapping :id)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-io-mapping :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_io-mappings}
@@ -149,7 +154,8 @@
      :delete {:summary (sd/sum_adm "Delete io-mapping by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-io-mapping
-              :middleware [(wwrap-find-io-mapping :id)]
+              :middleware [wrap-authorize-admin!
+                           (wwrap-find-io-mapping :id)]
               :parameters {:path {:id s/Str}}
               :responses {200 {:body schema_export_io-mappings}
                           404 {:body s/Any}}}

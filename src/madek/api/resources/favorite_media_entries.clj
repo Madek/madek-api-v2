@@ -34,10 +34,9 @@
   [req]
   (let [favorite_me (-> req res-req-name)]
     ;(logging/info "handle_get-favorite_media_entry" favorite_collection)
-    ; TODO hide some fields
     (sd/response_ok favorite_me)))
 
-
+; TODO logwrite
 (defn handle_create-favorite_media_entry
   [req]
   (try
@@ -45,16 +44,16 @@
           media_entry (-> req :media_entry)
           data {:user_id user-id :media_entry_id (:id media_entry)}]
       (if-let [favorite_media_entry (-> req res-req-name)]
-      ; already has favorite_media_entry
+        ; already has favorite_media_entry
         (sd/response_ok favorite_media_entry)
-      ; create favorite_media_entry entry
+        ; create favorite_media_entry entry
         (if-let [ins_res (first (jdbc/insert! (rdbms/get-ds) res-table-name data))]
-        ; TODO clean result
+
           (sd/response_ok ins_res)
           (sd/response_failed "Could not create favorite_media_entry." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
-
+; TODO logwrite
 (defn handle_delete-favorite_media_entry
   [req]
   (try
@@ -112,7 +111,6 @@
    :updated_at s/Any
    :created_at s/Any})
 
-; TODO response coercion
 ; TODO docu
 ; TODO tests
 ; user self edit favorites 
@@ -124,15 +122,12 @@
      :middleware [authorization/wrap-authorized-user]
      :swagger {:produces "application/json"}
      :coercion reitit.coercion.schema/coercion
-     ;:parameters {:query {;(s/optional-key :media_entry_id) s/Uuid
-     ;                     ;(s/optional-key :full-data) s/Bool
-     ;                     }}
      :responses {200 {:body {:media_entry_ids [s/Uuid]}}}
      }}])
 
 (def media-entry-routes
   ["/media-entry/:media_entry_id/favorite"
-    {:post {:summary (sd/sum_cnv "Create favorite_media_entry for authed user and media-entry.")
+    {:post {:summary (sd/sum_usr "Create favorite_media_entry for authed user and media-entry.")
             :handler handle_create-favorite_media_entry
            
             :middleware [authorization/wrap-authorized-user
@@ -146,7 +141,7 @@
                         406 {:body s/Any}}
             }
 
-     :get {:summary (sd/sum_cnv "Get favorite_media_entry for authed user and media-entry.")
+     :get {:summary (sd/sum_usr "Get favorite_media_entry for authed user and media-entry.")
            :handler handle_get-favorite_media_entry
            
            :middleware [authorization/wrap-authorized-user
@@ -159,7 +154,7 @@
                        406 {:body s/Any}}
            }
 
-     :delete {:summary (sd/sum_cnv "Delete favorite_media_entry for authed user and media-entry.")
+     :delete {:summary (sd/sum_usr "Delete favorite_media_entry for authed user and media-entry.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-favorite_media_entry
               
@@ -181,9 +176,10 @@
       :handler handle_list-favorite_media_entries
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :user_id) s/Uuid
-                           (s/optional-key :media_entry_id) s/Uuid
-                           (s/optional-key :full-data) s/Bool}}}}]
+      ;:parameters {:query {(s/optional-key :user_id) s/Uuid
+      ;                     (s/optional-key :media_entry_id) s/Uuid
+      ;                     (s/optional-key :full_data) s/Bool}}
+      }}]
    
    ["/favorite/media_entries/:media_entry_id/:user_id"
     {:post

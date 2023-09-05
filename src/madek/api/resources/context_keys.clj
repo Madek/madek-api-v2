@@ -207,7 +207,6 @@
   ["/context_keys" 
    ["/"
     {:post {:summary (sd/sum_adm_todo "Create context_key")
-            ; TODO labels and descriptions
             :handler handle_create-context_keys
             :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion

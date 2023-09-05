@@ -53,8 +53,8 @@
 
 
 (defn handle_create-col-col-arc [req]
-  (catcher/with-logging {}
-    (try
+  (try
+    (catcher/with-logging {}
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
 
@@ -62,8 +62,8 @@
             ins-data (assoc data :parent_id parent-id :child_id child-id)]
         (if-let [ins-res (jdbc/insert! (rdbms/get-ds) :collection_collection_arcs ins-data)]
           (sd/response_ok ins-res)
-          (sd/response_failed "Could not create collection-collection-arc" 406)))
-      (catch Exception e (sd/response_exception e)))))
+          (sd/response_failed "Could not create collection-collection-arc" 406))))
+    (catch Exception e (sd/response_exception e))))
 
 (defn- sql-cls-update [parent-id child-id]
   (-> (sql/where [:= :parent_id parent-id]
@@ -72,39 +72,38 @@
       (update-in [0] #(clojure.string/replace % "WHERE" ""))))
 
 (defn handle_update-arc [req]
-  (catcher/with-logging {}
-     (try
-       (let [parent-id (-> req :parameters :path :parent_id)
-             child-id (-> req :parameters :path :child_id)
-             data (-> req :parameters :body)
-             whcl (sql-cls-update parent-id child-id)
-             result (jdbc/update! (rdbms/get-ds)
-                                  :collection_collection_arcs
-                                  data whcl)]
-         (if (= 1 (first result))
-           (sd/response_ok (sd/query-eq2-find-one
-                            :collection_collection_arcs
-                            :parent_id parent-id
-                            :child_id child-id))
-           (sd/response_failed "Could not update collection collection arc." 422)))
-       (catch Exception e (sd/response_exception e)))))
+  (try
+    (catcher/with-logging {}
+      (let [parent-id (-> req :parameters :path :parent_id)
+            child-id (-> req :parameters :path :child_id)
+            data (-> req :parameters :body)
+            whcl (sql-cls-update parent-id child-id)
+            result (jdbc/update! (rdbms/get-ds)
+                                 :collection_collection_arcs
+                                 data whcl)]
+        (if (= 1 (first result))
+          (sd/response_ok (sd/query-eq2-find-one
+                           :collection_collection_arcs
+                           :parent_id parent-id
+                           :child_id child-id))
+          (sd/response_failed "Could not update collection collection arc." 406))))
+    (catch Exception e (sd/response_exception e))))
 
 (defn handle_delete-arc [req]
-  (catcher/with-logging {}
-    (try
-      (let [parent-id (-> req :parameters :path :parent_id)
-            child-id (-> req :parameters :path :child_id) 
-            olddata (sd/query-eq2-find-one
-                     :collection_collection_arcs
-                     :parent_id parent-id
-                     :child_id child-id)
-            delquery (sql-cls-update parent-id child-id)
-            delresult (jdbc/delete! (get-ds) :collection_collection_arcs delquery)]
-        (if (= 1 (first delresult))
-          (sd/response_ok olddata)
-          (sd/response_failed "Could not delete collection collection arc." 422))
-        )
-      (catch Exception e (sd/response_exception e)))))
+   (try
+     (catcher/with-logging {}
+       (let [parent-id (-> req :parameters :path :parent_id)
+             child-id (-> req :parameters :path :child_id)
+             olddata (sd/query-eq2-find-one
+                      :collection_collection_arcs
+                      :parent_id parent-id
+                      :child_id child-id)
+             delquery (sql-cls-update parent-id child-id)
+             delresult (jdbc/delete! (get-ds) :collection_collection_arcs delquery)]
+         (if (= 1 (first delresult))
+           (sd/response_ok olddata)
+           (sd/response_failed "Could not delete collection collection arc." 422))))
+     (catch Exception e (sd/response_exception e))))
 
 (def schema_collection-collection-arc-export
   {

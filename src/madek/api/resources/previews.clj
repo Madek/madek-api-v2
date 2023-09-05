@@ -104,7 +104,6 @@
    ])
 
 ; TODO auth
-; TODO query addressing different previews is not rest.
 ; TODO tests
 (def media-entry-routes
   ["/media-entry"

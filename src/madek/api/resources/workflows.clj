@@ -28,52 +28,54 @@
     (sd/response_ok workflow)))
 
 (defn handle_create-workflow [req]
-  (catcher/with-logging {}
+  
     (try
-      (let [data (-> req :parameters :body)
-            conf-json (sd/try-as-json (:configuration data))
-            uid (-> req :authenticated-entity :id)
-            ins-data (assoc data :creator_id uid :configuration {})
-            ins-res (jdbc/insert! (rdbms/get-ds) :workflows ins-data)]
+      (catcher/with-logging {}
+        (let [data (-> req :parameters :body)
+              conf-json (sd/try-as-json (:configuration data))
+              uid (-> req :authenticated-entity :id)
+              ins-data (assoc data :creator_id uid :configuration {})
+              ins-res (jdbc/insert! (rdbms/get-ds) :workflows ins-data)]
 
-        (logging/info "handle_create-workflow: "
-                      "\ndata:\n" ins-data
-                      "\nresult:\n" ins-res)
+          (logging/info "handle_create-workflow: "
+                        "\ndata:\n" ins-data
+                        "\nresult:\n" ins-res)
 
-        (if-let [result (first ins-res)]
-        ; TODO clean result
-          (sd/response_ok result)
-          (sd/response_failed "Could not create workflow." 406)))
-      (catch Exception e (sd/response_exception e)))))
+          (if-let [result (first ins-res)]
+            (sd/response_ok result)
+            (sd/response_failed "Could not create workflow." 406))))
+      (catch Exception e (sd/response_exception e))))
 
 (defn handle_update-workflow [req]
   (try
-    (let [data (-> req :parameters :body)
-          id (-> req :parameters :path :id)
-          dwid (assoc data :id id)
-          upd-query (sd/sql-update-clause "id" (str id))
-          upd-result (jdbc/update! (rdbms/get-ds)
-                                   :workflows
-                                   dwid upd-query)]
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            dwid (assoc data :id id)
+            upd-query (sd/sql-update-clause "id" (str id))
+            upd-result (jdbc/update! (rdbms/get-ds)
+                                     :workflows
+                                     dwid upd-query)]
 
-      (logging/info "handle_update-workflow: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
+        (logging/info "handle_update-workflow: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :workflows :id id))
-        (sd/response_failed "Could not update workflow." 406)))
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :workflows :id id))
+          (sd/response_failed "Could not update workflow." 406))))
     (catch Exception e (sd/response_exception e))))
 
 (defn handle_delete-workflow [req] 
   (try
-    (let [olddata (-> req :workflow)
-          id (-> req :parameters :path :id)
-          delresult (jdbc/delete! (rdbms/get-ds)
-                                  :workflows
-                                  ["id = ?" id])]
-      (if (= 1 (first delresult))
-        (sd/response_ok olddata)
-        (sd/response_failed "Could not delete workflow." 422)))
-    (catch Exception e (sd/response_exception e))))
+    (catcher/with-logging {}
+      (let [olddata (-> req :workflow)
+            id (-> req :parameters :path :id)
+            delresult (jdbc/delete! (rdbms/get-ds)
+                                    :workflows
+                                    ["id = ?" id])]
+        (if (= 1 (first delresult))
+          (sd/response_ok olddata)
+          (sd/response_failed "Could not delete workflow." 422))))
+      (catch Exception e (sd/response_exception e))))
 
 (defn wwrap-find-workflow [param]
   (fn [handler]

@@ -37,7 +37,7 @@
     ;(logging/info "handle_get-favorite_collection" favorite_collection)
     (sd/response_ok favorite_collection)))
 
-; TODO clean result
+
 ; TODO log write
 (defn handle_create-favorite_collection
   [req]
@@ -54,7 +54,7 @@
           (sd/response_failed "Could not create favorite_collection." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
-; TODO clean result
+
 ; TODO log write
 (defn handle_delete-favorite_collection
   [req]
@@ -112,7 +112,7 @@
    :updated_at s/Any
    :created_at s/Any})
 
-; TODO response coercion
+
 ; TODO docu
 ; TODO tests
 (def favorite-routes
@@ -124,7 +124,7 @@
      :coercion reitit.coercion.schema/coercion
      :responses {200 {:body {:collection_ids [s/Uuid]}}}}}])
 
-; TODO media resource permissions
+; TODO media resource permissions?
 ; TODO docu
 ; TODO tests
 (def collection-routes
@@ -160,7 +160,7 @@
       :handler handle_list-favorite_collection
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
-      ; TODO query params
+      ; TODO query params?
       :parameters {:query {;(s/optional-key :user_id) s/Uuid 
                            ;(s/optional-key :collection_id) s/Uuid
                            (s/optional-key :full_data) s/Bool}}

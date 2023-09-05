@@ -97,21 +97,7 @@
 
    ; TODO Frage: delegations workflows post, get, patch, delete
 
-
-   ; TODO static-pages post, get, patch, delete
-   ;["static-pages/" {:post {:summary (sd/sum_todo "Static pages") :handler (constantly sd/no_impl)}
-   ;                  :get {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
-   ;                  :put {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}
-   ;                  :delete {:summary (sd/sum_todo "Static Pages") :handler (constantly sd/no_impl)}}]
-
-
-
-   ; TODO Frage: workflows post, get, patch, delete
-   ;["workflows/" {:post {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
-   ;               :get {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
-   ;               :put {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}
-   ;               :delete {:summary (sd/sum_todo "Workflows") :handler (constantly sd/no_impl)}}]
-
+   
 
    ])
 
@@ -140,8 +126,8 @@
    full-texts/edit-routes
    
    groups/ring-routes
-   io-interfaces/ring-routes
-   io-mappings/ring-routes
+   io-interfaces/admin-routes
+   io-mappings/admin-routes
    keywords/admin-routes
    
    meta-keys/admin-routes

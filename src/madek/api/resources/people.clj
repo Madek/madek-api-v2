@@ -11,6 +11,9 @@
             [madek.api.resources.shared :as sd]))
 
 
+; TODO clean code
+
+
 (defn id-where-clause
   [id]
   (if
@@ -296,11 +299,13 @@
    (s/optional-key :updated_at) s/Str
 
    })
+
 (def admin-routes
   ["/people"
    ["/" {:get {:summary "Get all people ids"
                :description "Query list of people only for ids or full-data. Optional Paging."
                :handler handle_query-people
+               :middleware [wrap-authorize-admin!]
                :swagger {:produces "application/json"}
                :parameters {:query schema_query_people}
                 :content-type "application/json"
@@ -311,7 +316,7 @@
          :post {:summary "Create a person"
                 :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
                 :handler handle_create-person
-                ;:middleware [wrap-authorize-admin!]
+                :middleware [wrap-authorize-admin!]
                 :swagger {:produces "application/json" :consumes "application/json"}
                 :content-type "application/json"
                 :accept "application/json"
@@ -329,17 +334,19 @@
                   :content-type "application/json"
                   :accept "application/json"
                   :handler handle_get-person
+                  :middleware [wrap-authorize-admin!]
                   :coercion reitit.coercion.schema/coercion
                   :parameters {:path {:id s/Str}}
                   :responses {200 {:body schema_export_person}
                               404 {:body s/Str}}}
 
-            :patch {:summary "Updates person entity fields"
+            :put {:summary "Updates person entity fields"
                     :description "Updates the person entity fields"
                     :swagger {:consumes "application/json" :produces "application/json"}
                     :content-type "application/json"
                     :accept "application/json"
                     :handler handle_patch-person
+                    :middleware [wrap-authorize-admin!]
                     :coercion reitit.coercion.schema/coercion
                     :parameters {:path {:id s/Str} :body schema_update_person}
                     :responses {200 {:body s/Any} ;schema_export_person}
@@ -350,28 +357,29 @@
                      :swagger {:produces "application/json"}
                      :content-type "application/json"
                      :handler handle_delete-person
-                     ;:middleware [wrap-authorize-admin!]
+                     :middleware [wrap-authorize-admin!]
                      :coercion reitit.coercion.schema/coercion
                      :parameters {:path {:id s/Uuid}}
                      :responses {403 {:body s/Any}
                                  204 {:body s/Any}}}}]])
 
 
+; TODO user can create a person
+; are public routes
 (def user-routes
   ["/people"
-   ["/" {:get {:summary "Get all people ids"
+   ["/" {:get {:summary (sd/sum_pub "Get all people ids")
                :description "Query list of people only for ids or full-data. Optional Paging."
                :handler handle_query-people
+               
                :swagger {:produces "application/json"}
                :parameters {:query schema_query_people}
-                ;:content-type "application/json"
-                ;:accept "application/json"
+               :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
-               :responses {200 {:body {:people [schema_export_people]}}}} ;{:id s/Uuid}]}}}}
-
+               :responses {200 {:body {:people [schema_export_people]}}}}
          }]
 
-   ["/:id" {:get {:summary "Get person by id"
+   ["/:id" {:get {:summary (sd/sum_pub "Get person by id")
                   :description "Get person by id. Returns 404, if no such person exists. TODO query params."
                   :swagger {:produces "application/json"}
                   :content-type "application/json"

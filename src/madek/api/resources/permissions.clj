@@ -6,8 +6,13 @@
    
    [madek.api.resources.vocabularies.permissions :as voc-perms]
    [madek.api.resources.media-resources.permissions :as mr-permissions]
-   [clojure.tools.logging :as logging]))
+   [clojure.tools.logging :as logging]
+   [logbug.catcher :as catcher]))
 
+
+; TODO delegations ?
+; TODO clipboard_user
+; TODO logwrite
 
 (defn mr-table-type [media-resource]
   (case (:type media-resource)
@@ -21,10 +26,13 @@
                                   :responsible_user_id
                                   :is_published
                                   :get_metadata_and_previews
-                                  :get_full_size])
+                                  :get_full_size
+                                  ; TODO delegations
+                                  ])
     "Collection" (select-keys mr [:creator_id
                                   :responsible_user_id
                                   :get_metadata_and_previews
+                                  ; TODO delegations
                                   ])
     :default (throw ((ex-info "Invalid media-resource type" {:status 500})))))
 
@@ -36,34 +44,30 @@
 
 (defn- handle_update-resource-perm-value
   [req]
-  (let [perm-name (keyword (-> req :parameters :path :perm_name))
-        perm-val (-> req :parameters :path :perm_val)
-        perm-data {perm-name perm-val}
-        mr (-> req :media-resource)
-        upd-result (mr-permissions/update-resource-permissions mr perm-data)]
-    (if (seq? upd-result)
-      (sd/response_ok (mr-permissions/resource-permission-get-query mr))
-      (sd/response_failed (str "Could not update permissions" upd-result) 400)) ; TODO error code
-    ))
+  (try
+    (catcher/with-logging {}
+      (let [perm-name (keyword (-> req :parameters :path :perm_name))
+            perm-val (-> req :parameters :path :perm_val)
+            perm-data {perm-name perm-val}
+            mr (-> req :media-resource)
+            upd-result (mr-permissions/update-resource-permissions mr perm-data)]
+        (if (= 1 (first upd-result))
+          (sd/response_ok (mr-permissions/resource-permission-get-query mr))
+          (sd/response_failed (str "Could not update permissions" upd-result) 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn- handle_update-ressource-perms
   [req]
-  (let [perm-data (-> req :parameters :body)
-        mr (-> req :media-resource)
-        upd-result (mr-permissions/update-resource-permissions mr perm-data)]
-    (if (seq? upd-result)
-      (sd/response_ok (mr-permissions/resource-permission-get-query mr))
-      (sd/response_failed (str "Could not update permissions" upd-result) 400)) ; TODO error code
-    ))
+  (try
+    (catcher/with-logging {}
+      (let [perm-data (-> req :parameters :body)
+            mr (-> req :media-resource)
+            upd-result (mr-permissions/update-resource-permissions mr perm-data)]
+        (if (seq? upd-result)
+          (sd/response_ok (mr-permissions/resource-permission-get-query mr))
+          (sd/response_failed (str "Could not update permissions" upd-result) 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
-; b657884f-cb08-4443-8351-78b726ac7b13
-;(defn- handle_list-api-client-perms
-;  [req]
-;  (let [mr (-> req :media-resource)
-;        mr-type (mr-table-type mr)
-;        data (mr-permissions/query-list-api-client-permissions mr mr-type)]
-;    (sd/response_ok data))
-;  )
 
 (defn- handle_list-user-perms
   [req]
@@ -78,23 +82,37 @@
         mr (-> req :media-resource)
         mr-type (mr-table-type mr)
         data (mr-permissions/query-get-user-permissions mr mr-type user-id)]
-    (sd/response_ok data)))
+    (sd/response_ok (first data))))
 
-; TODO delete user perm
-; TODO create user perm
 (defn handle_create-user-perms [req]
-  (let [user-id (-> req :parameters :path :user_id)
-        mr (-> req :media-resource)
-        mrt (mr-table-type mr)
-        data (-> req :parameters :body)]
-    (mr-permissions/create-user-permissions mr mrt user-id data)
-    ))
+  (try
+    (catcher/with-logging {}
+      (let [user-id (-> req :parameters :path :user_id)
+            mr (-> req :media-resource)
+            mrt (mr-table-type mr)
+            data (-> req :parameters :body)
+            insresult (mr-permissions/create-user-permissions mr mrt user-id data)]
+
+        (if-let [result (first insresult)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create user permissions." 422))))
+    (catch Exception ex (sd/response_exception ex))))
+
 
 (defn handle_delete-user-perms [req]
-  (let [user-id (-> req :parameters :path :user_id)
-        mr (-> req :media-resource)
-        mrt (mr-table-type mr)]
-    (mr-permissions/delete-user-permissions mr mrt user-id)))
+  (try
+    (catcher/with-logging {}
+      (let [user-id (-> req :parameters :path :user_id)
+            mr (-> req :media-resource)
+            mrt (mr-table-type mr)]
+
+        (if-let [user-perm (mr-permissions/query-get-user-permissions mr mrt user-id)]
+          (let [delok (mr-permissions/delete-user-permissions mr mrt user-id)]
+            (if (true? delok)
+              (sd/response_ok (first user-perm))
+              (sd/response_failed "Could not delete resource user permission." 406)))
+          (sd/response_failed "No such user permission." 404))))
+    (catch Exception ex (sd/response_exception ex))))
 
 ; TODO
 ; use wrapper for perm entry existence
@@ -105,32 +123,48 @@
 ; delete if all perms are set to false
 (defn- handle_update-user-perms
   [req]
-  (let [user-id (-> req :parameters :path :user_id)
-        perm-name (keyword (-> req :parameters :path :perm_name))
-        perm-val (-> req :parameters :path :perm_val)
-        mr (-> req :media-resource)
-        mr-type (mr-table-type mr)
-        upd-result (mr-permissions/update-user-permissions mr mr-type user-id perm-name perm-val)]
-    (if (seq? upd-result)
-      (sd/response_ok (mr-permissions/query-get-user-permissions mr mr-type user-id))
-      (sd/response_failed (str "Could not update permissions" upd-result) 400)) ; TODO error code
-    ))
+  (try
+    (catcher/with-logging {}
+      (let [user-id (-> req :parameters :path :user_id)
+            perm-name (keyword (-> req :parameters :path :perm_name))
+            perm-val (-> req :parameters :path :perm_val)
+            mr (-> req :media-resource)
+            mr-type (mr-table-type mr)
+            upd-result (mr-permissions/update-user-permissions mr mr-type user-id perm-name perm-val)]
+        (if (seq? upd-result)
+          (sd/response_ok (mr-permissions/query-get-user-permissions mr mr-type user-id))
+          (sd/response_failed (str "Could not update permissions" upd-result) 400)) ; TODO error code
+        ))
+    (catch Exception ex (sd/response_exception ex))))
 
-; TODO delete group perm
-; TODO create group perm
+
+
 (defn handle_create-group-perms [req]
-  (let [group-id (-> req :parameters :path :group_id)
-        mr (-> req :media-resource)
-        mrt (mr-table-type mr)
-        data (-> req :parameters :body)]
-    (mr-permissions/create-group-permissions mr mrt group-id data)
-    ))
+  (try
+    (catcher/with-logging {}
+      (let [group-id (-> req :parameters :path :group_id)
+            mr (-> req :media-resource)
+            mrt (mr-table-type mr)
+            data (-> req :parameters :body)]
 
+        (if-let [insresult (mr-permissions/create-group-permissions mr mrt group-id data)]
+          (sd/response_ok insresult)
+          (sd/response_failed "Could not create resource group permissions." 422))))
+    (catch Exception ex (sd/response_exception ex))))
+
+; TODO check if exists or 404
 (defn handle_delete-group-perms [req]
-  (let [group-id (-> req :parameters :path :group_id)
-        mr (-> req :media-resource)
-        mrt (mr-table-type mr)]
-    (mr-permissions/delete-group-permissions mr mrt group-id)))
+  (try
+    (catcher/with-logging {}
+      (let [group-id (-> req :parameters :path :group_id)
+            mr (-> req :media-resource)
+            mrt (mr-table-type mr)
+            group-perm (mr-permissions/query-get-group-permissions mr mrt group-id)
+            delok (mr-permissions/delete-group-permissions mr mrt group-id)]
+        (if (true? delok)
+          (sd/response_ok (first group-perm))
+          (sd/response_failed (str "Could not delete resource group permission." delok) 422))))
+    (catch Exception ex (sd/response_exception ex))))
 
 
 (defn- handle_list-group-perms
@@ -148,20 +182,23 @@
         mr (-> req :media-resource)
         mr-type (mr-table-type mr)
         data (mr-permissions/query-get-group-permissions mr mr-type group-id)]
-    (sd/response_ok data)))
+    (sd/response_ok (first data))))
 
 (defn- handle_update-group-perms
   [req]
-  (let [group-id (-> req :parameters :path :group_id)
-        perm-name (keyword (-> req :parameters :path :perm_name))
-        perm-val (-> req :parameters :path :perm_val)
-        mr (-> req :media-resource)
-        mr-type (mr-table-type mr)
-        upd-result (mr-permissions/update-group-permissions mr mr-type group-id perm-name perm-val)]
-    (if (seq? upd-result)
-      (sd/response_ok (mr-permissions/query-get-group-permissions mr mr-type group-id))
-      (sd/response_failed (str "Could not update permissions" upd-result) 400)) ; TODO error code
-    ))
+  (try
+      (catcher/with-logging {}
+        (let [group-id (-> req :parameters :path :group_id)
+              perm-name (keyword (-> req :parameters :path :perm_name))
+              perm-val (-> req :parameters :path :perm_val)
+              mr (-> req :media-resource)
+              mr-type (mr-table-type mr)
+              upd-result (mr-permissions/update-group-permissions mr mr-type group-id perm-name perm-val)]
+          (if (seq? upd-result)
+            (sd/response_ok (mr-permissions/query-get-group-permissions mr mr-type group-id))
+            (sd/response_failed (str "Could not update permissions" upd-result) 400)) ; TODO error code
+          ))
+      (catch Exception ex (sd/response_exception ex))))
 
 
 (defn- handle_list-perms-type
@@ -193,15 +230,15 @@
                      :users u-data 
                      :groups g-data})))
 
-
+; TODO only for docu
 (def valid_permission_names
   ["get_metadata_and_previews"
    "get_full_size"
    "edit_metadata"
    "edit_permissions"])
 
-(def valid_permission_keys
-  (map keyword valid_permission_names))
+;(def valid_permission_keys
+;  (map keyword valid_permission_names))
 
 (def schema_update-collection-perms
   {(s/optional-key :get_metadata_and_previews) s/Bool
@@ -225,7 +262,8 @@
   {(s/optional-key :get_metadata_and_previews) s/Bool
    (s/optional-key :get_full_size) s/Bool
    (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
+   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
+   })
 
 (def schema_create-media-entry-user-permission
   {:get_metadata_and_previews s/Bool
@@ -291,8 +329,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid
                                :perm_name (s/enum "get_metadata_and_previews"
-                                                  "get_full_size"
-                                                  "is_published")
+                                                  "get_full_size")
                                :perm_val s/Bool}}}}]
 
    ;["/api-client"
@@ -342,14 +379,14 @@
                          :body schema_create-media-entry-user-permission}}
      
      :delete {:summary "Delete media-entry user permissions."
-                    :swagger {:produces "application/json"}
-                    :content-type "application/json"
-                    :handler handle_delete-user-perms
-                    :middleware [sd/ring-wrap-add-media-resource
-                                 sd/ring-wrap-authorization-edit-permissions]
-                    :coercion reitit.coercion.schema/coercion
-                    :parameters {:path {:media_entry_id s/Uuid
-                                        :user_id s/Uuid}}}
+              :swagger {:produces "application/json"}
+              :content-type "application/json"
+              :handler handle_delete-user-perms
+              :middleware [sd/ring-wrap-add-media-resource
+                           sd/ring-wrap-authorization-edit-permissions]
+              :coercion reitit.coercion.schema/coercion
+              :parameters {:path {:media_entry_id s/Uuid
+                                  :user_id s/Uuid}}}
      
      }]
 
@@ -443,7 +480,6 @@
    
      }]
 
-   ; TODO check for valid entities
    ["/resource"
     {:get
      {:summary "Query collection permissions."
@@ -465,7 +501,7 @@
       :parameters {:path {:collection_id s/Uuid}
                    :body schema_update-collection-perms}}}]
    
-   ;TODO patch entity perms
+
    ["/resource/:perm_name/:perm_val"
     {:put
      {:summary "Update collection entity permissions"
@@ -546,9 +582,6 @@
                                                   "edit_metadata_and_relations"
                                                   "edit_permissions")
                                :perm_val s/Bool}}}}]
-
-    ; TODO delegations ?
-    ; TODO workflows ?
 
 
    ["/group"

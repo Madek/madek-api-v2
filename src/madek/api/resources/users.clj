@@ -12,6 +12,7 @@
     [madek.api.resources.shared :as sd]
     [reitit.coercion.schema]
     [schema.core :as s]
+    [madek.api.authorization :as authorization]
     ))
 
 
@@ -46,15 +47,13 @@
 
 ;### create user #############################################################
 
-(defn create-user [request]
-  (let [params (as-> (:body request) params
-                 (or params {})
-                 (assoc params :id (or (:id params) (clj-uuid/v4))))]
+(defn create-user [body]
+  (let [params body]
     ;(logging/info "create-user" "\nparams\n" params)
     (when-let [dbresult (->> (jdbc/insert! (rdbms/get-ds) :users params) first)]
-      ;(logging/info "create-user" "\nparams\n" params "\ndbresult\n" dbresult) 
-      (let [result (dissoc dbresult :previous_id :searchable)] ; TODO hide password in result
-        {:body result :status 201}))))
+      (logging/info "created-user" "\nparams\n" params "\ndbresult\n" dbresult) 
+      (let [result (dissoc dbresult :password_digest )] ; hide password in result
+        (sd/response_ok result 201)))))
 
 ;### get user ################################################################
 
@@ -71,12 +70,13 @@
 
 (defn get-user [some-id]
   (if-let [user (find-user some-id)]
-    {:status 200 :body user}
+    (sd/response_ok user)
     {:status 404 :body "No such user found"}))
 
 
 ;### delete user ##############################################################
 
+; TODO return data before
 (defn delete-user [id]
   (if (= 1 (first (jdbc/delete! (rdbms/get-ds)
                                 :users (jdbc-id-where-clause id))))
@@ -86,79 +86,134 @@
 
 ;### patch user ##############################################################
 
-(defn patch-user [{body :body {id :id} :params}]
+(defn patch-user [body id]
   ;((logging/info "patch-user " "\nbody:\n" body "\nid:\n" id)
    (if (= 1 (first (jdbc/update! (rdbms/get-ds) :users body (jdbc-id-where-clause id))))
-    {:body (find-user id)}
+    (sd/response_ok (find-user id) 204)
     {:status 404}))
 
 
 ;### index ####################################################################
-; TODO test query and paging
-(defn build-index-query [{query-params :query-params}]
-  (-> (sql/select :id)
+
+(defn build-index-query [query-params]
+  
+  (-> (if (true? (:full_data query-params))
+        (sql/select :*)
+        (sql/select :id))
       (sql/from :users)
       (sql/merge-where [:= :is_deactivated false])
+      (sd/build-query-param query-params :person_id)
+      (sd/build-query-param query-params :institutional_id)
+      (sd/build-query-param query-params :accepted_usage_terms_id)
+      (sd/build-query-param query-params :is_deactivated)
+      (sd/build-query-param-like query-params :email)
+      (sd/build-query-param-like query-params :login)
+      (sd/build-query-param-like query-params :notes)
+      (sd/build-query-param-like query-params :autocomplete)
+      (sd/build-query-param-like query-params :searchable)
       (sql/order-by [:id :asc])
       (pagination/add-offset-for-honeysql query-params)
       sql/format))
 
 (defn index [request]
-  {:body
-   {:users (jdbc/query (rdbms/get-ds) (build-index-query request))}})
+  (let [query-params (-> request :parameters :query)
+        sql-query (build-index-query query-params)
+        result (jdbc/query (rdbms/get-ds) sql-query)]
+    (sd/response_ok {:users result})))
 
 
 ;### routes ###################################################################
 
-(def routes
-  (-> (cpj/routes
-        (cpj/GET "/users/" [] index)
-        (cpj/POST "/users/" [] create-user)
-        (cpj/GET "/users/:id" [id] (get-user id))
-        (cpj/DELETE "/users/:id" [id] (delete-user id))
-        (cpj/PATCH "/users/:id" [] patch-user))
-      wrap-authorize-admin!))
 
 
 (def schema_update_user 
   {
    (s/optional-key :id) s/Uuid
    (s/optional-key :email) s/Str
-   (s/optional-key :institutional_id) s/Str
    (s/optional-key :login) s/Str
+
    (s/optional-key :person_id) s/Uuid
+   (s/optional-key :institutional_id) s/Str
+
+   (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
+   
+   (s/optional-key :notes) (s/maybe s/Str) ; TODO
+
+   (s/optional-key :is_deactivated) s/Bool
+   
+   ;(s/optional-key :password_digest) (s/maybe s/Any) ; TODO
+   ;:last_signed_in_at (s/maybe s/Any) ; TODO
+   (s/optional-key :autocomplete) s/Str
+   (s/optional-key :searchable) s/Str
+   })
+
+(def schema_create_user
+  {
+   (s/optional-key :id) s/Uuid
+   (s/optional-key :email) s/Str
+   (s/optional-key :login) s/Str
+
+   :person_id s/Uuid
+   (s/optional-key :institutional_id) s/Str
+
+   (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
+
+   (s/optional-key :notes) (s/maybe s/Str) ; TODO
+
+   (s/optional-key :is_deactivated) s/Bool
+
+   ;(s/optional-key :password_digest) (s/maybe s/Any) ; TODO
+   ;:last_signed_in_at (s/maybe s/Any) ; TODO
+   (s/optional-key :autocomplete) s/Str
+   (s/optional-key :searchable) s/Str
+   (s/optional-key :settings) s/Any ; TODO is json
    })
 
 (def schema_create_user_result
   {:id s/Uuid
    :email (s/maybe s/Str)
-   :institutional_id (s/maybe s/Str)
    :login (s/maybe s/Str)
+   :institutional_id (s/maybe s/Str)
    :person_id s/Uuid
-   :created_at s/Any ; TODO Inst
-   :updated_at s/Any ; TODO Inst
-   :settings s/Any ; TODO
-   :accepted_usage_terms_id (s/maybe s/Any) ; TODO
+   
+   :settings s/Any ; TODO is json
+   :accepted_usage_terms_id (s/maybe s/Uuid) ; TODO
    :is_deactivated s/Bool
-   :notes (s/maybe s/Any) ; TODO
-   :password_digest (s/maybe s/Any) ; TODO
+   :notes (s/maybe s/Str) ; TODO
+   ;:password_digest (s/maybe s/Any) ; TODO
    :last_signed_in_at (s/maybe s/Any) ; TODO
    :autocomplete s/Str
+   :searchable (s/maybe s/Str)
+   ; TODO Inst
+   :created_at s/Any
+   :updated_at s/Any
    })
 
 (def schema_export_user
-  {
-   :id s/Uuid
-   :email s/Str
-   :institutional_id s/Str
-   :login s/Str
-   :person_id s/Uuid
-   :created_at s/Inst
-   :updated_at s/Inst})
+  {:id s/Uuid
+   (s/optional-key :email) s/Str
+   (s/optional-key :login) s/Str
+   (s/optional-key :person_id) s/Uuid
+
+   (s/optional-key :institutional_id) (s/maybe s/Str)
+
+   (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
+   (s/optional-key :is_deactivated) s/Bool
+
+   (s/optional-key :notes) (s/maybe s/Str)
+   (s/optional-key :settings) s/Any ; TODO is json
+
+   (s/optional-key :last_signed_in_at) (s/maybe s/Any) ; TODO
+   (s/optional-key :autocomplete) s/Str
+   (s/optional-key :searchable) s/Str
+
+   (s/optional-key :created_at) s/Any
+   (s/optional-key :updated_at) s/Any
+   })
 
 (defn handle_get-user [req]
   (let [id (-> req :parameters :path :id)]
-    (logging/info "handle_get-user" "\nid\n" id)
+    ;(logging/info "handle_get-user" "\nid\n" id)
     (get-user id)))
 
 (defn handle_delete-user [req]
@@ -166,58 +221,68 @@
 
 (defn handle_patch-user [req]
   (let [id (-> req :parameters :path :id)
-        body (-> req :parameters :body)
-        ireq (assoc-in req [:params :id] id)
-        breq (assoc-in ireq [:body] body)]
-    (patch-user breq)))
+        body (-> req :parameters :body)]
+    (patch-user body id)))
 
 (defn handle_create-user [req]
-  (let [body (-> req :parameters :body)
-        breq (assoc-in req [:body] body)]
-    (create-user breq)
+  (let [body (-> req :parameters :body)]
+    (create-user body)
     ))
 
-; TODO user routes
+(def schema_query_user
+  {(s/optional-key :full_data) s/Bool
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int
+   (s/optional-key :person_id) s/Uuid
+   (s/optional-key :institutional_id) s/Uuid
+   (s/optional-key :accepted_usage_terms_id) s/Uuid
+   (s/optional-key :is_deactivated) s/Bool
+   (s/optional-key :email) s/Str
+   (s/optional-key :login) s/Str
+   (s/optional-key :notes) s/Str
+   (s/optional-key :autocomplete) s/Str
+   (s/optional-key :searchable) s/Str})
+
 ; TODO tests
-(def ring-routes
+(def admin-routes
   ["/users"
    ["/" 
     {:get {:summary (sd/sum_adm "Get list of users ids.")
            :description "Get list of users ids."
            :swagger {:produces "application/json"}
-           ; TODO query paging count and full-data
-           :parameters {:query {(s/optional-key :page) s/Int
-                                (s/optional-key :count) s/Int}}
+           ; TODO query paging count and full-data, more query params
+           :parameters {:query schema_query_user}
            :content-type "application/json"
            :handler index
            :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
-           :responses {200 {:body {:users [{:id s/Uuid}]}}}}
+           :responses {200 {:body {:users [schema_export_user]}}}}
 
      :post {:summary (sd/sum_adm "Create user.")
             :description "Create user."
-            :swagger {:consumes "application/json" :produces "application/json"}
+            :swagger {:consumes "application/json"
+                      :produces "application/json"}
             :content-type "application/json"
             :accept "application/json"
             :handler handle_create-user
             :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion
-            :parameters {:body schema_update_user}
+            :parameters {:body schema_create_user}
             :responses {201 {:body schema_create_user_result}
-                        406 {:body s/Any}}}}] ; TODO error handling
+                        406 {:body s/Any}}}}]
 
 ["/:id"
  {:get {:summary (sd/sum_adm "Get user by id")
         :description "Get a user by id. Returns 404, if no such users exists."
         :handler handle_get-user
-        ;:middleware [wrap]
+        :middleware [wrap-authorize-admin!]
         :swagger {:produces "application/json"}
         :coercion reitit.coercion.schema/coercion
         :content-type "application/json"
-        :parameters {:path {:id s/Any}}
+        :parameters {:path {:id s/Str}}
 
         :responses {200 {:body s/Any} ; TODO coercion
-                    404 {:body s/Any}}} ; TODO coercion
+                    404 {:body s/Any}}}
 
   :delete {:summary (sd/sum_adm "Delete user by id")
            :description "Delete a user by id. Returns 404, if no such user exists."
@@ -231,18 +296,52 @@
            :responses {204 {:body s/Any} ; TODO coercion
                        404 {:body s/Any}}} ; TODO coercion
 
-  :patch {:middleware [wrap-authorize-admin!]
-          :summary (sd/sum_adm "Patch user with id")
-          :description "Patch a user with id. Returns 404, if no such user exists."
-          :swagger {:consumes "application/json" :produces "application/json"}
-          :coercion reitit.coercion.schema/coercion
-          :content-type "application/json"
-          :accept "application/json"
-          :parameters {:path {:id s/Str}
-                       :body schema_update_user}
-          :handler handle_patch-user
-          :responses {204 {:body schema_export_user}
-                      404 {:body s/Any}}}}] ; TODO coercion
+  :put {:middleware [wrap-authorize-admin!]
+        :summary (sd/sum_adm "Update user with id")
+        :description "Patch a user with id. Returns 404, if no such user exists."
+        :swagger {:consumes "application/json"
+                  :produces "application/json"}
+        :coercion reitit.coercion.schema/coercion
+        :content-type "application/json"
+        :accept "application/json"
+        :parameters {:path {:id s/Str}
+                     :body schema_update_user}
+        :handler handle_patch-user
+        :responses {204 {:body schema_export_user}
+                    404 {:body s/Any}}}}] ; TODO coercion
    ])
+
+;TODO Frage: wer kann die Liste der Benutzer sehen?
+; TODO users: update own user
+(def user-routes
+  ["/users"
+   ["/"
+    {:get {:summary (sd/sum_usr "Get list of users ids.")
+           :description "Get list of users ids."
+           :handler index
+           :middleware [authorization/wrap-authorized-user]
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+           :coercion reitit.coercion.schema/coercion
+           ; TODO query more params
+           :parameters {:query {(s/optional-key :page) s/Int
+                                (s/optional-key :count) s/Int}}
+           
+           
+           
+           :responses {200 {:body {:users [{:id s/Uuid}]}}}}}]
+   ["/:id"
+
+    {:get {:summary (sd/sum_usr "Get user by id")
+           :description "Get a user by id. Returns 404, if no such users exists."
+           :handler handle_get-user
+           :middleware [authorization/wrap-authorized-user]
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:id s/Any}}
+           :responses {200 {:body s/Any} ; TODO coercion
+                       404 {:body s/Any}}}
+     }]])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -143,10 +143,8 @@
   ["/contexts" 
    ["/"
     {:post {:summary (sd/sum_adm_todo "Create contexts.")
-            ; TODO labels and descriptions
             :handler handle_create-contexts
             :middleware [wrap-authorize-admin!]
-                   ;:middleware [(wwrap-find-context :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_contexts}
             :responses {200 {:body schema_export_contexts_adm}
@@ -173,7 +171,6 @@
           }
      
      :put {:summary (sd/sum_adm "Update contexts with id.")
-           ; TODO labels and descriptions
            :handler handle_update-contexts
            :middleware [wrap-authorize-admin!
                         (wwrap-find-context :id :id true)]

@@ -9,39 +9,48 @@
     [schema.core :as s]
     
     [clojure.java.jdbc :as jdbc]
-    [madek.api.utils.rdbms :as rdbms]))
+    [madek.api.utils.rdbms :as rdbms]
+    [logbug.catcher :as catcher]))
+
+; TODO logwrite
 
 
 (defn handle_create-vocab [req]
-  (let [data (-> req :parameters :body)]
-    (if-let [ins-res (jdbc/insert! (rdbms/get-ds) :vocabularies data)]
-      (sd/response_ok (first ins-res))
-      (sd/response_failed "Could not create vocabulary." 406))))
+  (try
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            ins-res (jdbc/insert! (rdbms/get-ds) :vocabularies data)]
+        (if-let [result (first ins-res)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create vocabulary." 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-vocab [req]
-  (let [data (-> req :parameters :body)
-        id (-> req :parameters :path :id)
-        dwid (assoc data :id id)]
-    (logging/info "handle_update-vocab"
-                  "\nid\n" id "\ndwid\n" dwid
-                  )
-    (if-let [upd-res (jdbc/update! (rdbms/get-ds) :vocabularies dwid ["id = ?" id])]
-      (let [new-data (sd/query-eq-find-one :vocabularies :id id)]
+  (try
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            dwid (assoc data :id id)]
         (logging/info "handle_update-vocab"
-                      "\nid: " id "\nnew-data:\n" new-data)
-        (sd/response_ok new-data))
-      (sd/response_failed "Could not update vocabulary." 406)
-      )
-    ))
+                      "\nid\n" id "\ndwid\n" dwid)
+        (if-let [upd-res (jdbc/update! (rdbms/get-ds) :vocabularies dwid ["id = ?" id])]
+          (let [new-data (sd/query-eq-find-one :vocabularies :id id)]
+            (logging/info "handle_update-vocab"
+                          "\nid: " id "\nnew-data:\n" new-data)
+            (sd/response_ok new-data))
+          (sd/response_failed "Could not update vocabulary." 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_delete-vocab [req]
-  (let [id (-> req :parameters :path :id)
-        old-data (sd/query-eq-find-one :vocabularies :id id)
-        db-result (jdbc/delete! (rdbms/get-ds) :vocabularies ["id = ?" id])]
-    (if (= 1 (first db-result))
-      (sd/response_ok old-data)
-      (sd/response_failed "Could not delete vocabulary." 406))
-    ))
+  (try
+    (catcher/with-logging {}
+      (let [id (-> req :parameters :path :id)
+            old-data (sd/query-eq-find-one :vocabularies :id id)
+            db-result (jdbc/delete! (rdbms/get-ds) :vocabularies ["id = ?" id])]
+        (if (= 1 (first db-result))
+          (sd/response_ok old-data)
+          (sd/response_failed "Could not delete vocabulary." 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (def schema_export-vocabulary
   {:id s/Str
@@ -52,8 +61,7 @@
    :descriptions (s/maybe sd/schema_ml_list)
 
    (s/optional-key :admin_comment) (s/maybe s/Str)
-   ;:description s/Str
-   ;:label s/Str
+   
    })
 
 (def schema_import-vocabulary
@@ -86,7 +94,7 @@
   {(s/optional-key :use) s/Bool
    (s/optional-key :view) s/Bool})
 
-
+; TODO vocab permission
 (def admin-routes
   ["/vocabularies"
    ["/"

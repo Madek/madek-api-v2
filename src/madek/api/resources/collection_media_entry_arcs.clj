@@ -53,19 +53,17 @@
   
   )
 
+; TODO logwrite
 (defn handle_create-col-me-arc [req]
-  (catcher/with-logging {}
-    (try 
+  (try
+    (catcher/with-logging {}
       (let [col-id (-> req :parameters :path :collection_id)
             me-id (-> req :parameters :path :media_entry_id)
             data (-> req :parameters :body)]
         (if-let [ins-res (create-col-me-arc col-id me-id data)]
           (sd/response_ok ins-res)
-          (sd/response_failed "Could not create collection-media-entry-arc" 406)))
-      (catch Exception e (sd/response_exception e))
-    )
-  )
-)
+          (sd/response_failed "Could not create collection-media-entry-arc" 406))))
+    (catch Exception e (sd/response_exception e))))
 
 (defn- sql-cls-update [col-id me-id]
   (-> (sql/where [:= :collection_id col-id]
@@ -73,9 +71,10 @@
       (sql/format)
       (update-in [0] #(clojure.string/replace % "WHERE" ""))))
 
+; TODO logwrite
 (defn handle_update-col-me-arc [req]
-  (catcher/with-logging {}
-    (try 
+  (try
+    (catcher/with-logging {}
       (let [col-id (-> req :parameters :path :collection_id)
             me-id (-> req :parameters :path :media_entry_id)
             data (-> req :parameters :body)
@@ -88,17 +87,12 @@
                            :collection_media_entry_arcs
                            :collection_id col-id
                            :media_entry_id me-id))
-          (sd/response_failed "Could not update collection entry arc." 422))
-        )
-      (catch Exception e (merge (ex-data e) {:status 500
-                                             :body {:message (.getMessage e)}}))
-    )
-  )
-)
+          (sd/response_failed "Could not update collection entry arc." 422))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_delete-col-me-arc [req]
-  (catcher/with-logging {}
-    (try 
+  (try
+    (catcher/with-logging {}
       (let [col-id (-> req :parameters :path :collection_id)
             me-id (-> req :parameters :path :media_entry_id)
             data (-> req :col-me-arc)
@@ -106,13 +100,8 @@
             delresult (jdbc/delete! (rdbms/get-ds) :collection_media_entry_arcs delquery)]
         (if (= 1 (first delresult))
           (sd/response_ok data)
-          (sd/response_failed "Could not delete collection entry arc." 422))
-        )
-      (catch Exception e (merge (ex-data e) {:status 500
-                                             :body {:message (.getMessage e)}}))
-    )
-  )
-)
+          (sd/response_failed "Could not delete collection entry arc." 422))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn wrap-add-col-me-arc [handler]
   (fn [request] (sd/req-find-data2
