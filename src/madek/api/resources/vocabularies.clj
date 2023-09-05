@@ -1,16 +1,15 @@
 (ns madek.api.resources.vocabularies
-  (:require
-    [clojure.tools.logging :as logging]
-    [logbug.debug :as debug]
-    [madek.api.resources.shared :as sd]
-    [madek.api.resources.vocabularies.index :refer [get-index]]
-    [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
-    [reitit.coercion.schema]
-    [schema.core :as s]
-    
-    [clojure.java.jdbc :as jdbc]
-    [madek.api.utils.rdbms :as rdbms]
-    [logbug.catcher :as catcher]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
+            [madek.api.resources.shared :as sd]
+            [madek.api.resources.vocabularies.index :refer [get-index]]
+            [madek.api.resources.vocabularies.permissions :as permissions]
+            [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.rdbms :as rdbms]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 ; TODO logwrite
 
@@ -77,8 +76,8 @@
 
 (def schema_update-vocabulary
   {
-   (s/optional-key :enabled_for_public_view) s/Bool
-   (s/optional-key :enabled_for_public_use) s/Bool
+   ;(s/optional-key :enabled_for_public_view) s/Bool
+   ;(s/optional-key :enabled_for_public_use) s/Bool
    (s/optional-key :position) s/Int
    (s/optional-key :labels) (s/maybe sd/schema_ml_list)
    (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
@@ -101,6 +100,7 @@
     {:get {:summary "Get list of vocabularies ids."
            :description "Get list of vocabularies ids."
            :handler get-index
+           :middleware [wrap-authorize-admin!]
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :page) s/Int
@@ -109,8 +109,9 @@
            :responses {200 {:body {:vocabularies [schema_export-vocabulary]}}} ; TODO response coercion
            :swagger {:produces "application/json"}}
 
-     :post {:summary (sd/sum_adm_todo "Create vocabulary.")
+     :post {:summary (sd/sum_adm "Create vocabulary.")
             :handler handle_create-vocab
+            :middleware [wrap-authorize-admin!]
             :content-type "application/json"
             :accept "application/json"
             :coercion reitit.coercion.schema/coercion
@@ -122,9 +123,11 @@
    ["/:id"
     {:get {:summary "Get vocabulary by id."
            :description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
+           :handler get-vocabulary
+           :middleware [wrap-authorize-admin!]
            :swagger {:produces "application/json"}
            :content-type "application/json"
-           :handler get-vocabulary
+           
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
            :responses {200 {:body schema_export-vocabulary}
@@ -132,6 +135,7 @@
 
      :put {:summary (sd/sum_adm_todo "Update vocabulary.")
            :handler handle_update-vocab
+           :middleware [wrap-authorize-admin!]
            :content-type "application/json"
            :accept "application/json"
            :coercion reitit.coercion.schema/coercion
@@ -144,6 +148,7 @@
 
      :delete {:summary (sd/sum_adm_todo "Delete vocabulary.")
               :handler handle_delete-vocab
+              :middleware [wrap-authorize-admin!]
               :content-type "application/json"
               :accept "application/json"
               :coercion reitit.coercion.schema/coercion
@@ -155,41 +160,32 @@
    ["/:id/perms"
     ["/"
      {:get
-      {:summary (sd/sum_adm_todo "List vocabulary permissions")
-       :handler (constantly sd/no_impl)
+      {:summary (sd/sum_adm "List vocabulary permissions")
+       :handler permissions/handle_list-vocab-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str}}
        :responses {200 {:body s/Any}
+                   404 {:body s/Any}}}
+      :put
+      {:summary (sd/sum_adm "Update vocabulary resource permissions")
+       :handler handle_update-vocab
+       :middleware [wrap-authorize-admin!]
+       :content-type "application/json"
+       :accept "application/json"
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:id s/Str}
+                    :body schema_perms-update}
+       :responses {200 {:body s/Any}
                    404 {:body s/Any}}}}]
-
-    ;["/resource"
-    ; {:get
-    ;  {:summary (sd/sum_adm_todo "Get vocabulary resource permissions")
-    ;   :handler (constantly sd/no_impl)
-    ;   :content-type "application/json"
-    ;   :accept "application/json"
-    ;   :coercion reitit.coercion.schema/coercion
-    ;   :parameters {:path {:id s/Str}}
-    ;   :responses {200 {:body s/Any}
-    ;               404 {:body s/Any}}}
-
-    ;  :put
-    ;  {:summary (sd/sum_adm_todo "Update vocabulary resource permissions")
-    ;   :handler (constantly sd/no_impl)
-    ;   :content-type "application/json"
-    ;   :accept "application/json"
-    ;   :coercion reitit.coercion.schema/coercion
-    ;   :parameters {:path {:id s/Str}
-    ;                :body schema_perms-update}
-    ;   :responses {200 {:body s/Any}
-    ;               404 {:body s/Any}}}}]
-
+  
     ["/user"
      {:get
       {:summary (sd/sum_adm_todo "List vocabulary user permissions")
-       :handler (constantly sd/no_impl)
+       :handler permissions/handle_list-vocab-user-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -200,7 +196,8 @@
     ["/user/:user_id"
      {:get
       {:summary (sd/sum_adm_todo "Get vocabulary user permissions")
-       :handler (constantly sd/no_impl)
+       :handler permissions/handle_get-vocab-user-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -209,8 +206,9 @@
        :responses {200 {:body s/Any}
                    404 {:body s/Any}}}
       :post
-      {:summary (sd/sum_adm_todo "Create vocabulary user permissions")
-       :handler (constantly sd/no_impl)
+      {:summary (sd/sum_adm "Create vocabulary user permissions")
+       :handler permissions/handle_create-vocab-user-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -221,8 +219,9 @@
                    404 {:body s/Any}}}
 
       :put
-      {:summary (sd/sum_adm_todo "Update vocabulary user permissions")
-       :handler (constantly sd/no_impl)
+      {:summary (sd/sum_adm "Update vocabulary user permissions")
+       :handler permissions/handle_update-vocab-user-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -233,8 +232,9 @@
                    404 {:body s/Any}}}
 
       :delete
-      {:summary (sd/sum_adm_todo "Delete vocabulary user permissions")
-       :handler (constantly sd/no_impl)
+      {:summary (sd/sum_adm "Delete vocabulary user permissions")
+       :handler permissions/handle_delete-vocab-user-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -246,19 +246,20 @@
     ["/group"
      {:get
       {:summary (sd/sum_adm_todo "List vocabulary group permissions")
-       :handler (constantly sd/no_impl)
+       :handler permissions/handle_list-vocab-group-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str
-                           :group_id s/Uuid}}
+       :parameters {:path {:id s/Str}}
        :responses {200 {:body s/Any}
                    404 {:body s/Any}}}}]
 
     ["/group/:group_id"
      {:get
       {:summary (sd/sum_adm_todo "Get vocabulary group permissions")
-       :handler (constantly sd/no_impl)
+       :handler permissions/handle_get-vocab-group-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -269,7 +270,8 @@
 
       :post
       {:summary (sd/sum_adm_todo "Create vocabulary group permissions")
-       :handler (constantly sd/no_impl)
+       :handler permissions/handle_create-vocab-group-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -281,7 +283,8 @@
 
       :put
       {:summary (sd/sum_adm_todo "Update vocabulary group permissions")
-       :handler (constantly sd/no_impl)
+       :handler permissions/handle_update-vocab-group-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
@@ -293,7 +296,8 @@
 
       :delete
       {:summary (sd/sum_adm_todo "Delete vocabulary group permissions")
-       :handler (constantly sd/no_impl)
+       :handler permissions/handle_delete-vocab-group-perms
+       :middleware [wrap-authorize-admin!]
        :content-type "application/json"
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion

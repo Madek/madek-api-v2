@@ -159,12 +159,6 @@
 
 ;(def uuid-matcher #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" )
 
-;(defn try-as-json [value]
-;  (try (cheshire.core/parse-string value)
-;       (catch Exception _
-;         value)))
-
-
 (def internal-keys [:admin_comment])
 
 (defn remove-internal-keys

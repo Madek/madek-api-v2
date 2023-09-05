@@ -1,14 +1,13 @@
 (ns madek.api.resources.favorite-collections
-  (:require
-   [clojure.java.jdbc :as jdbc]
-   [clojure.tools.logging :as logging]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-   [madek.api.utils.sql :as sql]
-   [reitit.coercion.schema]
-   [schema.core :as s]
-   [madek.api.authorization :as authorization]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
+            [madek.api.authorization :as authorization]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 
 (def res-req-name :favorite_collection)
@@ -42,16 +41,17 @@
 (defn handle_create-favorite_collection
   [req]
   (try
-    (let [user-id (or (-> req :user :id) (-> req :authenticated-entity :id))
-          col-id (-> req :collection :id)
-          data {:user_id user-id res-col-name col-id}]
-      (if-let [favorite_collection (-> req res-req-name)]
+    (catcher/with-logging {}
+      (let [user-id (or (-> req :user :id) (-> req :authenticated-entity :id))
+            col-id (-> req :collection :id)
+            data {:user_id user-id res-col-name col-id}]
+        (if-let [favorite_collection (-> req res-req-name)]
         ; already has favorite_collection
-        (sd/response_ok favorite_collection)
+          (sd/response_ok favorite_collection)
         ; create favorite_collection entry
-        (if-let [ins_res (first (jdbc/insert! (rdbms/get-ds) res-table-name data))]
-          (sd/response_ok ins_res)
-          (sd/response_failed "Could not create favorite_collection." 406))))
+          (if-let [ins_res (first (jdbc/insert! (rdbms/get-ds) res-table-name data))]
+            (sd/response_ok ins_res)
+            (sd/response_failed "Could not create favorite_collection." 406)))))
     (catch Exception ex (sd/response_exception ex))))
 
 
@@ -59,13 +59,14 @@
 (defn handle_delete-favorite_collection
   [req]
   (try
-    (let [favorite_collection (-> req res-req-name)
-          user-id (:user_id favorite_collection)
-          collection-id (res-col-name favorite_collection)
-          del-query ["user_id = ? AND collection_id = ?" user-id collection-id]]
-      (if (= 1 (first (jdbc/delete! (rdbms/get-ds) res-table-name del-query)))
-        (sd/response_ok favorite_collection)
-        (sd/response_failed "Could not delete favorite collection: " 406)))
+    (catcher/with-logging {}
+      (let [favorite_collection (-> req res-req-name)
+            user-id (:user_id favorite_collection)
+            collection-id (res-col-name favorite_collection)
+            del-query ["user_id = ? AND collection_id = ?" user-id collection-id]]
+        (if (= 1 (first (jdbc/delete! (rdbms/get-ds) res-table-name del-query)))
+          (sd/response_ok favorite_collection)
+          (sd/response_failed "Could not delete favorite collection: " 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 

@@ -9,7 +9,8 @@
     [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
     [madek.api.utils.sql :as sql]
     [clojure.string :as str]
-    ))
+    
+    [madek.api.resources.shared :as sd]))
 
 (defn- execute-query
   [query]
@@ -82,5 +83,170 @@
    )
   )
 
+(defn handle_list-vocab-user-perms [req]
+  (let [id (-> req :parameters :path :id)
+        result (sd/query-eq-find-all
+                :vocabulary_user_permissions
+                :vocabulary_id id)]
+    (sd/response_ok result
+     ;{:vocabulary_id id
+     ; :vocabulary_user_permissions result}
+     )))
+
+(defn handle_get-vocab-user-perms [req]
+  (let [id (-> req :parameters :path :id)
+        uid (-> req :parameters :path :user_id)
+        result (sd/query-eq2-find-one
+                :vocabulary_user_permissions
+                :vocabulary_id id
+                :user_id uid)]
+    (sd/response_ok result)))
+
+(defn handle_create-vocab-user-perms [req]
+  (try
+    (catcher/with-logging {}
+      (let [vid (-> req :parameters :path :id)
+            uid (-> req :parameters :path :user_id)
+            data (-> req :parameters :body)
+            ins-data (assoc data
+                            :vocabulary_id vid
+                            :user_id uid)
+            ins-result (jdbc/insert! (get-ds)
+                                     :vocabulary_user_permissions
+                                     ins-data)]
+        (if-let [result (first ins-result)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create vocabulary user permission" 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_update-vocab-user-perms [req]
+  (try
+    (catcher/with-logging {}
+      (let [vid (-> req :parameters :path :id)
+            uid (-> req :parameters :path :user_id)
+            upd-data (-> req :parameters :body)
+            upd-clause (sd/sql-update-clause "vocabulary_id" vid "user_id" uid)
+            upd-result (jdbc/update! (get-ds)
+                                     :vocabulary_user_permissions
+                                     upd-data upd-clause)]
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq2-find-one 
+                           :vocabulary_user_permissions
+                           :vocabulary_id vid
+                           :user_id uid))
+          (sd/response_failed "Could not update vocabulary user permission" 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_delete-vocab-user-perms [req]
+  (try
+    (catcher/with-logging {}
+      (let [vid (-> req :parameters :path :id)
+            uid (-> req :parameters :path :user_id)
+            old-data (sd/query-eq2-find-one
+                      :vocabulary_user_permissions
+                      :vocabulary_id vid
+                      :user_id uid)
+            del-clause (sd/sql-update-clause "vocabulary_id" vid "user_id" uid)
+            del-result (jdbc/delete! (get-ds)
+                                     :vocabulary_user_permissions
+                                     del-clause)]
+        (if (= 1 (first del-result))
+          (sd/response_ok old-data)
+          (sd/response_failed "Could not delete vocabulary user permission" 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_list-vocab-group-perms [req]
+  (let [id (-> req :parameters :path :id)
+        result (sd/query-eq-find-all 
+                :vocabulary_group_permissions 
+                :vocabulary_id id)]
+    (sd/response_ok result)))
+
+(defn handle_get-vocab-group-perms [req]
+  (let [id (-> req :parameters :path :id)
+        gid (-> req :parameters :path :group_id)
+        result (sd/query-eq2-find-one
+                :vocabulary_group_permissions
+                :vocabulary_id id
+                :group_id gid)]
+    (sd/response_ok result)))
+
+(defn handle_create-vocab-group-perms [req]
+  (try
+    (catcher/with-logging {}
+      (let [vid (-> req :parameters :path :id)
+            gid (-> req :parameters :path :group_id)
+            data (-> req :parameters :body)
+            ins-data (assoc data
+                            :vocabulary_id vid
+                            :group_id gid)
+            ins-result (jdbc/insert! (get-ds)
+                                     :vocabulary_group_permissions
+                                     ins-data)]
+        (if-let [result (first ins-result)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create vocabulary group permission" 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_update-vocab-group-perms [req]
+  (try
+    (catcher/with-logging {}
+      (let [vid (-> req :parameters :path :id)
+            gid (-> req :parameters :path :group_id)
+            upd-data (-> req :parameters :body)
+            upd-clause (sd/sql-update-clause
+                        "vocabulary_id" vid
+                        "group_id" gid)
+            upd-result (jdbc/update! (get-ds)
+                                     :vocabulary_group_permissions
+                                     upd-data upd-clause)]
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq2-find-one
+                           :vocabulary_group_permissions
+                           :vocabulary_id vid
+                           :group_id gid))
+          (sd/response_failed "Could not update vocabulary group permission" 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_delete-vocab-group-perms [req]
+  (try
+    (catcher/with-logging {}
+      (let [vid (-> req :parameters :path :id)
+            gid (-> req :parameters :path :group_id)
+            old-data (sd/query-eq2-find-one
+                      :vocabulary_group_permissions
+                      :vocabulary_id vid
+                      :group_id gid)
+            del-clause (sd/sql-update-clause
+                        "vocabulary_id" vid
+                        "group_id" gid)
+            del-result (jdbc/delete!
+                        (get-ds)
+                        :vocabulary_group_permissions
+                        del-clause)]
+        (if (= 1 (first del-result))
+          (sd/response_ok old-data)
+          (sd/response_failed "Could not delete vocabulary group permission" 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_list-vocab-perms [req]
+  (let [id (-> req :parameters :path :id)
+        resource-perms (sd/query-eq-find-one
+                        :vocabularies :id id)
+        user-perms (sd/query-eq-find-all
+                    :vocabulary_user_permissions
+                    :vocabulary_id id)
+        group-perms (sd/query-eq-find-all
+                     :vocabulary_group_permissions
+                     :vocabulary_id id)
+        result {:vocabulary (select-keys resource-perms
+                                         [:id
+                                         :enabled_for_public_view 
+                                         :enabled_for_public_use])
+                :user user-perms
+                :group group-perms}
+        ]
+    (sd/response_ok result))
+  )
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

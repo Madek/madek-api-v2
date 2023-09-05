@@ -1,11 +1,11 @@
 (ns madek.api.resources.usage-terms
-  (:require
-   [clojure.java.jdbc :as jdbc]
-   [clojure.tools.logging :as logging]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-   [reitit.coercion.schema]
-   [schema.core :as s]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 
 (defn handle_list-usage_term
@@ -26,44 +26,47 @@
 
 (defn handle_create-usage_terms [req]
   (try
-    (let [data (-> req :parameters :body)
-          ins-res (jdbc/insert! (rdbms/get-ds) :usage_terms data)]
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            ins-res (jdbc/insert! (rdbms/get-ds) :usage_terms data)]
 
-      (logging/info "handle_create-usage_term: " "\ndata:\n" data "\nresult:\n" ins-res)
+        (logging/info "handle_create-usage_term: " "\ndata:\n" data "\nresult:\n" ins-res)
 
-      (if-let [result (first ins-res)]
+        (if-let [result (first ins-res)]
         ; TODO clean result
-        (sd/response_ok result)
-        (sd/response_failed "Could not create usage_term." 406)))
+          (sd/response_ok result)
+          (sd/response_failed "Could not create usage_term." 406))))
     (catch Exception e (sd/response_exception e))))
 
 (defn handle_update-usage_terms [req]
   (try
-    (let [data (-> req :parameters :body)
-          id (-> req :parameters :path :id)
-          dwid (assoc data :id id)
-          upd-query (sd/sql-update-clause "id" (str id))
-          upd-result (jdbc/update! (rdbms/get-ds)
-                                   :usage_terms
-                                   dwid upd-query)]
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            dwid (assoc data :id id)
+            upd-query (sd/sql-update-clause "id" (str id))
+            upd-result (jdbc/update! (rdbms/get-ds)
+                                     :usage_terms
+                                     dwid upd-query)]
 
-      (logging/info "handle_update-usage_terms: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
+        (logging/info "handle_update-usage_terms: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :usage_terms :id id))
-        (sd/response_failed "Could not update usage_term." 406)))
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :usage_terms :id id))
+          (sd/response_failed "Could not update usage_term." 406))))
     (catch Exception e (sd/response_exception e))))
 
 (defn handle_delete-usage_term [req] 
   (try
-    (let [olddata (-> req :usage_term)
-          id (-> req :parameters :path :id)
-          delresult (jdbc/delete! (rdbms/get-ds)
-                                  :usage_terms
-                                  ["id = ?" id])]
-      (if (= 1 (first delresult))
-        (sd/response_ok olddata)
-        (sd/response_failed "Could not delete usage term." 422)))
+    (catcher/with-logging {}
+      (let [olddata (-> req :usage_term)
+            id (-> req :parameters :path :id)
+            delresult (jdbc/delete! (rdbms/get-ds)
+                                    :usage_terms
+                                    ["id = ?" id])]
+        (if (= 1 (first delresult))
+          (sd/response_ok olddata)
+          (sd/response_failed "Could not delete usage term." 422))))
     (catch Exception e (sd/response_exception e))))
 
 (defn wwrap-find-usage_term [param]
