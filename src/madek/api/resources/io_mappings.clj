@@ -1,6 +1,7 @@
 (ns madek.api.resources.io-mappings
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -27,43 +28,46 @@
 (defn handle_create-io-mappings
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          ins-res (jdbc/insert! (rdbms/get-ds) :io_mappings data)]
-      (logging/info "handle_create-io-mappings: " "\ndata:\n" data "\nresult:\n" ins-res)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            ins-res (jdbc/insert! (rdbms/get-ds) :io_mappings data)]
+        (logging/info "handle_create-io-mappings: " "\ndata:\n" data "\nresult:\n" ins-res)
         ; create io-mapping entry
-      (if-let [result (first ins-res)]
-        (sd/response_ok result)
-        (sd/response_failed "Could not create io-mapping." 406)))
+        (if-let [result (first ins-res)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create io-mapping." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 
 (defn handle_update-io-mappings
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          id (-> req :parameters :path :id)
-          dwid (assoc data :id id)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            dwid (assoc data :id id)
         ;old-data (-> req :io-mapping)
-          upd-query (sd/sql-update-clause "id" (str id))
-          upd-result (jdbc/update! (rdbms/get-ds) :io_mappings dwid upd-query)]
+            upd-query (sd/sql-update-clause "id" (str id))
+            upd-result (jdbc/update! (rdbms/get-ds) :io_mappings dwid upd-query)]
 
-      (logging/info "handle_update-io-mappings: " "id: " id "\nnew-data:\n" dwid "\nresult:\n" upd-result)
+        (logging/info "handle_update-io-mappings: " "id: " id "\nnew-data:\n" dwid "\nresult:\n" upd-result)
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :io_mappings :id id))
-        (sd/response_failed "Could not update io-mapping." 406)))
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :io_mappings :id id))
+          (sd/response_failed "Could not update io-mapping." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 
 (defn handle_delete-io-mapping
   [req]
   (try
-    (let [io-mapping (-> req :io-mapping)
-          id (-> req :parameters :path :id)
-          del-result (jdbc/delete! (rdbms/get-ds) :io_mappings ["id = ?" id])]
-      (if (= 1 (first del-result))
-        (sd/response_ok io-mapping)
-        (logging/error "Could not delete io-mapping " id)))
+    (catcher/with-logging {}
+      (let [io-mapping (-> req :io-mapping)
+            id (-> req :parameters :path :id)
+            del-result (jdbc/delete! (rdbms/get-ds) :io_mappings ["id = ?" id])]
+        (if (= 1 (first del-result))
+          (sd/response_ok io-mapping)
+          (logging/error "Could not delete io-mapping " id))))
     (catch Exception ex (sd/response_exception ex))))
 
 

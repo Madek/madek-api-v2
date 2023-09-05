@@ -1,6 +1,7 @@
 (ns madek.api.resources.io-interfaces
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -25,45 +26,48 @@
 (defn handle_create-io_interfaces 
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          ins-res (jdbc/insert! (get-ds) :io_interfaces data)]
-      (logging/info "handle_create-io_interfaces: " "\ndata:\n" data "\nresult:\n" ins-res)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            ins-res (jdbc/insert! (get-ds) :io_interfaces data)]
+        (logging/info "handle_create-io_interfaces: " "\ndata:\n" data "\nresult:\n" ins-res)
 
-      (if-let [result (first ins-res)]
-        (sd/response_ok result)
-        (sd/response_failed "Could not create io_interface." 406)))
+        (if-let [result (first ins-res)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create io_interface." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-io_interfaces
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          id (-> req :parameters :path :id)
-          dwid (assoc data :id id)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            dwid (assoc data :id id)
         ;old-data (-> req :io_interface)
-          upd-query (sd/sql-update-clause "id" (str id))
-          upd-result (jdbc/update! (get-ds)
-                                   :io_interfaces
-                                   dwid upd-query)]
+            upd-query (sd/sql-update-clause "id" (str id))
+            upd-result (jdbc/update! (get-ds)
+                                     :io_interfaces
+                                     dwid upd-query)]
 
-      (logging/info "handle_update-io_interfaces: " "id: " id "\nnew-data:\n" dwid "\nresult: " upd-result)
+        (logging/info "handle_update-io_interfaces: " "id: " id "\nnew-data:\n" dwid "\nresult: " upd-result)
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :io_interfaces :id id))
-        (sd/response_failed "Could not update io_interface." 406)))
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :io_interfaces :id id))
+          (sd/response_failed "Could not update io_interface." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_delete-io_interface
   [req]
   (try
-    (let [io_interface (-> req :io_interface)
-          id (-> req :parameters :path :id)
-          del-result (jdbc/delete! (get-ds)
-                                   :io_interfaces
-                                   ["id = ?" id])]
-      (if (= 1 (first del-result))
-        (sd/response_ok io_interface)
-        (logging/error "Could not delete io_interface: " id)))
+    (catcher/with-logging {}
+      (let [io_interface (-> req :io_interface)
+            id (-> req :parameters :path :id)
+            del-result (jdbc/delete! (get-ds)
+                                     :io_interfaces
+                                     ["id = ?" id])]
+        (if (= 1 (first del-result))
+          (sd/response_ok io_interface)
+          (logging/error "Could not delete io_interface: " id))))
     (catch Exception e (sd/response_exception e))))
 
 

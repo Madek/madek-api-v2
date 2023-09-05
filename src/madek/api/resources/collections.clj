@@ -1,16 +1,13 @@
 (ns madek.api.resources.collections
-  (:require
-    [clojure.tools.logging :as logging]
-    [logbug.debug :as debug]
-    [madek.api.resources.collections.collection :refer [get-collection]]
-    [madek.api.resources.collections.index :refer [get-index]]
-    [madek.api.resources.shared :as sd]
-    [reitit.coercion.schema]
-    [schema.core :as s]
-    [clojure.java.jdbc :as jdbc]
-    [madek.api.utils.rdbms :as rdbms]
-    
-    [madek.api.authorization :as authorization]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
+            [madek.api.authorization :as authorization]
+            [madek.api.resources.collections.index :refer [get-index]]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.rdbms :as rdbms]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 
 (defn handle_get-collection [request]
@@ -34,52 +31,48 @@
 
 (defn handle_create-collection [req]
   (try
-    (if-let [auth-id (-> req :authenticated-entity :id)]
-      (let [req-data (-> req :parameters :body)
-            ins-data (assoc req-data :creator_id auth-id :responsible_user_id auth-id)
-            ins-result (jdbc/insert! (rdbms/get-ds) "collections" ins-data)]
-        (sd/logwrite req (str "handle_create-collection: " ins-result))
-        (if-let [result (first ins-result)]
-          (sd/response_ok result)
-          (sd/response_failed "Could not create collection" 406)))
-      (sd/response_failed "Could not create collection. Not logged in." 406))
+    (catcher/with-logging {}
+      (if-let [auth-id (-> req :authenticated-entity :id)]
+        (let [req-data (-> req :parameters :body)
+              ins-data (assoc req-data :creator_id auth-id :responsible_user_id auth-id)
+              ins-result (jdbc/insert! (rdbms/get-ds) "collections" ins-data)]
+          (sd/logwrite req (str "handle_create-collection: " ins-result))
+          (if-let [result (first ins-result)]
+            (sd/response_ok result)
+            (sd/response_failed "Could not create collection" 406)))
+        (sd/response_failed "Could not create collection. Not logged in." 406)))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-collection [req]
   (try
-    (let [collection (:media-resource req)
-          col-id (:id collection)
-          data (-> req :parameters :body)
-          whcl ["id = ? " col-id]
-          result (jdbc/update! (rdbms/get-ds) :collections data whcl)]
+    (catcher/with-logging {}
+      (let [collection (:media-resource req)
+            col-id (:id collection)
+            data (-> req :parameters :body)
+            whcl ["id = ? " col-id]
+            result (jdbc/update! (rdbms/get-ds) :collections data whcl)]
 
-      (sd/logwrite req (str "handle_update-collection: " col-id result))
+        (sd/logwrite req (str "handle_update-collection: " col-id result))
 
-      (if (= 1 (first result))
-        (sd/response_ok (sd/query-eq-find-one :collections :id col-id))
-        (sd/response_failed "Could not update collection." 422)))
+        (if (= 1 (first result))
+          (sd/response_ok (sd/query-eq-find-one :collections :id col-id))
+          (sd/response_failed "Could not update collection." 422))))
     (catch Exception ex
       (sd/response_exception ex))))
 
 (defn handle_delete-collection [req]
   (try
-    (let [collection (:media-resource req)
-          col-id (:id collection)
-          delquery ["id = ? " col-id]
-          delresult (jdbc/delete! (rdbms/get-ds) :collections delquery)]
-      (sd/logwrite req (str "handle_delete-collection: " col-id delresult))
-      (if (= 1 (first delresult))
-        (sd/response_ok collection)
-        (sd/response_failed (str "Could not delete collection: " col-id) 422)
-        ))
+    (catcher/with-logging {}
+      (let [collection (:media-resource req)
+            col-id (:id collection)
+            delquery ["id = ? " col-id]
+            delresult (jdbc/delete! (rdbms/get-ds) :collections delquery)]
+        (sd/logwrite req (str "handle_delete-collection: " col-id delresult))
+        (if (= 1 (first delresult))
+          (sd/response_ok collection)
+          (sd/response_failed (str "Could not delete collection: " col-id) 422))))
     (catch Exception ex
-      (
-       (logging/error "Could not delete collection: " (ex-message ex))
-       (sd/response_failed (str "Could not delete collection: " (ex-message ex)) 500)
-      )
-      )
-    )
-  )
+      (sd/response_failed (str "Could not delete collection: " (ex-message ex)) 500))))
 
 ; TODO :layout and :sorting are special types
 (def schema_layout_types

@@ -1,21 +1,16 @@
 (ns madek.api.resources.meta-data
-  (:require
-    [clojure.java.jdbc :as jdbc]
-    [clojure.tools.logging :as logging]
-    [logbug.debug :as debug]
-    
-    [madek.api.resources.meta-data.index :as meta-data.index]
-    [madek.api.resources.meta-data.meta-datum :as meta-datum]
-    [madek.api.resources.shared :as sd]
-    [madek.api.utils.rdbms :as rdbms]
-    [reitit.coercion.schema]
-    [reitit.coercion.spec]
-    [schema.core :as s]
-    [cheshire.core :as cheshire]
-    
-    [madek.api.utils.sql :as sql]
-    
-    [madek.api.resources.people :as people]))
+  (:require [cheshire.core :as cheshire]
+            [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
+            [madek.api.resources.meta-data.index :as meta-data.index]
+            [madek.api.resources.meta-data.meta-datum :as meta-datum]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.rdbms :as rdbms]
+            [madek.api.utils.sql :as sql]
+            [reitit.coercion.schema]
+            [reitit.coercion.spec]
+            [schema.core :as s]))
 
 ; TODO create edit session as timestamp for meta-data updates
 
@@ -239,21 +234,22 @@
   [mr meta-key-id kw-id user-id]
 
   (try
-    (jdbc/with-db-transaction [tx (rdbms/get-ds)]
-      (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
+    (catcher/with-logging {}
+      (jdbc/with-db-transaction [tx (rdbms/get-ds)]
+        (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
         ; already has meta-data
-        (if-let [result (db-create-meta-data-keyword tx (:id meta-data) kw-id user-id)]
-          {:meta_data meta-data
-           MD_KEY_KW_DATA result}
-          nil)
+          (if-let [result (db-create-meta-data-keyword tx (:id meta-data) kw-id user-id)]
+            {:meta_data meta-data
+             MD_KEY_KW_DATA result}
+            nil)
 
         ; create meta-data and md-kw
-        (if-let [mdins-result (db-create-meta-data tx mr meta-key-id MD_TYPE_KEYWORDS user-id)]
-          (if-let [ip-result (db-create-meta-data-keyword tx (-> mdins-result :id str) kw-id user-id)]
-            {:meta_data mdins-result
-             MD_KEY_KW_DATA ip-result}
-            nil)
-          nil)))
+          (if-let [mdins-result (db-create-meta-data tx mr meta-key-id MD_TYPE_KEYWORDS user-id)]
+            (if-let [ip-result (db-create-meta-data-keyword tx (-> mdins-result :id str) kw-id user-id)]
+              {:meta_data mdins-result
+               MD_KEY_KW_DATA ip-result}
+              nil)
+            nil))))
     (catch Exception _
       (logging/error "Could not create md keyword" _)
       nil)))
@@ -263,18 +259,19 @@
 (defn handle_create-meta-data-keyword
   [req]
   (try
-    (let [mr (-> req :media-resource)
-          meta-key-id (-> req :parameters :path :meta_key_id)
-          kw-id (-> req :parameters :path :keyword_id)
-          user-id (-> req :authenticated-entity :id str)]
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            kw-id (-> req :parameters :path :keyword_id)
+            user-id (-> req :authenticated-entity :id str)]
 
-      (if-let [result (create_md_and_keyword mr meta-key-id kw-id user-id)]
-        ((sd/logwrite req  (str "handle_create-meta-data-keyword:" "mr-id: " (:id mr) "kw-id: " kw-id "result: " result))
-         (sd/response_ok result))
-        (if-let [retryresult (create_md_and_keyword mr meta-key-id kw-id user-id)]
-          ((sd/logwrite req  (str "handle_create-meta-data-keyword:" "mr-id: " (:id mr) "kw-id: " kw-id "result: " retryresult))
-           (sd/response_ok retryresult))
-          (sd/response_failed "Could not create md keyword" 406))))
+        (if-let [result (create_md_and_keyword mr meta-key-id kw-id user-id)]
+          ((sd/logwrite req  (str "handle_create-meta-data-keyword:" "mr-id: " (:id mr) "kw-id: " kw-id "result: " result))
+           (sd/response_ok result))
+          (if-let [retryresult (create_md_and_keyword mr meta-key-id kw-id user-id)]
+            ((sd/logwrite req  (str "handle_create-meta-data-keyword:" "mr-id: " (:id mr) "kw-id: " kw-id "result: " retryresult))
+             (sd/response_ok retryresult))
+            (sd/response_failed "Could not create md keyword" 406)))))
     (catch Exception ex (sd/response_exception ex))))
 
    
@@ -303,24 +300,25 @@
 (defn handle_delete-meta-data-keyword
   [req]
   (try
-    (let [mr (-> req :media-resource)
-          meta-key-id (-> req :parameters :path :meta_key_id)
-          mdkw-id (-> req :parameters :path :keyword_id)
-          md (db-get-meta-data mr meta-key-id MD_TYPE_KEYWORDS)
-          md-id (-> md :id)
-          delete-result (db-delete-meta-data-keyword (rdbms/get-ds) md-id mdkw-id)
-          mdr (db-get-meta-data-keywords md-id)]
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            mdkw-id (-> req :parameters :path :keyword_id)
+            md (db-get-meta-data mr meta-key-id MD_TYPE_KEYWORDS)
+            md-id (-> md :id)
+            delete-result (db-delete-meta-data-keyword (rdbms/get-ds) md-id mdkw-id)
+            mdr (db-get-meta-data-keywords md-id)]
 
-      (sd/logwrite req (str "handle_delete-meta-data-keyword:"
-                            "mr-id: " (:id mr)
-                            "meta-key: " meta-key-id
-                            "keyword-id: " mdkw-id
-                            "result: " delete-result))
+        (sd/logwrite req (str "handle_delete-meta-data-keyword:"
+                              "mr-id: " (:id mr)
+                              "meta-key: " meta-key-id
+                              "keyword-id: " mdkw-id
+                              "result: " delete-result))
 
-      (if (= 1 (first delete-result))
-        (sd/response_ok {:meta_data md
-                         MD_KEY_KW_DATA mdr})
-        (sd/response_failed "Could not delete md keyword." 406)))
+        (if (= 1 (first delete-result))
+          (sd/response_ok {:meta_data md
+                           MD_KEY_KW_DATA mdr})
+          (sd/response_failed "Could not delete md keyword." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 
@@ -341,21 +339,22 @@
 (defn create_md_and_people
   [mr meta-key-id person-id user-id ]
   (try 
-    (jdbc/with-db-transaction [tx (rdbms/get-ds)]
-      (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
+    (catcher/with-logging {}
+      (jdbc/with-db-transaction [tx (rdbms/get-ds)]
+        (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
         ; already has meta-data
-        (if-let [result (db-create-meta-data-people tx (:id meta-data) person-id user-id)]
-          {:meta_data meta-data
-           MD_KEY_PEOPLE_DATA result}
-          nil)
+          (if-let [result (db-create-meta-data-people tx (:id meta-data) person-id user-id)]
+            {:meta_data meta-data
+             MD_KEY_PEOPLE_DATA result}
+            nil)
 
         ; create meta-data and md-people
-        (if-let [mdins-result (db-create-meta-data tx mr meta-key-id MD_TYPE_PEOPLE user-id)]
-          (if-let [ip-result (db-create-meta-data-people tx (-> mdins-result :id str) person-id user-id)]
-            {:meta_data mdins-result
-             MD_KEY_PEOPLE_DATA ip-result}
-            nil)
-          nil)))
+          (if-let [mdins-result (db-create-meta-data tx mr meta-key-id MD_TYPE_PEOPLE user-id)]
+            (if-let [ip-result (db-create-meta-data-people tx (-> mdins-result :id str) person-id user-id)]
+              {:meta_data mdins-result
+               MD_KEY_PEOPLE_DATA ip-result}
+              nil)
+            nil))))
     (catch Exception _
       (logging/error "Could not create md people" _)
       nil
@@ -366,26 +365,27 @@
 (defn handle_create-meta-data-people
   [req]
   (try
-    (let [mr (-> req :media-resource)
-          meta-key-id (-> req :parameters :path :meta_key_id)
-          person-id (-> req :parameters :path :person_id)
-          user-id (-> req :authenticated-entity :id str)]
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            person-id (-> req :parameters :path :person_id)
+            user-id (-> req :authenticated-entity :id str)]
 
-      (if-let [result (create_md_and_people mr meta-key-id person-id user-id)]
-        ((sd/logwrite req (str "handle_create-meta-data-people:"
-                               "mr-id: " (:id mr)
-                               "meta-key: " meta-key-id
-                               "person-id:" person-id
-                               "result: " result))
-         (sd/response_ok result))
-        (if-let [retryresult (create_md_and_people mr meta-key-id person-id user-id)]
+        (if-let [result (create_md_and_people mr meta-key-id person-id user-id)]
           ((sd/logwrite req (str "handle_create-meta-data-people:"
                                  "mr-id: " (:id mr)
                                  "meta-key: " meta-key-id
                                  "person-id:" person-id
-                                 "result: " retryresult))
-           (sd/response_ok retryresult))
-          (sd/response_failed "Could not create md people" 406))))
+                                 "result: " result))
+           (sd/response_ok result))
+          (if-let [retryresult (create_md_and_people mr meta-key-id person-id user-id)]
+            ((sd/logwrite req (str "handle_create-meta-data-people:"
+                                   "mr-id: " (:id mr)
+                                   "meta-key: " meta-key-id
+                                   "person-id:" person-id
+                                   "result: " retryresult))
+             (sd/response_ok retryresult))
+            (sd/response_failed "Could not create md people" 406)))))
     (catch Exception ex (sd/response_exception ex))))
 
 
@@ -415,25 +415,26 @@
 (defn handle_delete-meta-data-people
   [req]
   (try
-    (let [mr (-> req :media-resource)
-          meta-key-id (-> req :parameters :path :meta_key_id)
-          person-id (-> req :parameters :path :person_id)
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            person-id (-> req :parameters :path :person_id)
           ;md-type MD_TYPE_PEOPLE
-          md (db-get-meta-data mr meta-key-id MD_TYPE_PEOPLE)
-          md-id (-> md :id)
-          mdr-clause ["meta_datum_id = ? AND person_id = ?" md-id person-id]
-          del-result (jdbc/delete! (rdbms/get-ds) :meta_data_people mdr-clause)]
+            md (db-get-meta-data mr meta-key-id MD_TYPE_PEOPLE)
+            md-id (-> md :id)
+            mdr-clause ["meta_datum_id = ? AND person_id = ?" md-id person-id]
+            del-result (jdbc/delete! (rdbms/get-ds) :meta_data_people mdr-clause)]
 
-      (sd/logwrite req (str "handle_delete-meta-data-people:"
-                            "mr-id: " (:id mr)
-                            "meta-key: " meta-key-id
-                            "person-id:" person-id
-                            "result: " del-result))
+        (sd/logwrite req (str "handle_delete-meta-data-people:"
+                              "mr-id: " (:id mr)
+                              "meta-key: " meta-key-id
+                              "person-id:" person-id
+                              "result: " del-result))
 
-      (if (= 1 (first del-result))
-        (sd/response_ok {:meta_data md
-                         MD_KEY_PEOPLE_DATA (db-get-meta-data-people md-id)})
-        (sd/response_failed {:message "Failed to delete meta data people"} 406)))
+        (if (= 1 (first del-result))
+          (sd/response_ok {:meta_data md
+                           MD_KEY_PEOPLE_DATA (db-get-meta-data-people md-id)})
+          (sd/response_failed {:message "Failed to delete meta data people"} 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 
@@ -455,25 +456,25 @@
 (defn- create_md_and_role
   [mr meta-key-id role-id person-id position user-id]
   (try
-    (jdbc/with-db-transaction [tx (rdbms/get-ds)]
-      (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
+    (catcher/with-logging {}
+      (jdbc/with-db-transaction [tx (rdbms/get-ds)]
+        (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
         ;already has meta-data
-        (if-let [result (db-create-meta-data-roles tx (:id meta-data) role-id person-id position)]
-          {:meta_data meta-data
-           MD_KEY_ROLES_DATA result}
-          nil)
-        
-        ;create meta-data and role
-        (if-let [mdins-result (db-create-meta-data tx mr meta-key-id MD_TYPE_ROLES user-id)]
-          (if-let [ip-result (db-create-meta-data-roles
-                              tx
-                              (-> mdins-result :id str)
-                              role-id person-id position)]
-            {:meta_data mdins-result
-             MD_KEY_ROLES_DATA ip-result}
+          (if-let [result (db-create-meta-data-roles tx (:id meta-data) role-id person-id position)]
+            {:meta_data meta-data
+             MD_KEY_ROLES_DATA result}
             nil)
-          nil)
-        ))
+
+        ;create meta-data and role
+          (if-let [mdins-result (db-create-meta-data tx mr meta-key-id MD_TYPE_ROLES user-id)]
+            (if-let [ip-result (db-create-meta-data-roles
+                                tx
+                                (-> mdins-result :id str)
+                                role-id person-id position)]
+              {:meta_data mdins-result
+               MD_KEY_ROLES_DATA ip-result}
+              nil)
+            nil))))
     (catch Exception ex 
       (logging/error "Could not create md role" ex)
       nil)))
@@ -490,19 +491,20 @@
 (defn handle_create-meta-data-role
   [req]
   (try
-    (let [mr (-> req :media-resource)
-          user-id (-> req :authenticated-entity :id str)
-          meta-key-id (-> req :parameters :path :meta_key_id)
-          role-id (-> req :parameters :path :role_id)
-          person-id (-> req :parameters :path :person_id)
-          position (-> req :parameters :path :position)]
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            user-id (-> req :authenticated-entity :id str)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            role-id (-> req :parameters :path :role_id)
+            person-id (-> req :parameters :path :person_id)
+            position (-> req :parameters :path :position)]
 
-      (if-let [result (create_md_and_role mr meta-key-id role-id person-id position user-id)]
-        (handle_create-roles-success req (:id mr) role-id person-id result)
+        (if-let [result (create_md_and_role mr meta-key-id role-id person-id position user-id)]
+          (handle_create-roles-success req (:id mr) role-id person-id result)
 
-        (if-let [retryresult (create_md_and_role mr meta-key-id role-id person-id position user-id)]
-          (handle_create-roles-success req (:id mr) role-id person-id retryresult)
-          (sd/response_failed "Could not create md role." 406))))
+          (if-let [retryresult (create_md_and_role mr meta-key-id role-id person-id position user-id)]
+            (handle_create-roles-success req (:id mr) role-id person-id retryresult)
+            (sd/response_failed "Could not create md role." 406)))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn db-get-meta-data-roles [md-id]

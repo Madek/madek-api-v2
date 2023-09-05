@@ -1,6 +1,7 @@
 (ns madek.api.resources.favorite-media-entries
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
             [madek.api.authorization :as authorization]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -40,30 +41,32 @@
 (defn handle_create-favorite_media_entry
   [req]
   (try
-    (let [user-id (or (-> req :user :id) (-> req :authenticated-entity :id))
-          media_entry (-> req :media_entry)
-          data {:user_id user-id :media_entry_id (:id media_entry)}]
-      (if-let [favorite_media_entry (-> req res-req-name)]
+    (catcher/with-logging {}
+      (let [user-id (or (-> req :user :id) (-> req :authenticated-entity :id))
+            media_entry (-> req :media_entry)
+            data {:user_id user-id :media_entry_id (:id media_entry)}]
+        (if-let [favorite_media_entry (-> req res-req-name)]
         ; already has favorite_media_entry
-        (sd/response_ok favorite_media_entry)
+          (sd/response_ok favorite_media_entry)
         ; create favorite_media_entry entry
-        (if-let [ins_res (first (jdbc/insert! (rdbms/get-ds) res-table-name data))]
+          (if-let [ins_res (first (jdbc/insert! (rdbms/get-ds) res-table-name data))]
 
-          (sd/response_ok ins_res)
-          (sd/response_failed "Could not create favorite_media_entry." 406))))
+            (sd/response_ok ins_res)
+            (sd/response_failed "Could not create favorite_media_entry." 406)))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO logwrite
 (defn handle_delete-favorite_media_entry
   [req]
   (try
-    (let [favorite_media_entry (-> req res-req-name)
-          user-id (:user_id favorite_media_entry)
-          media_entry-id (res-col-name favorite_media_entry)]
-      (if (= 1 (first (jdbc/delete! (rdbms/get-ds) res-table-name ["user_id = ? AND media_entry_id = ?" user-id media_entry-id])))
-        (sd/response_ok favorite_media_entry)
-        (logging/error "Failed delete favorite_media_entry "
-                       "user-id: " user-id "media_entry-id: " media_entry-id)))
+    (catcher/with-logging {}
+      (let [favorite_media_entry (-> req res-req-name)
+            user-id (:user_id favorite_media_entry)
+            media_entry-id (res-col-name favorite_media_entry)]
+        (if (= 1 (first (jdbc/delete! (rdbms/get-ds) res-table-name ["user_id = ? AND media_entry_id = ?" user-id media_entry-id])))
+          (sd/response_ok favorite_media_entry)
+          (logging/error "Failed delete favorite_media_entry "
+                         "user-id: " user-id "media_entry-id: " media_entry-id))))
     (catch Exception ex (sd/response_exception ex))))
 
 

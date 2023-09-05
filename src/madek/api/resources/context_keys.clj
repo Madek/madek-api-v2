@@ -9,7 +9,8 @@
    [madek.api.utils.sql :as sql]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [madek.api.pagination :as pagination]))
+   [madek.api.pagination :as pagination]
+   [logbug.catcher :as catcher]))
 
 
 (defn context_key_transform_ml [context_key]
@@ -77,48 +78,51 @@
 
 (defn handle_create-context_keys
   [req]
-  (try
-    (let [data (-> req :parameters :body)
-          ins-res (jdbc/insert! (rdbms/get-ds) :context_keys data)]
-      
-      (logging/info "handle_create-context_keys: " "\new-data:\n" data "\nresult:\n" ins-res)
+  (try 
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            ins-res (jdbc/insert! (rdbms/get-ds) :context_keys data)]
 
-      (if-let [result (first ins-res)]
+        (logging/info "handle_create-context_keys: " "\new-data:\n" data "\nresult:\n" ins-res)
+
+        (if-let [result (first ins-res)]
         ; TODO clean result
-        (sd/response_ok result)
-        (sd/response_failed "Could not create context_key." 406)))
+          (sd/response_ok result)
+          (sd/response_failed "Could not create context_key." 406))))
     (catch Exception ex (sd/response_exception ex))))
     
 
 (defn handle_update-context_keys
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          id (-> req :parameters :path :id)
-          dwid (assoc data :id id)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            dwid (assoc data :id id)
           ;old-data (-> req :context_key)
-          upd-query (sd/sql-update-clause "id" (str id))
-          upd-result (jdbc/update! (rdbms/get-ds) :context_keys dwid upd-query)]
-      
-      (logging/info "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result)
+            upd-query (sd/sql-update-clause "id" (str id))
+            upd-result (jdbc/update! (rdbms/get-ds) :context_keys dwid upd-query)]
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :context_keys :id id))
-        (sd/response_failed "Could not update context_key." 406)))
+        (logging/info "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result)
+
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :context_keys :id id))
+          (sd/response_failed "Could not update context_key." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_delete-context_key
   [req]
   (try
-    (let [context_key (-> req :context_key)
-          id (-> req :context_key :id)
-          del-query (sd/sql-update-clause "id" id)
-          del-result (jdbc/delete! (rdbms/get-ds) :context_keys del-query)]
+    (catcher/with-logging {}
+      (let [context_key (-> req :context_key)
+            id (-> req :context_key :id)
+            del-query (sd/sql-update-clause "id" id)
+            del-result (jdbc/delete! (rdbms/get-ds) :context_keys del-query)]
 
-      (logging/info "handle_delete-context_key: " id " result: " del-result)
-      (if (= 1 (first del-result))
-        (sd/response_ok context_key)
-        (logging/error "Could not delete context_key: " id)))
+        (logging/info "handle_delete-context_key: " id " result: " del-result)
+        (if (= 1 (first del-result))
+          (sd/response_ok context_key)
+          (logging/error "Could not delete context_key: " id))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn wwrap-find-context_key [param colname send404]

@@ -1,13 +1,12 @@
 (ns madek.api.resources.custom-urls 
-  (:require
-   [clojure.java.jdbc :as jdbc]
-   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-   [madek.api.utils.sql :as sql]
-   [clojure.tools.logging :as logging]
-   [madek.api.resources.shared :as sd]
-   [reitit.coercion.schema]
-   [schema.core :as s]
-   ))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [madek.api.utils.sql :as sql]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 
 (defn build-query [query-params]
@@ -56,25 +55,26 @@
 (defn handle_create-custom-urls
   [req]
   (try
-    (let [u-id (-> req :authenticated-entity :id)
-          mr (-> req :media-resource)
-          mr-type (-> mr :type)
-          mr-id (-> mr :id str)
-          data (-> req :parameters :body)
-          dwid (if (= mr-type "MediaEntry")
-                 (assoc data :media_entry_id mr-id :creator_id u-id :updator_id u-id)
-                 (assoc data :collection_id mr-id :creator_id u-id :updator_id u-id))
-          ins-res (jdbc/insert! (rdbms/get-ds) :custom_urls dwid)]
-      
-      (sd/logwrite req (str "handle_create-custom-urls"
-                            "mr-type: " mr-type
-                            "mr-id: " mr-id
-                            "\nnew-data\n" dwid
-                            "\nresult:\n" ins-res))
+    (catcher/with-logging {}
+      (let [u-id (-> req :authenticated-entity :id)
+            mr (-> req :media-resource)
+            mr-type (-> mr :type)
+            mr-id (-> mr :id str)
+            data (-> req :parameters :body)
+            dwid (if (= mr-type "MediaEntry")
+                   (assoc data :media_entry_id mr-id :creator_id u-id :updator_id u-id)
+                   (assoc data :collection_id mr-id :creator_id u-id :updator_id u-id))
+            ins-res (jdbc/insert! (rdbms/get-ds) :custom_urls dwid)]
 
-      (if-let [result (first ins-res)]
-        (sd/response_ok result)
-        (sd/response_failed "Could not create custom_url." 406)))
+        (sd/logwrite req (str "handle_create-custom-urls"
+                              "mr-type: " mr-type
+                              "mr-id: " mr-id
+                              "\nnew-data\n" dwid
+                              "\nresult:\n" ins-res))
+
+        (if-let [result (first ins-res)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create custom_url." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 
@@ -82,28 +82,29 @@
 (defn handle_update-custom-urls
   [req]
   (try
-    (let [u-id (-> req :authenticated-entity :id)
-          mr (-> req :media-resource)
-          mr-type (-> mr :type)
-          mr-id (-> mr :id str)
-          col-name (if (= mr-type "MediaEntry")
-                     :media_entry_id
-                     :collection_id)
-          data (-> req :parameters :body)
-          dwid (if (= mr-type "MediaEntry")
-                 (assoc data :media_entry_id mr-id :updator_id u-id)
-                 (assoc data :collection_id mr-id :updator_id u-id))
-          upd-result (jdbc/update! (get-ds) :custom_urls dwid (sd/sql-update-clause col-name mr-id))]
+    (catcher/with-logging {}
+      (let [u-id (-> req :authenticated-entity :id)
+            mr (-> req :media-resource)
+            mr-type (-> mr :type)
+            mr-id (-> mr :id str)
+            col-name (if (= mr-type "MediaEntry")
+                       :media_entry_id
+                       :collection_id)
+            data (-> req :parameters :body)
+            dwid (if (= mr-type "MediaEntry")
+                   (assoc data :media_entry_id mr-id :updator_id u-id)
+                   (assoc data :collection_id mr-id :updator_id u-id))
+            upd-result (jdbc/update! (get-ds) :custom_urls dwid (sd/sql-update-clause col-name mr-id))]
 
-      (sd/logwrite req (str "handle_update-custom-urls"
-                            "\nmr-type: " mr-type
-                            "\nmr-id: " mr-id
-                            "\nnew-data\n" dwid
-                            "\nresult:\n" upd-result))
+        (sd/logwrite req (str "handle_update-custom-urls"
+                              "\nmr-type: " mr-type
+                              "\nmr-id: " mr-id
+                              "\nnew-data\n" dwid
+                              "\nresult:\n" upd-result))
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :custom_urls col-name mr-id))
-        (sd/response_failed "Could not update custom_url." 406)))
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :custom_urls col-name mr-id))
+          (sd/response_failed "Could not update custom_url." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO use wrapper? no
@@ -111,27 +112,28 @@
 (defn handle_delete-custom-urls
   [req]
   (try
-    (let [u-id (-> req :authenticated-entity :id)
-          mr (-> req :media-resource)
-          mr-type (-> mr :type)
-          mr-id (-> mr :id str)
-          col-name (if (= mr-type "MediaEntry")
-                     :media_entry_id
-                     :collection_id)]
-      (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
-        (let [del-result (jdbc/delete! (rdbms/get-ds)
-                                       :custom_urls
-                                       (sd/sql-update-clause col-name mr-id))]
-          
-          (sd/logwrite req (str "handle_delete-custom-urls:"
-                                "\nmr-type: " mr-type
-                                "\nmr-id: " mr-id
-                                "\nresult:\n" del-result))
-          
-          (if (= 1 (first del-result))
-            (sd/response_ok del-data)
-            (sd/response_failed (str "Could not delete custom_url " col-name " : " mr-id) 406)))
-        (sd/response_failed (str "No such custom_url " col-name " : " mr-id) 404)))
+    (catcher/with-logging {}
+      (let [u-id (-> req :authenticated-entity :id)
+            mr (-> req :media-resource)
+            mr-type (-> mr :type)
+            mr-id (-> mr :id str)
+            col-name (if (= mr-type "MediaEntry")
+                       :media_entry_id
+                       :collection_id)]
+        (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
+          (let [del-result (jdbc/delete! (rdbms/get-ds)
+                                         :custom_urls
+                                         (sd/sql-update-clause col-name mr-id))]
+
+            (sd/logwrite req (str "handle_delete-custom-urls:"
+                                  "\nmr-type: " mr-type
+                                  "\nmr-id: " mr-id
+                                  "\nresult:\n" del-result))
+
+            (if (= 1 (first del-result))
+              (sd/response_ok del-data)
+              (sd/response_failed (str "Could not delete custom_url " col-name " : " mr-id) 406)))
+          (sd/response_failed (str "No such custom_url " col-name " : " mr-id) 404))))
     (catch Exception ex (sd/response_exception ex))))
 
 (def schema_create_custom_url

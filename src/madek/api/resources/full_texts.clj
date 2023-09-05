@@ -1,14 +1,14 @@
 (ns madek.api.resources.full-texts
-   (:require
-    [clojure.tools.logging :as logging]
-    [madek.api.resources.shared :as sd]
-    [reitit.coercion.schema]
-    [schema.core :as s]
-    [clojure.java.jdbc :as jdbc]
-    [madek.api.utils.rdbms :as rdbms]
-    [madek.api.utils.auth :refer [wrap-authorize-admin!]]  
-    [madek.api.pagination :as pagination]
-    [madek.api.utils.sql :as sql]))
+   (:require [clojure.java.jdbc :as jdbc]
+             [clojure.tools.logging :as logging]
+             [logbug.catcher :as catcher]
+             [madek.api.pagination :as pagination]
+             [madek.api.resources.shared :as sd]
+             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+             [madek.api.utils.rdbms :as rdbms]
+             [madek.api.utils.sql :as sql]
+             [reitit.coercion.schema]
+             [schema.core :as s]))
 
 (defn handle_list-full_texts
   [req]
@@ -39,58 +39,60 @@
 (defn handle_create-full_texts
   [req]
   (try
-    (let [rdata (-> req :parameters :body)
-          mr-id (or (:media_resource_id rdata)
-                    (-> req :parameters :path :media_resource_id)
-                    (-> req :parameters :path :collection_id)
-                    (-> req :parameters :path :media_entry_id))
-          ins-data (assoc rdata :media_resource_id mr-id)
-          ins-res (jdbc/insert! (rdbms/get-ds) :full_texts ins-data)]
-      
-      (logging/info "handle_create-full_texts: " "\nnew-data:\n" ins-data "\nresult:\n" ins-res)
+    (catcher/with-logging {}
+      (let [rdata (-> req :parameters :body)
+            mr-id (or (:media_resource_id rdata)
+                      (-> req :parameters :path :media_resource_id)
+                      (-> req :parameters :path :collection_id)
+                      (-> req :parameters :path :media_entry_id))
+            ins-data (assoc rdata :media_resource_id mr-id)
+            ins-res (jdbc/insert! (rdbms/get-ds) :full_texts ins-data)]
 
-      (if-let [result (first ins-res)]
-        (sd/response_ok result)
-        (sd/response_failed "Could not create full_text." 406)))
+        (logging/info "handle_create-full_texts: " "\nnew-data:\n" ins-data "\nresult:\n" ins-res)
+
+        (if-let [result (first ins-res)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create full_text." 406))))
     (catch Exception e (sd/response_exception e))))
 
 
 (defn handle_update-full_texts
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          mr-id (or (:media_resource_id data)
-                    (-> req :parameters :path :media_resource_id)
-                    (-> req :parameters :path :collection_id)
-                    (-> req :parameters :path :media_entry_id)
-                    )
-          dwid (assoc data :media_resource_id mr-id)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            mr-id (or (:media_resource_id data)
+                      (-> req :parameters :path :media_resource_id)
+                      (-> req :parameters :path :collection_id)
+                      (-> req :parameters :path :media_entry_id))
+            dwid (assoc data :media_resource_id mr-id)
         ;old-data (-> req :full_text)
-          upd-query (sd/sql-update-clause "media_resource_id" (str mr-id))
-          upd-result (jdbc/update! (rdbms/get-ds) :full_texts dwid upd-query)]
-      
-      (logging/info "handle_update-full_texts: " mr-id "\new-data:\n" dwid "\nresult:\n" upd-result)
+            upd-query (sd/sql-update-clause "media_resource_id" (str mr-id))
+            upd-result (jdbc/update! (rdbms/get-ds) :full_texts dwid upd-query)]
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :full_texts :media_resource_id mr-id))
-        (sd/response_failed "Could not update full_text." 406)))
+        (logging/info "handle_update-full_texts: " mr-id "\new-data:\n" dwid "\nresult:\n" upd-result)
+
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :full_texts :media_resource_id mr-id))
+          (sd/response_failed "Could not update full_text." 406))))
     (catch Exception e (sd/response_exception e)))
   )
 
 (defn handle_delete-full_texts
   [req]
   (try
-    (let [full-text (-> req :full_text)
-          mr-id (:media_resource_id full-text)
-          del-result (jdbc/delete! (rdbms/get-ds)
-                                   :full_texts
-                                   ["media_resource_id = ?" mr-id])]
-      
-      (logging/info "handle_delete-full_texts: " mr-id " result: " del-result)
+    (catcher/with-logging {}
+      (let [full-text (-> req :full_text)
+            mr-id (:media_resource_id full-text)
+            del-result (jdbc/delete! (rdbms/get-ds)
+                                     :full_texts
+                                     ["media_resource_id = ?" mr-id])]
 
-      (if (= 1 (first del-result))
-        (sd/response_ok full-text)
-        (logging/error "Could not delete full_text " mr-id)))
+        (logging/info "handle_delete-full_texts: " mr-id " result: " del-result)
+
+        (if (= 1 (first del-result))
+          (sd/response_ok full-text)
+          (logging/error "Could not delete full_text " mr-id))))
     (catch Exception e (sd/response_exception e))))
 
 

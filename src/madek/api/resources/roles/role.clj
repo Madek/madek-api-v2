@@ -1,6 +1,7 @@
 (ns madek.api.resources.roles.role
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -63,53 +64,54 @@
 (defn handle_create-role
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          auth-id (-> req :authenticated-entity :id)
-          ins-data (assoc data :creator_id auth-id)
-          ins-res (jdbc/insert! (rdbms/get-ds) :roles ins-data)]
-      
-      (logging/info "handle_create-role: " "\new-data:\n" data "\nresult:\n" ins-res)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            auth-id (-> req :authenticated-entity :id)
+            ins-data (assoc data :creator_id auth-id)
+            ins-res (jdbc/insert! (rdbms/get-ds) :roles ins-data)]
 
-      (if-let [result (first ins-res)]
-       (sd/response_ok (transform-ml-role result))
-        (sd/response_failed "Could not create role." 406)))
+        (logging/info "handle_create-role: " "\new-data:\n" data "\nresult:\n" ins-res)
+
+        (if-let [result (first ins-res)]
+          (sd/response_ok (transform-ml-role result))
+          (sd/response_failed "Could not create role." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 
 (defn handle_update-role
   [req]
   (try
-    (let [data (-> req :parameters :body)
-          id (-> req :parameters :path :id)
-          dwid (assoc data :id id)
-          upd-query (sd/sql-update-clause "id" (str id))
-          upd-result (jdbc/update! (rdbms/get-ds) :roles dwid upd-query)]
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            dwid (assoc data :id id)
+            upd-query (sd/sql-update-clause "id" (str id))
+            upd-result (jdbc/update! (rdbms/get-ds) :roles dwid upd-query)]
 
-      (logging/info "handle_update-role: " id "\nnew-data\n" dwid "\nupd-result\n" upd-result)
+        (logging/info "handle_update-role: " id "\nnew-data\n" dwid "\nupd-result\n" upd-result)
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (transform-ml-role
-                         (sd/query-eq-find-one :roles :id id)))
-        (sd/response_failed "Could not update role." 406))
-      )
+        (if (= 1 (first upd-result))
+          (sd/response_ok (transform-ml-role
+                           (sd/query-eq-find-one :roles :id id)))
+          (sd/response_failed "Could not update role." 406))))
     (catch Exception ex (sd/response_exception ex)))
   )
 
 (defn handle_delete-role
   [req]
   (try
-    (let [id (-> req :parameters :path :id)]
-      (if-let [role (sd/query-eq-find-one :roles :id id)]
-        
-        (let [del-query (sd/sql-update-clause "id" id)
-              del-result (jdbc/delete! (rdbms/get-ds) :roles del-query)]
-          (logging/info "handle_delete-role: " id " result: " del-result)
-          (if (= 1 (first del-result))
-            (sd/response_ok (transform-ml-role role))
-            (sd/response_failed "Could not delete role." 406)))
-        
-        (sd/response_failed "No such role." 404)
-      ))
+    (catcher/with-logging {}
+      (let [id (-> req :parameters :path :id)]
+        (if-let [role (sd/query-eq-find-one :roles :id id)]
+
+          (let [del-query (sd/sql-update-clause "id" id)
+                del-result (jdbc/delete! (rdbms/get-ds) :roles del-query)]
+            (logging/info "handle_delete-role: " id " result: " del-result)
+            (if (= 1 (first del-result))
+              (sd/response_ok (transform-ml-role role))
+              (sd/response_failed "Could not delete role." 406)))
+
+          (sd/response_failed "No such role." 404))))
     (catch Exception ex (sd/response_exception ex))))
 
 ;### Debug ####################################################################

@@ -188,13 +188,14 @@
 (defn create-user-permissions
   [resource mr-type user-id data]
   (try
-    (let [mr-id (:id resource)
-          tname (user-table mr-type)
-          insdata (assoc data :user_id user-id (resource-key mr-type) mr-id)]
-      (logging/info "create-user-permissions" mr-id mr-type user-id tname insdata)
-      (if-let [insresult (jdbc/insert! (rdbms/get-ds) tname insdata)]
-        (first insresult)
-        nil))
+    (catcher/with-logging {}
+      (let [mr-id (:id resource)
+            tname (user-table mr-type)
+            insdata (assoc data :user_id user-id (resource-key mr-type) mr-id)]
+        (logging/info "create-user-permissions" mr-id mr-type user-id tname insdata)
+        (if-let [insresult (jdbc/insert! (rdbms/get-ds) tname insdata)]
+          (first insresult)
+          nil)))
     (catch Exception ex
       (logging/error "Could not create resource user permissions." (ex-message ex)))))
 
@@ -202,14 +203,15 @@
 (defn delete-user-permissions
   [resource mr-type user-id]
   (try
-    (let [mr-id (:id resource)
-          tname (user-table mr-type)
-          delquery (sql-cls-resource-and mr-type mr-id :user_id user-id)
-          delresult (jdbc/delete! (rdbms/get-ds) tname delquery)]
-      (logging/info "delete-user-permissions: " mr-id user-id delresult)
-      (if (= 1 (first delresult))
-        true
-        false))
+    (catcher/with-logging {}
+      (let [mr-id (:id resource)
+            tname (user-table mr-type)
+            delquery (sql-cls-resource-and mr-type mr-id :user_id user-id)
+            delresult (jdbc/delete! (rdbms/get-ds) tname delquery)]
+        (logging/info "delete-user-permissions: " mr-id user-id delresult)
+        (if (= 1 (first delresult))
+          true
+          false)))
     (catch Exception ex
       ((logging/error "Could not delete resource user permissions." (ex-message ex))
        
@@ -258,13 +260,14 @@
 (defn create-group-permissions
   [resource mr-type group-id data]
   (try
-    (let [mr-id (:id resource)
-          tname (group-table mr-type)
-          insdata (assoc data :group_id group-id (resource-key mr-type) mr-id)]
-      (logging/info "create-group-permissions" mr-id mr-type group-id tname insdata)
-      (if-let [insresult (jdbc/insert! (rdbms/get-ds) tname insdata)]
-        (first insresult)
-        nil))
+    (catcher/with-logging {}
+      (let [mr-id (:id resource)
+            tname (group-table mr-type)
+            insdata (assoc data :group_id group-id (resource-key mr-type) mr-id)]
+        (logging/info "create-group-permissions" mr-id mr-type group-id tname insdata)
+        (if-let [insresult (jdbc/insert! (rdbms/get-ds) tname insdata)]
+          (first insresult)
+          nil)))
     (catch Exception ex
       (logging/error "ERROR: Could not create resource group permissions." (ex-message ex)))))
 
@@ -272,14 +275,15 @@
 (defn delete-group-permissions
   [resource mr-type group-id]
   (try
-    (let [mr-id (:id resource)
-          tname (group-table mr-type)
-          delquery (sql-cls-resource-and mr-type mr-id :group_id group-id)
-          delresult (jdbc/delete! (rdbms/get-ds) tname delquery)]
-      (logging/info "delete-group-permissions: " mr-id group-id delresult)
-      (if (= 1 (first delresult))
-        true
-        false))
+    (catcher/with-logging {}
+      (let [mr-id (:id resource)
+            tname (group-table mr-type)
+            delquery (sql-cls-resource-and mr-type mr-id :group_id group-id)
+            delresult (jdbc/delete! (rdbms/get-ds) tname delquery)]
+        (logging/info "delete-group-permissions: " mr-id group-id delresult)
+        (if (= 1 (first delresult))
+          true
+          false)))
     (catch Exception ex
       ((logging/error "ERROR: Could not delete resource group permissions." (ex-message ex))
        false))))

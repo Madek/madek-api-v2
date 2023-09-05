@@ -1,12 +1,11 @@
 (ns madek.api.resources.static-pages
-  (:require
-   [clojure.java.jdbc :as jdbc]
-   [clojure.tools.logging :as logging]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-   
-   [reitit.coercion.schema]
-   [schema.core :as s]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 
 (defn handle_list-static_pages
@@ -23,56 +22,59 @@
 
 (defn handle_create-static_page [req]
   (try
-    (let [data (-> req :parameters :body)
-          contents-json (sd/try-as-json (:contents data))
-          ins-data (assoc data :contents contents-json)
-          ins-res (jdbc/insert! (rdbms/get-ds)
-                                :static_pages
-                                ins-data)]
-      
-      (logging/info "handle_create-static-page:" 
-                    "\ninsert data:\n" ins-data
-                    "\nresult:\n " ins-res)
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            contents-json (sd/try-as-json (:contents data))
+            ins-data (assoc data :contents contents-json)
+            ins-res (jdbc/insert! (rdbms/get-ds)
+                                  :static_pages
+                                  ins-data)]
 
-      (if-let [result (first ins-res) ]
-        (sd/response_ok result)
-        (sd/response_failed "Could not create static_page." 406)))
+        (logging/info "handle_create-static-page:"
+                      "\ninsert data:\n" ins-data
+                      "\nresult:\n " ins-res)
+
+        (if-let [result (first ins-res)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create static_page." 406))))
     (catch Exception e (sd/response_exception e))))
 
 (defn handle_update-static_page [req]
   (try
-    (let [data (-> req :parameters :body)
-          id (-> req :parameters :path :id)
-          contents-json (sd/try-as-json (:contents data))
-          dwid (assoc data :id id :contents contents-json)
-          upd-query (sd/sql-update-clause "id" (str id))
-          upd-result (jdbc/update! (rdbms/get-ds)
-                                   :static_pages
-                                   dwid upd-query)]
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            id (-> req :parameters :path :id)
+            contents-json (sd/try-as-json (:contents data))
+            dwid (assoc data :id id :contents contents-json)
+            upd-query (sd/sql-update-clause "id" (str id))
+            upd-result (jdbc/update! (rdbms/get-ds)
+                                     :static_pages
+                                     dwid upd-query)]
 
-      (logging/info "handle_update-static_pages: "
-                    "\nid:\n" id
-                    "\nnew-data:\n" dwid
-                    "\nupd-result:" upd-result)
+        (logging/info "handle_update-static_pages: "
+                      "\nid:\n" id
+                      "\nnew-data:\n" dwid
+                      "\nupd-result:" upd-result)
 
-      (if (= 1 (first upd-result))
-        (sd/response_ok (sd/query-eq-find-one :static_pages :id id))
-        (sd/response_failed "Could not update static_page." 406)))
+        (if (= 1 (first upd-result))
+          (sd/response_ok (sd/query-eq-find-one :static_pages :id id))
+          (sd/response_failed "Could not update static_page." 406))))
     (catch Exception e (sd/response_exception e))))
 
 (defn handle_delete-static_page [req]
   (try
-    (let [olddata (-> req :static_page)
-          id (-> req :parameters :path :id)
-          delresult (jdbc/delete! (rdbms/get-ds)
-                                  :static_pages
-                                  ["id = ?" id])]
-      (logging/info "handle_delete-static_page: "
-                    " id: " id
-                    " result: " delresult)
-      (if (= 1 (first delresult))
-        (sd/response_ok olddata)
-        (sd/response_failed "Could not delete static page." 422)))
+    (catcher/with-logging {}
+      (let [olddata (-> req :static_page)
+            id (-> req :parameters :path :id)
+            delresult (jdbc/delete! (rdbms/get-ds)
+                                    :static_pages
+                                    ["id = ?" id])]
+        (logging/info "handle_delete-static_page: "
+                      " id: " id
+                      " result: " delresult)
+        (if (= 1 (first delresult))
+          (sd/response_ok olddata)
+          (sd/response_failed "Could not delete static page." 422))))
     (catch Exception e (sd/response_exception e))))
 
 (defn wwrap-find-static_page [param]
