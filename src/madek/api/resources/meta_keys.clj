@@ -114,6 +114,7 @@
       (sd/response_failed "Could not delete meta-key." 406))
     ))
 
+
 (def schema_create-meta-key
   {:id s/Str
    :is_extensible_list s/Bool
@@ -123,22 +124,22 @@
                                    "MetaDatum::Keywords"
                                    "MetaDatum::People"
                                    "MetaDatum::Roles")
-   :keywords_alphabetical_order s/Bool
-   :position s/Int
+   (s/optional-key :keywords_alphabetical_order) s/Bool
+   (s/optional-key :position) s/Int
    :is_enabled_for_media_entries s/Bool
    :is_enabled_for_collections s/Bool
    :vocabulary_id s/Str
 
    (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
-   :text_type s/Str
-   :allowed_rdf_class (s/maybe s/Str)
+   (s/optional-key :text_type) s/Str
+   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
 
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)
-   :hints (s/maybe sd/schema_ml_list)
-   :documentation_urls (s/maybe sd/schema_ml_list)
+   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
+   (s/optional-key :hints) (s/maybe sd/schema_ml_list)
+   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
 
-   :admin_comment (s/maybe s/Str)
+   (s/optional-key :admin_comment) (s/maybe s/Str)
 
    })
 
@@ -205,6 +206,18 @@
          :admin_comment (s/maybe s/Str)
          (s/optional-key :admin_comment_2) (s/maybe s/Str)))
 
+(def schema_query-meta-key
+  {
+   (s/optional-key :id) s/Str
+   (s/optional-key :vocabulary_id) s/Str
+   (s/optional-key :meta_datum_object_type) s/Str ; TODO enum
+   (s/optional-key :is_enabled_for_collections) s/Bool
+   (s/optional-key :is_enabled_for_media_entries) s/Bool
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int
+  })
+
+
 (defn wwrap-find-meta_key [param colname send404]
   (fn [handler]
     (fn [request] (sd/req-find-data request handler
@@ -221,10 +234,7 @@
            :handler handle_adm-query-meta-keys
            
            :swagger {:produces "application/json"}
-           :parameters {:query {(s/optional-key :page) s/Int
-                                (s/optional-key :count) s/Int
-                                    ;(s/optional-key :full-data) s/Bool
-                                (s/optional-key :vocabulary_id) s/Str}} ; TODO test
+           :parameters {:query schema_query-meta-key}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
                ; TODO response coercion for full data
@@ -285,19 +295,16 @@
      
      }]])
 
-; TODO meta_keys post, patch, delete
+
 ; TODO tests
 (def query-routes
   ["/meta-keys"
    ["/" 
-    {:get {:summary (sd/sum_usr "Get all meta-key ids")
+    {:get {:summary (sd/sum_usr_pub "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
            :swagger {:produces "application/json"}
-           :parameters {:query {(s/optional-key :page) s/Int
-                                (s/optional-key :count) s/Int
-                                    ;(s/optional-key :full-data) s/Bool
-                                (s/optional-key :vocabulary_id) s/Str}} ; TODO test
+           :parameters {:query schema_query-meta-key}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
 
@@ -308,7 +315,7 @@
          }]
 
    ["/:id" 
-    {:get {:summary (sd/sum_usr "Get meta-key by id")
+    {:get {:summary (sd/sum_usr_pub "Get meta-key by id")
            :description "Get meta-key by id. Returns 404, if no such meta-key exists."
            :swagger {:produces "application/json"}
            :content-type "application/json"

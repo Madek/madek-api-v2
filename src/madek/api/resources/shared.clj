@@ -117,6 +117,8 @@
   [(str col-name " = ?") row-data])
   ([col-name row-data col-name2 row-data2]
    [(str col-name " = ? AND " col-name2 " = ? ") row-data row-data2])
+  ([col-name row-data col-name2 row-data2 col-name3 row-data3]
+   [(str col-name " = ? AND " col-name2 " = ? AND " col-name3 " = ? ") row-data row-data2 row-data3])
   )
 
 (defn hsql-upd-clause-format
@@ -210,13 +212,9 @@
 (defn logwrite
   "Logs requests authed user id "
   [request msg] 
-  (let [auth-entity (-> request :authenticated-entity)]
-   (logging/info
-    "WRITE: "
-    (if (nil? auth-entity)
-      "anonymous; "
-      (str "user: " (:id auth-entity) "; "))
-    "M: " msg)))
+  (if-let [auth-id (-> request :authenticated-entity :id)]
+    (logging/info "WRITE: User: " auth-id "; Message: " msg)
+    (logging/info "WRITE: anonymous; Message: " msg)))
   
   ;([auth-entity msg entity]
   ; (logging/info
@@ -236,6 +234,7 @@
    If it exists it is associated with the request as reqkey"
   [request handler path-param db_table db_col_name reqkey send404]
   (let [search (-> request :parameters :path path-param)]
+    (logging/info "req-find-data: " search " " db_table " " db_col_name)
     (if-let [result-db (query-eq-find-one db_table db_col_name search)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)
@@ -472,6 +471,7 @@
 (defn sum_todo [text] (apply str "TODO: " text))
 (defn sum_pub [text] (apply str "PUBLIC Context: " text))
 (defn sum_usr [text] (apply str "USER Context: " text))
+(defn sum_usr_pub [text] (apply str "PUBLIC/USER Context: " text))
 (defn sum_adm [text] (apply str "ADMIN Context: " text))
 
 (defn sum_cnv [text] (apply str text " " s_cnv_acc))
