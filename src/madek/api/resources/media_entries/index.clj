@@ -315,7 +315,7 @@
         (let [data (query-index-resources request)
               result (build-result collection-id data)]
           (sd/response_ok result)))
-      (catch Exception e (merge (ex-data e) {:body {:message (.getMessage e)}})))))
+      (catch Exception e (sd/response_exception e))))
 
  (defn get-index_related_data [{{{collection-id :collection_id} :query} :parameters :as request}]
    (try
@@ -324,7 +324,7 @@
              data (query-index-resources request)
              result (build-result-related-data collection-id user-id data)]
          (sd/response_ok result)))
-     (catch Exception e (merge (ex-data e) {:body {:message (.getMessage e)}})))))
+     (catch Exception e (sd/response_exception e))))
 
 
 
