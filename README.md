@@ -1,18 +1,6 @@
-# The Madek API
+# The Madek API2
 
-The madek-api is a JSON / JSON-ROA API for Madek.
-
-
-### TODOs Users and Groups
-
-* DB schema refactoring users: zhdkid -> institutional_id
-
-* resource `/users/`, `/users/:id` GET, POST, PATCH
-
-* resource `/groups/:group_id/users/`  `/groups/:id/users/:user_id` GET, PUT, DELETE
-* (???) resource `/users/:user_id/groups/`  `/groups/:id/users/:user_id` GET, PUT, DELETE
-
-
+The madek-api2 is a JSON API for Madek.
 
 ## Development
 
@@ -37,6 +25,7 @@ can be submitted as in the following if this is not the case:
 ### Starting up the Server
 
 Either `lein run` or with-in the REPL  `(-main)`.
+Or `./bin/clj-run`
 
 ### Running the Tests
 
@@ -45,3 +34,9 @@ When the server is running (!)
     bundle && ./bin/rspec
 
 Note, there is no special environment as in rails.
+
+### Add Dev-Users
+
+Run clojure tests to add two users for development and testing
+
+`clj -X:test :dirs '["test"]'`

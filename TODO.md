@@ -1,18 +1,32 @@
 # Todos and Notes
 
+## TODO Review (by Alex)
+
+- groups
+- keywords
+- media_file
+- meta_keys
+- people
+- previews
+- users
+
 ## Fragen
 
-### Frage: wer darf full-texts anlegen? nur der admin? wird das generiert?
+### Frage: Permissions: wer darf full-texts anlegen? nur der admin? wird das generiert?
 
-### FRAGE: user auth: create token for user
+### FRAGE: Permissions: user auth: create token for user?
 
-### FRAGE: user create password via admin?
+### FRAGE: Permissions: user self edit? Welche Felder? Neues Passwort ?
 
-### FRAGE: fix token only auth (method and admin)
+### FRAGE: Permissions: user create password via admin?
 
-### FRAGE: fix session auth (new cookie)
+### FRAGE: fix token only auth (method and admin): Was wird eh ersetzt?
 
-### FRAGE: user self edit?
+### FRAGE: fix session auth (new cookie): Was wird eh ersetzt?
+
+### FRAGE: Oettli: delegations
+
+#### FRAGE: Oettli: delegations_workflows
 
 ## TODO datalayer
 
@@ -80,11 +94,9 @@ Description, docu:
 
 ### TODO usage_terms: get the most recent one ?!? order by updated_at ?
 
-### meta_data try catch logwrite text/json
+### workflows - response coercion: jsonb not hstore conversion problem
 
-### workflows - jsonb not hstore conversion problem
-
-### users_workflows
+### updated_at created_at coercion
 
 ### meta_data_type MediaEntry
 
@@ -102,17 +114,19 @@ Description, docu:
 
 - edit self
 
+### confidential_links
+
 ### rdf_classes
 
-### users-workflows
+### sections
+
+### users_workflows
+
+### visualizations
 
 ## Admin aspects
 
-### FRAGE: delegations
-
-#### FRAGE: delegations_workflows
-
-## Notes on setup
+## Notes on setup (OLD)
 
 ### setup db (old datalayer)
 
@@ -161,38 +175,3 @@ RAILS_ENV=test ./bin/rerun_db_migrations
 ~~~ drop dbs
 bundle exec rails db:drop
 ~~~
-
-### run api
-
-./bin/clj-run
-
-### run clojure tests to add two users for testing
-
-clj -X:test :dirs '["test"]'
-
-
-
-
-
-
-## TODO
-Review:
-groups
-keywords
-
-media entries
-media file
-- download or show/stream headers
-meta_keys
-
-people
-- normal user create person
-previews
-
-users
-- edit self
-rdf_classes
-meta_data_type MediaEntry
-
-users-workflows
-rdf-classes
