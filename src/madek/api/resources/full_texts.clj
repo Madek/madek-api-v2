@@ -174,7 +174,7 @@
 ; TODO full_texts: test wrap auth for collection
 (def collection-routes
   [["/collection/:collection_id/full_text"
-    {:get {:summary (sd/sum_usr "Get full_text.")
+    {:get {:summary (sd/sum_usr_pub "Get full_text.")
            :handler handle_get-full_text
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str}}
@@ -182,7 +182,7 @@
                         sd/ring-wrap-authorization-edit-metadata
                         (wrap-find-full_text :collection_id true)]}
      
-     :post {:summary (sd/sum_adm "Create full_text for collection")
+     :post {:summary (sd/sum_usr "Create full_text for collection")
             :swagger {:consumes "application/json"
                       :produces "application/json"}
             :handler handle_create-full_texts
@@ -192,7 +192,7 @@
             :middleware [sd/ring-wrap-add-media-resource
                          sd/ring-wrap-authorization-edit-metadata]}
      
-     :put {:summary (sd/sum_adm "Update full_text for collection.")
+     :put {:summary (sd/sum_usr "Update full_text for collection.")
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:collection_id s/Str}
                           :body {:text s/Str}}
@@ -201,7 +201,7 @@
                           (wrap-find-full_text :collection_id true)]
              :handler handle_update-full_texts}
 
-     :delete {:summary (sd/sum_adm "Delete full_text.")
+     :delete {:summary (sd/sum_usr "Delete full_text.")
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Str}}
               :middleware [sd/ring-wrap-add-media-resource
@@ -213,7 +213,7 @@
 ; TODO full_texts: test wrap auth for media entry
 (def entry-routes
   [["/media-entry/:media_entry_id/full_text"
-    {:get {:summary (sd/sum_usr "Get full_text.")
+    {:get {:summary (sd/sum_usr_pub "Get full_text.")
            :handler handle_get-full_text
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}}
@@ -221,7 +221,7 @@
                         sd/ring-wrap-authorization-view
                         (wrap-find-full_text :media_entry_id true)]}
 
-     :post {:summary (sd/sum_adm "Create full_text for collection")
+     :post {:summary (sd/sum_usr "Create full_text for collection")
             :swagger {:consumes "application/json"
                       :produces "application/json"}
             :handler handle_create-full_texts
@@ -231,7 +231,7 @@
             :middleware [sd/ring-wrap-add-media-resource
                          sd/ring-wrap-authorization-edit-metadata]}
 
-     :put {:summary (sd/sum_adm "Update full_text for collection.")
+     :put {:summary (sd/sum_usr "Update full_text for collection.")
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :body {:text s/Str}}
@@ -240,7 +240,7 @@
                         (wrap-find-full_text :media_entry_id true)]
            :handler handle_update-full_texts}
 
-     :delete {:summary (sd/sum_adm "Delete full_text.")
+     :delete {:summary (sd/sum_usr "Delete full_text.")
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:media_entry_id s/Str}}
               :middleware [sd/ring-wrap-add-media-resource

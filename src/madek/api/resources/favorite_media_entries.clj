@@ -120,7 +120,7 @@
 (def favorite-routes
   ["/favorite/media-entries"
    {:get
-    {:summary  (sd/sum_adm "List users favorites media_entries ids.")
+    {:summary  (sd/sum_usr "List users favorites media_entries ids.")
      :handler handle_list-favorite_media_entries-by-user
      :middleware [authorization/wrap-authorized-user]
      :swagger {:produces "application/json"}
