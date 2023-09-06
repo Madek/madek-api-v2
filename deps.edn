@@ -1,6 +1,6 @@
 {
  :paths ["src" "resources"]
- :deps {aleph/aleph {:mvn/version "0.6.1"}
+ :deps {aleph/aleph {:mvn/version "0.6.3"}
         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
         cheshire/cheshire {:mvn/version "5.11.0"}
         cider-ci/open-session {:mvn/version "2.0.0-beta.1"} ; upgrade will break
@@ -16,6 +16,7 @@
         drtom/clj-uuid  {:mvn/version "0.1.7"}
         environ/environ {:mvn/version "1.2.0"}
         honeysql/honeysql {:mvn/version "1.0.461"}
+        ;metabase/honeysql-util {:mvn/version "1.0.2"}
         inflections/inflections {:mvn/version "0.14.1"}
         json-roa/clj-utils {:mvn/version "1.0.0"}
         logbug/logbug {:mvn/version "5.0.0"}
@@ -27,26 +28,31 @@
         org.clojure/core.match {:mvn/version "1.0.0"}
         org.clojure/data.codec {:mvn/version "0.1.1"}
         org.clojure/java.jdbc {:mvn/version "0.7.12"}
-        org.clojure/tools.cli {:mvn/version "1.0.206"}
-        org.clojure/tools.logging {:mvn/version "1.2.1"}
+        org.clojure/tools.cli {:mvn/version "1.0.219"}
+        org.clojure/tools.logging {:mvn/version "1.2.4"}
         org.yaml/snakeyaml {:mvn/version "1.33"}
         pg-types/pg-types {:mvn/version "3.0.0"}
-        ring-basic-authentication/ring-basic-authentication {:mvn/version "1.1.1"}
+        ring-basic-authentication/ring-basic-authentication {:mvn/version "1.2.0"}
+        clojure.java-time/clojure.java-time {:mvn/version "1.2.0"}
         ring-cors/ring-cors {:mvn/version "0.1.13"}
-        ring/ring-core {:mvn/version "1.9.6"}
+        ring/ring-core {:mvn/version "1.10.0"}
         javax.servlet/servlet-api {:mvn/version "2.5"}
-        ring/ring-jetty-adapter {:mvn/version "1.9.5"}
+        ring/ring-jetty-adapter {:mvn/version "1.10.0"}
         ring/ring-json {:mvn/version "0.5.1"}
-        ring/ring-devel {:mvn/version "1.9.6"}
+        ring/ring-devel {:mvn/version "1.10.0"}
         spootnik/signal {:mvn/version "0.2.4"}
         uritemplate-clj/uritemplate-clj {:mvn/version "1.3.1"}
 
         ring/ring-defaults                         {:mvn/version "0.3.4"}
         metosin/muuntaja                           {:mvn/version "0.6.8"}
-        metosin/reitit                             {:mvn/version "0.5.18"}
-        metosin/reitit-swagger-ui                  {:mvn/version "0.5.18"}
+        ;metosin/reitit                             {:mvn/version "0.6.0"}
+        ;metosin/reitit-swagger-ui                  {:mvn/version "0.6.0"}
 
-        com.novemberain/pantomime {:mvn/version "2.11.0"}
+        metosin/reitit                             {:mvn/version "0.7.0-alpha5"}
+        metosin/reitit-swagger-ui                  {:mvn/version "0.7.0-alpha5"}
+
+
+        ;com.novemberain/pantomime {:mvn/version "2.11.0"}
         }
  :aliases
  {;

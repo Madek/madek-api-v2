@@ -12,13 +12,14 @@ services:
   api:
 
     cors_enabled: true
-    use_compojure: false
-    json_roa_enabled: false
+    admin_enabled: true
+    user_enabled: true
+    is_reloadable: true
 
     http:
 
       host: localhost
-      port: 3100
+      port: 3102
       context: ""
       sub_context: /api
       ssl: false
@@ -26,6 +27,6 @@ services:
     nrepl:
       port: 7802
       bind: "127.0.0.1"
-      enabled: false
+      enabled: true
 
 

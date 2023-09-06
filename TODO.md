@@ -1,8 +1,29 @@
 # Todos and Notes
 
+## Fragen
+
+### FRAGE: user auth: create token for user
+
+### FRAGE: user create password via admin?
+
+### FRAGE: fix token only auth (method and admin)
+
+### FRAGE: fix session auth (new cookie)
+
+### FRAGE: user self edit?
+
+## TODO datalayer
+
+add cast for collection layout and sorting types
+
+CREATE CAST (varchar AS collection_layout) WITH INOUT AS IMPLICIT;
+CREATE CAST (varchar AS collection_sorting) WITH INOUT AS IMPLICIT;
+
 ## TODO docu
 
 ## TODO tests
+
+### TODO tests for all new features
 
 ### col-col-arc
 ### col-me-arc
@@ -27,11 +48,14 @@
 ### usage_terms
 ### [users]
 ### static_pages
+
 ### vocabularies
 
-### TODO tests for all new features
+### vocabularies-permissions
 
-### Fix test failures
+### Fix old test failures
+
+- see rspec_resuts.log_20220221.txt
 
 #### TODO fix collection order
 
@@ -41,41 +65,48 @@
 
 ## TODO User aspects
 
-### fill routes data
+### fill routes data 
+
+Description, docu:
+* hidden query schema options (entry filterByJson)
+* Permission names
 
 ### rename param full-data to full_data
 
-### TODO usage_terms get the most recent one ?!?
+### TODO usage_terms: get the most recent one ?!? order by updated_at ?
 
-### auth: create token für user
 
-### fix token only auth (method and admin)
-
-### user self edit?
-### user create password via admin?
-
-### col-col-arcs
-
-### roles CRUD
-
-### meta_data try catch
-
-### meta_data roles test and fix
+### meta_data try catch logwrite text/json
 
 ### workflows - jsonb not hstore conversion problem
 
 ### users_workflows
 
+### meta_data_type MediaEntry
+
+### media file: download or show/stream headers
+
+### group
+
+- normal user create group: admin task allow user
+
+### people
+
+- normal user create person: admin task allow user
+
+### users
+
+- edit self
+
+### rdf_classes
+
+### users-workflows
+
 ## Admin aspects
 
-### delegations
+### FRAGE: delegations
 
-#### delegations_workflows
-
-### TODO vocabulary permissions
-
-
-
+#### FRAGE: delegations_workflows
 
 ## Notes on setup
 
@@ -138,37 +169,26 @@ clj -X:test :dirs '["test"]'
 
 
 
-## DONE
 
-col_col_arcs
-col_me_arcs
-context_keys
-contexts
-custom_urls
-edit_sessions
-fav cols
-fav entries
-full_texts
-io_interfaces
-io_mappings
-static_pages
-usage_terms
-workflows
 
-## doing
-meta_data
 ## TODO
-
+Review:
 groups
 keywords
-locales
+
 media entries
 media file
-
+- download or show/stream headers
 meta_keys
+
 people
-permissions
+- normal user create person
 previews
-roles
+
 users
-vocabularies
+- edit self
+rdf_classes
+meta_data_type MediaEntry
+
+users-workflows
+rdf-classes
