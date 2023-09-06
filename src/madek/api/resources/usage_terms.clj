@@ -3,6 +3,7 @@
             [clojure.tools.logging :as logging]
             [logbug.catcher :as catcher]
             [madek.api.resources.shared :as sd]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
             [reitit.coercion.schema]
             [schema.core :as s]))
@@ -99,12 +100,12 @@
 (def schema_export_usage_term
   {
    :id s/Uuid
-   :title s/Str
-   :version s/Str
-   :intro s/Str
-   :body s/Str
-   :created_at s/Any ; TODO as Inst
-   :updated_at s/Any
+   (s/optional-key :title) s/Str
+   (s/optional-key :version) s/Str
+   (s/optional-key :intro) s/Str
+   (s/optional-key :body) s/Str
+   (s/optional-key :created_at) s/Any ; TODO as Inst
+   (s/optional-key :updated_at) s/Any
    })
 
 ; TODO auth admin
@@ -119,6 +120,7 @@
             :handler handle_create-usage_terms
                    ;:middleware [(wwrap-find-usage_term :id "id" false)]
             :coercion reitit.coercion.schema/coercion
+            :middleware [wrap-authorize-admin!]
             :parameters {:body schema_import_usage_terms}
             :responses {200 {:body schema_export_usage_term}
                         406 {:body s/Any}}
@@ -127,6 +129,7 @@
      :get {:summary  (sd/sum_adm "List usage_terms.")
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
+           :middleware [wrap-authorize-admin!]
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
            :responses {200 {:body [schema_export_usage_term]}
                        406 {:body s/Any}}}}]
@@ -134,7 +137,8 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get usage_terms by id.")
            :handler handle_get-usage_term
-           :middleware [(wwrap-find-usage_term :id)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:body s/Any} ;schema_export_usage_terms}
@@ -143,7 +147,8 @@
 
      :put {:summary (sd/sum_adm "Update usage_terms with id.")
            :handler handle_update-usage_terms
-           :middleware [(wwrap-find-usage_term :id)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update_usage_terms}
@@ -155,7 +160,8 @@
      :delete {:summary (sd/sum_adm "Delete usage_term by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-usage_term
-              :middleware [(wwrap-find-usage_term :id)]
+              :middleware [wrap-authorize-admin!
+                           (wwrap-find-usage_term :id)]
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:body s/Any} ;schema_export_usage_terms}
                           404 {:body s/Any}}
@@ -167,14 +173,14 @@
 (def user-routes
   ["/usage-terms"
    ["/"
-    {:get {:summary  (sd/sum_usr "List usage_terms.")
+    {:get {:summary  (sd/sum_pub "List usage_terms.")
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
            :responses {200 {:body [schema_export_usage_term]}}}}]
    
    ["/:id"
-    {:get {:summary (sd/sum_usr "Get usage_terms by id.")
+    {:get {:summary (sd/sum_pub "Get usage_terms by id.")
            :handler handle_get-usage_term
            :middleware [(wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
