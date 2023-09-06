@@ -12,8 +12,6 @@
             [reitit.coercion.spec]
             [schema.core :as s]))
 
-; TODO create edit session as timestamp for meta-data updates
-
 (defn- col-key-for-mr-type [mr]
   (let [mr-type (-> mr :type)]
     (if (= mr-type "Collection")
@@ -72,64 +70,68 @@
      nil))
 
   ([db mr meta-key-id md-type user-id]
-   (logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: "user-id)
-  (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
+   (logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
+   (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
 
   ([db mr meta-key-id md-type user-id meta-data]
    (logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
    (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
-     (logging/info "db-create-meta-data: " 
+     (logging/info "db-create-meta-data: "
                    "MK-ID: " meta-key-id
                    "Type:" md-type
-                   "User: " user-id 
+                   "User: " user-id
                    "MD: " meta-data
                    "MD-new: " md)
-     (db-create-meta-data db md))
-   )
-
-  )
+     (db-create-meta-data db md))))
 
 (defn- handle_update-meta-data-text-base
   [req md-type upd-data]
-  (let [mr (-> req :media-resource)
-        upd-data2 (assoc upd-data (col-key-for-mr-type mr) (:id mr))
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        upd-clause (sql-cls-upd-meta-data-typed-id mr meta-key-id md-type)
-        upd-result (jdbc/update! (rdbms/get-ds) :meta_data upd-data2 upd-clause)
-        result-data (db-get-meta-data mr meta-key-id md-type)
-        ]
+  (try
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            upd-data2 (assoc upd-data (col-key-for-mr-type mr) (:id mr))
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            upd-clause (sql-cls-upd-meta-data-typed-id mr meta-key-id md-type)
+            upd-result (jdbc/update! (rdbms/get-ds) :meta_data upd-data2 upd-clause)
+            result-data (db-get-meta-data mr meta-key-id md-type)]
 
-    (logging/info "handle_update-meta-data-text-base "
-                  "\nmd-type\n" md-type
-                  "\nmeta-key-id\n" meta-key-id
-                  "\nupd-data\n" upd-data2
-                  "\nupd-clause\n" upd-clause
-                  "\nupd-result\n" upd-result
-                  )
-    (if (= 1 (first upd-result))
-      (sd/response_ok {:result result-data})
-      (sd/response_failed {:message "Failed to update meta data text base"} 406))))
+        (sd/logwrite req (str "handle_update-meta-data-text-base:"
+                              " mr-id: " (:id mr)
+                              " mr-type: " (:type mr)
+                              " md-type: " md-type
+                              " meta-key-id: " meta-key-id
+                              " upd-result: " upd-result))
+        
+        (if (= 1 (first upd-result))
+          (sd/response_ok result-data)
+          (sd/response_failed {:message "Failed to update meta data text base"} 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 
 
-; TODO tests, response coercion, error handling
+; TODO tests, response coercion
 (defn handle_create-meta-data-text
   [req]
-  (let [mr (-> req :media-resource)
-        user-id (-> req :authenticated-entity :id str)
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        text-data (-> req :parameters :body :string)
-        md-type "MetaDatum::Text"
-        ;mdnew (-> (fabric-meta-data mr meta-key-id md-type user-id)
-        ;          (assoc  :string text-data))
-        mdnew {:string text-data}
-        ins-result (db-create-meta-data (rdbms/get-ds) mr meta-key-id md-type user-id mdnew)]
-    (logging/info "handle_create-meta-data-text"
-                  "\nmr-id\n" (:id mr) "\nmeta-key-id\n" meta-key-id
-                  "\ninserted:\n" ins-result)
-    (if (= md-type (:type ins-result))
-     (sd/response_ok ins-result)
-      (sd/response_failed {:message "Failed to add meta data text"} 406))))
+  (try
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            user-id (-> req :authenticated-entity :id str)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            text-data (-> req :parameters :body :string)
+            md-type "MetaDatum::Text"
+            mdnew {:string text-data}
+            ins-result (db-create-meta-data (rdbms/get-ds) mr meta-key-id md-type user-id mdnew)]
+
+        (sd/logwrite req (str "handle_create-meta-data-text"
+                              " mr-id: " (:id mr)
+                              " meta-key-id: " meta-key-id
+                              " ins-result: " ins-result))
+
+        (if (= md-type (:type ins-result))
+          (sd/response_ok ins-result)
+          (sd/response_failed {:message "Failed to add meta data text"} 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
 
 (defn handle_update-meta-data-text
   [req]
@@ -140,25 +142,28 @@
     (logging/info "handle_update-meta-data-text" "\nupd-data\n" upd-data)
     (handle_update-meta-data-text-base req md-type upd-data)))
 
-; TODO tests, response coercion, error handling
-; TODO multi line ? or other md params
+; TODO tests, response coercion
 (defn handle_create-meta-data-text-date
   [req]
-  (let [mr (-> req :media-resource)
-        user-id (-> req :authenticated-entity :id str)
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        text-data (-> req :parameters :body :string)
-        md-type "MetaDatum::TextDate"
-        ;mdnew (-> (fabric-meta-data mr meta-key-id md-type user-id)
-        ;          (assoc  :string text-data))
-        mdnew {:string text-data}
-        ins-result (db-create-meta-data (rdbms/get-ds) mr meta-key-id md-type user-id mdnew)]
-    (logging/info "handle_create-meta-data-text-date"
-                  "\nmr-id\n" (:id mr) "\nmeta-key-id\n" meta-key-id
-                  "\ninserted:\n" ins-result)
-    (if (= md-type (:type ins-result))
-      (sd/response_ok ins-result)
-      (sd/response_failed {:message "Failed to add meta data text-date"} 406))))
+  (try
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            user-id (-> req :authenticated-entity :id str)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            text-data (-> req :parameters :body :string)
+            md-type "MetaDatum::TextDate"
+            mdnew {:string text-data}
+            ins-result (db-create-meta-data (rdbms/get-ds) mr meta-key-id md-type user-id mdnew)]
+
+        (sd/logwrite req (str "handle_create-meta-data-text-date:"
+                              " mr-id: " (:id mr)
+                              " meta-key-id: " meta-key-id
+                              " ins-result: " ins-result))
+
+        (if (= md-type (:type ins-result))
+          (sd/response_ok ins-result)
+          (sd/response_failed {:message "Failed to add meta data text-date"} 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-meta-data-text-date
   [req]
@@ -169,27 +174,29 @@
     (logging/info "handle_update-meta-data-text-date" "\nupd-data\n" upd-data)
     (handle_update-meta-data-text-base req md-type upd-data)))
 
-; TODO tests, response coercion, error handling
+; TODO tests, response coercion
 (defn handle_create-meta-data-json
   [req]
-  (let [mr (-> req :media-resource)
-        user-id (-> req :authenticated-entity :id str)
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        json-data (-> req :parameters :body :json)
-        json-parsed (cheshire/parse-string json-data)
-        md-type "MetaDatum::JSON"
-        ;mdnew (-> (fabric-meta-data mr meta-key-id md-type user-id)
-        ;          (assoc  :json json-parsed))
-        mdnew {:json json-parsed}
-        ins-result (db-create-meta-data (rdbms/get-ds) mr meta-key-id md-type user-id mdnew)
-        ]
-    (logging/info "handle_create-meta-data-json" 
-                  "\nmr-id\n" (:id mr) "\nmeta-key-id\n" meta-key-id
-                  "\ninserted:\n" ins-result)
-    ;(if-let [ins-result (first (jdbc/insert! (rdbms/get-ds) :meta_data mdnew))]  
-    (if (= md-type (:type ins-result))    
-      (sd/response_ok ins-result)
-      (sd/response_failed {:message "Failed to add meta data json"} 406))))
+  (try
+    (catcher/with-logging {}
+      (let [mr (-> req :media-resource)
+            user-id (-> req :authenticated-entity :id str)
+            meta-key-id (-> req :parameters :path :meta_key_id)
+            json-data (-> req :parameters :body :json)
+            json-parsed (cheshire/parse-string json-data)
+            md-type "MetaDatum::JSON"
+            mdnew {:json json-parsed}
+            ins-result (db-create-meta-data (rdbms/get-ds) mr meta-key-id md-type user-id mdnew)]
+        
+        (sd/logwrite req (str "handle_create-meta-data-json:"
+                              " mr-id: " (:id mr)
+                              " meta-key-id: " meta-key-id
+                              " ins-result: " ins-result))
+
+        (if (= md-type (:type ins-result))
+          (sd/response_ok ins-result)
+          (sd/response_failed {:message "Failed to add meta data json"} 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-meta-data-json
   [req]
@@ -255,7 +262,7 @@
       nil)))
 
 
-; TODO tests, response coercion, error handling
+; TODO tests, response coercion
 (defn handle_create-meta-data-keyword
   [req]
   (try

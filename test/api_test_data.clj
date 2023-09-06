@@ -23,7 +23,7 @@
   {:id user1id
    :person_id person1id
    :login "u1login"
-   :email "u1@aliebaba.de"
+   :email "u1@example.com"
    :accepted_usage_terms_id "543b49cc-ea69-4e6c-b3f5-1643d80da24b"
    ;:password_digest (hashpw "user1pw")
    })
@@ -45,7 +45,7 @@
   {:id user2id
    :person_id person2id
    :login "u2login"
-   :email "u2@aliebaba.de"
+   :email "u2@example.com"
    :accepted_usage_terms_id "543b49cc-ea69-4e6c-b3f5-1643d80da24b"
    ;:password_digest (hashpw "user2pw")
    })
@@ -63,11 +63,3 @@
 (def dburltest {:url "postgresql://localhost:5432/madek_test" :user "madek_sql" :password "madek_sql"})
 
 
-
-; asdf add-plugin postgres
-; asdf install postgres
-
-; aptitude install linux-headers-$ (uname -r) build-essential libssl-dev libreadline-dev zlib1g-dev libcurl4-openssl-dev uuid-dev icu-devtool
-; apt-get install build-essential libssl-dev libreadline-dev zlib1g-dev libcurl4-openssl-dev uuid-dev
-; wget http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.17_amd64.deb
-; dpkg -i libssl1.1_1.1.1f-1ubuntu2.17_amd64.deb
