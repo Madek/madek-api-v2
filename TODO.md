@@ -2,6 +2,8 @@
 
 ## Fragen
 
+### Frage: wer darf full-texts anlegen? nur der admin? wird das generiert?
+
 ### FRAGE: user auth: create token for user
 
 ### FRAGE: user create password via admin?
@@ -65,16 +67,18 @@ CREATE CAST (varchar AS collection_sorting) WITH INOUT AS IMPLICIT;
 
 ## TODO User aspects
 
-### fill routes data 
+### fill routes data
 
 Description, docu:
-* hidden query schema options (entry filterByJson)
-* Permission names
+
+- hidden query schema options (entry filterByJson)
+- Permission names
 
 ### rename param full-data to full_data
 
-### TODO usage_terms: get the most recent one ?!? order by updated_at ?
+- admins
 
+### TODO usage_terms: get the most recent one ?!? order by updated_at ?
 
 ### meta_data try catch logwrite text/json
 
