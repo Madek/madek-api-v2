@@ -14,7 +14,7 @@
                   (permissions/sql-filter-by (:permissions filter-map))
                   (meta-data/sql-filter-by (:meta_data filter-map))
                   (meta-data/sql-search-through-all (:search filter-map)))]
-    (logging/info "filter-by" "\nfilter-map:\n" filter-map "\nresult:" query)
+    ;(logging/info "filter-by" "\nfilter-map:\n" filter-map "\nresult:" query)
     query)
   )
 

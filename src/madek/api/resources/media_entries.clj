@@ -296,7 +296,7 @@
 
 (def schema_query_media_entries_result
   {:media_entries [ schema_export_media_entry]
-   (s/optional-key :col-arcs) [schema_export_col_arc]})
+   (s/optional-key :col_arcs) [schema_export_col_arc]})
 
 (def schema_export_media_file
   {
@@ -314,7 +314,7 @@
    :extension s/Str
    :filename s/Str
    :guid s/Str
-   :uploaded_at s/Any
+   :updated_at s/Any
    :created_at s/Any
   })
 
@@ -339,7 +339,8 @@
    :meta_data [ [ schema_export_meta_data]]
    :media_files [[ schema_export_media_file ]]
    :previews [[ s/Any]] ; schema_export_preview]]
-   (s/optional-key :col-arcs) [schema_export_col_arc]})
+   (s/optional-key :col_arcs) [schema_export_col_arc]
+   (s/optional-key :col_meta_data) [schema_export_meta_data]})
 
 
 (def schema_publish_failed

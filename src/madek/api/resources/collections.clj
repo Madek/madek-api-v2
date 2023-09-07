@@ -139,7 +139,7 @@
    :is_master s/Bool
    :sorting schema_sorting_types
    
-   :responsible_user_id s/Uuid
+   :responsible_user_id (s/maybe s/Uuid)
    :creator_id s/Uuid
    
    :default_context_id (s/maybe s/Uuid)

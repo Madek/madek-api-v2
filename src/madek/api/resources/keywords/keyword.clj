@@ -61,8 +61,7 @@
     (if-let [del-res (jdbc/delete! (get-ds) :keywords (sd/sql-update-clause "id" id))]
       data
       nil)
-    nil)
-  )
+    nil))
 
 
 ;### Debug ####################################################################

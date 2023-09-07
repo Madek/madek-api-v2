@@ -8,10 +8,11 @@
             [madek.api.utils.sql :as sql]))
 
 (defn export-role [db-role]
-  (select-keys db-role [:id :labels :created_at]))
+  (select-keys db-role [:id :meta_key_id :labels :created_at]))
 
 (defn- transform-ml-role [role]
-  (assoc role :labels (sd/transform_ml (:labels role))))
+  (when-let [labels (:labels role)]
+    (assoc role :labels (sd/transform_ml (:labels role)))))
 
 
 (defn- query-index
@@ -45,20 +46,21 @@
 
 
 (defn handle_get-role-usr [request]
-  (let [id (-> request :parameters :path :id)
-        resultdb (db_role-find-one id)
-        result (-> resultdb
-                   export-role
-                   transform-ml-role
-                   )]
-    (sd/response_ok result)))
+  (let [id (-> request :parameters :path :id)]
+    (if-let [resultdb (db_role-find-one id)]
+      (let [result (-> resultdb
+                       export-role
+                       transform-ml-role)]
+        (sd/response_ok result))
+      (sd/response_failed "No such role." 404))))
 
 
 (defn handle_get-role-admin [request]
-  (let [id (-> request :parameters :path :id)
-        resultdb (db_role-find-one id)
-        result (transform-ml-role resultdb)]
-    (sd/response_ok result)))
+  (let [id (-> request :parameters :path :id)]
+    (if-let [resultdb (db_role-find-one id)]
+      (let [result (transform-ml-role resultdb)]
+        (sd/response_ok result))
+      (sd/response_failed "No such role." 404))))
 
 
 (defn handle_create-role

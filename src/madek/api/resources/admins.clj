@@ -2,8 +2,8 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as logging]
             [madek.api.resources.shared :as sd]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-            [madek.api.utils.sql :as sql]
             [reitit.coercion.schema]
             [schema.core :as s]))
 
@@ -12,7 +12,7 @@
 
 (defn handle_list-admin
   [req]
-  (let [full-data (true? (-> req :parameters :query :full-data ))
+  (let [full-data (true? (-> req :parameters :query :full_data ))
         qd (if (true? full-data) :admins.* :admins.id)
         db-result (sd/query-find-all :admins qd)]
     ;(->> db-result (map :id) set)
@@ -71,9 +71,9 @@
     {:get
      {:summary  (sd/sum_adm "List admin users.")
       :handler handle_list-admin
-       ; TODO require admin role
+      :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :full-data) s/Bool}}}}
+      :parameters {:query {(s/optional-key :full_data) s/Bool}}}}
    ]
     ; edit admin
    ["/admins/:id"
@@ -82,7 +82,8 @@
       :get
       {:summary (sd/sum_adm "Get admin by id.")
        :handler handle_get-admin
-       :middleware [(wwrap-find-admin :id :id true)]
+       :middleware [wrap-authorize-admin!
+                    (wwrap-find-admin :id :id true)]
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Uuid}}}
 
@@ -90,7 +91,8 @@
       {:summary (sd/sum_adm "Delete admin by id.")
        :coercion reitit.coercion.schema/coercion
        :handler handle_delete-admin
-       :middleware [(wwrap-find-admin :id :id true)]
+       :middleware [wrap-authorize-admin!
+                    (wwrap-find-admin :id :id true)]
        :parameters {:path {:id s/Uuid}}}}]
     
    ; convenience to access via user
@@ -98,15 +100,17 @@
      {:post
       {:summary (sd/sum_adm "Create admin for user with id.")
        :handler handle_create-admin
-       :middleware [(wwrap-find-user :user_id)
+       :middleware [wrap-authorize-admin!
+                    (wwrap-find-user :user_id)
                     (wwrap-find-admin :user_id :user_id false)]
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:user_id s/Uuid}}}
 
       :get
-      {:summary (sd/sum_cnv_adm "Get admin for user.")
+      {:summary (sd/sum_adm "Get admin for user.")
        :handler handle_get-admin
-       :middleware [(wwrap-find-admin :user_id :user_id true)]
+       :middleware [wrap-authorize-admin!
+                    (wwrap-find-admin :user_id :user_id true)]
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:user_id s/Uuid}}}
 
@@ -114,7 +118,8 @@
       {:summary (sd/sum_cnv_adm "Delete admin for user.")
        :coercion reitit.coercion.schema/coercion
        :handler handle_delete-admin
-       :middleware [(wwrap-find-admin :user_id :user_id true)]
+       :middleware [wrap-authorize-admin!
+                    (wwrap-find-admin :user_id :user_id true)]
        :parameters {:path {:user_id s/Uuid}}}}
    ]
   ])

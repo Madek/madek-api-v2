@@ -228,7 +228,7 @@
    If it exists it is associated with the request as reqkey"
   [request handler path-param db_table db_col_name reqkey send404]
   (let [search (-> request :parameters :path path-param)]
-    (logging/info "req-find-data: " search " " db_table " " db_col_name)
+    ;(logging/info "req-find-data: " search " " db_table " " db_col_name)
     (if-let [result-db (query-eq-find-one db_table db_col_name search)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)

@@ -32,7 +32,7 @@
   (when-let [result (db-del-by-id :people td/person1id)] result))
 
 (defn del-test-auth1 []
-  (when-let [result (db-del-by-id :auth_syste_users td/auth1id)] result)))
+  (when-let [result (db-del-by-id :auth_systems_users td/auth1id)] result))
 
 (defn del-test-user []
   (when-let [result (db-del-by-id :users td/user1id)] result))
@@ -53,7 +53,7 @@
   (when-let [result (db-del-by-id :people td/person2id)] result))
 
 (defn del-test-auth2 []
-   (when-let [result (db-del-by-id :auth_syste_users td/auth2id)] result)))
+   (when-let [result (db-del-by-id :auth_systems_users td/auth2id)] result))
 
 (defn del-test-user2 []
   (when-let [result (db-del-by-id :users td/user2id)] result))

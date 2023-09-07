@@ -37,9 +37,9 @@
    :id s/Uuid
    :meta_key_id s/Str
    :labels sd/schema_ml_list
-   :creator_id s/Uuid
-   :created_at s/Any
-   :updated_at s/Any
+   (s/optional-key :creator_id) s/Uuid
+   (s/optional-key :created_at) s/Any
+   (s/optional-key :updated_at) s/Any
    })
 
 ; TODO roles by meta_key_id ?

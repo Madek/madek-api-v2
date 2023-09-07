@@ -574,12 +574,17 @@
           md-type (:type result)
 
           md-type-kw (case md-type
-                       "MetaDatum::Keywords" "md_keywords"
-                       "MetaDatum::People" "md_people"
-                       "MetaDatum::Roles" "md_roles"
-                       "default")
+                       "MetaDatum::Keywords" MD_KEY_KW_DATA
+                       "MetaDatum::People" MD_KEY_PEOPLE_DATA
+                       "MetaDatum::Roles" MD_KEY_ROLES_DATA
+                       "defaultmetadata")
 
-          md-type-kw-data (apply str md-type-kw "_data")
+          md-type-kw-data (case md-type
+                            "MetaDatum::Keywords" MD_KEY_KWS
+                            "MetaDatum::People" MD_KEY_PEOPLE
+                            "MetaDatum::Roles" MD_KEY_ROLES
+                            "defaultdata")
+          ;(apply str md-type-kw "_data")
 
           mde (case md-type
                 "MetaDatum::Keywords" (db-get-meta-data-keywords md-id)
@@ -602,11 +607,8 @@
                                          (map #(sd/query-eq-find-one :roles :id %)))
                      "default")
           mde-result {:meta-data result
-                      ;(keyword md-type) mde
                       (keyword md-type-kw) mde
-                      (keyword md-type-kw-data) mde-data
-                      ;(keyword (apply str md-type "-data")) mde-data
-                      }
+                      (keyword md-type-kw-data) mde-data}
           ]
       ;(logging/info "handle_get-meta-key-meta-data"
       ;              "\nmedia id " md-id
