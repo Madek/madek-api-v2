@@ -1,6 +1,7 @@
 (ns madek.api.resources.admins
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as logging]
+            [logbug.catcher :as catcher]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
@@ -12,114 +13,136 @@
 
 (defn handle_list-admin
   [req]
-  (let [full-data (true? (-> req :parameters :query :full_data ))
-        qd (if (true? full-data) :admins.* :admins.id)
+  (let [qd (if (true? (-> req :parameters :query :full_data))
+             :admins.*
+             :admins.id)
         db-result (sd/query-find-all :admins qd)]
-    ;(->> db-result (map :id) set)
-    (logging/info "handle_list-admin" "\nqd\n" qd "\nresult\n" db-result)
-    (sd/response_ok db-result)
+    ;(logging/info "handle_list-admin" "\nqd\n" qd "\nresult\n" db-result)
+    (sd/response_ok {:admins db-result})
     )
   )
 
 (defn handle_get-admin
   [req]
   (let [admin (-> req :admin)]
-    (logging/info "handle_get-admin" admin)
-    ; TODO hide some fields
+    ;(logging/info "handle_get-admin" admin)
     (sd/response_ok admin)))
 
 (defn handle_create-admin
   [req]
-  (let [user (-> req :user)
-        id (:id user)
-        data {:user_id id}]
-   (if-let [admin (-> req :admin)]
+  (catcher/with-logging {}
+    (if-let [admin (-> req :admin)]
       ; already has admin
       (sd/response_ok admin)
       ; create admin entry
-      (if-let [ins_res (jdbc/insert! (rdbms/get-ds) :admins data)]
-        ; TODO clean result
-        (sd/response_ok ins_res)
-        (sd/response_failed "Could not create admin." 406))
-     )
-  ))
+      (let [user (-> req :user)
+            id (:id user)
+            data {:user_id id}
+            ins-res (jdbc/insert! (get-ds) :admins data)]
+        (sd/logwrite req (str "handle_create-admin:" " user-id: " id " result: " ins-res))
+        (if-let [result (first ins-res)]
+          (sd/response_ok result)
+          (sd/response_failed "Could not create admin." 406))))))
 
 
 (defn handle_delete-admin
   [req]
-  (let [admin (-> req :admin)
-        admin-id (-> req :admin :id)] 
-    (if (= 1 (first (jdbc/delete! (rdbms/get-ds) :admins ["id = ?" admin-id])))
-      (sd/response_ok admin)
-      (logging/error "Failed delete admin " admin-id))
-  ))
+  (catcher/with-logging {}
+    (let [admin (-> req :admin)
+          admin-id (-> req :admin :id)
+          del-result (jdbc/delete! (get-ds) :admins ["id = ?" admin-id])]
+      (sd/logwrite req (str "handle_delete-admin: " " data:\n" admin "\nresult: " del-result))
+      (if (= 1 (first del-result))
+        (sd/response_ok admin)
+        (sd/response_failed "Could not delete admin." 406)))))
 
 (defn wwrap-find-admin [param colname send404]
   (fn [handler] 
-    (fn [request] (sd/req-find-data request handler param :admins colname :admin send404))))
+    (fn [request] (sd/req-find-data
+                   request handler param
+                   :admins colname :admin send404))))
 
 (defn wwrap-find-user [param]
   (fn [handler]
-    (fn [request] (sd/req-find-data request handler param :users :id :user true))))
+    (fn [request] (sd/req-find-data
+                   request handler param
+                   :users :id :user true))))
+
+(def schema_export-admin
+  {
+   :id s/Uuid
+   :user_id s/Uuid
+   :updated_at s/Any
+   :created_at s/Any
+  })
 
 ; TODO response coercion
 ; TODO docu
 ; TODO tests
 (def ring-routes
-  [
-   ["/admins"
+  [["/admins"
     {:get
      {:summary  (sd/sum_adm "List admin users.")
       :handler handle_list-admin
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :full_data) s/Bool}}}}
-   ]
+      :parameters {:query {(s/optional-key :full_data) s/Bool}}
+      :responses {200 {:body {:admins [schema_export-admin]}}}}}]
     ; edit admin
    ["/admins/:id"
-     {
+    {:get
+     {:summary (sd/sum_adm "Get admin by id.")
+      :handler handle_get-admin
+      :middleware [wrap-authorize-admin!
+                   (wwrap-find-admin :id :id true)]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:id s/Uuid}}
+      :responses {200 {:body schema_export-admin}
+                  404 {:body s/Any}}}
 
-      :get
-      {:summary (sd/sum_adm "Get admin by id.")
-       :handler handle_get-admin
-       :middleware [wrap-authorize-admin!
-                    (wwrap-find-admin :id :id true)]
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Uuid}}}
+     :delete
+     {:summary (sd/sum_adm "Delete admin by id.")
+      :coercion reitit.coercion.schema/coercion
+      :handler handle_delete-admin
+      :middleware [wrap-authorize-admin!
+                   (wwrap-find-admin :id :id true)]
+      :parameters {:path {:id s/Uuid}}
+      :responses {200 {:body schema_export-admin}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}}]
 
-      :delete
-      {:summary (sd/sum_adm "Delete admin by id.")
-       :coercion reitit.coercion.schema/coercion
-       :handler handle_delete-admin
-       :middleware [wrap-authorize-admin!
-                    (wwrap-find-admin :id :id true)]
-       :parameters {:path {:id s/Uuid}}}}]
-    
-   ; convenience to access via user
-   ["/admins/:user_id/user" 
-     {:post
-      {:summary (sd/sum_adm "Create admin for user with id.")
-       :handler handle_create-admin
-       :middleware [wrap-authorize-admin!
-                    (wwrap-find-user :user_id)
-                    (wwrap-find-admin :user_id :user_id false)]
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:user_id s/Uuid}}}
+   ; access via user
+   ["/admins/:user_id/user"
+    {:post
+     {:summary (sd/sum_adm "Create admin for user with id.")
+      :handler handle_create-admin
+      :middleware [wrap-authorize-admin!
+                   (wwrap-find-user :user_id)
+                   (wwrap-find-admin :user_id :user_id false)]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:user_id s/Uuid}}
+      :responses {200 {:body schema_export-admin}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}
 
-      :get
-      {:summary (sd/sum_adm "Get admin for user.")
-       :handler handle_get-admin
-       :middleware [wrap-authorize-admin!
-                    (wwrap-find-admin :user_id :user_id true)]
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:user_id s/Uuid}}}
+     :get
+     {:summary (sd/sum_adm "Get admin for user.")
+      :handler handle_get-admin
+      :middleware [wrap-authorize-admin!
+                   (wwrap-find-admin :user_id :user_id true)]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:user_id s/Uuid}}
+      :responses {200 {:body schema_export-admin}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}
 
-      :delete
-      {:summary (sd/sum_cnv_adm "Delete admin for user.")
-       :coercion reitit.coercion.schema/coercion
-       :handler handle_delete-admin
-       :middleware [wrap-authorize-admin!
-                    (wwrap-find-admin :user_id :user_id true)]
-       :parameters {:path {:user_id s/Uuid}}}}
-   ]
-  ])
+     :delete
+     {:summary (sd/sum_adm "Delete admin for user.")
+      :coercion reitit.coercion.schema/coercion
+      :handler handle_delete-admin
+      :middleware [wrap-authorize-admin!
+                   (wwrap-find-admin :user_id :user_id true)]
+      :parameters {:path {:user_id s/Uuid}}
+      :responses {200 {:body schema_export-admin}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}}]])
