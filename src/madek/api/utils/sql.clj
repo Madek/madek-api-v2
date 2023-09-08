@@ -67,27 +67,43 @@
 (def ->hstore #(HStoreConverter/toString (update-keys % name)))
 (def <-hstore #(update-keys (HStoreConverter/fromString %) keyword))
 
+;(def ->cvarray (fn [x]
+;                 (let [result (java.util.Arrays/toString (into-array x))]
+;                   (logging/info "->cvarray: " x "\nresult: " result)
+;                   result)))
+;(def ->text_array (fn [x]
+;                    (let [result (into-array java.lang.String x)]
+;                      (logging/info "->text_array: " x "\nresult: " result)
+;                      result)))
+;(def <-text_array #(seq %))
+
 (defn ->pgobject
   [x]
   (let [pgtype (or (:pgtype (meta x)) "hstore")] ;"jsonb")]
-    ;(logging/info "->pgobject: \nmeta type\n " (:pgtype (meta x)) ":" pgtype)
+    (logging/info "->pgobject: \nmeta type\n " (:pgtype (meta x)) ":" pgtype)
     (doto (org.postgresql.util.PGobject.)
       (.setType pgtype)
       (.setValue (condp contains? pgtype
                    #{"json" "jsonb"} (->json x)
                    #{"hstore"} (->hstore x)
+                   ;#{"text[]"} (->text_array x)
+                   ;#{"varchar[]"} (->cvarray x)
                    (throw (ex-info "unknown postgresql type" {:type pgtype})))))))
 
 (defn <-pgobject
   [^org.postgresql.util.PGobject v]
   (let [type  (.getType v)
         value (.getValue v)]
-    ;(logging/info "<-pgobject: \nmeta type\n " type " value " value)
+    (logging/info "<-pgobject: \nmeta type\n " type " value " value)
     (condp contains? type
       #{"jsonb" "json"} (when value
                           (with-meta (<-json value) {:pgtype type}))
       #{"hstore"} (when value
                     (with-meta (<-hstore value) {:pgtype type}))
+      ;#{"text[]"} value
+      ;#{"varchar[]"} value
+      ;(when value
+      ;              (with-meta (<-text_array value) {:pgtype type}))
       value)))
 
 (extend-protocol jdbc/ISQLParameter
@@ -96,8 +112,15 @@
     (.setObject s i (->pgobject m)))
 
   clojure.lang.IPersistentVector
-  (set-parameter [v ^PreparedStatement s i]
-    (.setObject s i (->pgobject v))))
+  (set-parameter [v ^java.sql.PreparedStatement stmt ^long i]
+                  (let [conn (.getConnection stmt)
+                        meta (.getParameterMetaData stmt)
+                        type-name (.getParameterTypeName meta i)]
+                    (if-let [elem-type (when (= (first type-name) \_) (apply str (rest type-name)))]
+                      (.setObject stmt i (.createArrayOf conn elem-type (to-array v)))
+                      (.setObject stmt i (->pgobject v))))))
+  ;(set-parameter [v ^PreparedStatement s i]
+  ;  (.setObject s i (->pgobject v))))
 
 
 (extend-protocol jdbc/IResultSetReadColumn

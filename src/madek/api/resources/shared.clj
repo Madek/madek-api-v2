@@ -21,7 +21,9 @@
 
 (defn transform_ml [hashMap]
   "Builds Map with keys as keywords and values from HashMap (sql-hstore)"
-  (keywordize-keys (zipmap (.keySet hashMap) (.values hashMap))))
+  (if (nil? hashMap)
+    nil
+    (keywordize-keys (zipmap (.keySet hashMap) (.values hashMap)))))
 
 ; begin db-helpers
 ; TODO move to sql file

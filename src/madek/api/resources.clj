@@ -107,8 +107,9 @@
                 ;              authentication/wrap
                               ;wrap-authorize-admin!
                 ;              ]}
-   
+
    admins/ring-routes
+   app-settings/admin-routes
 
    context_keys/admin-routes
    contexts/admin-routes
@@ -118,18 +119,18 @@
    delegations_users/admin-routes
    delegations_groups/admin-routes
 
-   
+
    edit-sessions/admin-routes
    favorite-collections/admin-routes
    favorite-media-entries/admin-routes
-   
+
    full-texts/edit-routes
-   
+
    groups/ring-routes
    io-interfaces/admin-routes
    io-mappings/admin-routes
    keywords/admin-routes
-   
+
    meta-keys/admin-routes
 
    people/admin-routes
