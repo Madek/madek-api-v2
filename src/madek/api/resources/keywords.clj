@@ -53,7 +53,7 @@
    :creator_id (s/maybe s/Uuid)
    :created_at s/Any
    :updated_at s/Any})
-; TODO use s/Inst
+
 
 
 (defn user-export-keyword [keyword]

@@ -10,28 +10,6 @@
     ))
 
 
-
-
-;(defn get-keyword
-;  [request]
-;  (let [id (-> request :params :id)
-;        db-query (-> (sql/select :*)
-;                     (sql/from :keywords)
-;                     (sql/merge-where [:= :keywords.id id])
-;                     sql/format)
-;        keyword (first (jdbc/query (rdbms/get-ds) db-query))]
-;    {:body
-;       (->
-;         keyword
-;         (select-keys
-;           [:id :meta_key_id :term :description :external_uris :rdf_class
-;            :created_at])
-;         (assoc ; support old (singular) version of field
-;           :external_uri (first (keyword :external_uris))))}))
-
-
-
-
 (defn db-keywords-get-one [id]
   (sd/query-eq-find-one :keywords :id id))
 
@@ -52,13 +30,17 @@
   (->> (jdbc/insert! (get-ds) :keywords data) first))
 
 (defn db-keywords-update [id data]
-  (if-let [upd-res (jdbc/update! (get-ds) :keywords data (sd/sql-update-clause "id" id))]
+  (if-let [upd-res (jdbc/update!
+                    (get-ds) :keywords data
+                    (sd/sql-update-clause "id" id))]
     (db-keywords-get-one id)
     nil))
 
 (defn db-keywords-delete [id]
   (if-let [data (db-keywords-get-one id)]
-    (if-let [del-res (jdbc/delete! (get-ds) :keywords (sd/sql-update-clause "id" id))]
+    (if-let [del-res (jdbc/delete!
+                      (get-ds) :keywords
+                      (sd/sql-update-clause "id" id))]
       data
       nil)
     nil))

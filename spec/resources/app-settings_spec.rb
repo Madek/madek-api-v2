@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-context 'Getting a keyword resource without authentication' do
+context 'Getting app-settings resource without authentication' do
   before :each do
-    @keyword = FactoryBot.create(:keyword, external_uris: ['http://example.com'])
+    @keyword = FactoryBot.create(:app_setting)
   end
 
   let :plain_json_response do
-    plain_faraday_json_client.get("/api/keywords/#{@keyword.id}")
+    plain_faraday_json_client.get("/api/app-settings")
   end
 
   
@@ -32,8 +32,8 @@ context 'Getting a keyword resource without authentication' do
       keyword.except("created_at", "updated_at")
     ).to eq(
       @keyword.attributes.with_indifferent_access
-        .except(  :creator_id, :created_at, :updated_at)
-        .merge(external_uri: keyword["external_uris"].first)
+        .except(  :created_at, :updated_at)
+        
     )
   end
 end

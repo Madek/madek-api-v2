@@ -1,78 +1,66 @@
 (ns madek.api.resources.app-settings
-   (:require [clojure.java.jdbc :as jdbc]
-             [madek.api.resources.shared :as sd]
-             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-             [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
-             [madek.api.utils.sql :as sql]
-             [reitit.coercion.schema]
-             [schema.core :as s]
-             [logbug.catcher :as catcher]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.rdbms :as rdbms :refer [get-ds]]
+            [madek.api.utils.sql :as sql]
+            [reitit.coercion.schema]
+            [schema.core :as s]
+            [logbug.catcher :as catcher]))
 
- (defn transform_ml [data]
-   (assoc data
-          :about_pages (sd/transform_ml (:about_pages data))
+(defn transform_ml [data]
+  (assoc data
+         :about_pages (sd/transform_ml (:about_pages data))
 
-          :brand_texts (sd/transform_ml (:brand_texts data))
-          :catalog_titles (sd/transform_ml (:catalog_titles data))
-          :catalog_subtitles (sd/transform_ml (:catalog_subtitles data))
+         :brand_texts (sd/transform_ml (:brand_texts data))
+         :catalog_titles (sd/transform_ml (:catalog_titles data))
+         :catalog_subtitles (sd/transform_ml (:catalog_subtitles data))
 
-          :featured_set_titles (sd/transform_ml (:featured_set_titles data))
-          :featured_set_subtitles (sd/transform_ml (:featured_set_subtitles data))
-          :provenance_notices (sd/transform_ml (:provenance_notices data))
-          :site_titles (sd/transform_ml (:site_titles data))
-          :support_urls (sd/transform_ml (:support_urls data))
-          :welcome_titles (sd/transform_ml (:welcome_titles data))
-          :welcome_texts (sd/transform_ml (:welcome_texts data))))
- (defn db_get-app-settings []
-   (let [query (->
-                (sql/select :*)
-                (sql/from :app_settings)
-                (sql/format))
-         result (first (jdbc/query (get-ds) query))]
-     result))
+         :featured_set_titles (sd/transform_ml (:featured_set_titles data))
+         :featured_set_subtitles (sd/transform_ml (:featured_set_subtitles data))
+         :provenance_notices (sd/transform_ml (:provenance_notices data))
+         :site_titles (sd/transform_ml (:site_titles data))
+         :support_urls (sd/transform_ml (:support_urls data))
+         :welcome_titles (sd/transform_ml (:welcome_titles data))
+         :welcome_texts (sd/transform_ml (:welcome_texts data))))
+(defn db_get-app-settings []
+  (let [query (->
+               (sql/select :*)
+               (sql/from :app_settings)
+               (sql/format))
+        result (first (jdbc/query (get-ds) query))]
+    result))
 
- (defn handle_get-app-settings
-   [req]
-   (sd/response_ok (transform_ml (db_get-app-settings))))
+(defn handle_get-app-settings
+  [req]
+  (sd/response_ok (transform_ml (db_get-app-settings))))
 
- (defn- set-sql-type [data key type]
-   (if-let [value (key data)]
-     (assoc data key (with-meta value {:pgtype type}))
-     data))
+(defn- set-sql-type [data key type]
+  (if-let [value (key data)]
+    (assoc data key (with-meta value {:pgtype type}))
+    data))
 
-; TODO sitemap json not hstore
- (defn handle_update-app-settings
-   [req]
-  ;(try
-    ;(catcher/with-logging {}
-   (let [data (-> req :parameters :body)
-         ins-data (-> data
-                      (set-sql-type :sitemap "json")
-                      ;(set-sql-type :catalog_context_keys "text[]")
-                      ;(set-sql-type :available_locales "varchar[]")
-                      )
-         upd-clause (sd/sql-update-clause "id" 0)
 
-         upd-result {}]
-
-     (sd/logwrite req (str "handle_update-app-settings:"
-                           "\nins-data\n" ins-data
-                           "\nupd-cls\n" upd-clause))
-
-     (let [upd-result (jdbc/update! (rdbms/get-ds)
-                                    :app_settings
-                                    ins-data upd-clause)]
-       (sd/logwrite req (str "handle_update-app-settings:"
-                             "\ndata\n" data
-                             "\nresult\n" upd-result))
-       (if (= 1 (first upd-result))
-         (sd/response_ok (transform_ml (db_get-app-settings)))
-         (sd/response_failed "Could not update app-settings." 406)))))
+(defn handle_update-app-settings
+  [req]
+  (try
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            ins-data (-> data (set-sql-type :sitemap "json"))
+            upd-clause (sd/sql-update-clause "id" 0)
+            upd-result (jdbc/update! (rdbms/get-ds)
+                                     :app_settings
+                                     ins-data upd-clause)]
 
 
 
-      ;)
-    ;(catch Exception ex (sd/response_exception ex))
+        (sd/logwrite req (str "handle_update-app-settings:"
+                              "\ndata\n" data
+                              "\nresult\n" upd-result))
+        (if (= 1 (first upd-result))
+          (sd/response_ok (transform_ml (db_get-app-settings)))
+          (sd/response_failed "Could not update app-settings." 406))))
+    (catch Exception ex (sd/response_exception ex))))
 
 
 
@@ -175,7 +163,7 @@
 
 (def admin-routes
   [["/app-settings"
-    {:get {:summary "Get App Settings."
+    {:get {:summary (sd/sum_adm "Get App Settings.")
            :handler handle_get-app-settings
            :middleware [wrap-authorize-admin!]
            :swagger {:produces "application/json"}
@@ -183,7 +171,7 @@
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:body s/Any}}}
 
-     :put {:summary "Update App Settings."
+     :put {:summary (sd/sum_adm "Update App Settings.")
            :handler handle_update-app-settings
            :middleware [wrap-authorize-admin!]
            :swagger {:produces "application/json"
@@ -196,7 +184,7 @@
 
 (def user-routes
   [["/app-settings"
-    {:get {:summary "Get App Settings."
+    {:get {:summary (sd/sum_pub "Get App Settings.")
            :handler handle_get-app-settings
            :swagger {:produces "application/json"}
            :content-type "application/json"
