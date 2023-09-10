@@ -10,7 +10,7 @@ context 'people' do
         describe 'a person' do
 
           it 'works' do
-            expect( client.post('/api/people/') do |req|
+            expect( client.post('/api/admin/people/') do |req|
               #client.get.relation('people').post do |req|
               req.body = { last_name: 'test',
                            subtype: 'Person'}.to_json
@@ -21,7 +21,7 @@ context 'people' do
 
         describe 'an institutional person' do
           it 'works' do
-            expect( client.post('/api/people/') do |req|
+            expect( client.post('/api/admin/people/') do |req|
               #client.get.relation('people').post do |req|
               req.body = { first_name: nil,
                            last_name: 'Bachelor',
@@ -53,13 +53,7 @@ context 'people' do
             expect(created_person.body['institutional_id']).to be== "12345/x"
           end
         end
-        # TODO json roa remove: test links
-        #describe 'the json-roa-data' do
-        #  it 'lets us navigate to the person via the self-relation' do
-        #    expect(created_person.json_roa_data['self-relation']['href']).to \
-        #      match /#{created_person.data['id']}/
-        #  end
-        #end
+        
       end
     end
   end

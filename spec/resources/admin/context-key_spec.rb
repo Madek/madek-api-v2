@@ -14,15 +14,32 @@ context 'admin context-keys' do
       it 'query responds with 403' do
         expect(plain_faraday_json_client.get("/api/admin/context-keys/").status).to be == 403
       end
-      it 'get responds with 403' do      
-        expect(plain_faraday_json_client.get("/api/admin/context-keys/#{@context_key.id}").status).to be == 403
+      it 'get responds with 403' do
+        url = "/api/admin/context-keys/#{@context_key.id}"
+        expect(plain_faraday_json_client.get(url).status).to be == 403
       end
       it 'post responds with 403' do
-        expect(plain_faraday_json_client.post("/api/admin/context-keys/").status).to be == 403
+        resonse = plain_faraday_json_client.post("/api/admin/context-keys/") do |req|
+          req.body = {
+            context_id: 'invalid',
+            meta_key_id: 'invalid',
+            is_required: true,
+            position: 1,
+                        
+          }.to_json
+          req.headers['Content-Type'] = 'application/json'
+        end
+        expect(resonse.status).to be == 403
       end
-      it 'put responds with 403' do      
-        expect(plain_faraday_json_client.put("/api/admin/context-keys/#{@context_key.id}").status).to be == 403
+      it 'put responds with 403' do
+        url = "/api/admin/context-keys/#{@context_key.id}"
+        resonse = plain_faraday_json_client.put(url) do |req|
+          req.body = {}.to_json
+          req.headers['Content-Type'] = 'application/json'
+        end
+        expect(resonse.status).to be == 403
       end
+
       it 'delete responds with 403' do      
         expect(plain_faraday_json_client.delete("/api/admin/context-keys/#{@context_key.id}").status).to be == 403
       end
@@ -45,10 +62,23 @@ context 'admin context-keys' do
           expect(client.get("/api/admin/context-keys/#{@context_key.id}").status).to be == 403
         end
         it 'post responds with 403' do
-          expect(client.post("/api/admin/context-keys/").status).to be == 403
+          response = client.post("/api/admin/context-keys/") do |req|
+            req.body = {
+              context_id: 'invalid',
+              meta_key_id: 'invalid',
+              is_required: true,
+              position: 1,
+             }.to_json
+            req.headers['Content-Type'] = 'application/json'
+          end
+          expect(response.status).to be == 403
         end
-        it 'put responds with 403' do      
-          expect(client.put("/api/admin/context-keys/#{@context_key.id}").status).to be == 403
+        it 'put responds with 403' do
+          response = client.put("/api/admin/context-keys/#{@context_key.id}") do |req|
+          req.body = { }.to_json
+          req.headers['Content-Type'] = 'application/json'
+          end
+          expect(response.status).to be == 403
         end
         it 'delete responds with 403' do      
           expect(client.delete("/api/admin/context-keys/#{@context_key.id}").status).to be == 403

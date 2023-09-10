@@ -108,7 +108,10 @@
    (s/optional-key :time_zone) s/Str
    (s/optional-key :copyright_notice_templates) [s/Str]
    (s/optional-key :copyright_notice_default_text) (s/maybe s/Str)
-   (s/optional-key :section_meta_key_id) (s/maybe s/Str)})
+   (s/optional-key :section_meta_key_id) (s/maybe s/Str)
+
+   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Str)
+   })
 
 (def schema_export-app-settings
   {:id s/Int
@@ -159,7 +162,10 @@
    :time_zone s/Str
    :copyright_notice_templates [s/Str]
    :copyright_notice_default_text (s/maybe s/Str)
-   :section_meta_key_id (s/maybe s/Str)})
+   :section_meta_key_id (s/maybe s/Str)
+
+   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Str)
+   })
 
 (def admin-routes
   [["/app-settings"
