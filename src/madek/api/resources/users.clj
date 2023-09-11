@@ -86,11 +86,6 @@
 
 ;### patch user ##############################################################
 
-(defn patch-user [body id]
-  ;((logging/info "patch-user " "\nbody:\n" body "\nid:\n" id)
-   (if (= 1 (first (jdbc/update! (rdbms/get-ds) :users body (jdbc-id-where-clause id))))
-    (sd/response_ok (find-user id) 204)
-    {:status 404}))
 
 
 ;### index ####################################################################
@@ -128,12 +123,13 @@
 
 (def schema_update_user 
   {
-   (s/optional-key :id) s/Uuid
+   ;(s/optional-key :id) s/Uuid
    (s/optional-key :email) s/Str
    (s/optional-key :login) s/Str
 
-   (s/optional-key :person_id) s/Uuid
-   (s/optional-key :institutional_id) s/Str
+   ;(s/optional-key :person_id) s/Uuid
+   ;(s/optional-key :institutional_id) s/Str
+   (s/optional-key :institution) s/Str
 
    (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
    
@@ -150,12 +146,13 @@
 (def schema_create_user
   {
    (s/optional-key :id) s/Uuid
-   (s/optional-key :email) s/Str
-   (s/optional-key :login) s/Str
-
    :person_id s/Uuid
    (s/optional-key :institutional_id) s/Str
 
+   (s/optional-key :email) s/Str
+   (s/optional-key :login) s/Str
+
+   (s/optional-key :institution) s/Str
    (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
 
    (s/optional-key :notes) (s/maybe s/Str) ; TODO
@@ -170,24 +167,26 @@
    })
 
 (def schema_create_user_result
-  {:id s/Uuid
+  {
+   :id s/Uuid
+   :person_id s/Uuid
+   :institutional_id (s/maybe s/Str)
    :email (s/maybe s/Str)
    :login (s/maybe s/Str)
-   :institutional_id (s/maybe s/Str)
-   :person_id s/Uuid
    
+   (s/optional-key :institution) (s/maybe s/Str)
+
    :settings s/Any ; TODO is json
    :accepted_usage_terms_id (s/maybe s/Uuid) ; TODO
    :is_deactivated s/Bool
    :notes (s/maybe s/Str) ; TODO
    ;:password_digest (s/maybe s/Any) ; TODO
-   :last_signed_in_at (s/maybe s/Any) ; TODO
+   ;:last_signed_in_at (s/maybe s/Any) ; TODO
    :autocomplete s/Str
    :searchable (s/maybe s/Str)
-   ; TODO Inst
+
    :created_at s/Any
-   :updated_at s/Any
-   })
+   :updated_at s/Any})
 
 (def schema_export_user
   {:id s/Uuid
@@ -196,6 +195,7 @@
    (s/optional-key :person_id) s/Uuid
 
    (s/optional-key :institutional_id) (s/maybe s/Str)
+   (s/optional-key :institution) (s/maybe s/Str)
 
    (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
    (s/optional-key :is_deactivated) s/Bool
@@ -222,7 +222,12 @@
 (defn handle_patch-user [req]
   (let [id (-> req :parameters :path :id)
         body (-> req :parameters :body)]
-    (patch-user body id)))
+    (if-let [old-data (find-user id)]
+      (let [upd-result (jdbc/update! (rdbms/get-ds) :users body (jdbc-id-where-clause id))]
+        (if (= 1 (first upd-result))
+          (sd/response_ok (find-user id) 200)
+          (sd/response_failed "Could not create user." 406)))
+      (sd/response_not_found "No such user."))))
 
 (defn handle_create-user [req]
   (let [body (-> req :parameters :body)]

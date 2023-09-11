@@ -7,8 +7,7 @@ context 'users' do
     include_context :json_client_for_authenticated_admin_user do
 
       before :each do
-        @person = client.post("/api/people/") do |req|
-          #client.get.relation('people').post do |req|
+        @person = client.post("/api/admin/people/") do |req|
           req.body = { last_name: 'test',
                        subtype: 'Person'}.to_json
           req.headers['Content-Type'] = 'application/json'
@@ -21,8 +20,7 @@ context 'users' do
         describe 'a user' do
 
           it 'works' do
-            expect( client.post("/api/users/") do |req|
-              #client.get.relation('users').post do |req|
+            expect( client.post("/api/admin/users/") do |req|
               req.body = {login: 'test',
                           person_id: @person[:id] }.to_json
               req.headers['Content-Type'] = 'application/json'
@@ -34,8 +32,7 @@ context 'users' do
 
       describe 'a via post created user' do
         let :created_user do
-          client.post("/api/users/") do |req|
-          #client.get.relation('users').post do |req|
+          client.post("/api/admin/users/") do |req|
             req.body = {login: 'test',
                         person_id: @person[:id] }.to_json
             req.headers['Content-Type'] = 'application/json'
@@ -47,12 +44,7 @@ context 'users' do
           end
         end
         # TODO json roa remove: test links
-        #describe 'the json-roa-data' do
-        #  it 'lets us navigate to the user via the self-relation' do
-        #    expect(created_user.json_roa_data['self-relation']['href']).to \
-        #      match /#{created_user.data['id']}/
-        #  end
-        #end
+
       end
     end
   end

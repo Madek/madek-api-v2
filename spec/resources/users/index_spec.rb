@@ -7,6 +7,7 @@ context 'users' do
   end
 
   context 'non admin user' do
+    # TODO Frage definition API2: users can retrieve users or we need query user id by person id
     include_context :json_client_for_authenticated_user do
       it 'is forbidden to retrieve users' do
         expect(
@@ -22,8 +23,7 @@ context 'users' do
       describe 'get users' do
 
         let :users_result do
-          #client.get.relation('users').get()
-          client.get("/api/users/")
+          client.get("/api/admin/users/?count=100")
         end
 
         it 'responses with 200' do

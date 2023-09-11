@@ -3,11 +3,10 @@
     [clj-uuid]
     [clojure.java.jdbc :as jdbc]
     [clojure.tools.logging :as logging]
-    [compojure.core :as cpj]
     [logbug.debug :as debug]
     [madek.api.pagination :as pagination]
     [madek.api.resources.groups.shared :as groups]
-    [madek.api.resources.shared :as shared]
+    [madek.api.resources.shared :as sd]
     [madek.api.resources.users :as users]
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.utils.sql :as sql]
@@ -30,22 +29,22 @@
 
 (defn get-group-user [group-id user-id]
   (if-let [user (find-group-user group-id user-id)]
-    {:body user}
-    {:status 404}))
+    (sd/response_ok user)
+    (sd/response_failed "No such group user," 404)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn add-user [group-id user-id]
   (if-let [user (find-group-user group-id user-id)]
-    {:status 200 :body user}
+    (sd/response_ok user)
     (let [group (groups/find-group group-id)
           user (users/find-user user-id)]
       (if-not (and group user)
-        {:status 404}
+        (sd/response_not_found "No such user or group.")
         (do (jdbc/insert! (rdbms/get-ds)
                           :groups_users {:group_id (:id group)
                                          :user_id (:id user)})
-            {:status 200 :body (find-group-user group-id user-id)})))))
+            (sd/response_ok (find-group-user group-id user-id)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,7 +68,7 @@
       (sql/merge-join :groups [:= :groups.id :groups_users.group_id])
       (sql/order-by [:users.id :asc])
       (groups/sql-merge-where-id group-id)
-      (pagination/add-offset-for-honeysql (-> request :parameters :query)); (:query-params request))
+      (pagination/add-offset-for-honeysql (-> request :parameters :query))
       sql/format))
 
 (defn group-users [group-id request]
@@ -77,7 +76,7 @@
               (group-users-query group-id request)))
 
 (defn get-group-users [group-id request]
-  {:body {:users (group-users group-id request)}})
+  (sd/response_ok {:users (group-users group-id request)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -124,9 +123,9 @@
           del-query (update-delete-query group-id (clojure.set/difference current-group-users-ids target-group-users-ids))
           ins-query (update-insert-query group-id (clojure.set/difference target-group-users-ids current-group-users-ids))
           ]
-      (logging/info "update-group-users" "\ncurr\n" current-group-users-ids "\ntarget\n" target-group-users-ids )
-      (logging/info "update-group-users" "\ndel-q\n" del-query) 
-      (logging/info "update-group-users" "\nins-q\n" ins-query)
+      ;(logging/info "update-group-users" "\ncurr\n" current-group-users-ids "\ntarget\n" target-group-users-ids )
+      ;(logging/info "update-group-users" "\ndel-q\n" del-query) 
+      ;(logging/info "update-group-users" "\nins-q\n" ins-query)
       (jdbc/execute!
         tx
         del-query)
@@ -140,23 +139,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(def routes
-  (cpj/routes
-    (cpj/GET "/groups/:group-id/users/:user-id"
-             [group-id user-id]
-             (get-group-user group-id user-id))
-    (cpj/PUT "/groups/:group-id/users/:user-id"
-             [group-id user-id]
-             (add-user group-id user-id))
-    (cpj/DELETE "/groups/:group-id/users/:user-id"
-                [group-id user-id]
-                (remove-user group-id user-id))
-    (cpj/GET "/groups/:group-id/users/"
-             [group-id :as request]
-             (get-group-users group-id request))
-    (cpj/PUT "/groups/:group-id/users/"
-             [group-id :as {data :body}]
-             (update-group-users group-id data))))
+
 
 (def schema_export-group-user
   {:id s/Uuid
@@ -179,7 +162,7 @@
 (defn handle_get-group-user [req]
   (let [group-id (-> req :parameters :path req :group-id)
         user-id (-> req :parameters :path req :user-id)]
-    (logging/info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
+    ;(logging/info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
     (get-group-user group-id user-id)))
 
 (defn handle_delete-group-user [req]

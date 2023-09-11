@@ -75,16 +75,6 @@
 
 ;### routes ###################################################################
 
-(def routes
-  (-> (cpj/routes
-        (cpj/GET "/groups/" [] index)
-        (cpj/POST "/groups/" [] create-group)
-        (cpj/ANY "/groups/:group-id/users/*" [] users/routes)
-        (cpj/GET "/groups/:group-id" [group-id] (get-group group-id))
-        (cpj/DELETE "/groups/:group-id" [group-id] (delete-group group-id))
-        (cpj/PATCH "/groups/:group-id" [] patch-group))
-      wrap-authorize-admin!))
-
 (def schema_import-group
   {(s/optional-key :id) s/Str
    :name s/Str
