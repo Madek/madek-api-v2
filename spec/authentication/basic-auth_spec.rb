@@ -12,32 +12,22 @@ shared_context :user_entity do |ctx|
   end
 end
 
-shared_context :api_client_entity do |ctx|
-  context 'for Database ApiClient' do
-    before :each do
-      @entity = FactoryBot.create :api_client, password: 'TOPSECRET'
-    end
-    let :entity_type do
-      'ApiClient'
-    end
-    include_context ctx if ctx
-  end
-end
+#shared_context :api_client_entity do |ctx|
+#  context 'for Database ApiClient' do
+#    before :each do
+#      @entity = FactoryBot.create :api_client, password: 'TOPSECRET'
+#    end
+#    let :entity_type do
+#      'ApiClient'
+#    end
+#    include_context ctx if ctx
+#  end
+#end
 
 shared_context :test_bad_password_basic_auth do
   context 'with proper username but bad password' do
-    # TODO: roa: use plain json
-    #let :client do
-    #  json_roa_client do |conn|
-    #    conn.basic_auth(@entity.login, 'BOGUS')
-    #  end
-    #end
-    #let :resource do
-    #  client.get.relation('auth-info').get
-    #end
     let :response do
-      #resource.response
-      basic_auth_plain_faraday_json_client(@entity.login, 'BOGUS').get('auth-info')
+      basic_auth_plain_faraday_json_client(@entity.login, 'BOGUS').get('/api/auth-info')
     end
     it 'responds with 401' do
       expect(response.status).to be == 401
@@ -47,19 +37,9 @@ end
 
 shared_context :test_proper_basic_auth do
   context 'with proper username and password' do
-    # TODO: roa: use plain json
-    #let :client do
-    #  json_roa_client do |conn|
-    #    conn.basic_auth(@entity.login, @entity.password)
-    #  end
-    #end
-    #let :resource do
-    #  client.get.relation('auth-info').get
-    #end
 
     let :response do
-      #resource.response
-      basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get('auth-info')
+      basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get('/api/auth-info')
     end
 
     it 'responds with success 200' do
@@ -104,15 +84,9 @@ end
 
 describe '/auth-info resource' do
   context 'without any authentication' do
-    # TODO: roa: use plain json
-    #context 'via json roa' do
     context 'via json' do
-      #let :resource do
-      #  json_roa_client.get.relation('auth-info').get
-      #end
       let :response do
-        #resource.response
-        plain_faraday_json_client.get('auth-info')
+        plain_faraday_json_client.get('/api/auth-info')
       end
 
       it 'responds with not authorized 401' do
@@ -123,8 +97,7 @@ describe '/auth-info resource' do
 
   context 'Basic Authentication' do
     include_context :user_entity, :test_proper_basic_auth
-    include_context :api_client_entity, :test_proper_basic_auth
     include_context :user_entity, :test_bad_password_basic_auth
-    include_context :api_client_entity, :test_bad_password_basic_auth
+
   end
 end

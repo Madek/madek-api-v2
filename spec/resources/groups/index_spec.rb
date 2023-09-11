@@ -10,8 +10,7 @@ context 'groups' do
     include_context :json_client_for_authenticated_user do
       it 'is forbidden to retrieve groups' do
         expect(
-          #client.get.relation('groups').get().response.status
-          client.get('/api/groups/').status
+          client.get('/api/admin/groups/').status
         ).to be==403
       end
     end
@@ -23,8 +22,7 @@ context 'groups' do
       describe 'get groups' do
 
         let :groups_result do
-          #client.get.relation('groups').get()
-          client.get("/api/groups/")
+          client.get("/api/admin/groups/?count=100")
         end
 
         it 'responses with 200' do

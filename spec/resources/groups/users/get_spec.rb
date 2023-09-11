@@ -40,7 +40,7 @@ context 'a user in a group' do
 
         describe ' via native ids ' do
           let :faraday_response do
-            client.get("/api/groups/#{@group.id}/users/#{@user.id}")
+            client.get("/api/admin/groups/#{@group.id}/users/#{@user.id}")
           end
 
           it 'works' do
@@ -58,7 +58,7 @@ context 'a user in a group' do
 
         describe ' via institutional ids ' do
           it 'works' do
-            url = "/api/groups/#{CGI.escape(@group.institutional_id)}" \
+            url = "/api/admin/groups/#{CGI.escape(@group.institutional_id)}" \
               "/users/#{CGI.escape(@user.institutional_id)}"
             expect(client.get(url).status).to be== 200
           end
@@ -66,7 +66,7 @@ context 'a user in a group' do
 
         describe ' via email ' do
           it 'works' do
-            url = "/api/groups/#{CGI.escape(@group.institutional_id)}" \
+            url = "/api/admin/groups/#{CGI.escape(@group.institutional_id)}" \
               "/users/#{CGI.escape(@user.email)}"
             expect(client.get(url).status).to be== 200
           end
@@ -76,7 +76,7 @@ context 'a user in a group' do
 
       describe ' using the wrong id (email) ' do
         it 'returns 404' do
-          url = "/api/groups/#{CGI.escape(@group.institutional_id)}" \
+          url = "/api/admin/groups/#{CGI.escape(@group.institutional_id)}" \
             "/users/#{CGI.escape('noexists@nowhere')}"
           expect(client.get(url).status).to be== 404
         end

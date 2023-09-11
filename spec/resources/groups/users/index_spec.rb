@@ -23,8 +23,7 @@ describe 'getting the index of group-users' do
       describe 'geting the group_users ' do
 
         let :group_users_result do
-          #client.get.relation('group').get(id: @group.id).relation('users').get()
-          client.get("/api/groups/#{CGI.escape(@group.id)}/users/")
+          client.get("/api/admin/groups/#{CGI.escape(@group.id)}/users/")
         end
 
         it 'works' do
@@ -37,17 +36,6 @@ describe 'getting the index of group-users' do
           ).to be< @group_users.count
         end
 
-        # TODO json roa remove: get group users collection by id list
-        #describe 'the collection' do
-        #  it 'contains excactly the group users' do
-        #    added_ids = Set.new(@group_users.map(&:id))
-        #    #retrieved_ids = Set.new(group_users_result.collection() \
-        #    #  .map(&:get).map{|x| x.data['id']})
-        #    retrieved_users = group_users_result.body["users"]
-        #    retrieved_ids = Set.new(retrieved_users.map{|x| x['id'].to_s})
-        #    expect(added_ids).to be== retrieved_ids
-        #  end
-        #end
       end
     end
   end

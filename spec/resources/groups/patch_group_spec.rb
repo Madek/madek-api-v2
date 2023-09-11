@@ -12,8 +12,7 @@ context 'groups' do
       describe 'patching/updating' do
         it 'works' do
           expect(
-            #client.get.relation('group').patch(id: @group.id) do |req|
-            client.patch("/api/groups/#{@group.id}") do |req|
+            client.put("/api/admin/groups/#{@group.id}") do |req|
               req.body = {name: "new name"}.to_json
               req.headers['Content-Type'] = 'application/json'
             end.status
@@ -22,8 +21,7 @@ context 'groups' do
 
         it 'works when we do no changes' do
           expect(
-            #client.get.relation('group').patch(id: @group.id) do |req|
-            client.patch("/api/groups/#{@group.id}") do |req|
+            client.put("/api/admin/groups/#{@group.id}") do |req|
               req.body = {name: @group.name}.to_json
               req.headers['Content-Type'] = 'application/json'
             end.status
@@ -32,8 +30,7 @@ context 'groups' do
 
         context 'patch result' do
           let :patch_result do
-            #client.get.relation('group').patch(id: @group.id) do |req|
-            client.patch("/api/groups/#{@group.id}") do |req|
+            client.put("/api/admin/groups/#{@group.id}") do |req|
               req.body = {name: "new name"}.to_json
               req.headers['Content-Type'] = 'application/json'
             end
@@ -41,11 +38,6 @@ context 'groups' do
           it 'contains the update' do
             expect(patch_result.body['name']).to be== 'new name'
           end
-          # TODO json roa remove: test links
-          #it 'lets us navigate to the group via the self-relation' do
-          #  expect(patch_result.json_roa_data['self-relation']['href']).to \
-          #    match /#{@group.id}/
-          #end
         end
 
       end

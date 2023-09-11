@@ -32,8 +32,7 @@ describe 'updating group-users' do
     include_context :json_client_for_authenticated_admin_user do
 
       let :response do
-        #client.get.relation('group').get(id: @group.id).relation('users').put do |req|
-        client.put("/api/groups/#{CGI.escape(@group.id)}/users/") do |req|
+        client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/") do |req|
           req.body = {users: @update_data}.to_json
           req.headers['Content-Type'] = 'application/json'
         end

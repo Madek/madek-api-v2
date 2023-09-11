@@ -350,7 +350,7 @@
 (defn- ring-add-meta-datum-with-media-resource [request handler]
   (if-let [meta-datum (query-meta-datum request)]
     (let [media-resource (query-media-resource-for-meta-datum meta-datum)]
-      (logging/info "add-meta-datum-with-media-resource" "\nmeta-datum\n" meta-datum "\nmedia-resource\n" media-resource)
+      ;(logging/info "add-meta-datum-with-media-resource" "\nmeta-datum\n" meta-datum "\nmedia-resource\n" media-resource)
       (handler (assoc request
                       :meta-datum meta-datum
                       :media-resource media-resource)))

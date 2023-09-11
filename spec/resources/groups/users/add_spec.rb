@@ -20,28 +20,20 @@ context 'adding a user to a group via put' do
 
         it 'responds with 200' do
           expect(
-            #client.get.relation('group').get(id: @group.id) \
-            #.relation('user').put(user_id: @user.id).response.status
-            client.put("/api/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
+            client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
           ).to be== 200
         end
 
         it 'effectively adds the user to the group' do
-          #client.get.relation('group').get(id: @group.id) \
-          #  .relation('user').put(user_id: @user.id)
-          client.put("/api/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
+          client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
           expect(@group.users.reload.map(&:id)).to include(@user[:id])
         end
 
         it 'is indempotent' do
-          #client.get.relation('group').get(id: @group.id) \
-          #  .relation('user').put(user_id: @user.id)
-          client.put("/api/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
+          client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
           expect(@group.users.reload.map(&:id)).to include(@user[:id])
           expect(
-            #client.get.relation('group').get(id: @group.id) \
-            #.relation('user').put(user_id: @user.id).response.status
-            client.put("/api/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
+            client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
           ).to be== 200
         end
 

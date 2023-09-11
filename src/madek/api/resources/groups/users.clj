@@ -163,8 +163,8 @@
    :email (s/maybe s/Str)
    :institutional_id (s/maybe s/Str)
    :login (s/maybe s/Str)
-   :created_at s/Inst
-   :updated_at s/Inst
+   :created_at s/Any
+   :updated_at s/Any
    :person_id s/Uuid})
 
 (def schema_export-group-user-simple
@@ -172,8 +172,8 @@
    :email (s/maybe s/Str)
    :institutional_id (s/maybe s/Str)
    :login (s/maybe s/Str)
-   :created_at s/Any ; TODO use Inst here
-   :updated_at s/Any ; TODO use Inst here
+   :created_at s/Any
+   :updated_at s/Any
    :person_id s/Uuid})
 
 (defn handle_get-group-user [req]

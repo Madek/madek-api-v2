@@ -174,7 +174,7 @@
    
    :created_at s/Any
    :updated_at s/Any
-   }) ; TODO use s/Inst TODO json middleware
+   })
 
 (def schema_import_person
   {:subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
@@ -192,7 +192,7 @@
    ; TODO when to use old vs new style?
    ;(s/optional-key :external_uri) s/Str
    (s/optional-key :external_uris) [s/Str]
-   }) ; TODO use s/Inst TODO json middleware
+   })
 
 (def schema_import_person_result
   {:subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
@@ -203,8 +203,8 @@
    (s/optional-key :last_name) (s/maybe s/Str)
    (s/optional-key :pseudonym) (s/maybe s/Str)
    (s/optional-key :external_uris) [s/Str]
-   (s/optional-key :updated_at) s/Any ;s/Inst
-   (s/optional-key :created_at) s/Any ;s/Inst
+   (s/optional-key :updated_at) s/Any
+   (s/optional-key :created_at) s/Any
 
    })
 
@@ -227,7 +227,7 @@
 
    ; TODO when to use old vs new style?
    ;(s/optional-key :external_uri) s/Str
-   (s/optional-key :external_uris) [s/Str]}) ; TODO use s/Inst TODO json middleware
+   (s/optional-key :external_uris) [s/Str]})
 
 
 
@@ -248,8 +248,8 @@
 
    (s/optional-key :page) s/Int
    (s/optional-key :count) s/Int
-   ;(s/optional-key :external_uri) s/Str
-   }) ; TODO use s/Inst TODO json middleware
+   
+   })
 
 
 (defn handle_create-person

@@ -10,8 +10,7 @@ context 'groups' do
     include_context :json_client_for_authenticated_user do
       it 'is forbidden to delete any group' do
         expect(
-          #client.get.relation('group').delete(id: @group.id).response.status
-          client.delete("/api/groups/#{@group.id}").status
+          client.delete("/api/admin/groups/#{@group.id}").status
         ).to be== 403
       end
     end
@@ -22,7 +21,7 @@ context 'groups' do
 
       context 'deleting a standard group' do
         let :delete_group_result do
-          client.delete("/api/groups/#{@group.id}")
+          client.delete("/api/admin/groups/#{@group.id}")
         end
 
         it 'returns the expected status code 204' do

@@ -12,8 +12,7 @@ describe 'roles' do
     describe 'get roles' do
 
       let :roles_result do
-        authenticated_json_client.get('/api/roles/')
-        #authenticated_json_roa_client.get.relation('roles').get
+        authenticated_json_client.get('/api/roles/?count=100')
       end
 
       it 'responses with 200' do

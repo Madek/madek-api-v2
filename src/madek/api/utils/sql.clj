@@ -5,12 +5,12 @@
   (:require
     [clojure.tools.logging :as logging]
     [honeysql.format :as format]
-    [honeysql.helpers :as helpers :refer [build-clause defhelper]]
+    [honeysql.helpers :as helpers :refer [defhelper]]
     [honeysql.types :as types]
     [honeysql.util :as util :refer [defalias]]
-    [logbug.debug :as debug]
     [cheshire.core :as json]
     [clojure.java.jdbc :as jdbc]
+    [clojure.walk :refer [keywordize-keys]]
     ))
 
 (defmethod format/fn-handler "~*" [_ field value]
@@ -65,17 +65,12 @@
 (def <-json #(json/parse-string % true))
 
 (def ->hstore #(HStoreConverter/toString (update-keys % name)))
-(def <-hstore #(update-keys (HStoreConverter/fromString %) keyword))
-
-;(def ->cvarray (fn [x]
-;                 (let [result (java.util.Arrays/toString (into-array x))]
-;                   (logging/info "->cvarray: " x "\nresult: " result)
-;                   result)))
-;(def ->text_array (fn [x]
-;                    (let [result (into-array java.lang.String x)]
-;                      (logging/info "->text_array: " x "\nresult: " result)
-;                      result)))
-;(def <-text_array #(seq %))
+;(def <-hstore #(update-keys (HStoreConverter/fromString %) keyword))
+(def <-hstore (fn [string_data]
+                (let [hashMap (update-keys (HStoreConverter/fromString string_data) keyword)
+                      pmap (keywordize-keys (zipmap (.keySet hashMap) (.values hashMap)))]
+                  (logging/info "<-hstore: hashMap:\n" hashMap "\npmap:\n" pmap)
+                  pmap)))
 
 (defn ->pgobject
   [x]
@@ -86,8 +81,6 @@
       (.setValue (condp contains? pgtype
                    #{"json" "jsonb"} (->json x)
                    #{"hstore"} (->hstore x)
-                   ;#{"text[]"} (->text_array x)
-                   ;#{"varchar[]"} (->cvarray x)
                    (throw (ex-info "unknown postgresql type" {:type pgtype})))))))
 
 (defn <-pgobject
@@ -100,10 +93,6 @@
                           (with-meta (<-json value) {:pgtype type}))
       #{"hstore"} (when value
                     (with-meta (<-hstore value) {:pgtype type}))
-      ;#{"text[]"} value
-      ;#{"varchar[]"} value
-      ;(when value
-      ;              (with-meta (<-text_array value) {:pgtype type}))
       value)))
 
 (extend-protocol jdbc/ISQLParameter
