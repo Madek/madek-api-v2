@@ -7,7 +7,6 @@ end
 
 shared_context :json_client_for_authenticated_user do |ctx|
   let :user do
-    @as = AuthSystem.most_recent or FactoryBot.create :auth_system
     FactoryBot.create :user, password: 'TOPSECRET'
   end
 
@@ -25,7 +24,6 @@ end
 
 shared_context :json_client_for_authenticated_admin_user  do |ctx|
   let :user do
-    @as = AuthSystem.most_recent or FactoryBot.create :auth_system
     user = FactoryBot.create :user, password: 'TOPSECRET'
     FactoryBot.create :admin, user: user
     user
@@ -65,8 +63,8 @@ end
 shared_context :authenticated_json_client do |_ctx|
   #if rand < 0.5
   
-  AuthSystem.most_recent or FactoryBot.create :auth_system
-  
+  # TODO token auth
+  # TODO session-auth
 
   let :user do
       

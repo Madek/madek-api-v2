@@ -7,6 +7,7 @@ end
 RSpec.configure do |config|
   config.before(:each) do
     clean_db
+    PgTasks.data_restore Rails.root.join('datalayer', 'db', 'seeds.pgbin')
   end
 end
 

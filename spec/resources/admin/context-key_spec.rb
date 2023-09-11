@@ -2,8 +2,7 @@ require 'spec_helper'
 
 context 'admin context-keys' do
 
-  @as = AuthSystem.most_recent or FactoryBot.create :auth_system
-
+  
   context 'Responds not authorized without authentication' do
 
     before :each do
