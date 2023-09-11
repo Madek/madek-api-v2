@@ -30,11 +30,6 @@ context 'users' do
           expect(get_user_result.status).to be==200
         end
 
-        # TODO json roa remove: test links
-        #it 'lets us navigate to the user itself via the self-relation' do
-        #  expect(get_user_result.json_roa_data['self-relation']['href']).to match /#{@user.id}/
-        #end
-
         it 'has the proper data, sans :searchable and :previous_id' do
           expect(get_user_result.body.with_indifferent_access \
               .slice(:id, :email, :login, :person_id)).to be== \
@@ -48,7 +43,6 @@ context 'users' do
           FactoryBot.create :user, is_deactivated: true
         end
         let :get_user_result do
-          #client.get.relation('user').get(id: deactivated_user.id)
           client.get("/api/users/#{CGI.escape(deactivated_user.id)}")
         end
 

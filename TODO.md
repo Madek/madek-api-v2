@@ -3,7 +3,6 @@
 ## TODO Review (by Alex)
 
 - groups
-- users
 - media_file
 - previews
 - meta_keys

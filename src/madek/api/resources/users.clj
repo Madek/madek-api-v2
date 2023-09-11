@@ -13,16 +13,17 @@
     [reitit.coercion.schema]
     [schema.core :as s]
     [madek.api.authorization :as authorization]
-    ))
+    
+    [logbug.catcher :as catcher]))
 
 
 (defn sql-select
   ([] (sql-select {}))
   ([sql-map]
-   (sql/select sql-map
-               :users.id :users.email :users.institutional_id :users.login
-               :users.created_at :users.updated_at
-               :users.person_id
+   (sql/select sql-map :*
+               ;:users.id :users.email :users.institutional_id :users.login
+               ;:users.created_at :users.updated_at
+               ;:users.person_id
                )))
 
 (defn sql-merge-where-id
@@ -44,17 +45,6 @@
   (-> id sql-merge-where-id sql/format
       (update-in [0] #(clojure.string/replace % "WHERE" ""))))
 
-
-;### create user #############################################################
-
-(defn create-user [body]
-  (let [params body]
-    ;(logging/info "create-user" "\nparams\n" params)
-    (when-let [dbresult (->> (jdbc/insert! (rdbms/get-ds) :users params) first)]
-      (logging/info "created-user" "\nparams\n" params "\ndbresult\n" dbresult) 
-      (let [result (dissoc dbresult :password_digest )] ; hide password in result
-        (sd/response_ok result 201)))))
-
 ;### get user ################################################################
 
 (defn find-user-sql [some-id]
@@ -68,26 +58,6 @@
   (->> some-id find-user-sql
        (jdbc/query (rdbms/get-ds)) first))
 
-(defn get-user [some-id]
-  (if-let [user (find-user some-id)]
-    (sd/response_ok user)
-    {:status 404 :body "No such user found"}))
-
-
-;### delete user ##############################################################
-
-; TODO return data before
-(defn delete-user [id]
-  (if (= 1 (first (jdbc/delete! (rdbms/get-ds)
-                                :users (jdbc-id-where-clause id))))
-    {:status 204}
-    {:status 404}))
-
-
-;### patch user ##############################################################
-
-
-
 ;### index ####################################################################
 
 (defn build-index-query [query-params]
@@ -98,6 +68,7 @@
       (sql/from :users)
       (sql/merge-where [:= :is_deactivated false])
       (sd/build-query-param query-params :person_id)
+      (sd/build-query-param query-params :institution)
       (sd/build-query-param query-params :institutional_id)
       (sd/build-query-param query-params :accepted_usage_terms_id)
       (sd/build-query-param query-params :is_deactivated)
@@ -116,10 +87,7 @@
         result (jdbc/query (rdbms/get-ds) sql-query)]
     (sd/response_ok {:users result})))
 
-
-;### routes ###################################################################
-
-
+;### swagger io schema #############################################################
 
 (def schema_update_user 
   {
@@ -181,7 +149,7 @@
    :is_deactivated s/Bool
    :notes (s/maybe s/Str) ; TODO
    ;:password_digest (s/maybe s/Any) ; TODO
-   ;:last_signed_in_at (s/maybe s/Any) ; TODO
+   :last_signed_in_at (s/maybe s/Any) ; TODO
    :autocomplete s/Str
    :searchable (s/maybe s/Str)
 
@@ -208,54 +176,97 @@
    (s/optional-key :searchable) s/Str
 
    (s/optional-key :created_at) s/Any
-   (s/optional-key :updated_at) s/Any
-   })
-
-(defn handle_get-user [req]
-  (let [id (-> req :parameters :path :id)]
-    ;(logging/info "handle_get-user" "\nid\n" id)
-    (get-user id)))
-
-(defn handle_delete-user [req]
-  (delete-user (-> req :parameters :path :id)))
-
-(defn handle_patch-user [req]
-  (let [id (-> req :parameters :path :id)
-        body (-> req :parameters :body)]
-    (if-let [old-data (find-user id)]
-      (let [upd-result (jdbc/update! (rdbms/get-ds) :users body (jdbc-id-where-clause id))]
-        (if (= 1 (first upd-result))
-          (sd/response_ok (find-user id) 200)
-          (sd/response_failed "Could not create user." 406)))
-      (sd/response_not_found "No such user."))))
-
-(defn handle_create-user [req]
-  (let [body (-> req :parameters :body)]
-    (create-user body)
-    ))
+   (s/optional-key :updated_at) s/Any})
 
 (def schema_query_user
   {(s/optional-key :full_data) s/Bool
    (s/optional-key :page) s/Int
    (s/optional-key :count) s/Int
+
    (s/optional-key :person_id) s/Uuid
+   (s/optional-key :institution) s/Str
    (s/optional-key :institutional_id) s/Uuid
    (s/optional-key :accepted_usage_terms_id) s/Uuid
    (s/optional-key :is_deactivated) s/Bool
+
    (s/optional-key :email) s/Str
    (s/optional-key :login) s/Str
    (s/optional-key :notes) s/Str
    (s/optional-key :autocomplete) s/Str
    (s/optional-key :searchable) s/Str})
 
-; TODO tests
+(def schema_usr_query_user
+  {(s/optional-key :full_data) s/Bool
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int
+
+   (s/optional-key :person_id) s/Uuid
+   (s/optional-key :institution) s/Str
+   (s/optional-key :institutional_id) s/Uuid
+   
+   (s/optional-key :email) s/Str
+   (s/optional-key :notes) s/Str
+   (s/optional-key :autocomplete) s/Str
+   (s/optional-key :searchable) s/Str})
+
+;### handlers #############################################################
+
+(defn handle_get-user [req]
+  (let [user (-> req :user)]
+    (sd/response_ok user)))
+
+(defn handle_delete-user [req]
+  (try
+    (catcher/with-logging {}
+      (let [old-data (-> req :user)
+            id (-> req :parameters :path :id)
+            del-result (jdbc/delete! (rdbms/get-ds)
+                                     :users (jdbc-id-where-clause id))]
+        (if (= 1 (first del-result))
+          (sd/response_ok old-data)
+          (sd/response_failed "Could not delete user." 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_patch-user [req]
+  (try
+    (catcher/with-logging {}
+      (let [id (-> req :parameters :path :id)
+            body (-> req :parameters :body)
+            upd-result (jdbc/update! (rdbms/get-ds)
+                                     :users body (jdbc-id-where-clause id))]
+
+        (if (= 1 (first upd-result))
+          (sd/response_ok (find-user id) 200)
+          (sd/response_failed "Could not update user." 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+(defn handle_create-user [req]
+  (try
+    (catcher/with-logging {}
+      (let [data (-> req :parameters :body)
+            ins-result (jdbc/insert! (rdbms/get-ds) :users data)]
+        (if-let [result (first ins-result)]
+          (sd/response_ok (dissoc result :password_digest) 201)
+          (sd/response_failed "Could not create user." 406))))
+    (catch Exception ex (sd/response_exception ex))))
+
+
+(defn wwrap-find-user [param]
+  (fn [handler]
+    (fn [request]
+      (let [search (-> request :parameters :path param)]
+        (if-let [result-db (find-user search)]
+          (handler (assoc request :user result-db))
+          (sd/response_not_found "No such user."))))))
+
+;### routes ###################################################################
+
 (def admin-routes
   ["/users"
    ["/" 
     {:get {:summary (sd/sum_adm "Get list of users ids.")
            :description "Get list of users ids."
            :swagger {:produces "application/json"}
-           ; TODO query paging count and full-data, more query params
            :parameters {:query schema_query_user}
            :content-type "application/json"
            :handler index
@@ -280,29 +291,30 @@
  {:get {:summary (sd/sum_adm "Get user by id")
         :description "Get a user by id. Returns 404, if no such users exists."
         :handler handle_get-user
-        :middleware [wrap-authorize-admin!]
+        :middleware [wrap-authorize-admin!
+                     (wwrap-find-user :id)]
         :swagger {:produces "application/json"}
         :coercion reitit.coercion.schema/coercion
         :content-type "application/json"
         :parameters {:path {:id s/Str}}
 
-        :responses {200 {:body s/Any} ; TODO coercion
+        :responses {200 {:body schema_export_user}
                     404 {:body s/Any}}}
 
   :delete {:summary (sd/sum_adm "Delete user by id")
            :description "Delete a user by id. Returns 404, if no such user exists."
            :handler handle_delete-user
-           :middleware [wrap-authorize-admin!]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-user :id)]
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :content-type "application/json"
            :parameters {:path {:id s/Str}}
 
-           :responses {204 {:body s/Any} ; TODO coercion
+           :responses {200 {:body s/Any} ; TODO coercion
                        404 {:body s/Any}}} ; TODO coercion
 
-  :put {:middleware [wrap-authorize-admin!]
-        :summary (sd/sum_adm "Update user with id")
+  :put {:summary (sd/sum_adm "Update user with id")
         :description "Patch a user with id. Returns 404, if no such user exists."
         :swagger {:consumes "application/json"
                   :produces "application/json"}
@@ -312,8 +324,10 @@
         :parameters {:path {:id s/Str}
                      :body schema_update_user}
         :handler handle_patch-user
-        :responses {204 {:body schema_export_user}
-                    404 {:body s/Any}}}}] ; TODO coercion
+        :middleware [wrap-authorize-admin!
+                     (wwrap-find-user :id)]
+        :responses {200 {:body schema_export_user}
+                    404 {:body s/Any}}}}]
    ])
 
 ;TODO Frage: wer kann die Liste der Benutzer sehen?
@@ -328,9 +342,8 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
-           ; TODO query more params
-           :parameters {:query {(s/optional-key :page) s/Int
-                                (s/optional-key :count) s/Int}}
+           ; TODO query reduced user query schema
+           :parameters {:query schema_usr_query_user}
            
            
            
@@ -340,7 +353,8 @@
     {:get {:summary (sd/sum_usr "Get user by id")
            :description "Get a user by id. Returns 404, if no such users exists."
            :handler handle_get-user
-           :middleware [authorization/wrap-authorized-user]
+           :middleware [authorization/wrap-authorized-user
+                        (wwrap-find-user :id)]
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
