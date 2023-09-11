@@ -3,16 +3,23 @@
 ## TODO Review (by Alex)
 
 - groups
-- keywords
-- media_file
-- meta_keys
-- people
-- previews
 - users
+- media_file
+- previews
+- meta_keys
+
+- keywords
+- admins
 
 ## Fragen
 
-### Frage: Permissions: wer darf full-texts anlegen? nur der admin? wird das generiert?
+### FRAGE: code: wie weiter organisieren
+
+### FRAGE: subprojekte: browser, vendor, docs, docs-source, datalayer
+
+### FRAGE: datalayer: casts: enum-types
+
+### FRAGE: Tests: auth_system? Auth
 
 ### FRAGE: Permissions: user auth: create token for user?
 
@@ -23,6 +30,10 @@
 ### FRAGE: fix token only auth (method and admin): Was wird eh ersetzt?
 
 ### FRAGE: fix session auth (new cookie): Was wird eh ersetzt?
+
+###### Andere
+
+### Frage: Permissions: wer darf full-texts anlegen? nur der admin? wird das generiert?
 
 ### FRAGE: Oettli: delegations
 

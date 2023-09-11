@@ -22,7 +22,7 @@ context 'people' do
         describe 'an institutional person' do
           it 'works' do
             expect( client.post('/api/admin/people/') do |req|
-              #client.get.relation('people').post do |req|
+              
               req.body = { first_name: nil,
                            last_name: 'Bachelor',
                            pseudonym: 'BA.alle',
@@ -37,8 +37,7 @@ context 'people' do
 
       describe 'a via post created person' do
         let :created_person do
-          #client.get.relation('people').post do |req|
-          client.post('/api/people/') do |req|
+          client.post('/api/admin/people/') do |req|
             req.body = {subtype: "PeopleInstitutionalGroup",
                         institutional_id: "12345/x",
                         last_name: 'test'}.to_json

@@ -22,16 +22,15 @@ context 'people' do
 
       context 'deleting a standard person' do
         let :delete_person_result do
-          #client.get.relation('person').delete(id: @person.id)
           client.delete("/api/admin/people/#{@person.id}")
         end
 
-        it 'returns the expected status code 204' do
-          expect(delete_person_result.status).to be==204
+        it 'returns the expected status code 200' do
+          expect(delete_person_result.status).to be==200
         end
 
         it 'effectively removes the person' do
-          expect(delete_person_result.status).to be==204
+          expect(delete_person_result.status).to be==200
           expect(Group.find_by(id: @person.id)).not_to be
         end
 

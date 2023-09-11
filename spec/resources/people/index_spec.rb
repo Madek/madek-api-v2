@@ -13,7 +13,7 @@ context 'people' do
 
         let :people_result do
           #client.get.relation('people').get()
-          client.get("/api/people/")
+          client.get("/api/people/?count=100")
         end
 
         it 'responses with 200' do
