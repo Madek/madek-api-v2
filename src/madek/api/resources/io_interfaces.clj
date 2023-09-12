@@ -9,6 +9,8 @@
             [schema.core :as s]))
 
 
+;### handlers #################################################################
+
 (defn handle_list-io_interface
   [req]
   (let [full_data (true? (-> req :parameters :query :full_data))
@@ -71,12 +73,13 @@
     (catch Exception e (sd/response_exception e))))
 
 
-(defn wwrap-find-io_interface [param]
-  (fn [handler]
-    (fn [request] (sd/req-find-data request handler param
-                                    :io_interfaces
-                                    :id :io_interface true))))
+(defn wrap-find-io_interface [handler]
+  (fn [request] (sd/req-find-data request handler :id
+                                  :io_interfaces
+                                  :id :io_interface true)))
 
+
+;### swagger io schema ########################################################
 
 (def schema_import_io_interfaces
   {
@@ -85,76 +88,72 @@
   })
 
 (def schema_update_io_interfaces
-  {:id s/Str
-   :description s/Str
-   
-   ;(s/optional-key :created_at) s/Any
-   ;(s/optional-key :updated_at) s/Any
+  {;(s/optional-key :id) s/Str
+   (s/optional-key :description) s/Str
    })
 
-; TODO Inst coercion
 (def schema_export_io_interfaces
   {:id s/Str
-   :description s/Str
-
+   :description (s/maybe s/Str)
    :created_at s/Any
    :updated_at s/Any
    })
 
-; TODO user routes ?
+;### routes ###################################################################
 ; TODO docu
-; TODO tests io_interfaces
 (def admin-routes
-
   ["/io_interfaces" 
    ["/"
-    {:post {:summary (sd/sum_adm "Create io_interfaces.")
-            :handler handle_create-io_interfaces
-            :middleware [wrap-authorize-admin!]
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:body schema_import_io_interfaces}
-            :responses {200 {:body schema_export_io_interfaces}
-                        406 {:body s/Any}}
-            }
+    {:post
+     {:summary (sd/sum_adm "Create io_interfaces.")
+      :handler handle_create-io_interfaces
+      :middleware [wrap-authorize-admin!]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:body schema_import_io_interfaces}
+      :responses {200 {:body schema_export_io_interfaces}
+                  406 {:body s/Any}}}
+
     ; io_interface list / query
-     :get {:summary  (sd/sum_adm "List io_interfaces.")
-           :handler handle_list-io_interface
-           :middleware [wrap-authorize-admin!]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_io_interfaces]}}}}]
+     :get
+     {:summary  (sd/sum_adm "List io_interfaces.")
+      :handler handle_list-io_interface
+      :middleware [wrap-authorize-admin!]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:query {(s/optional-key :full_data) s/Bool}}
+      :responses {200 {:body [schema_export_io_interfaces]}}}}]
+   
     ; edit io_interface
    ["/:id"
-    {:get {:summary (sd/sum_adm "Get io_interfaces by id.")
-           :handler handle_get-io_interface
-           :middleware [wrap-authorize-admin!
-                        (wwrap-find-io_interface :id)]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export_io_interfaces}
-                       404 {:body s/Any}}}
+    {:get
+     {:summary (sd/sum_adm "Get io_interfaces by id.")
+      :handler handle_get-io_interface
+      :middleware [wrap-authorize-admin!
+                   wrap-find-io_interface]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:id s/Str}}
+      :responses {200 {:body schema_export_io_interfaces}
+                  404 {:body s/Any}}}
 
-     :put {:summary (sd/sum_adm "Update io_interfaces with id.")
-           :handler handle_update-io_interfaces
-           :middleware [wrap-authorize-admin!
-                        (wwrap-find-io_interface :id)]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}
-                        :body schema_update_io_interfaces}
-           :responses {200 {:body schema_export_io_interfaces}
-                       404 {:body s/Any}
-                       406 {:body s/Any}
-                       500 {:body s/Any}}
-           }
+     :put
+     {:summary (sd/sum_adm "Update io_interfaces with id.")
+      :handler handle_update-io_interfaces
+      :middleware [wrap-authorize-admin!
+                   wrap-find-io_interface]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:id s/Str}
+                   :body schema_update_io_interfaces}
+      :responses {200 {:body schema_export_io_interfaces}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}
 
-     :delete {:summary (sd/sum_adm "Delete io_interface by id.")
-              :coercion reitit.coercion.schema/coercion
-              :handler handle_delete-io_interface
-              :middleware [wrap-authorize-admin!
-                           (wwrap-find-io_interface :id)]
-              :parameters {:path {:id s/Str}}
-              :responses {200 {:body schema_export_io_interfaces}
-                          404 {:body s/Any}
-                          422 {:body s/Any}
-                          500 {:body s/Any}}}}]]
+     :delete
+     {:summary (sd/sum_adm "Delete io_interface by id.")
+      :coercion reitit.coercion.schema/coercion
+      :handler handle_delete-io_interface
+      :middleware [wrap-authorize-admin!
+                   wrap-find-io_interface]
+      :parameters {:path {:id s/Str}}
+      :responses {200 {:body schema_export_io_interfaces}
+                  404 {:body s/Any}
+                  406 {:body s/Any}}}}]]
    )
