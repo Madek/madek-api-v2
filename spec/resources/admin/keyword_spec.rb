@@ -1,26 +1,33 @@
 require 'spec_helper'
 
 context 'admin keywords' do
+  before :each do
+    @vocabulary = FactoryBot.create :vocabulary
+    @meta_key = FactoryBot.create :meta_key_text
+    @keyword = FactoryBot.create :keyword
+  end
+
+  let :query_url do
+    "/api/admin/keywords/"
+  end
+
+  let :keyword_url do
+    "/api/admin/keywords/#{@keyword.id}"
+  end
 
   
   context 'Responds not authorized without authentication' do
-
-    before :each do
-      @vocabulary = FactoryBot.create :vocabulary
-      @meta_key = FactoryBot.create :meta_key_text
-      @keyword = FactoryBot.create :keyword
-    end
+  
   
     describe 'not authorized' do
       it 'query responds with 403' do
-        expect(plain_faraday_json_client.get("/api/admin/keywords/").status).to be == 403
+        expect(plain_faraday_json_client.get(query_url).status).to be == 403
       end
       it 'get responds with 403' do
-        url = "/api/admin/keywords/#{@keyword.id}"
-        expect(plain_faraday_json_client.get(url).status).to be == 403
+        expect(plain_faraday_json_client.get(keyword_url).status).to be == 403
       end
       it 'post responds with 403' do
-        resonse = plain_faraday_json_client.post("/api/admin/keywords/") do |req|
+        resonse = plain_faraday_json_client.post(query_url) do |req|
           req.body = {
             term: "someterm",
             meta_key_id: @meta_key.id
@@ -30,8 +37,7 @@ context 'admin keywords' do
         expect(resonse.status).to be == 403
       end
       it 'put responds with 403' do
-        url = "/api/admin/keywords/#{@keyword.id}"
-        resonse = plain_faraday_json_client.put(url) do |req|
+        resonse = plain_faraday_json_client.put(keyword_url) do |req|
           req.body = {}.to_json
           req.headers['Content-Type'] = 'application/json'
         end
@@ -39,7 +45,7 @@ context 'admin keywords' do
       end
 
       it 'delete responds with 403' do      
-        expect(plain_faraday_json_client.delete("/api/admin/keywords/#{@keyword.id}").status).to be == 403
+        expect(plain_faraday_json_client.delete(keyword_url).status).to be == 403
       end
     end
   end
@@ -47,24 +53,19 @@ context 'admin keywords' do
 
   context 'Responds not authorized as user' do
     include_context :json_client_for_authenticated_user do
-
-      before :each do
-        @keyword = FactoryBot.create :keyword
-      end
       
       describe 'not authorized' do
         it 'query responds with 403' do
-          expect(client.get("/api/admin/keywords/").status).to be == 403
+          expect(client.get(query_url).status).to be == 403
         end
         it 'get responds with 403' do      
-          expect(client.get("/api/admin/keywords/#{@keyword.id}").status).to be == 403
+          expect(client.get(keyword_url).status).to be == 403
         end
         it 'post responds with 403' do
-          response = client.post("/api/admin/keywords/") do |req|
+          response = client.post(query_url) do |req|
             req.body = {
-              context_id: 'invalid',
+              term: 'invalid',
               meta_key_id: 'invalid',
-              is_required: true,
               position: 1,
              }.to_json
             req.headers['Content-Type'] = 'application/json'
@@ -72,14 +73,14 @@ context 'admin keywords' do
           expect(response.status).to be == 403
         end
         it 'put responds with 403' do
-          response = client.put("/api/admin/keywords/#{@keyword.id}") do |req|
+          response = client.put(keyword_url) do |req|
           req.body = { }.to_json
           req.headers['Content-Type'] = 'application/json'
           end
           expect(response.status).to be == 403
         end
         it 'delete responds with 403' do      
-          expect(client.delete("/api/admin/keywords/#{@keyword.id}").status).to be == 403
+          expect(client.delete(keyword_url).status).to be == 403
         end
       end
     end
@@ -89,10 +90,7 @@ context 'admin keywords' do
     include_context :json_client_for_authenticated_admin_user do
 
       context 'get' do
-        before :each do
-          @keyword = FactoryBot.create :keyword
-        end
-
+        
         it 'responds 400 with bad formatted uuid' do
           badid = Faker::Internet.slug(words: nil, glue: '-')
           response = client.get("/api/admin/keywords/#{badid}")
@@ -100,14 +98,14 @@ context 'admin keywords' do
         end
 
         it 'responds 404 with non-existing id' do
-          badid = Faker::Internet.slug(words: nil, glue: '-')
+          badid = Faker::Internet.uuid()
           response = client.get("/api/admin/keywords/#{badid}")
-          expect(response.body).to be == 404
+          expect(response.status).to be == 404
         end
 
         describe 'existing id' do
           let :response do
-            client.get("/api/admin/keywords/#{@keyword.id}")
+            client.get(keyword_url)
           end
 
           it 'responds with 200' do
@@ -129,10 +127,8 @@ context 'admin keywords' do
 
       context 'post' do
         before :each do
-          @context = create(:context)
-          @meta_key = create(:meta_key_text)
+          #@meta_key = create(:meta_key_text)
           # TODO use Faker and indiv. data
-          @labels = {de:"labelde", en:"labelen"}
           @create_data = {
             term: "someterm",
             description: "some desc",
@@ -144,7 +140,7 @@ context 'admin keywords' do
         end
 
         let :response do
-          client.post("/api/admin/keywords/") do |req|
+          client.post(query_url) do |req|
             req.body = @create_data.to_json
             req.headers['Content-Type'] = 'application/json'
           end
@@ -168,12 +164,9 @@ context 'admin keywords' do
 
       # TODO test more data
       context 'put' do
-        before :each do
-          @keyword = FactoryBot.create :keyword
-        end
-
+        
         let :response do
-          client.put("/api/admin/keywords/#{@keyword.id}") do |req|
+          client.put(keyword_url) do |req|
             req.body = {
               position: 2
             }.to_json
@@ -200,12 +193,9 @@ context 'admin keywords' do
       end
 
       context 'delete' do      
-        before :each do
-          @keyword = FactoryBot.create :keyword
-        end
-
+        
         let :response do
-          client.delete("/api/admin/keywords/#{@keyword.id}")
+          client.delete(keyword_url)
         end
 
         it 'responds with 200' do
