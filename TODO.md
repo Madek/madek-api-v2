@@ -7,9 +7,6 @@
 - previews
 - meta_keys
 
-- keywords
-- admins
-
 ## Fragen
 
 ### FRAGE: code: wie weiter organisieren

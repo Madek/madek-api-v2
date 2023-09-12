@@ -56,6 +56,8 @@
         (sd/response_ok admin)
         (sd/response_failed "Could not delete admin." 406)))))
 
+;### wrappers #################################################################
+
 (defn wwrap-find-admin [param colname send404]
   (fn [handler] 
     (fn [request] (sd/req-find-data
@@ -68,6 +70,8 @@
                    request handler param
                    :users :id :user true))))
 
+;### swagger io schema ########################################################
+
 (def schema_export-admin
   {
    :id s/Uuid
@@ -76,11 +80,12 @@
    :created_at s/Any
   })
 
-; TODO response coercion
+
+;### wrappers #################################################################
+
 ; TODO docu
-; TODO tests
 (def ring-routes
-  [["/admins"
+  [["/admins/"
     {:get
      {:summary  (sd/sum_adm "List admin users.")
       :handler handle_list-admin
