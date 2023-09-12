@@ -51,12 +51,9 @@ CREATE CAST (varchar AS collection_sorting) WITH INOUT AS IMPLICIT;
 ### col-col-arc
 ### col-me-arc
 ### cols
-### context_keys
 ### contexts
 ### custom_urls
 ### edit_sessions
-### io_interfaces
-### io_mappings
 ### favorites
 ### full_texts
 ### [groups]
@@ -133,52 +130,24 @@ Description, docu:
 
 ## Admin aspects
 
-## Notes on setup (OLD)
 
-### setup db (old datalayer)
 
-* copy `datalayer/config/database_developer_example.yml`
-* to `datalayer/config/database.yml`
-* edit and adapt for db connection.
-* run setup script
+## DONE Tests
 
-~~~ setup db
-cd datalayer
-RAILS_ENV=development ./bin/setup
-~~~
+### user
+#### app-settings
+#### context-keys
+#### keywords
+#### roles
+#### person
 
-* for sql check constraint error, comment out structure.sql in line 1568
-
-~~~ disable constraint
---CONSTRAINT check_allowed_people_subtypes_not_empty_for_meta_datum_people CHECK ((((allowed_people_subtypes IS NOT NULL) AND (COALESCE(array_length(allowed_people_subtypes, 1), 0) > 0)) OR (meta_datum_object_type <> 'MetaDatum::People'::text))),
-~~~
-
-* if it creates only the development db
-* edit `datalayer/config/database.yml` and exchange
-
-~~~ setup test db
-  #database: madek_development
-  database: madek_test
-~~~
-
-* do migrations
-
-* setup seeds
-
-edit in datalayer/bin/rerun_db_migrations
-RAILS_ENV=development rails db:migrate
-
-run
-RAILS_ENV=development ./bin/rerun_db_migrations
-
-edit in datalayer/bin/rerun_db_migrations
-RAILS_ENV=test rails db:migrate
-
-run
-RAILS_ENV=test ./bin/rerun_db_migrations
-
-* drop dbs
-
-~~~ drop dbs
-bundle exec rails db:drop
-~~~
+### admin
+#### app-settings
+#### admins
+#### context-keys
+#### io-interfaces
+#### io-mappings
+#### keywords
+#### people
+#### users
+#### groups

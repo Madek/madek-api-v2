@@ -91,22 +91,20 @@
 (def schema_update_io-mappings
   {
    ;:id s/Uuid
-   :io_interface_id s/Str
-   :meta_key_id s/Str
-   :key_map s/Str
-   :key_map_type (s/maybe s/Any) ; TODO [null, Array, whatelse?]
+   (s/optional-key :io_interface_id) s/Str
+   (s/optional-key :meta_key_id) s/Str
+   (s/optional-key :key_map) s/Str
+   (s/optional-key :key_map_type) (s/maybe s/Str)
 
-   ;(s/optional-key :created_at) s/Any
-   ;(s/optional-key :updated_at) s/Any
    })
 
-; TODO Inst coercion
+
 (def schema_export_io-mappings
   {:id s/Uuid
    :io_interface_id s/Str
    :meta_key_id s/Str
    :key_map s/Str
-   :key_map_type (s/maybe s/Str) ; TODO [null, Array, whatelse?]
+   :key_map_type (s/maybe s/Str)
 
    :created_at s/Any
    :updated_at s/Any})
@@ -142,17 +140,19 @@
            :middleware [wrap-authorize-admin!
                         (wwrap-find-io-mapping :id)]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export_io-mappings}}}
+           :parameters {:path {:id s/Uuid}}
+           :responses {200 {:body schema_export_io-mappings}
+                       404 {:body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update io-mappings with id.")
            :handler handle_update-io-mappings
            :middleware [wrap-authorize-admin!
                         (wwrap-find-io-mapping :id)]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}
+           :parameters {:path {:id s/Uuid}
                         :body schema_update_io-mappings}
            :responses {200 {:body schema_export_io-mappings}
+                       404 {:body s/Any}
                        406 {:body s/Any}}}
 
      :delete {:summary (sd/sum_adm "Delete io-mapping by id.")
@@ -160,7 +160,7 @@
               :handler handle_delete-io-mapping
               :middleware [wrap-authorize-admin!
                            (wwrap-find-io-mapping :id)]
-              :parameters {:path {:id s/Str}}
+              :parameters {:path {:id s/Uuid}}
               :responses {200 {:body schema_export_io-mappings}
                           404 {:body s/Any}}}
      }]]
