@@ -30,6 +30,7 @@ shared_context :check_success_and_data_with_public_permission do
 
       include_examples :check_data_includes_excatly_the_keys,
                        [:created_at, :id, :is_published,
+                        :creator_id,
                         :responsible_user_id,
                         :updated_at, :edit_session_updated_at,
                         :meta_data_updated_at]

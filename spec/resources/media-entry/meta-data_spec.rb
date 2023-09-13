@@ -26,29 +26,13 @@ context 'A media-entry resource with get_metadata_and_previews permission' do
     # TODO json roa: test links
     describe 'resource' do
       include_context :media_entry_resource_via_plain_json
-      #include_context :media_entry_resource_via_json_roa
-      #it 'has a meta-data relation' do
-      #  expect(resource.relation('meta-data')).to \
-      #    be_a JSON_ROA::Client::Relation
-      #end
 
       describe 'get meta-data relation' do
-        #let :get_meta_data_relation do
-        #  resource.relation('meta-data').get
-        #end
         let :meta_data_response do
           plain_faraday_json_client.get("/api/media-entry/#{@media_entry.id}/meta-data")
         end
 
-
-        #it 'is a resource' do
-        #  expect(get_meta_data_relation).to be_a JSON_ROA::Client::Resource
-        #end
-
         describe 'meta_data the resource' do
-          #let :meta_data_resource do
-          #  get_meta_data_relation
-          #end
 
           describe 'the response' do
             it 'the status code indicates success' do
@@ -99,23 +83,6 @@ context 'A media-entry resource with get_metadata_and_previews permission' do
 
           end
         end
-
-        describe 'set meta_keys to an json encoded array excluding the used key' do
-          #let :get_meta_data_relation do
-          #  resource.relation('meta-data') \
-          #    .get("meta_keys" => ['bogus'].to_json)
-          #end
-          describe 'the response' do
-            #it 'succeeds' do
-            #  expect(get_meta_data_relation.response.status).to be == 200
-            #end
-            #it 'does not contain the meta-datum ' do
-            #  expect(get_meta_data_relation.data['meta-data'].map{|x| x[:id]}).not_to \
-            #    include @meta_datum_text.id
-            #end
-          end
-        end
-
 
       end
     end

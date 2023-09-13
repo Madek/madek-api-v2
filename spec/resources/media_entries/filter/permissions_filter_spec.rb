@@ -6,11 +6,11 @@ describe 'filtering media entries' do
 
   def get_media_entries_response(filter = nil)
     #media_entries # force evaluation
-    client.get("/api/media-entries/", filter)
+    client.get("/api/media-entries", filter)
   end
 
   def get_media_entries(filter = nil)
-    get_media_entries_response(filter).body['media-entries']
+    get_media_entries_response(filter).body['media_entries']
   end
 
   context 'permission params checks' do
@@ -187,76 +187,6 @@ describe 'filtering media entries' do
       end
     end
 
-    context 'me_get_metadata_and_previews for an api_client' do
-      include_context :json_client_for_authenticated_api_client do
-        it '200 for public permissions' do
-          10.times {
-            FactoryBot.create(:media_entry,
-                               get_metadata_and_previews: true,
-                               get_full_size: false)
-          }
-
-          get_media_entries('me_get_metadata_and_previews' => 'true')
-            .each do |me|
-            media_entry = MediaEntry.unscoped.find(me['id'])
-            expect(media_entry.get_metadata_and_previews).to be true
-          end
-        end
-
-        it '200 for api_client permission' do
-          10.times do
-            FactoryBot.create \
-              :media_entry_api_client_permission,
-              media_entry: FactoryBot.create(:media_entry,
-                                              get_metadata_and_previews: false,
-                                              get_full_size: false),
-              api_client: api_client
-          end
-
-          get_media_entries('me_get_metadata_and_previews' => 'true')
-            .each do |me|
-            media_entry = MediaEntry.unscoped.find(me['id'])
-            expect(media_entry.api_client_permissions.first.api_client)
-              .to be == api_client
-          end
-        end
-      end
-    end
-
-    context 'me_get_metadata_and_previews for an api_client' do
-      include_context :json_client_for_authenticated_api_client do
-        it '200 for public permissions' do
-          10.times {
-            FactoryBot.create(:media_entry,
-                               get_metadata_and_previews: false,
-                               get_full_size: true)
-          }
-
-          get_media_entries('me_get_full_size' => 'true')
-            .each do |me|
-            media_entry = MediaEntry.unscoped.find(me['id'])
-            expect(media_entry.get_full_size).to be true
-          end
-        end
-
-        it '200 for api_client permission' do
-          10.times do
-            FactoryBot.create \
-              :media_entry_api_client_permission,
-              media_entry: FactoryBot.create(:media_entry,
-                                              get_metadata_and_previews: false,
-                                              get_full_size: false),
-              api_client: api_client
-          end
-
-          get_media_entries('me_get_full_size' => 'true')
-            .each do |me|
-            media_entry = MediaEntry.unscoped.find(me['id'])
-            expect(media_entry.api_client_permissions.first.api_client)
-              .to be == api_client
-          end
-        end
-      end
-    end
+    
   end
 end

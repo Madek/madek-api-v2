@@ -23,7 +23,7 @@
 
 (defn- base-query
   [user-id ]
-  (-> (sql/select :*)
+  (-> (sql/select :meta_keys.id :meta_keys.vocabulary_id)
       (sql/from :meta_keys)
       (sql/merge-join :vocabularies
                       [:= :meta_keys.vocabulary_id :vocabularies.id])
@@ -52,8 +52,10 @@
 
 
 (defn db-query-meta-keys [request]
-  (jdbc/query (rdbms/get-ds)
-              (build-query request)))
+  (let [query (build-query request)]
+    (logging/info "db-query-meta-keys: query: " query)
+    (jdbc/query (rdbms/get-ds) query))
+  )
 
 ;(defn get-index [request]
 ;  (catcher/with-logging {}

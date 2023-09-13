@@ -7,7 +7,7 @@ describe 'filtering media entries' do
 
   def get_media_entries(filter = nil)
     #media_entries_relation.get(filter).data['media-entries']
-    client.get('/api/media-entries/', filter).body['media-entries']
+    client.get('/api/media-entries', filter).body['media_entries']
   end
 
   context 'by collection_id' do
@@ -42,6 +42,7 @@ describe 'filtering media entries' do
 
         response = get_media_entries('collection_id' => collection.id,
                                      'me_get_metadata_and_previews' => true)
+
         expect(response.count).to be == 2
         response.each do |me|
           media_entry = MediaEntry.unscoped.find(me['id'])

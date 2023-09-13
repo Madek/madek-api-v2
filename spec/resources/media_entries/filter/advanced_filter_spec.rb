@@ -9,7 +9,7 @@ describe 'advanced filtering of media entries' do
 
   def get_media_entries(filter = nil)
     #media_entries_relation.get(filter).data['media-entries']
-    plain_faraday_json_client.get("/api/media-entries/", filter).body['media-entries']
+    plain_faraday_json_client.get("/api/media-entries", filter).body['media_entries']
   end
 
   context 'applying a combined filter' do

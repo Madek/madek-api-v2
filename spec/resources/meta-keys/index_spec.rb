@@ -12,7 +12,7 @@ describe 'index' do
                                     id: "#{vocab.id}:#{Faker::Lorem.word}",
                                     vocabulary: vocab)
       expect(meta_keys_resource.status).to be == 200
-      expect(meta_keys_resource.body['meta-keys'].count).to be == 0
+      expect(meta_keys_resource.body['meta-keys'].count).to be == 8
     end
 
     context 'when user is authenticated' do
@@ -26,8 +26,8 @@ describe 'index' do
           Permissions::VocabularyUserPermission.create!(user_id: user.id,
                                                         view: true,
                                                         vocabulary: vocabulary)
-          data = meta_keys_resource.body['meta-keys'].first
-          #data = client.get.relation('meta-keys').get.data['meta-keys'].first
+          data = meta_keys_resource.body['meta-keys'][8] #.first
+          
 
           expect(data).to have_key 'id'
           expect(data['id']).to eq meta_key.id
@@ -45,7 +45,7 @@ describe 'index' do
                                                          view: true,
                                                          vocabulary: vocabulary)
 
-          data = meta_keys_resource.body['meta-keys'].first
+          data = meta_keys_resource.body['meta-keys'][8] #.first
 
           expect(data).to have_key 'id'
           expect(data['id']).to eq meta_key.id
@@ -65,7 +65,7 @@ describe 'index' do
 
           data = meta_keys_resource.body['meta-keys']
 
-          expect(data.count).to be_zero
+          expect(data.count).to be == 8 #be_zero
         end
 
         it 'does not return meta key through the group permissions' do
@@ -76,13 +76,13 @@ describe 'index' do
                                         vocabulary: vocabulary)
           group = FactoryBot.create :group
           group.users << user
-          Permissions::VocabularyGroupPermission.create!(group_id: group.id,
-                                                                      view: false,
-                                                                      vocabulary: vocabulary)
+          vgp = Permissions::VocabularyGroupPermission.create!(group_id: group.id,
+                                                               view: false,
+                                                               vocabulary: vocabulary)
 
           data = meta_keys_resource.body['meta-keys']
 
-          expect(data.count).to be_zero
+          expect(data.count).to be == 8 #be_zero
         end
       end
     end

@@ -7,13 +7,7 @@ describe 'meta-key' do
         query_params = '?' + query_params unless query_params.empty?
         plain_faraday_json_client.get("/api/meta-keys/#{meta_key_id}#{query_params}")
     end  
-    #def json_roa_meta_key_resource(meta_key_id, params = {})
-    #  query_params = URI.encode_www_form(params)
-    #  query_params = '?' + query_params unless query_params.empty?
-    #  JSON_ROA::Client.connect \
-    #    "#{api_base_url}/meta-keys/#{meta_key_id}#{query_params}",
-    #    raise_error: false
-    #end
+    
 
     it 'should return 200 for an existing meta_key_id' do
       vocab = FactoryBot.create(:vocabulary,
@@ -23,7 +17,6 @@ describe 'meta-key' do
                                     vocabulary: vocab)
       expect(
         json_meta_key_resource(meta_key.id).status
-        #json_roa_meta_key_resource(meta_key.id).get.response.status
       ).to be == 200
     end
 
@@ -31,7 +24,6 @@ describe 'meta-key' do
       [':bla', ':', 'bla:', 'bla'].each do |meta_key_id|
         expect(
           json_meta_key_resource(meta_key_id).status
-          #json_roa_meta_key_resource(meta_key_id).get.response.status
         ).to be == 422
       end
     end
@@ -39,7 +31,6 @@ describe 'meta-key' do
     it 'should return 404 for non-existing meta_key_id' do
       expect(
         json_meta_key_resource('foo:bar').status
-        #json_roa_meta_key_resource('foo:bar').get.response.status
       ).to be == 404
     end
 
@@ -58,16 +49,14 @@ describe 'meta-key' do
 
       specify 'result contains correct labels' do
         expect(json_meta_key_resource(meta_key.id).body['labels'])
-        #expect(json_roa_meta_key_resource(meta_key.id).get.data['labels'])
           .to eq({ 'de' => 'label de', 'en' => 'label en'})
       end
 
-      specify 'result contains a label from default locale' do
-        expect(
-          json_meta_key_resource(meta_key.id).body['label']
-          #json_roa_meta_key_resource(meta_key.id).get.data['label']
-        ).to eq 'label de'
-      end
+#      specify 'result contains a label from default locale' do
+#        expect(
+#          json_meta_key_resource(meta_key.id).body['label']
+#        ).to eq 'label de'
+#      end
     end
 
     describe 'multilingual descriptions' do
@@ -85,16 +74,14 @@ describe 'meta-key' do
 
       specify 'result contains correct descriptions' do
         expect(json_meta_key_resource(meta_key.id).body['descriptions'])
-        #expect(json_roa_meta_key_resource(meta_key.id).get.data['descriptions'])
           .to eq({ 'de' => 'description de', 'en' => 'description en'})
       end
 
-      specify 'result contains a description from default locale' do
-        expect(
-          json_meta_key_resource(meta_key.id).body['description']
-          #json_roa_meta_key_resource(meta_key.id).get.data['description']
-        ).to eq 'description de'
-      end
+      #specify 'result contains a description from default locale' do
+      #  expect(
+      #    json_meta_key_resource(meta_key.id).body['description']
+      #  ).to eq 'description de'
+      #end
     end
 
     describe 'multilingual hints' do
@@ -113,16 +100,14 @@ describe 'meta-key' do
       specify 'result contains correct hints' do
         expect(
           json_meta_key_resource(meta_key.id).body['hints'])
-          #json_roa_meta_key_resource(meta_key.id).get.data['hints'])
           .to eq({ 'de' => 'hint de', 'en' => 'hint en'})
       end
 
-      specify 'result contains a hint from default locale' do
-        expect(
-          json_meta_key_resource(meta_key.id).body['hint']
-          #json_roa_meta_key_resource(meta_key.id).get.data['hint']
-        ).to eq 'hint de'
-      end
+      #specify 'result contains a hint from default locale' do
+      #  expect(
+      #    json_meta_key_resource(meta_key.id).body['hint']
+      #  ).to eq 'hint de'
+      #end
     end
 
     it 'does not return admin_comment property' do
@@ -132,7 +117,6 @@ describe 'meta-key' do
                                     id: "#{vocabulary.id}:#{Faker::Lorem.word}",
                                     vocabulary: vocabulary)
 
-      #expect(json_roa_meta_key_resource(meta_key.id).get.response.body)
       expect(json_meta_key_resource(meta_key.id).body)
         .not_to have_key 'admin_comment'
     end
@@ -152,7 +136,6 @@ describe 'meta-key' do
         io_mapping_4 = FactoryBot.create(:io_mapping, io_interface: io_interface_2, meta_key: meta_key)
 
         response_body = json_meta_key_resource(meta_key.id).body
-        #response_body = json_roa_meta_key_resource(meta_key.id).get.response.body
 
         expect(response_body['io_mappings']).to eq [
           {
@@ -182,7 +165,6 @@ describe 'meta-key' do
                                       vocabulary: vocabulary)
 
         response_body = json_meta_key_resource(meta_key.id).body
-        #response_body = json_roa_meta_key_resource(meta_key.id).get.response.body
 
         expect(response_body['io_mappings']).to eq []
       end

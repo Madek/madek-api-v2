@@ -245,10 +245,10 @@
   [db md-id kw-id]
   (let [query ["meta_datum_id = ? AND keyword_id = ?" md-id kw-id]
         result (jdbc/delete! db :meta_data_keywords query)]
-    ;(logging/info "db-delete-meta-data-keyword"
-    ;              "\nmd-id\n" md-id
-    ;              "\nkw-id\n" kw-id
-    ;              "\nresult\n" result)
+    (logging/info "db-delete-meta-data-keyword"
+                  "\nmd-id\n" md-id
+                  "\nkw-id\n" kw-id
+                  "\nresult\n" result)
     result
     )
   )
@@ -332,16 +332,17 @@
     (catcher/with-logging {}
       (let [mr (-> req :media-resource)
             meta-key-id (-> req :parameters :path :meta_key_id)
-            mdkw-id (-> req :parameters :path :keyword_id)
+            kw-id (-> req :parameters :path :keyword_id)
             md (db-get-meta-data mr meta-key-id MD_TYPE_KEYWORDS)
             md-id (-> md :id)
-            delete-result (db-delete-meta-data-keyword (rdbms/get-ds) md-id mdkw-id)
+            delete-result (db-delete-meta-data-keyword (rdbms/get-ds) md-id kw-id)
             mdr (db-get-meta-data-keywords md-id)]
 
         (sd/logwrite req (str "handle_delete-meta-data-keyword:"
                               "mr-id: " (:id mr)
+                              "md-id: " md-id
                               "meta-key: " meta-key-id
-                              "keyword-id: " mdkw-id
+                              "keyword-id: " kw-id
                               "result: " delete-result))
 
         (if (= 1 (first delete-result))
@@ -401,19 +402,19 @@
             user-id (-> req :authenticated-entity :id str)]
 
         (if-let [result (create_md_and_people mr meta-key-id person-id user-id)]
-          ((sd/logwrite req (str "handle_create-meta-data-people:"
-                                 "mr-id: " (:id mr)
-                                 "meta-key: " meta-key-id
-                                 "person-id:" person-id
-                                 "result: " result))
-           (sd/response_ok result))
+          ;((sd/logwrite req (str "handle_create-meta-data-people:"
+          ;                       "mr-id: " (:id mr)
+          ;                       "meta-key: " meta-key-id
+          ;                       "person-id:" person-id
+          ;                       "result: " result))
+          (sd/response_ok result);)
           (if-let [retryresult (create_md_and_people mr meta-key-id person-id user-id)]
-            ((sd/logwrite req (str "handle_create-meta-data-people:"
-                                   "mr-id: " (:id mr)
-                                   "meta-key: " meta-key-id
-                                   "person-id:" person-id
-                                   "result: " retryresult))
-             (sd/response_ok retryresult))
+            ;((sd/logwrite req (str "handle_create-meta-data-people:"
+            ;                       "mr-id: " (:id mr)
+            ;                       "meta-key: " meta-key-id
+            ;                       "person-id:" person-id
+            ;                       "result: " retryresult))
+            (sd/response_ok retryresult);)
             (sd/response_failed "Could not create md people" 406)))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -448,17 +449,18 @@
       (let [mr (-> req :media-resource)
             meta-key-id (-> req :parameters :path :meta_key_id)
             person-id (-> req :parameters :path :person_id)
-          ;md-type MD_TYPE_PEOPLE
             md (db-get-meta-data mr meta-key-id MD_TYPE_PEOPLE)
             md-id (-> md :id)
             mdr-clause ["meta_datum_id = ? AND person_id = ?" md-id person-id]
             del-result (jdbc/delete! (rdbms/get-ds) :meta_data_people mdr-clause)]
 
         (sd/logwrite req (str "handle_delete-meta-data-people:"
-                              "mr-id: " (:id mr)
-                              "meta-key: " meta-key-id
-                              "person-id:" person-id
-                              "result: " del-result))
+                              " mr-id: " (:id mr)
+                              " meta-key: " meta-key-id
+                              " person-id: " person-id
+                              " upd-cls: " mdr-clause
+                              " result: " del-result)
+                     )
 
         (if (= 1 (first del-result))
           (sd/response_ok {:meta_data md
@@ -888,7 +890,7 @@
            :handler handle_get-meta-data-keywords
            :middleware [;wrap-me-add-meta-data
                         sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str
                                :meta_key_id s/Str}}
@@ -1081,7 +1083,7 @@
            :handler handle_get-meta-data-keywords
            :middleware [;wrap-me-add-meta-data
                         sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str
                                :meta_key_id s/Str}}
@@ -1117,7 +1119,7 @@
            :handler handle_get-meta-data-people
            :middleware [;wrap-me-add-meta-data
                         sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str
                                :meta_key_id s/Str}}
@@ -1153,7 +1155,7 @@
     {:get {:summary "Get meta-data role for media-entry."
            :handler handle_get-meta-data-roles
            :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str
                                :meta_key_id s/Str}}

@@ -12,8 +12,7 @@ describe 'ordering media entries' do
     #end
 
     def resource(order = nil)
-      #media_entries_relation.get('order' => order)
-      client.get('/api/media-entries/', {'order' => order})
+      client.get('/api/media-entries', {'order' => order})
     end
 
     context "old style string 'order' attribute" do
@@ -22,7 +21,7 @@ describe 'ordering media entries' do
           response = resource('incorrect_value')
 
           expect(response.status).to eq(422)
-          expect(response.body).to eq({ 'message' => 'only the following values are allowed as '\
+          expect(response.body).to eq({ 'msg' => 'only the following values are allowed as '\
                                                      'order parameter: desc, asc, title_asc, '\
                                                      'title_desc, last_change, manual_asc, '\
                                                      'manual_desc and stored_in_collection' })
@@ -32,24 +31,26 @@ describe 'ordering media entries' do
       context 'created_at' do
         include_examples 'ordering by created_at'
 
-        #[nil, 'asc', 'desc'].each do |direction|
-        #  it "returns 30 media entries for #{direction.inspect} order" do
-        #    expect(media_entries_created_at(direction).size).to eq(30)
-        #  end
-        #end
-        it "returns 30 media entries for asc order" do
-          expect(media_entries_created_at("asc").size).to eq(30)
-        end
-
-        it "returns 30 media entries for desc order" do
-          expect(media_entries_created_at("desc").size).to eq(30)
-        end
-
-        specify 'ascending order by default' do
-          media_entries_created_at.each_cons(2) do |ca_pair|
-            expect(ca_pair.first < ca_pair.second).to be true
+        [nil, 'asc', 'desc'].each do |direction|
+          it "returns 30 media entries for #{direction.inspect} order" do
+            expect(media_entries_created_at(direction).size).to eq(30)
           end
         end
+          it "returns 30 media entries for asc order" do
+            expect(media_entries_created_at("asc").size).to eq(30)
+          end
+
+          it "returns 30 media entries for desc order" do
+            expect(media_entries_created_at("desc").size).to eq(30)
+          end
+
+          specify 'ascending order by default' do
+            media_entries_created_at.each_cons(2) do |ca_pair|
+              expect(ca_pair.first < ca_pair.second).to be true
+            end
+          end
+
+        #end
       end
 
       context 'madek_core:title' do
@@ -77,7 +78,7 @@ describe 'ordering media entries' do
           it 'raises an error' do
             response = resource('stored_in_collection')
             expect(response.status).to eq(422)
-            expect(response.body).to eq({ 'message' => 'collection_id param must be given' })
+            expect(response.body).to eq({ 'msg' => 'collection_id param must be given' })
           end
         end
       end
@@ -87,7 +88,7 @@ describe 'ordering media entries' do
           it 'raises an error' do
             response = resource('manual_asc')
             expect(response.status).to eq(422)
-            expect(response.body).to eq({ 'message' => 'collection_id param must be given' })
+            expect(response.body).to eq({ 'msg' => 'collection_id param must be given' })
           end
         end
       end
@@ -97,7 +98,7 @@ describe 'ordering media entries' do
           it 'raises an error' do
             response = resource('manual_desc')
             expect(response.status).to eq(422)
-            expect(response.body).to eq({ 'message' => 'collection_id param must be given' })
+            expect(response.body).to eq({ 'msg' => 'collection_id param must be given' })
           end
         end
       end
@@ -110,7 +111,7 @@ describe 'ordering media entries' do
     context "response of ordering by the order attribute of the arc descending" do
       def resource(query)
         #media_entries_relation.get('order' => order)
-        client.get('/api/media-entries/', query)
+        client.get('/api/media-entries', query)
       end
 
       let :response do
@@ -122,13 +123,14 @@ describe 'ordering media entries' do
       end
 
       it "is OK" do
+        #expect(response.body).to be== 200
         expect(response.status).to be== 200
       end
 
       describe "arcs" do
 
         let :arcs do
-          response.body.with_indifferent_access[:arcs]
+          response.body.with_indifferent_access[:col_arcs]
         end
 
         let :arcs_before_first_order_nil do
@@ -152,7 +154,7 @@ describe 'ordering media entries' do
         describe "child media entries" do
 
           let :child_media_entries do
-            response.body.with_indifferent_access["media-entries"]
+            response.body.with_indifferent_access["media_entries"]
           end
 
           it "are exactly ordered like the arcs" do
@@ -168,7 +170,7 @@ describe 'ordering media entries' do
 
       def resource(query)
         #media_entries_relation.get('order' => order)
-        client.get('/api/media-entries/', query)
+        client.get('/api/media-entries', query)
       end
 
 
@@ -183,7 +185,7 @@ describe 'ordering media entries' do
       describe "arcs" do
 
         let :arcs do
-          response.body.with_indifferent_access[:arcs]
+          response.body.with_indifferent_access[:col_arcs]
         end
 
 
@@ -214,7 +216,7 @@ describe 'ordering media entries' do
 
         def resource(query)
           #media_entries_relation.get('order' => order)
-          client.get('/api/media-entries/', query)
+          client.get('/api/media-entries', query)
         end
   
         let :response do
@@ -248,7 +250,7 @@ describe 'ordering media entries' do
     context 'ordering by order param' do
       def resource(order)
         #media_entries_relation.get('order' => order)
-        client.get('/api/media-entries/', {
+        client.get('/api/media-entries', {
           collection_id: collection.id,
           order: order
         })
@@ -290,7 +292,7 @@ describe 'ordering media entries' do
 
         context 'ascending order' do
           it 'returns media entries in the correct order' do
-            media_entry_ids = resource("manual_asc").body.with_indifferent_access['media-entries'].map { |me| me['id'] }
+            media_entry_ids = resource("manual_asc").body.with_indifferent_access['media_entries'].map { |me| me['id'] }
 
             expect(@arcs.map(&:media_entry_id)).to eq(media_entry_ids)
           end
@@ -302,7 +304,7 @@ describe 'ordering media entries' do
 
         context 'descending order' do
           it 'returns media entries in the correct order' do
-            media_entry_ids = resource('manual_desc').body.with_indifferent_access['media-entries'].map { |me| me['id'] }
+            media_entry_ids = resource('manual_desc').body.with_indifferent_access['media_entries'].map { |me| me['id'] }
 
             expect(@arcs.map(&:media_entry_id)).to eq(media_entry_ids.reverse)
           end
@@ -312,7 +314,7 @@ describe 'ordering media entries' do
       context 'stored_in_collection' do
         def mresource(query)
           #media_entries_relation.get('order' => order)
-          client.get('/api/media-entries/', query)
+          client.get('/api/media-entries', query)
         end
   
         def resource(*)
@@ -357,7 +359,7 @@ describe 'ordering media entries' do
     context 'default order ~> created_at ASC' do
       def mresource(query)
         #media_entries_relation.get('order' => order)
-        client.get('/api/media-entries/', query)
+        client.get('/api/media-entries', query)
       end
 
       def resource(*)

@@ -236,7 +236,8 @@
 
 (def schema_query_media_entries 
   {(s/optional-key :collection_id) s/Uuid
-   (s/optional-key :order) (s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
+   ;(s/optional-key :order) (s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
+   (s/optional-key :order) s/Any
    (s/optional-key :filter_by) s/Str
    ;(s/optional-key :filter_by)
    ; {
@@ -263,8 +264,7 @@
    (s/optional-key :public_get_full_size) s/Bool
    (s/optional-key :page) s/Int
    (s/optional-key :count) s/Int
-   (s/optional-key :with_full_data) s/Bool
-   })
+   (s/optional-key :with_full_data) s/Bool})
 
 (def schema_export_media_entry
   {
@@ -287,8 +287,8 @@
 (def schema_export_col_arc
   {:media_entry_id s/Uuid
    :id s/Uuid
-   :order (s/maybe s/Str)
-   :position s/Int
+   :order (s/maybe s/Num)
+   :position (s/maybe s/Int)
    :created_at s/Any
    :updated_at s/Any})
 
@@ -359,7 +359,8 @@
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
-      :responses { 200 { :body schema_query_media_entries_result}}}}
+      :responses { 200 { :body schema_query_media_entries_result}
+                  422 {:body s/Any}}}}
    ]
    ["media-entries-related-data"
     {:get

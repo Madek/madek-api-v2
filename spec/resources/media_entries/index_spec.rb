@@ -10,7 +10,7 @@ describe 'a bunch of media entries with different properties' do
         let :resource do
           media_entries # force evaluation
           #client.get.relation('media-entries').get
-          client.get('/api/media-entries/')
+          client.get('/api/media-entries')
         end
 
         it do

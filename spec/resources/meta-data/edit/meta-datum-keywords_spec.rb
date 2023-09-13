@@ -19,6 +19,10 @@ describe 'generated runs' do
           FactoryBot.create :keyword
         end
 
+        let :keywords_data_ids do
+          [keyword_data.id, keyword_data2.id]
+        end
+
         #let (:md_url) { resource_url( meta_key.id) }
         let (:mdtype_url) { resource_url_typed( meta_key.id, "keyword" ) }
         let (:mdkw_url) { resource_url_typed_ided( meta_key.id, "keyword", keyword_data.id ) }
@@ -64,10 +68,9 @@ describe 'generated runs' do
               end
 
               it 'holds the new keywords value' do
-                kwid = response.body['md_keywords'][0]['keyword_id']
-                expect(kwid).to be == keyword_data.id
-                kw2id = response.body['md_keywords'][1]['keyword_id']
-                expect(kw2id).to be == keyword_data2.id
+                response.body['md_keywords'].each do |md_keyword|
+                  expect(keywords_data_ids).to include md_keyword['keyword_id']
+                end
               end
             end
 
@@ -88,38 +91,69 @@ describe 'generated runs' do
                 test_resource_id(md)
               end
 
+              it 'holds the new meta-data-keywords value' do
+                response.body['md_keywords'].each do |md_keyword|
+                  expect(keywords_data_ids).to include md_keyword['keyword_id']
+                end
+              end
+
+              it 'holds the new keywords ids value' do
+                response.body['keywords_ids'].each do |keyword_id|
+                  expect(keywords_data_ids).to include keyword_id
+                end
+              end
+
               it 'holds the new keywords value' do
-                kwid = response.body['md_keywords'][0]['keyword_id']
-                kw2id = response.body['md_keywords'][1]['keyword_id']
-                expect(kwid).to be == keyword_data.id
-                expect(kw2id).to be == keyword_data2.id
+                response.body['keywords'].each do |keyword|
+                  expect(keywords_data_ids).to include keyword['id']
+                end
               end
 
             end
 
-            describe 'delete the meta-datum resource' do
-              let :response do
-                authenticated_json_client.post(mdkw_url)
-                authenticated_json_client.post(mdkw2_url)
+            describe 'delete the meta-datum resource partly' do
 
-                authenticated_json_client.delete(mdkw_url)
+              let :get_response do
+                expect(authenticated_json_client.post(mdkw_url).status).to be == 200
+                expect(authenticated_json_client.post(mdkw2_url).status).to be == 200
+                
+                del_response = authenticated_json_client.delete(mdkw_url)
+                expect(del_response.status).to be == 200
+                expect(del_response.body['md_keywords'][0]['keyword_id']).to be == keyword_data2.id
+
                 authenticated_json_client.get(mdtype_url)
               end
 
+
               it 'status 200' do
-                expect(response.status).to be == 200
+                expect(get_response.status).to be == 200
               end
 
               it 'holds the proper meta-data' do
-                md = response.body['meta_data']
+                md = get_response.body['meta_data']
                 test_resource_id(md)
               end
 
               it 'holds only undeleted keywords' do
-                ckwid = response.body['md_keywords'][0]['keyword_id']
+                ckwid = get_response.body['md_keywords'][0]['keyword_id']
                 expect(ckwid).to be == keyword_data2.id
               end
+            end
 
+            describe 'delete the meta-datum resource complete' do
+
+              it 'deleted keywords' do
+                expect(authenticated_json_client.post(mdkw_url).status).to be == 200
+                expect(authenticated_json_client.post(mdkw2_url).status).to be == 200
+
+                expect(authenticated_json_client.get(mdtype_url).status).to be == 200
+
+                expect(authenticated_json_client.delete(mdkw_url).status).to be == 200
+                expect(authenticated_json_client.get(mdtype_url).status).to be == 200
+                expect(authenticated_json_client.delete(mdkw2_url).status).to be == 200
+
+                expect(authenticated_json_client.get(mdtype_url).status).to be == 404
+              end
             end
 
           end

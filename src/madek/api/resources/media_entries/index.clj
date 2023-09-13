@@ -164,7 +164,8 @@
          (str/join ", " available-sortings) " and stored_in_collection"))
 
   (defn- set-order [query query-params]
-    (-> (let [order (-> query-params :order)
+    (-> (let [qorder (-> query-params :order)
+              order (sd/try-as-json qorder)
               collection-id (-> query-params :collection_id)]
           (logging/info "set-order" "\norder\n" order)
           (cond
@@ -310,21 +311,23 @@
       result))
 
   (defn get-index [{{{collection-id :collection_id} :query} :parameters :as request}]
-    (try
+    ;(try
       (catcher/with-logging {}
         (let [data (query-index-resources request)
               result (build-result collection-id data)]
           (sd/response_ok result)))
-      (catch Exception e (sd/response_exception e))))
+      ;(catch Exception e (sd/response_exception e)))
+    )
 
  (defn get-index_related_data [{{{collection-id :collection_id} :query} :parameters :as request}]
-   (try
+   ;(try
      (catcher/with-logging {}
        (let [user-id (-> request :authenticated-entity :id)
              data (query-index-resources request)
              result (build-result-related-data collection-id user-id data)]
          (sd/response_ok result)))
-     (catch Exception e (sd/response_exception e))))
+     ;(catch Exception e (sd/response_exception e)))
+   )
 
 
 

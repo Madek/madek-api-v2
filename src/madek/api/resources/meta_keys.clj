@@ -1,13 +1,13 @@
 (ns madek.api.resources.meta-keys
-  (:require
-   [madek.api.resources.meta-keys.index :as mkindex]
-   [reitit.coercion.schema]
-   [schema.core :as s]
-   [madek.api.resources.shared :as sd]
-   [madek.api.resources.meta-keys.meta-key :as mk]
-   [clojure.java.jdbc :as jdbc]
-   [madek.api.utils.rdbms :as rdbms]
-   [clojure.tools.logging :as logging]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.tools.logging :as logging]
+            [madek.api.resources.meta-keys.index :as mkindex]
+            [madek.api.resources.meta-keys.meta-key :as mk]
+            [madek.api.resources.shared :as sd]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.rdbms :as rdbms]
+            [reitit.coercion.schema]
+            [schema.core :as s]))
 
 (defn adm-export-meta-key [meta-key]
   (-> meta-key
@@ -171,17 +171,17 @@
 
 (def schema_export-meta-key-usr 
   {:id s/Str
-   :is_extensible_list s/Bool
-   :meta_datum_object_type s/Str
-   :keywords_alphabetical_order s/Bool
-   :position s/Int
-   :is_enabled_for_media_entries s/Bool
-   :is_enabled_for_collections s/Bool
+   (s/optional-key :is_extensible_list) s/Bool
+   (s/optional-key :meta_datum_object_type) s/Str
+   (s/optional-key :keywords_alphabetical_order) s/Bool
+   (s/optional-key :position) s/Int
+   (s/optional-key :is_enabled_for_media_entries) s/Bool
+   (s/optional-key :is_enabled_for_collections) s/Bool
    :vocabulary_id s/Str
 
-   :allowed_people_subtypes [s/Str]
-   :text_type s/Str
-   :allowed_rdf_class (s/maybe s/Str)
+   (s/optional-key :allowed_people_subtypes) [s/Str]
+   (s/optional-key :text_type) s/Str
+   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
 
    :labels (s/maybe sd/schema_ml_list)
    :descriptions (s/maybe sd/schema_ml_list)
@@ -232,17 +232,16 @@
     {:get {:summary (sd/sum_adm "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_adm-query-meta-keys
-           
+           :middleware [wrap-authorize-admin!]
            :swagger {:produces "application/json"}
            :parameters {:query schema_query-meta-key}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
-               ; TODO response coercion for full data
-               ; TODO or better own link
            :responses {200 {:body {:meta-keys [schema_export-meta-key-adm]}}}}
-         ; TODO
-     :post {:summary (sd/sum_todo "Create meta-key.")
+
+     :post {:summary (sd/sum_adm "Create meta-key.")
             :handler handle_create_meta-key
+            :middleware [wrap-authorize-admin!]
             :swagger {:produces "application/json" :consumes "application/json"}
             :parameters {:body schema_create-meta-key}
             :content-type "application/json"
@@ -259,7 +258,8 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :accept "application/json"
-           :middleware [(sd/wrap-check-valid-meta-key :id)
+           :middleware [wrap-authorize-admin!
+                        (sd/wrap-check-valid-meta-key :id)
                         (wwrap-find-meta_key :id :id true)]
            :handler handle_adm-get-meta-key
            :coercion reitit.coercion.schema/coercion
@@ -268,10 +268,11 @@
                        404 {:body {:message s/Str}}
                        422 {:body {:message s/Str}}}}
      
-     :put {:summary (sd/sum_todo "Update meta-key.")
+     :put {:summary (sd/sum_adm "Update meta-key.")
            :handler handle_update_meta-key
            :swagger {:produces "application/json" :consumes "application/json"}
-           :middleware [(sd/wrap-check-valid-meta-key :id)
+           :middleware [wrap-authorize-admin!
+                        (sd/wrap-check-valid-meta-key :id)
                         (wwrap-find-meta_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
@@ -281,7 +282,7 @@
                        422 {:body {:message s/Str}}}
            }
      
-     :delete {:summary (sd/sum_todo "Delete meta-key.")
+     :delete {:summary (sd/sum_adm "Delete meta-key.")
               :handler handle_delete_meta-key
               :swagger {:produces "application/json" :consumes "application/json"}
               :middleware [(sd/wrap-check-valid-meta-key :id)
