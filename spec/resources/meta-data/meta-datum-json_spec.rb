@@ -29,13 +29,7 @@ describe 'generated runs' do
             end
 
             describe 'the meta-datum resource' do
-              #let :resource do
-              #  authenticated_json_roa_client.get.relation('meta-datum') \
-              #    .get('id' => meta_datum_json.id)
-              #end
-
               let :response do
-                #resource.response
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_json.id}")
               end
 
@@ -60,17 +54,8 @@ describe 'generated runs' do
               end
             end
 
-
             describe 'the meta-datum-data-stream resource' do
-              #let :resource do
-              #  authenticated_json_roa_client.get.relation('meta-datum-data-stream') \
-              #    .get('id' => meta_datum_json.id) do |conn|
-              #      conn.headers["Accept"] = "application/json"
-              #  end
-              #end
-
               let :response do
-                #resource.response
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_json.id}/data-stream")
               end
 
@@ -79,7 +64,6 @@ describe 'generated runs' do
                 expect(response.status).to be == \
                   (media_resource.get_metadata_and_previews ? 200 : 403)
               end
-
 
               it 'holds the proper json value when the response is 200' do
                 if response.status == 200

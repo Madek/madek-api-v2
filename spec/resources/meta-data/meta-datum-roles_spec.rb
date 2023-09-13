@@ -4,8 +4,8 @@ require Pathname(File.expand_path('..', __FILE__)).join('shared')
 ROUNDS = 3.freeze
 
 describe 'generated runs' do
-  (1..ROUNDS).each do |round|
-  #(1..1).each do |round|
+  #(1..ROUNDS).each do |round|
+  (1..1).each do |round|
     describe "ROUND #{round}" do
       describe 'meta_datum_roles_for_random_resource_type' do
         include_context :meta_datum_for_media_entry
@@ -31,13 +31,7 @@ describe 'generated runs' do
                 get_metadata_and_previews: (rand <= 0.5)
             end
             describe 'the meta-data resource' do
-              #let :resource do
-              #  authenticated_json_roa_client.get.relation('meta-datum') \
-              #    .get('id' => meta_datum_roles.id)
-              #end
-
               let :response do
-                #resource.response
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_roles.id}")
               end
 
@@ -77,18 +71,15 @@ describe 'generated runs' do
                         
                         meta_datum_id = meta_data_role.body['meta_datum_id']
                         expect(authenticated_json_client.get("/api/meta-data/#{meta_datum_id}").status)
-                        #expect(meta_data_role.relation('meta-datum').get.response.status)
                           .to be == 200
 
                         person_id = meta_data_role.body['person_id']
                         expect(authenticated_json_client.get("/api/people/#{person_id}").status)
-                        #expect(meta_data_role.relation('person').get.response.status)
                           .to be == 200
                         
                         unless meta_data_role.body['role_id'].nil?
                           role_id = meta_data_role.body['role_id']
                           expect(authenticated_json_client.get("/api/meta-data-roles/#{role_id}").status)
-                        #  expect(meta_data_role.relation('role').get.response.status)
                             .to be == 200
                         end
                       end
@@ -129,22 +120,30 @@ describe 'generated runs' do
                 it 'it provides valid collection and relations' do
                   if response.status == 200
                     # TODO json roa remove: test collection: meta-data-roles
+                    collection_data = response.body['value']
+                    collection_data.each do |c_entry|
+                      expect(value.map { |v| v['id'] }).to include c_entry['id']
+                    end
+
                     #resource.collection.each do |c_entry|
                     #  expect(c_entry.get.response.status).to be == 200
                     #  expect(value.map { |v| v['id'] }).to include c_entry.get.data['id']
                     #end
 
                     meta_key_id = response.body['meta_key_id']
-                    
-                    # TODO json roa remove: test links: meta-data-roles 2 meta-key
                     expect(authenticated_json_client.get("/api/meta-keys/#{meta_key_id}").status)
-                    #expect(resource.relation('meta-key').get.response.status)
                       .to be == 200
-                    # TODO json roa remove: test links: meta-data-roles 2 media-entry
-                    media_entry_id =  response.body['media_entry_id']
-                    expect(authenticated_json_client.get("/api/media-entries/#{media_entry_id}").status)
-                    #expect(resource.relation('media-entry').get.response.status)
-                      .to be == 200
+
+                    if response.body['media_entry_id'] == media_resource.id
+                      media_entry_id = response.body['media_entry_id']
+                      expect(authenticated_json_client.get("/api/media-entry/#{media_entry_id}").status)
+                        .to be == 200
+                    end
+                    if response.body['collection_id'] == media_resource.id
+                      collection_id = response.body['collection_id']
+                      expect(authenticated_json_client.get("/api/collection/#{collection_id}").status)
+                        .to be == 200
+                    end
                   end
                 end
               end

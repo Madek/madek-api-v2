@@ -23,8 +23,16 @@
            (col-key-for-mr-type mr)
            (str (-> mr :id))))
 
+(defn- sql-cls-upd-meta-data [mr mk-id]
+  (let [md-sql (-> (sql/where [:and
+                               [:= :meta_key_id mk-id]
+                               [:= (col-key-for-mr-type mr) (str (-> mr :id))]])
+                   sql/format
+                   sd/hsql-upd-clause-format)]
+    md-sql))
+
         
-(defn sql-cls-upd-meta-data-typed-id [mr mk-id md-type]
+(defn- sql-cls-upd-meta-data-typed-id [mr mk-id md-type]
   (let [md-sql (-> (sql/where [:and
                                [:= :meta_key_id mk-id]
                                [:= :type md-type]
@@ -70,29 +78,39 @@
      nil))
 
   ([db mr meta-key-id md-type user-id]
-   (logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
+   ;(logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
    (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
 
   ([db mr meta-key-id md-type user-id meta-data]
-   (logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
+   ;(logging/info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
    (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
-     (logging/info "db-create-meta-data: "
-                   "MK-ID: " meta-key-id
-                   "Type:" md-type
-                   "User: " user-id
-                   "MD: " meta-data
-                   "MD-new: " md)
+     ;(logging/info "db-create-meta-data: "
+     ;              "MK-ID: " meta-key-id
+     ;              "Type:" md-type
+     ;              "User: " user-id
+     ;              "MD: " meta-data
+     ;              "MD-new: " md)
      (db-create-meta-data db md))))
+
+(defn- handle-delete-meta-data [req]
+  (let [mr (-> req :media-resource)
+        meta-data (-> req :meta-data)
+        meta-key-id (:meta_key_id meta-data)
+        del-clause (sql-cls-upd-meta-data mr meta-key-id)
+        del-result (jdbc/delete! (rdbms/get-ds) :meta_data del-clause)]
+    (if (= 1 (first del-result))
+      (sd/response_ok meta-data)
+      (sd/response_failed "Could not delete meta_data." 406))))
 
 (defn- handle_update-meta-data-text-base
   [req md-type upd-data]
   (try
     (catcher/with-logging {}
       (let [mr (-> req :media-resource)
-            upd-data2 (assoc upd-data (col-key-for-mr-type mr) (:id mr))
+            ;upd-data2 (assoc upd-data (col-key-for-mr-type mr) (:id mr))
             meta-key-id (-> req :parameters :path :meta_key_id)
             upd-clause (sql-cls-upd-meta-data-typed-id mr meta-key-id md-type)
-            upd-result (jdbc/update! (rdbms/get-ds) :meta_data upd-data2 upd-clause)
+            upd-result (jdbc/update! (rdbms/get-ds) :meta_data upd-data upd-clause)
             result-data (db-get-meta-data mr meta-key-id md-type)]
 
         (sd/logwrite req (str "handle_update-meta-data-text-base:"
@@ -100,6 +118,7 @@
                               " mr-type: " (:type mr)
                               " md-type: " md-type
                               " meta-key-id: " meta-key-id
+                              " upd-clause: " upd-clause
                               " upd-result: " upd-result))
         
         (if (= 1 (first upd-result))
@@ -185,7 +204,8 @@
             json-data (-> req :parameters :body :json)
             json-parsed (cheshire/parse-string json-data)
             md-type "MetaDatum::JSON"
-            mdnew {:json json-parsed}
+            ;mdnew {:json json-parsed}
+            mdnew {:json (with-meta json-parsed {:pgtype "jsonb"})}
             ins-result (db-create-meta-data (rdbms/get-ds) mr meta-key-id md-type user-id mdnew)]
         
         (sd/logwrite req (str "handle_create-meta-data-json:"
@@ -202,7 +222,8 @@
   [req]
   (let [text-data (-> req :parameters :body :json)
         json-parsed (cheshire/parse-string text-data)
-        upd-data {:json json-parsed}
+        ;upd-data {:json json-parsed}
+        upd-data {:json (with-meta json-parsed {:pgtype "jsonb"})}
         md-type "MetaDatum::JSON"]
     (logging/info "handle_update-meta-data-json"
                   "\nupd-data\n" upd-data)
@@ -669,6 +690,17 @@
                  :meta-data
                  false)))
 
+(defn wrap-col-add-meta-data [handler]
+  (fn [request] (sd/req-find-data2
+                 request handler
+                 :collection_id
+                 :meta_key_id
+                 :meta_data
+                 :collection_id
+                 :meta_key_id
+                 :meta-data
+                 false)))
+
 (defn wrap-add-meta-key [handler]
   (fn [request] (sd/req-find-data
                  request handler
@@ -762,7 +794,17 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str
                                :meta_key_id s/Str}}
-           :responses {200 {:body s/Any}}}}]
+           :responses {200 {:body s/Any}}}
+
+     :delete {:summary "Delete meta-data for collection and meta-key"
+              :handler handle-delete-meta-data
+              :middleware [sd/ring-wrap-add-media-resource
+                           sd/ring-wrap-authorization-view
+                           wrap-col-add-meta-data]
+              :coercion reitit.coercion.schema/coercion
+              :parameters {:path {:collection_id s/Str
+                                  :meta_key_id s/Str}}
+              :responses {200 {:body s/Any}}}}]
    
    ["/:collection_id/meta-data/:meta_key_id/text"
     
@@ -795,10 +837,6 @@
                                }
                         :body {:string s/Str} 
                         }
-           ;:coercion reitit.coercion.spec/coercion
-           ;:parameters {:path {:collection_id string?
-           ;                    :meta_key_id string?}
-           ;             :body {:string string?}}
            :responses {200 {:body s/Any}}}
      }]
 
@@ -831,7 +869,7 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str}
-                         :body {:json s/Str}}
+                         :body {:json s/Any}}
             :responses {200 {:body s/Any}}}
      :put {:summary "Update meta-data json for collection."
            :handler handle_update-meta-data-json
@@ -840,7 +878,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str
                                :meta_key_id s/Str}
-                        :body {:json s/Str}}
+                        :body {:json s/Any}}
            :responses {200 {:body s/Any}}}
      }]
    
@@ -924,7 +962,6 @@
    ["/:media_entry_id/meta-data/:meta_key_id"
     {:get {:summary "Get meta-data for media-entry and meta-key."
            :handler handle_get-meta-key-meta-data
-                                                 
            :middleware [wrap-add-meta-key
                         ;wrap-check-vocab
                         sd/ring-wrap-add-media-resource
@@ -934,8 +971,20 @@
            :parameters {:path {:media_entry_id s/Str
                                :meta_key_id s/Str}
                         }
-           :responses {200 {:body s/Any}}}}]
-   ["/:media_entry_id/meta-data/:meta_key_id/text/"
+           :responses {200 {:body s/Any}}}
+
+     :delete
+     {:summary "Delete meta-data for media-entry and meta-key"
+      :handler handle-delete-meta-data
+      :middleware [sd/ring-wrap-add-media-resource
+                   sd/ring-wrap-authorization-view
+                   wrap-me-add-meta-data]
+      :coercion reitit.coercion.schema/coercion
+      :parameters {:path {:media_entry_id s/Str
+                          :meta_key_id s/Str}}
+      :responses {200 {:body s/Any}}}}]
+   
+   ["/:media_entry_id/meta-data/:meta_key_id/text"
     {:post {:summary "Create meta-data text for media-entry"
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
@@ -960,7 +1009,7 @@
      }
     ]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/text-date/"
+   ["/:media_entry_id/meta-data/:meta_key_id/text-date"
     {:post {:summary "Create meta-data text-date for media-entry"
             :handler handle_create-meta-data-text-date
             :middleware [sd/ring-wrap-add-media-resource
@@ -981,7 +1030,7 @@
            :responses {200 {:body s/Any}}}
      }]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/json/"
+   ["/:media_entry_id/meta-data/:meta_key_id/json"
     {:post {:summary "Create meta-data json for media-entry"
             :handler handle_create-meta-data-json
             :middleware [sd/ring-wrap-add-media-resource
@@ -989,7 +1038,7 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str
                                 :meta_key_id s/Str}
-                         :body {:json s/Str}}
+                         :body {:json s/Any}}
             :responses {200 {:body s/Any}}}
      
      :put {:summary "Update meta-data json for media-entry"
@@ -999,7 +1048,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str
                                :meta_key_id s/Str}
-                        :body {:json s/Str}}
+                        :body {:json s/Any}}
            :responses {200 {:body s/Any}}}
      }]
    

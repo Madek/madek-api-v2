@@ -161,59 +161,71 @@
 
 
 (def ring-routes
-  ["/collections"
-   ["/" {:get {:handler handle_get-index
-               :summary (sd/sum_usr "Get collection ids")
-               :description "Get collection id list."
-               :swagger {:produces "application/json"}
-               :parameters {:query schema_collection-query}
-               :coercion reitit.coercion.schema/coercion
-               :responses {200 {:body {:collections [schema_collection-export]}}}}
-         
-         :post {:summary (sd/sum_usr "Create collection")
-                :handler handle_create-collection
-                :swagger {:produces "application/json"
-                          :consumes "application/json"}
-                :parameters {:body schema_collection-import}
-                :middleware [authorization/wrap-authorized-user]
-                :coercion reitit.coercion.schema/coercion
-                :responses {200 {:body schema_collection-export }}
-                }}]
+  ["/"
+   ["collections"
+    {:get
+     {:summary (sd/sum_usr "Query/List collections.")
+      :handler handle_get-index
+      :swagger {:produces "application/json"}
+      :parameters {:query schema_collection-query}
+      :coercion reitit.coercion.schema/coercion
+      :responses {200 {:body {:collections [schema_collection-export]}}}}}]
+   
+   ["collection"
+    {:post
+     {:summary (sd/sum_usr "Create collection")
+      :handler handle_create-collection
+      :swagger {:produces "application/json"
+                :consumes "application/json"}
+      :parameters {:body schema_collection-import}
+      :middleware [authorization/wrap-authorized-user]
+      :coercion reitit.coercion.schema/coercion
+      :responses {200 {:body schema_collection-export}
+                  406 {:body s/Any}}}}
 
    ["/:collection_id"
-    {:get {:handler handle_get-collection
+    {:get {:summary (sd/sum_usr_pub "Get collection for id.")
+           :handler handle_get-collection
            :middleware [sd/ring-wrap-add-media-resource
                         sd/ring-wrap-authorization-view]
-           :summary (sd/sum_usr "Get collection for id.")
+
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
            :responses {200 {:body schema_collection-export}
-                       422 {:body s/Any}
-                       500 {:body s/Any}}}
+                       404 {:body s/Any}
+                       422 {:body s/Any}}}
 
-     :put {:handler handle_update-collection
-           :summary (sd/sum_usr "Update collection for id.")
+     :put {:summary (sd/sum_usr "Update collection for id.")
+           :handler handle_update-collection
            :middleware [sd/ring-wrap-add-media-resource
                         sd/ring-wrap-authorization-edit-metadata]
            :swagger {:produces "application/json"
                      :consumes "application/json"}
+           :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}
                         :body schema_collection-update}
-           :coercion reitit.coercion.schema/coercion}
-     
+           :responses {200 {:body schema_collection-export}
+                       404 {:body s/Any}
+                       422 {:body s/Any}}}
+
      ; TODO Frage: wer darf eine col löschen: nur der benutzer und der responsible
-     :delete {:handler handle_delete-collection
-              :summary (sd/sum_usr "Delete collection for id.")
+     ; TODO check owner or responsible
+     :delete {:summary (sd/sum_usr "Delete collection for id.")
+              :handler handle_delete-collection
               :middleware [sd/ring-wrap-add-media-resource
                            sd/ring-wrap-authorization-edit-permissions]
               :swagger {:produces "application/json"
                         :consumes "application/json"}
+              :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid}}
-              :coercion reitit.coercion.schema/coercion}
-     }
+              :responses {200 {:body schema_collection-export}
+                          404 {:body s/Any}
+                          422 {:body s/Any}}}}
     ]
-   ])
+   ]
+   ]
+   )
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

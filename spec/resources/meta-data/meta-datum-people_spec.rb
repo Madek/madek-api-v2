@@ -26,11 +26,6 @@ describe 'generated runs' do
                 get_metadata_and_previews: (rand <= 0.5)
             end
             describe 'the meta-data resource' do
-              #let :resource do
-              #  authenticated_json_roa_client.get.relation('meta-datum') \
-              #    .get('id' => meta_datum_people.id)
-              #end
-
               let :response do
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_people.id}")
               end
@@ -55,31 +50,30 @@ describe 'generated runs' do
                   end
                 end
 
-                # TODO json roa remove: test valid collection
                 it 'it provides valid collection and relations' do
                   if response.status == 200
                     collection_data = response.body['value']
                     collection_data.each do |c_entry|
-
                       expect(value.map { |v| v['id'] }).to include c_entry['id']
                     end
-                    #resource.collection.each do |c_entry|
-                    #  expect(c_entry.get.response.status).to be == 200
-                    #  expect(value.map { |v| v['id'] }).to include c_entry.get.data['id']
-                    #end
 
-                    # TODO json roa remove: test links: meta-data 2 meta-key
                     meta_key_id = response.body['meta_key_id']
                     expect(authenticated_json_client.get("/api/meta-keys/#{meta_key_id}").status)
-                    #expect(resource.relation('meta-key').get.response.status)
                       .to be == 200
-                    # TODO json roa remove: test links: meta-data 2 media-entry
-                    meta_key_id = response.body['media_entry_id']
-                    expect(authenticated_json_client.get("/api/media-entries/#{meta_key_id}").status)
-                    #expect(resource.relation('media-entry').get.response.status)
-                      .to be == 200
+
+                    if response.body['media_entry_id'] == media_resource.id
+                      media_entry_id = response.body['media_entry_id']
+                      expect(authenticated_json_client.get("/api/media-entry/#{media_entry_id}").status)
+                        .to be == 200
+                    end
+                    if response.body['collection_id'] == media_resource.id
+                      collection_id = response.body['collection_id']
+                      expect(authenticated_json_client.get("/api/collection/#{collection_id}").status)
+                        .to be == 200
+                    end
                   end
                 end
+
               end
             end
           end

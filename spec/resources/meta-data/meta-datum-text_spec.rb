@@ -28,13 +28,7 @@ describe 'generated runs' do
             end
 
             describe 'the meta-data resource' do
-              #let :resource do
-              #  authenticated_json_roa_client.get.relation('meta-datum') \
-              #    .get('id' => meta_datum_text.id)
-              #end
-
               let :response do
-                #resource.response
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_text.id}")
               end
 
@@ -52,15 +46,7 @@ describe 'generated runs' do
             end
 
             describe 'the meta-datum-data-stream resource' do
-              #let :resource do
-              #  authenticated_json_roa_client.get.relation('meta-datum-data-stream') \
-              #    .get('id' => meta_datum_text.id) do |conn|
-              #      conn.headers.delete("Accept")
-              #  end
-              #end
-
               let :response do
-                #resource.response
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_text.id}/data-stream")
               end
 
