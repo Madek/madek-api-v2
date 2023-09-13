@@ -236,9 +236,9 @@
               :keyword_id kw-id
               :created_by_id user-id}
         result (jdbc/insert! db :meta_data_keywords data)]
-    ;(logging/info "db-create-meta-data-keyword"
-    ;              "\nkw-data\n" data
-    ;              "\nresult\n" result)
+    (logging/info "db-create-meta-data-keyword"
+                  "\nkw-data\n" data
+                  "\nresult\n" result)
     result))
 
 (defn- db-delete-meta-data-keyword
@@ -294,8 +294,9 @@
             user-id (-> req :authenticated-entity :id str)]
 
         (if-let [result (create_md_and_keyword mr meta-key-id kw-id user-id)]
-          ((sd/logwrite req  (str "handle_create-meta-data-keyword:" "mr-id: " (:id mr) "kw-id: " kw-id "result: " result))
-           (sd/response_ok result))
+          ;((sd/logwrite req  (str "handle_create-meta-data-keyword:" "mr-id: " (:id mr) "kw-id: " kw-id "result: " result))
+           (sd/response_ok result)
+          ;)
           (if-let [retryresult (create_md_and_keyword mr meta-key-id kw-id user-id)]
             ((sd/logwrite req  (str "handle_create-meta-data-keyword:" "mr-id: " (:id mr) "kw-id: " kw-id "result: " retryresult))
              (sd/response_ok retryresult))
@@ -882,6 +883,17 @@
            :responses {200 {:body s/Any}}}
      }]
    
+   ["/:collection_id/meta-data/:meta_key_id/keyword"
+    {:get {:summary "Get meta-data keywords for collection meta-key"
+           :handler handle_get-meta-data-keywords
+           :middleware [;wrap-me-add-meta-data
+                        sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:collection_id s/Str
+                               :meta_key_id s/Str}}
+           :responses {200 {:body s/Any}}}}]
+   
    ["/:collection_id/meta-data/:meta_key_id/keyword/:keyword_id"
     {:post {:summary "Create meta-data keyword for collection."
             :handler handle_create-meta-data-keyword
@@ -894,6 +906,7 @@
                                 :meta_key_id s/Str
                                 :keyword_id s/Str}}
             :responses {200 {:body s/Any}}}
+     
      :delete {:summary "Delete meta-data keyword for collection."
               :handler handle_delete-meta-data-keyword
               :middleware [wrap-add-keyword
@@ -905,6 +918,17 @@
                                   :keyword_id s/Str}}
               :responses {200 {:body s/Any}}}
      }]
+   
+   ["/:collection_id/meta-data/:meta_key_id/people"
+    {:get {:summary "Get meta-data people for collection meta-key."
+           :handler handle_get-meta-data-people
+           :middleware [;wrap-me-add-meta-data
+                        sd/ring-wrap-add-media-resource
+                        sd/ring-wrap-authorization-edit-metadata]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:collection_id s/Str
+                               :meta_key_id s/Str}}
+           :responses {200 {:body s/Any}}}}]
    
    ["/:collection_id/meta-data/:meta_key_id/people/:person_id"
     {:post {:summary "Create meta-data people for media-entry"
