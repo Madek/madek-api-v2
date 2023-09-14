@@ -786,30 +786,31 @@
                                 (s/optional-key :meta_keys) s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta_key_id"
-    {:get {:summary "Get meta-data for collection and meta-key."
-           :handler handle_get-meta-key-meta-data
+   ["/:collection_id/meta-datum"
+    ["/:meta_key_id"
+     {:get {:summary "Get meta-data for collection and meta-key."
+            :handler handle_get-meta-key-meta-data
 
-           :middleware [wrap-add-meta-key
-                        wrap-check-vocab
-                        sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-view]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Str
-                               :meta_key_id s/Str}}
-           :responses {200 {:body s/Any}}}
+            :middleware [wrap-add-meta-key
+                         wrap-check-vocab
+                         sd/ring-wrap-add-media-resource
+                         sd/ring-wrap-authorization-view]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:collection_id s/Str
+                                :meta_key_id s/Str}}
+            :responses {200 {:body s/Any}}}
 
-     :delete {:summary "Delete meta-data for collection and meta-key"
-              :handler handle-delete-meta-data
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-view
-                           wrap-col-add-meta-data]
-              :coercion reitit.coercion.schema/coercion
-              :parameters {:path {:collection_id s/Str
-                                  :meta_key_id s/Str}}
-              :responses {200 {:body s/Any}}}}]
+      :delete {:summary "Delete meta-data for collection and meta-key"
+               :handler handle-delete-meta-data
+               :middleware [sd/ring-wrap-add-media-resource
+                            sd/ring-wrap-authorization-view
+                            wrap-col-add-meta-data]
+               :coercion reitit.coercion.schema/coercion
+               :parameters {:path {:collection_id s/Str
+                                   :meta_key_id s/Str}}
+               :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta_key_id/text"
+   ["/:meta_key_id/text"
     
     {:post {:summary "Create meta-data text for collection."
             :handler handle_create-meta-data-text
@@ -843,7 +844,7 @@
            :responses {200 {:body s/Any}}}
      }]
 
-   ["/:collection_id/meta-data/:meta_key_id/text-date"
+   ["/:meta_key_id/text-date"
     {:post {:summary "Create meta-data json for collection."
             :handler handle_create-meta-data-text-date
             :middleware [sd/ring-wrap-add-media-resource
@@ -864,7 +865,7 @@
            :responses {200 {:body s/Any}}}
      }]
 
-   ["/:collection_id/meta-data/:meta_key_id/json"
+   ["/:meta_key_id/json"
     {:post {:summary "Create meta-data json for collection."
             :handler handle_create-meta-data-json
             :middleware [sd/ring-wrap-add-media-resource
@@ -885,7 +886,7 @@
            :responses {200 {:body s/Any}}}
      }]
    
-   ["/:collection_id/meta-data/:meta_key_id/keyword"
+   ["/:meta_key_id/keyword"
     {:get {:summary "Get meta-data keywords for collection meta-key"
            :handler handle_get-meta-data-keywords
            :middleware [;wrap-me-add-meta-data
@@ -896,7 +897,7 @@
                                :meta_key_id s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta_key_id/keyword/:keyword_id"
+   ["/:meta_key_id/keyword/:keyword_id"
     {:post {:summary "Create meta-data keyword for collection."
             :handler handle_create-meta-data-keyword
             :middleware [;wrap-me-add-meta-data
@@ -921,7 +922,7 @@
               :responses {200 {:body s/Any}}}
      }]
    
-   ["/:collection_id/meta-data/:meta_key_id/people"
+   ["/:meta_key_id/people"
     {:get {:summary "Get meta-data people for collection meta-key."
            :handler handle_get-meta-data-people
            :middleware [;wrap-me-add-meta-data
@@ -932,7 +933,7 @@
                                :meta_key_id s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:collection_id/meta-data/:meta_key_id/people/:person_id"
+   ["/:meta_key_id/people/:person_id"
     {:post {:summary "Create meta-data people for media-entry"
             :handler handle_create-meta-data-people
             :middleware [;wrap-me-add-meta-data
@@ -957,7 +958,7 @@
               :responses {200 {:body s/Any}}}
      }]
    ; TODO meta-data roles
-   ["/:collection_id/meta-data/:meta_key_id/role/:role_id"
+   ["/:meta_key_id/role/:role_id"
     {:post {:summary "Create meta-data role for media-entry"
             :handler handle_create-meta-data-role
             :middleware [wrap-add-role
@@ -968,6 +969,7 @@
                                 :meta_key_id s/Str
                                 :role_id s/Str}}
             :responses {200 {:body s/Any}}}}]
+   ]
   ])
    
 (def media-entry-routes
@@ -985,7 +987,8 @@
                                 (s/optional-key :meta_keys) s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:media_entry_id/meta-data/:meta_key_id"
+   ["/:media_entry_id/meta-datum"
+    ["/:meta_key_id"
     {:get {:summary "Get meta-data for media-entry and meta-key."
            :handler handle_get-meta-key-meta-data
            :middleware [wrap-add-meta-key
@@ -1010,7 +1013,7 @@
                           :meta_key_id s/Str}}
       :responses {200 {:body s/Any}}}}]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/text"
+   ["/:meta_key_id/text"
     {:post {:summary "Create meta-data text for media-entry"
             :handler handle_create-meta-data-text
             :middleware [sd/ring-wrap-add-media-resource
@@ -1035,7 +1038,7 @@
      }
     ]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/text-date"
+   ["/:meta_key_id/text-date"
     {:post {:summary "Create meta-data text-date for media-entry"
             :handler handle_create-meta-data-text-date
             :middleware [sd/ring-wrap-add-media-resource
@@ -1056,7 +1059,7 @@
            :responses {200 {:body s/Any}}}
      }]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/json"
+   ["/:meta_key_id/json"
     {:post {:summary "Create meta-data json for media-entry"
             :handler handle_create-meta-data-json
             :middleware [sd/ring-wrap-add-media-resource
@@ -1078,7 +1081,7 @@
            :responses {200 {:body s/Any}}}
      }]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/keyword"
+   ["/:meta_key_id/keyword"
     {:get {:summary "Get meta-data keywords for media-entries meta-key"
            :handler handle_get-meta-data-keywords
            :middleware [;wrap-me-add-meta-data
@@ -1089,7 +1092,7 @@
                                :meta_key_id s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/keyword/:keyword_id"
+   ["/:meta_key_id/keyword/:keyword_id"
     {:post {:summary "Create meta-data keyword for media-entry."
             :handler handle_create-meta-data-keyword
             :middleware [;wrap-me-add-meta-data
@@ -1114,7 +1117,7 @@
               :responses {200 {:body s/Any}}}
      }]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/people"
+   ["/:meta_key_id/people"
     {:get {:summary "Get meta-data people for media-entries meta-key."
            :handler handle_get-meta-data-people
            :middleware [;wrap-me-add-meta-data
@@ -1125,7 +1128,7 @@
                                :meta_key_id s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/people/:person_id"
+   ["/:meta_key_id/people/:person_id"
     {:post {:summary "Create meta-data people for a media-entries meta-key."
             :handler handle_create-meta-data-people
             :middleware [wrap-add-person
@@ -1151,7 +1154,7 @@
               :responses {200 {:body s/Any}}}
      }]
    ; TODO meta-data roles
-   ["/:media_entry_id/meta-data/:meta_key_id/role"
+   ["/:meta_key_id/role"
     {:get {:summary "Get meta-data role for media-entry."
            :handler handle_get-meta-data-roles
            :middleware [sd/ring-wrap-add-media-resource
@@ -1161,7 +1164,7 @@
                                :meta_key_id s/Str}}
            :responses {200 {:body s/Any}}}}]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/role/:role_id/:person_id"
+   ["/:meta_key_id/role/:role_id/:person_id"
     {:delete {:summary "Delete meta-data role for media-entry."
               :handler handle_delete-meta-data-role
               :middleware [wrap-add-role
@@ -1175,7 +1178,7 @@
                                   :person_id s/Uuid}}
               :responses {200 {:body s/Any}}}}]
    
-   ["/:media_entry_id/meta-data/:meta_key_id/role/:role_id/:person_id/:position"
+   ["/:meta_key_id/role/:role_id/:person_id/:position"
     {:post {:summary "Create meta-data role for media-entry."
             :handler handle_create-meta-data-role
             :middleware [wrap-add-role
@@ -1191,7 +1194,7 @@
                                 }}
             :responses {200 {:body s/Any}}}
      }]
-
+   ]
    ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -299,7 +299,7 @@
     ; responsible_delegation_id
     ; TODO beware to let not update perm fields in media-entry or collection patch/update
    
-   ["/resource"
+   ["/resources"
     {:get
      {:summary "Query media-entry permissions."
       :swagger {:produces "application/json"}
@@ -343,7 +343,7 @@
    ;   :coercion reitit.coercion.schema/coercion
    ;   :parameters {:path {:media_entry_id s/Uuid}}}}]
 
-   ["/user"
+   ["/users"
     {:get
      {:summary "Query media-entry user permissions."
       :swagger {:produces "application/json"}
@@ -405,7 +405,7 @@
                                                   "edit_permissions")
                                :perm_val s/Bool}}}}]
 
-   ["/group"
+   ["/groups"
     {:get
      {:summary "Query media-entry group permissions."
       :swagger {:produces "application/json"}
@@ -480,7 +480,7 @@
    
      }]
 
-   ["/resource"
+   ["/resources"
     {:get
      {:summary "Query collection permissions."
       :swagger {:produces "application/json"}
@@ -527,7 +527,7 @@
    ;   :coercion reitit.coercion.schema/coercion
    ;   :parameters {:path {:collection_id s/Uuid}}}}]
 
-   ["/user"
+   ["/users"
     {:get {:summary "Query collection permissions."
            :swagger {:produces "application/json"}
            :content-type "application/json"
@@ -584,7 +584,7 @@
                                :perm_val s/Bool}}}}]
 
 
-   ["/group"
+   ["/groups"
     {:get
      {:summary "Query collection permissions."
       :swagger {:produces "application/json"}

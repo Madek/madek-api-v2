@@ -189,7 +189,7 @@
        :parameters {:path {:collection_id s/Uuid}}
        :responses {200 {:body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}
        }}]
-    ["/media-entry-arcs/:media_entry_id"
+    ["/media-entry-arc/:media_entry_id"
      {:post
       {:summary (sd/sum_usr "Create collection media-entry arc")
        :handler handle_create-col-me-arc

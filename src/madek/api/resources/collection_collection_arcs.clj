@@ -191,7 +191,7 @@
    ;   }
    ; }
    ;]
-   ["/collection-arcs/:child_id"
+   ["/collection-arc/:child_id"
     {:post
      {:summary (sd/sum_todo "Create collection collection arc")
       :handler handle_create-col-col-arc

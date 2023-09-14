@@ -181,7 +181,7 @@
        :responses {200 {:body s/Any}
                    404 {:body s/Any}}}}]
   
-    ["/user"
+    ["/users"
      {:get
       {:summary (sd/sum_adm_todo "List vocabulary user permissions")
        :handler permissions/handle_list-vocab-user-perms
@@ -243,7 +243,7 @@
        :responses {200 {:body s/Any}
                    404 {:body s/Any}}}}]
 
-    ["/group"
+    ["/groups"
      {:get
       {:summary (sd/sum_adm_todo "List vocabulary group permissions")
        :handler permissions/handle_list-vocab-group-perms
@@ -307,9 +307,6 @@
                    404 {:body s/Any}}}}]]])
 
 
-; TODO user routes
-; TODO post, patch, delete
-; TODO tests
 (def user-routes
   ["/vocabularies"
    ["/" {:get {:summary "Get list of vocabularies ids."
