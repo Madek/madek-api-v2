@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'madek_open_session'
+#require 'madek_open_session'
 require 'cgi'
 require 'timecop'
 
@@ -21,7 +21,7 @@ describe 'API-Token Authentication' do
   end
 
   let :response do
-    client.get('auth-info')
+    client.get('/api/auth-info')
   end
 
   context 'revoking the token ' do
