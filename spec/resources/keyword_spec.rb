@@ -11,18 +11,6 @@ context 'Getting a keyword resource without authentication' do
 
   
   it 'responds with 200' do
-    # TODO: roa: use plain json
-    #expect(json_roa_keyword_resource.get.response.status)
-    #  .to be == 200
-    # TODO: roa: test header links
-    #expect(
-    #  json_roa_keyword_resource
-    #    .get.relation('meta-key').get.response.status
-    #).to be == 200
-    #expect(
-    #  json_roa_keyword_resource
-    #    .get.relation('root').get.response.status
-    #).to be == 200
     expect(plain_json_response.status).to be == 200
   end
 

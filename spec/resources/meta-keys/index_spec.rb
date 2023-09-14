@@ -12,7 +12,11 @@ describe 'index' do
                                     id: "#{vocab.id}:#{Faker::Lorem.word}",
                                     vocabulary: vocab)
       expect(meta_keys_resource.status).to be == 200
-      expect(meta_keys_resource.body['meta-keys'].count).to be == 8
+
+      meta_keys_resource.body['meta-keys'].each do |mk|
+        expect(mk['id']).not_to be == meta_key.id
+      end
+
     end
 
     context 'when user is authenticated' do
@@ -26,11 +30,10 @@ describe 'index' do
           Permissions::VocabularyUserPermission.create!(user_id: user.id,
                                                         view: true,
                                                         vocabulary: vocabulary)
-          data = meta_keys_resource.body['meta-keys'][8] #.first
-          
-
-          expect(data).to have_key 'id'
-          expect(data['id']).to eq meta_key.id
+          data = meta_keys_resource.body['meta-keys'].map{|mk| mk["id"]}
+          expect(data).to include meta_key.id
+          #expect(data).to have_key 'id'
+          #expect(data['id']).to eq meta_key.id
         end
 
         it 'returns meta key in collection through the group permissions' do
@@ -45,10 +48,8 @@ describe 'index' do
                                                          view: true,
                                                          vocabulary: vocabulary)
 
-          data = meta_keys_resource.body['meta-keys'][8] #.first
-
-          expect(data).to have_key 'id'
-          expect(data['id']).to eq meta_key.id
+          data = meta_keys_resource.body['meta-keys'].map{|mk| mk["id"]}
+          expect(data).to include meta_key.id
         end
       end
 
@@ -63,9 +64,8 @@ describe 'index' do
                                                         view: false,
                                                         vocabulary: vocabulary)
 
-          data = meta_keys_resource.body['meta-keys']
-
-          expect(data.count).to be == 8 #be_zero
+          data = meta_keys_resource.body['meta-keys'].map{|mk| mk["id"]}
+          expect(data).not_to include meta_key.id
         end
 
         it 'does not return meta key through the group permissions' do
@@ -80,9 +80,8 @@ describe 'index' do
                                                                view: false,
                                                                vocabulary: vocabulary)
 
-          data = meta_keys_resource.body['meta-keys']
-
-          expect(data.count).to be == 8 #be_zero
+          data = meta_keys_resource.body['meta-keys'].map{|mk| mk["id"]}
+          expect(data).not_to include meta_key.id
         end
       end
     end

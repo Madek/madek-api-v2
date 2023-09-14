@@ -27,8 +27,10 @@
       sql/format))
 
 (defn- query-index-resources [request]
-  (let [user-id (-> request :authenticated-entity :id)]
-    (jdbc/query (get-ds) (base-query user-id))))
+  (let [user-id (-> request :authenticated-entity :id)
+        query (base-query user-id)]
+    ;(logging/info "query-index-resources: " query)
+    (jdbc/query (get-ds) query)))
 
 (defn transform_ml [vocab]
   (assoc vocab
