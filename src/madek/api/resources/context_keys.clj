@@ -214,6 +214,8 @@
      {:summary (sd/sum_adm "Create context_key")
       :handler handle_create-context_keys
       :middleware [wrap-authorize-admin!]
+      :content-type "application/json"
+      :accept "application/json"
       :coercion reitit.coercion.schema/coercion
       :parameters {:body schema_import_context_keys}
       :responses {200 {:body schema_export_context_key_admin}

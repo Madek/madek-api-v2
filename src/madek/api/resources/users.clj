@@ -342,12 +342,8 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
-           ; TODO query reduced user query schema
            :parameters {:query schema_usr_query_user}
-           
-           
-           
-           :responses {200 {:body {:users [{:id s/Uuid}]}}}}}]
+           :responses {200 {:body {:users [schema_export_user]}}}}}]
    ["/:id"
 
     {:get {:summary (sd/sum_usr "Get user by id")
@@ -359,7 +355,7 @@
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Any}}
-           :responses {200 {:body s/Any} ; TODO coercion
+           :responses {200 {:body schema_export_user}
                        404 {:body s/Any}}}
      }]])
 ;### Debug ####################################################################

@@ -170,7 +170,7 @@
       :parameters {:query schema_collection-query}
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [schema_collection-export]}}}}}]
-   
+
    ["collection"
     {:post
      {:summary (sd/sum_usr "Create collection")
@@ -181,9 +181,9 @@
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body schema_collection-export}
-                  406 {:body s/Any}}}}
+                  406 {:body s/Any}}}}]
 
-   ["/:collection_id"
+   ["collection/:collection_id"
     {:get {:summary (sd/sum_usr_pub "Get collection for id.")
            :handler handle_get-collection
            :middleware [sd/ring-wrap-add-media-resource
@@ -222,10 +222,7 @@
               :responses {200 {:body schema_collection-export}
                           404 {:body s/Any}
                           422 {:body s/Any}}}}
-    ]
-   ]
-   ]
-   )
+   ]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

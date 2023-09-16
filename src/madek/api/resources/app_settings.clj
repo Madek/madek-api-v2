@@ -115,54 +115,54 @@
 
 (def schema_export-app-settings
   {:id s/Int
-   :featured_set_id (s/maybe s/Uuid)
-   :splashscreen_slideshow_set_id (s/maybe s/Uuid)
-   :teaser_set_id (s/maybe s/Uuid)
+   (s/optional-key :featured_set_id) (s/maybe s/Uuid)
+   (s/optional-key :splashscreen_slideshow_set_id) (s/maybe s/Uuid)
+   (s/optional-key :teaser_set_id) (s/maybe s/Uuid)
 
 
-   :created_at s/Any
-   :updated_at s/Any
+   (s/optional-key :created_at) s/Any
+   (s/optional-key :updated_at) s/Any
 
-   :brand_logo_url (s/maybe s/Str)
-   :sitemap (s/maybe s/Any) ;jsonb
+   (s/optional-key :brand_logo_url) (s/maybe s/Str)
+   (s/optional-key :sitemap) (s/maybe s/Any) ;jsonb
 
 
-   :contexts_for_list_details [s/Str]
-   :contexts_for_entry_validation [s/Str]
-   :contexts_for_dynamic_filters [s/Str]
+   (s/optional-key :contexts_for_list_details) [s/Str]
+   (s/optional-key :contexts_for_entry_validation) [s/Str]
+   (s/optional-key :contexts_for_dynamic_filters) [s/Str]
 
-   :context_for_entry_summary (s/maybe s/Str)
-   :context_for_collection_summary (s/maybe s/Str)
+   (s/optional-key :context_for_entry_summary) (s/maybe s/Str)
+   (s/optional-key :context_for_collection_summary) (s/maybe s/Str)
 
-   :catalog_context_keys [s/Str]
+   (s/optional-key :catalog_context_keys) [s/Str]
 
-   :contexts_for_entry_edit [s/Str]
-   :contexts_for_collection_edit [s/Str]
+   (s/optional-key :contexts_for_entry_edit) [s/Str]
+   (s/optional-key :contexts_for_collection_edit) [s/Str]
 
-   :contexts_for_entry_extra [s/Str]
-   :contexts_for_collection_extra [s/Str]
-   :media_entry_default_license_id (s/maybe s/Str)
-   :media_entry_default_license_meta_key (s/maybe s/Str)
-   :media_entry_default_license_usage_text (s/maybe s/Str)
-   :media_entry_default_license_usage_meta_key (s/maybe s/Str)
-   :ignored_keyword_keys_for_browsing (s/maybe s/Str)
-   :default_locale (s/maybe s/Str)
-   :available_locales [s/Str]
-   :site_titles sd/schema_ml_list
-   :brand_texts sd/schema_ml_list
-   :welcome_titles sd/schema_ml_list
-   :welcome_texts sd/schema_ml_list
-   :featured_set_titles sd/schema_ml_list
-   :featured_set_subtitles sd/schema_ml_list
-   :catalog_titles sd/schema_ml_list
-   :catalog_subtitles sd/schema_ml_list
-   :about_pages sd/schema_ml_list
-   :support_urls sd/schema_ml_list
-   :provenance_notices sd/schema_ml_list
-   :time_zone s/Str
-   :copyright_notice_templates [s/Str]
-   :copyright_notice_default_text (s/maybe s/Str)
-   :section_meta_key_id (s/maybe s/Str)
+   (s/optional-key :contexts_for_entry_extra) [s/Str]
+   (s/optional-key :contexts_for_collection_extra) [s/Str]
+   (s/optional-key :media_entry_default_license_id) (s/maybe s/Uuid)
+   (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
+   (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
+   (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
+   (s/optional-key :ignored_keyword_keys_for_browsing) (s/maybe s/Str)
+   (s/optional-key :default_locale) (s/maybe s/Str)
+   (s/optional-key :available_locales) [s/Str]
+   (s/optional-key :site_titles) (s/maybe sd/schema_ml_list)
+   (s/optional-key :brand_texts) (s/maybe sd/schema_ml_list)
+   (s/optional-key :welcome_titles) (s/maybe sd/schema_ml_list)
+   (s/optional-key :welcome_texts) (s/maybe sd/schema_ml_list)
+   (s/optional-key :featured_set_titles) (s/maybe sd/schema_ml_list)
+   (s/optional-key :featured_set_subtitles) (s/maybe sd/schema_ml_list)
+   (s/optional-key :catalog_titles) (s/maybe sd/schema_ml_list)
+   (s/optional-key :catalog_subtitles) (s/maybe sd/schema_ml_list)
+   (s/optional-key :about_pages) (s/maybe sd/schema_ml_list)
+   (s/optional-key :support_urls) (s/maybe sd/schema_ml_list)
+   (s/optional-key :provenance_notices) sd/schema_ml_list
+   (s/optional-key :time_zone) s/Str
+   (s/optional-key :copyright_notice_templates) [s/Str]
+   (s/optional-key :copyright_notice_default_text) (s/maybe s/Str)
+   (s/optional-key :section_meta_key_id) (s/maybe s/Str)
 
    (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Str)
    })

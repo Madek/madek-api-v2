@@ -23,7 +23,7 @@
 
 (defn- base-query
   [user-id ]
-  (-> (sql/select :meta_keys.id :meta_keys.vocabulary_id)
+  (-> (sql/select :*); :meta_keys.id :meta_keys.vocabulary_id)
       (sql/from :meta_keys)
       (sql/merge-join :vocabularies
                       [:= :meta_keys.vocabulary_id :vocabularies.id])
