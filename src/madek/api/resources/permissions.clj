@@ -367,8 +367,6 @@
    :get_metadata_and_previews s/Bool
    :get_full_size s/Bool
    :edit_metadata s/Bool
-   :edit_permissions s/Bool
-   :delegation_id (s/maybe s/Uuid)
    :created_at s/Any
    :updated_at s/Any})
 

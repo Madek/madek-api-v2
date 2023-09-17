@@ -34,6 +34,18 @@ def basic_auth_plain_faraday_json_client(login, password)
     end
 end
 
+def newbasic_auth_plain_faraday_json_client(login, password)
+  @newbasic_auth_plain_faraday_json_client = Faraday.new(
+    url: api_base_url,
+    headers: { accept: 'application/json' }) do |conn|
+      conn.request :basic_auth, login, password
+      yield(conn) if block_given?
+      conn.response :json, content_type: /\bjson$/ 
+      conn.adapter Faraday.default_adapter
+    end
+end
+
+
 def basic_auth_wtoken_header_plain_faraday_json_client(login, password, token)
   @basic_auth_plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
