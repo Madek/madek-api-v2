@@ -59,9 +59,7 @@
    :labels (s/maybe sd/schema_ml_list)
    :descriptions (s/maybe sd/schema_ml_list)
 
-   (s/optional-key :admin_comment) (s/maybe s/Str)
-   
-   })
+   (s/optional-key :admin_comment) (s/maybe s/Str)})
 
 (def schema_import-vocabulary
   {
@@ -93,6 +91,30 @@
   {(s/optional-key :use) s/Bool
    (s/optional-key :view) s/Bool})
 
+(def schema_export-user-perms
+  {
+   :id s/Uuid
+   :user_id s/Uuid
+   :vocabulary_id s/Str
+   :use s/Bool
+   :view s/Bool
+  })
+
+(def schema_export-group-perms
+  {:id s/Uuid
+   :group_id s/Uuid
+   :vocabulary_id s/Str
+   :use s/Bool
+   :view s/Bool})
+
+(def schema_export-perms_all 
+  {:vocabulary {:id s/Str
+                :enabled_for_public_view s/Bool
+                :enabled_for_public_use s/Bool}
+  
+   :users [schema_export-user-perms]
+   :groups [schema_export-group-perms]})
+
 ; TODO vocab permission
 (def admin-routes
   ["/vocabularies"
@@ -106,7 +128,7 @@
            :parameters {:query {(s/optional-key :page) s/Int
                                 (s/optional-key :count) s/Int
                                 }}
-           :responses {200 {:body {:vocabularies [schema_export-vocabulary]}}} ; TODO response coercion
+           :responses {200 {:body {:vocabularies [schema_export-vocabulary]}}}
            :swagger {:produces "application/json"}}
 
      :post {:summary (sd/sum_adm "Create vocabulary.")
@@ -116,12 +138,12 @@
             :accept "application/json"
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import-vocabulary}
-            :responses {200 {:body s/Any} ; TODO response coercion
+            :responses {200 {:body schema_export-vocabulary}
                         406 {:body s/Any}}
             :swagger {:consumes "application/json" :produces "application/json"}}}]
 
    ["/:id"
-    {:get {:summary "Get vocabulary by id."
+    {:get {:summary (sd/sum_adm "Get vocabulary by id.")
            :description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
            :handler get-vocabulary
            :middleware [wrap-authorize-admin!]
@@ -141,9 +163,8 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str} 
                         :body schema_update-vocabulary}
-           :responses {200 {:body s/Any}
-                       404 {:body s/Any}
-                       500 {:body s/Any}}
+           :responses {200 {:body schema_export-vocabulary}
+                       404 {:body s/Any}}
            :swagger {:consumes "application/json" :produces "application/json"}}
 
      :delete {:summary (sd/sum_adm_todo "Delete vocabulary.")
@@ -153,7 +174,7 @@
               :accept "application/json"
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Str}}
-              :responses {200 {:body s/Any}
+              :responses {200 {:body schema_export-vocabulary}
                           404 {:body s/Any}}
               :swagger {:produces "application/json"}}}]
    
@@ -167,7 +188,7 @@
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str}}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-perms_all}
                    404 {:body s/Any}}}
       :put
       {:summary (sd/sum_adm "Update vocabulary resource permissions")
@@ -178,7 +199,7 @@
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str}
                     :body schema_perms-update}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-vocabulary}
                    404 {:body s/Any}}}}]
   
     ["/users"
@@ -190,7 +211,7 @@
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str}}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body [schema_export-user-perms]}
                    404 {:body s/Any}}}}]
 
     ["/user/:user_id"
@@ -203,7 +224,7 @@
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str
                            :user_id s/Uuid}}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-user-perms}
                    404 {:body s/Any}}}
       :post
       {:summary (sd/sum_adm "Create vocabulary user permissions")
@@ -215,7 +236,7 @@
        :parameters {:path {:id s/Str
                            :user_id s/Uuid}
                     :body schema_perms-update-user-or-group}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-user-perms}
                    404 {:body s/Any}}}
 
       :put
@@ -228,7 +249,7 @@
        :parameters {:path {:id s/Str
                            :user_id s/Uuid}
                     :body schema_perms-update-user-or-group}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-user-perms}
                    404 {:body s/Any}}}
 
       :delete
@@ -240,7 +261,7 @@
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str
                            :user_id s/Uuid}}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-user-perms}
                    404 {:body s/Any}}}}]
 
     ["/groups"
@@ -252,7 +273,7 @@
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str}}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body [schema_export-group-perms]}
                    404 {:body s/Any}}}}]
 
     ["/group/:group_id"
@@ -265,7 +286,7 @@
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str
                            :group_id s/Uuid}}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-group-perms}
                    404 {:body s/Any}}}
 
       :post
@@ -278,7 +299,7 @@
        :parameters {:path {:id s/Str
                            :group_id s/Uuid}
                     :body schema_perms-update-user-or-group}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-group-perms}
                    404 {:body s/Any}}}
 
       :put
@@ -291,7 +312,7 @@
        :parameters {:path {:id s/Str
                            :group_id s/Uuid}
                     :body schema_perms-update-user-or-group}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-group-perms}
                    404 {:body s/Any}}}
 
       :delete
@@ -303,7 +324,7 @@
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str
                            :group_id s/Uuid}}
-       :responses {200 {:body s/Any}
+       :responses {200 {:body schema_export-group-perms}
                    404 {:body s/Any}}}}]]])
 
 
