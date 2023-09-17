@@ -33,16 +33,6 @@ describe 'vocabulary' do
       end
     end
 
-    #def json_roa_vocabulary_resource(vocabulary_id, is_authenticated_user = false)
-    #  JSON_ROA::Client.connect(
-    #    "#{api_base_url}/vocabularies/#{vocabulary_id}",
-    #    raise_error: false) do |conn|
-    #      if is_authenticated_user
-    #        conn.basic_auth(entity.login, entity.password)
-    #      end
-    #    end
-    #end
-
     it 'should return 200 for an existing vocabulary' do
       vocab = FactoryBot.create(:vocabulary,
                                  enabled_for_public_view: true)

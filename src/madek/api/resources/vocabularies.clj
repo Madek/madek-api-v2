@@ -14,13 +14,18 @@
 ; TODO logwrite
 
 
+(defn transform_ml [data]
+  (assoc data
+         :labels (sd/transform_ml (:labels data))
+         :descriptions (sd/transform_ml (:descriptions data))))
+
 (defn handle_create-vocab [req]
   (try
     (catcher/with-logging {}
       (let [data (-> req :parameters :body)
             ins-res (jdbc/insert! (rdbms/get-ds) :vocabularies data)]
         (if-let [result (first ins-res)]
-          (sd/response_ok result)
+          (sd/response_ok (transform_ml result))
           (sd/response_failed "Could not create vocabulary." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -30,25 +35,26 @@
       (let [data (-> req :parameters :body)
             id (-> req :parameters :path :id)
             dwid (assoc data :id id)]
-        (logging/info "handle_update-vocab"
-                      "\nid\n" id "\ndwid\n" dwid)
-        (if-let [upd-res (jdbc/update! (rdbms/get-ds) :vocabularies dwid ["id = ?" id])]
-          (let [new-data (sd/query-eq-find-one :vocabularies :id id)]
-            (logging/info "handle_update-vocab"
-                          "\nid: " id "\nnew-data:\n" new-data)
-            (sd/response_ok new-data))
-          (sd/response_failed "Could not update vocabulary." 406))))
+        (if-let [old-data (sd/query-eq-find-one :vocabularies :id id)]
+          (if-let [upd-res (jdbc/update! (rdbms/get-ds) :vocabularies dwid ["id = ?" id])]
+            (let [new-data (sd/query-eq-find-one :vocabularies :id id)]
+              (logging/info "handle_update-vocab"
+                            "\nid: " id "\nnew-data:\n" new-data)
+              (sd/response_ok (transform_ml new-data)))
+            (sd/response_failed "Could not update vocabulary." 406))
+          (sd/response_not_found "No such vocabulary."))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_delete-vocab [req]
   (try
     (catcher/with-logging {}
-      (let [id (-> req :parameters :path :id)
-            old-data (sd/query-eq-find-one :vocabularies :id id)
-            db-result (jdbc/delete! (rdbms/get-ds) :vocabularies ["id = ?" id])]
-        (if (= 1 (first db-result))
-          (sd/response_ok old-data)
-          (sd/response_failed "Could not delete vocabulary." 406))))
+      (let [id (-> req :parameters :path :id)]
+        (if-let [old-data (sd/query-eq-find-one :vocabularies :id id)]
+          (let [db-result (jdbc/delete! (rdbms/get-ds) :vocabularies ["id = ?" id])]
+            (if (= 1 (first db-result))
+              (sd/response_ok (transform_ml old-data))
+              (sd/response_failed "Could not delete vocabulary." 406)))
+          (sd/response_not_found "No such vocabulary."))))
     (catch Exception ex (sd/response_exception ex))))
 
 (def schema_export-vocabulary
@@ -67,8 +73,8 @@
    :enabled_for_public_view s/Bool
    :enabled_for_public_use s/Bool
    :position s/Int
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)
+   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
    (s/optional-key :admin_comment) (s/maybe s/Str)
    })
 
