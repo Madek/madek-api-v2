@@ -13,7 +13,7 @@
         media-entry (-> (jdbc/query (get-ds)
                                     [(str "SELECT * FROM media_entries WHERE id = ?")
                                      media-entry-id]) first)]
-    ;(logging/info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
+    (logging/info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
     (if (get media-entry scope)
       (handler request)
       (if-let [auth-entity (:authenticated-entity request)]
@@ -26,8 +26,6 @@
           {:status 403})
         {:status 401}))))
 
-;(defn wrap-authorize [handler scope]
-;  (fn [request] (authorize request handler scope)))
 
 (defn wrap-auth-media-file-metadata-and-previews [handler]
   (fn [request] (media-file-authorize request handler :get_metadata_and_previews)))

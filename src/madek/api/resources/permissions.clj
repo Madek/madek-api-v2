@@ -173,7 +173,7 @@
         (if-let [group-perm (mr-permissions/query-get-group-permission mr mrt group-id)]
           (let [delok (mr-permissions/delete-group-permissions mr mrt group-id)]
             (if (true? delok)
-              (sd/response_ok (first group-perm))
+              (sd/response_ok group-perm)
               (sd/response_failed "Could not delete resource group permission." 422)))
           (sd/response_not_found "No such resource group permission."))
             

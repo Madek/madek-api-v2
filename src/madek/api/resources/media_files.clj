@@ -31,8 +31,6 @@
         (sd/response_not_found "No media-file for media_file_id")))))
 
 
-       ; TODO only one file per entry ??
-       ; TODO only the first per entry ??
 (defn wrap-find-and-add-media-file-by-media-entry-id
   "Extracts path parameter media_entry_id,
    adds queried media-file and its media_file_id to the request data."
@@ -77,8 +75,10 @@
       :handler media-file/get-media-file
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
                    ; TODO switch to shared me auth
-                   ;sd/ring-wrap-authorization-view
-                   media-files.authorization/wrap-auth-media-file-metadata-and-previews]
+                   sd/ring-wrap-add-media-resource
+                   sd/ring-wrap-authorization-view
+                   ;media-files.authorization/wrap-auth-media-file-metadata-and-previews
+                   ]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}}}]
    
@@ -88,8 +88,10 @@
       :handler media-file/get-media-file-data-stream
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
                    ; TODO switch to shared me auth
-                   ;sd/ring-wrap-authorization-download
-                   media-files.authorization/wrap-auth-media-file-full_size]
+                   sd/ring-wrap-add-media-resource
+                   sd/ring-wrap-authorization-download
+                   ;media-files.authorization/wrap-auth-media-file-full_size
+                   ]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}}}]
   ])
