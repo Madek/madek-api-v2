@@ -11,7 +11,7 @@ task_defaults:
     - cider-ci/task-components/env.yml
 
   ports:
-    API_HTTP_PORT:
+    API_V2_HTTP_PORT:
       min: 3100
       max: 3200
 
@@ -31,7 +31,8 @@ task_defaults:
 
     test:
       body: |
-        set -eux
+        #!/usr/bin/env bash
+        set -euo pipefail
+        source $DATALAYER_DIR/cider-ci/bin/pg_env_set 
         ./bin/rspec $CIDER_CI_TASK_FILE
-
 

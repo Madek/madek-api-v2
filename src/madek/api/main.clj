@@ -2,13 +2,14 @@
   (:gen-class)
   (:require
     [clojure.pprint :refer [pprint]]
-    [clojure.tools.cli :as cli]
     [clojure.java.jdbc :as jdbc]
+    [clojure.tools.cli :as cli]
     [clojure.tools.logging :as logging]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug]
     [logbug.thrown]
     [madek.api.constants :as constants]
+    [madek.api.web :as web]
     [madek.api.utils.config :as config :refer [get-config]]
     [madek.api.utils.exit :as exit]
     [madek.api.utils.nrepl :as nrepl]
@@ -26,7 +27,9 @@
     [["-h" "--help"]
      ["-d" "--dev-mode"]]
     exit/cli-options
-    nrepl/cli-options))
+    nrepl/cli-options
+    web/cli-options
+    ))
 
 (defn main-usage [options-summary & more]
   (->> ["Madek API"
@@ -66,10 +69,10 @@
     (logging/info "Effective startup options " options)
     (logging/info "Effective startup config " (get-config))
     (rdbms/initialize (config/get-db-spec :api))
-    (nrepl/init (-> (get-config) :services :api :nrepl) options)
+    (nrepl/init options)
     
     (madek.api.constants/initialize (get-config)) 
-    (madek.api.web/initialize)
+    (madek.api.web/initialize options)
     (logging/info 'madek.api.main "... initialized")))
 
 

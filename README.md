@@ -2,6 +2,13 @@
 
 The madek-api2 is a JSON API for Madek.
 
+
+## API v2 TODOs
+
+* Switch HTTP Server to HTTP Kit probably (see Madek audits)
+* CLI Options for HTTP Server
+* 
+
 ## Development
 
 ### Configuration
@@ -40,3 +47,6 @@ Note, there is no special environment as in rails.
 Run clojure tests to add two users for development and testing
 
 `clj -X:test :dirs '["test"]'`
+
+
+
