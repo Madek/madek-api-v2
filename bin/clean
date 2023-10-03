@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-set -euxo
+set -euo pipefail
 rm -f resources/build-timestamp.txt
 rm -f resources/deps.svg
