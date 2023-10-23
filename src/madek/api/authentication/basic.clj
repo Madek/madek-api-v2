@@ -10,6 +10,7 @@
     [madek.api.authentication.token :as token-authentication]
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.resources.shared :as sd]
+    [clojure.walk :refer [keywordize-keys]]
     )
   (:import
     [java.util Base64]
@@ -51,7 +52,7 @@
 
 (defn extract [request]
   (logging/debug 'extract request)
-  (try (when-let [auth-header (-> request :headers :authorization)]
+  (try (when-let [auth-header (-> request :headers keywordize-keys :authorization)]
          (when (re-matches #"(?i)^basic\s+.+$" auth-header)
            (let [decoded-val (base64-decode (last (re-find #"(?i)^basic (.*)$" auth-header)))
                  [username password] (clojure.string/split (str decoded-val) #":" 2)]
