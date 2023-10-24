@@ -5,14 +5,12 @@
             [logbug.catcher :as catcher]
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
-            
             [madek.api.resources.shared :as sd]
             [madek.api.utils.rdbms :as rdbms]
             [madek.api.utils.sql :as sql]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
-            [schema.core :as s]
-            ))
+            [schema.core :as s]))
 
 (defn- col-key-for-mr-type [mr]
   (let [mr-type (-> mr :type)]
@@ -632,7 +630,7 @@
                                          (map (-> :role_id))
                                          (map #(sd/query-eq-find-one :roles :id %)))
                      "default")
-          mde-result {:meta_data result
+          mde-result {:meta-data result
                       (keyword md-type-kw) mde
                       (keyword md-type-kw-data) mde-data}
           ]

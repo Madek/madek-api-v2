@@ -1,7 +1,7 @@
 require 'json_roa/client'
 
 def api_port
-  @api_port ||= Settings.services.api.http.port
+  @api_port ||= ENV["API_V2_HTTP_PORT"].presence || 3104
 end
 
 def api_base_url

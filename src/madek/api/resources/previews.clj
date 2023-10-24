@@ -10,7 +10,6 @@
     [madek.api.resources.media-files :as media-files]
     ))
 
-
 (defn ring-wrap-find-and-add-preview
   ([handler] #(ring-wrap-find-and-add-preview % handler))
   ([request handler]

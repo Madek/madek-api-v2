@@ -23,9 +23,9 @@ scripts:
       #!/usr/bin/env ruby
       require 'yaml'
       settings_local= YAML.load_file "#{ENV['API_DIR']}/config/settings.local.yml"
-      settings_local['database']['subname']= "//localhost:#{ENV['PG10PORT']}/#{ENV['DATABASE']}"
-      settings_local['database']['user']= ENV['PG10USER']
-      settings_local['database']['password']= ENV['PG10PASSWORD']
+      settings_local['database']['subname']= "//localhost:#{ENV['PG15PORT']}/#{ENV['DATABASE']}"
+      settings_local['database']['user']= ENV['PG15USER']
+      settings_local['database']['password']= ENV['PG15PASSWORD']
       IO.write "#{ENV['API_DIR']}/config/settings.local.yml", settings_local.to_yaml
 
   api-run:
@@ -39,7 +39,8 @@ scripts:
       set -euo pipefail
       cd $API_DIR
       export CLASSPATH="../config:madek-api.jar"
-      java madek.api.main
+      HTTP_SERVER_PORT=${API_V2_HTTP_PORT} \
+        java madek.api.main
     start_when:
       the database has been created:
         script_key: create-database
@@ -50,8 +51,10 @@ scripts:
 
   api-is-running:
     body: |
-      until curl --silent --fail --user x:secret -I  \
-        http://localhost:${API_HTTP_PORT}/api/management/status;
+      #!/usr/bin/env bash
+      set -euo pipefail
+      until curl --silent --fail -I  \
+        http://localhost:${API_V2_HTTP_PORT}/api-v2/status/;
         do sleep 1;
       done
     start_when:
@@ -65,8 +68,10 @@ scripts:
         script_key: test
         states: [aborted, passed, failed, skipped]
     body: |
-      curl -X POST --silent --fail --user x:secret -I  \
-        http://localhost:${API_HTTP_PORT}/api/management/shutdown
+      #!/usr/bin/env bash
+      set -euo pipefail
+      kill -TERM $(lsof -t -wni tcp:${API_V2_HTTP_PORT})
+      sleep 1
 
   test:
     start_when:

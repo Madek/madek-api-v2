@@ -1,25 +1,24 @@
 (ns madek.api.authentication.session
-  (:require 
+  (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [next.jdbc :as njdbc]
-            [buddy.core.codecs :refer [bytes->b64 bytes->str]]
-            [buddy.core.hash :as hash]
-            [clj-time.core :as time]
-            [clj-time.format :as time-format]
-            [clojure.java.jdbc :as jdbc]
-            [clojure.walk :refer [keywordize-keys]]
-            [logbug.catcher :as catcher]
-            [madek.api.legacy.session.encryptor :refer [decrypt]]
-            [madek.api.legacy.session.signature :refer [valid?]]
-            [madek.api.resources.shared :as sd]
-            [madek.api.utils.config :refer [get-config
-                                            parse-config-duration-to-seconds]]
-            [madek.api.utils.rdbms :as rdbms]
-            ;[madek.api.utils.sql :as sql] ;[honey.sql :refer [format] :rename {format sql-format}]
-            [taoensso.timbre :refer [debug spy]]
-            [clojure.tools.logging :as logging]
-            ))
+   [buddy.core.codecs :refer [bytes->b64 bytes->str]]
+   [buddy.core.hash :as hash]
+   [clj-time.core :as time]
+   [clj-time.format :as time-format]
+   [clojure.java.jdbc :as jdbc]
+   [clojure.walk :refer [keywordize-keys]]
+   [logbug.catcher :as catcher]
+   [madek.api.legacy.session.encryptor :refer [decrypt]]
+   [madek.api.legacy.session.signature :refer [valid?]]
+   [madek.api.resources.shared :as sd]
+   [madek.api.utils.config :refer [get-config
+                                   parse-config-duration-to-seconds]]
+   [madek.api.utils.rdbms :as rdbms]
+
+   [taoensso.timbre :refer [debug spy]]
+   [clojure.tools.logging :as logging]))
 
 (defn- get-session-secret []
   (-> (get-config) :madek_master_secret))

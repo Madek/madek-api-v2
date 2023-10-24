@@ -177,7 +177,6 @@
    favorite-collections/favorite-routes
 
    full-texts/query-routes
-
    ;media_entries
    media-entries/ring-routes
    media-entries/media-entry-routes
@@ -190,7 +189,6 @@
    media-files/media-entry-routes
    permissions/media-entry-routes
    full-texts/entry-routes
-
    ;media_files
    media-files/media-file-routes
 

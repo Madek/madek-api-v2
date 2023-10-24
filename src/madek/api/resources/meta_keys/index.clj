@@ -27,6 +27,7 @@
       ;  [:in :vocabularies.id vocabulary-ids]])))
 
 
+
 (defn- base-query
   [user-id scope]
   (-> (sql/select :*); :meta_keys.id :meta_keys.vocabulary_id)

@@ -27,6 +27,6 @@ services:
     nrepl:
       port: 7802
       bind: "127.0.0.1"
-      enabled: false
+      enabled: true
 
 

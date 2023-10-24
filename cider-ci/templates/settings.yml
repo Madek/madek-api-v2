@@ -12,16 +12,3 @@ database:
   password: REPLACE_WITH_PGPASSWORD
   max_pool_size: 3
 
-services:
-
-  api:
-
-    http:
-
-      host: localhost
-      port: {{API_HTTP_PORT}}
-      context: ""
-      sub_context: /api
-      ssl: false
-
-

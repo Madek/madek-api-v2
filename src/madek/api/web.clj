@@ -2,10 +2,14 @@
   (:require
     ;[clojure.data.json :as json]
     ;[clojure.java.io :as io]
+    [clj-yaml.core :as yaml]
     [clojure.tools.logging :as logging]
     [clojure.walk :refer [keywordize-keys]]
     ;[environ.core :refer [env]]
     
+    [environ.core :refer [env]]
+    [madek.api.utils.cli :refer [long-opt-for-key]]
+
     [logbug.catcher :as catcher]
     [logbug.debug :as debug :refer [I> I>>]]
     [logbug.ring :as logbug-ring :refer [wrap-handler-with-logging]]
@@ -19,7 +23,7 @@
     [madek.api.resources]
     ;[madek.api.semver :as semver]
     [madek.api.utils.config :refer [get-config]]
-    [madek.api.utils.http-server :as http-server]
+    [madek.api.http.server :as http-server]
         
     [ring.middleware.cors :as cors-middleware]
     [ring.middleware.json]
@@ -275,7 +279,24 @@
   ;[handler ds]
   ;(-> handler (wrap-deps ds) wrap-defaults))
 
+
+
 ;### server ###################################################################
+
+
+; cli
+
+(def http-resources-scope-key :http-resources-scope)
+
+(def cli-options
+  (concat http-server/cli-options
+          [[nil (long-opt-for-key http-resources-scope-key)
+            "Either ALL, ADMIN or USER"
+            :default (or (some-> http-resources-scope-key env) 
+                         "ALL")
+            :validate [#(some #{%} ["ALL" "ADMIN" "USER"]) "scope must be ALL, ADMIN or USER"]
+            ]]))
+
 
 (defn initialize-all [http-conf is_reloadable]
   (if (true? is_reloadable)
@@ -292,29 +313,12 @@
     (http-server/start http-conf (middleware (wrap-reload #'app-user)))
     (http-server/start http-conf (middleware app-user))))
 
-(defn initialize []
-  (let [http-conf (-> (get-config) :services :api :http)
-        is_reloadable (-> (get-config) :services :api :is_reloadable)
-        context (str (:context http-conf) (:sub_context http-conf))
-        is_start_user (-> (get-config) :services :api :user_enabled)
-        is_start_adm (-> (get-config) :services :api :admin_enabled)
-        is_app_all (and is_start_user is_start_adm)
-        ]
-    (logging/info "initialize with "
-                  " reload " is_reloadable
-                  " start adm " is_start_adm
-                  " start user " is_start_user
-                  " start all " is_app_all
-                  "\nconfig: \n" (get-config))
-    ;(http-server/start http-conf (middleware app ds))
-    (if (true? is_app_all)
-      ; start all
-      (initialize-all http-conf is_reloadable)
-      (if (true? is_start_adm)
-        (initialize-adm http-conf is_reloadable)
-        (initialize-user http-conf is_reloadable)))
-  ))
-      
+(defn initialize [options]
+  (let [handler (case (http-resources-scope-key options)
+                  "ALL" (middleware app-all)
+                  "ADMIN" (middleware app-admin)
+                  "USER" (middleware app-user))]
+    (http-server/start handler options)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
