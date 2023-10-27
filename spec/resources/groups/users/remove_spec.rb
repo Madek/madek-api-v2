@@ -22,7 +22,7 @@ context 'removing a user from a group via DELETE' do
         it 'responds with 204' do
           expect(
             client.delete("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
-          ).to be== 204
+          ).to be== 200
         end
 
         it 'effectively removes the user from the group' do

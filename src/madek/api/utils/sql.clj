@@ -75,7 +75,7 @@
 (defn ->pgobject
   [x]
   (let [pgtype (or (:pgtype (meta x)) "hstore")] ;"jsonb")]
-    (logging/info "->pgobject: \nmeta type\n " (:pgtype (meta x)) ":" pgtype)
+    #_(logging/info "->pgobject: \nmeta type\n " (:pgtype (meta x)) ":" pgtype)
     (doto (org.postgresql.util.PGobject.)
       (.setType pgtype)
       (.setValue (condp contains? pgtype
@@ -87,7 +87,7 @@
   [^org.postgresql.util.PGobject v]
   (let [type  (.getType v)
         value (.getValue v)]
-    (logging/info "<-pgobject: \nmeta type\n " type " value " value)
+    #_(logging/info "<-pgobject: \nmeta type\n " type " value " value)
     (condp contains? type
       #{"jsonb" "json"} (when value
                           (with-meta (<-json value) {:pgtype type}))

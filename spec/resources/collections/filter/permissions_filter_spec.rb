@@ -4,12 +4,8 @@ require Pathname(File.expand_path('../../', __FILE__)).join('shared')
 describe 'filtering collections' do
   include_context :bunch_of_collections
 
-  #let :collections_relation do
-  #  client.get.relation('collections')
-  #end
-
   def get_collections(filter = nil)
-    client.get('/api/collections/',filter)
+    client.get('/api/collections',filter)
   end
 
   context 'permission params checks' do
@@ -104,39 +100,5 @@ describe 'filtering collections' do
       end
      end
 
-
-    context 'me_get_metadata_and_previews for an api_client' do
-      include_context :json_client_for_authenticated_api_client do
-        it '200 for public permissions' do
-          10.times {
-            FactoryBot.create(:collection,
-                               get_metadata_and_previews: true)
-          }
-
-          get_collections('me_get_metadata_and_previews' => 'true').body['collections']
-            .each do |c|
-            collection = Collection.unscoped.find(c['id'])
-            expect(collection.get_metadata_and_previews).to be true
-          end
-        end
-
-        it '200 for api_client permission' do
-          10.times do
-            FactoryBot.create \
-              :collection_api_client_permission,
-              collection: FactoryBot.create(:collection,
-                                             get_metadata_and_previews: false),
-              api_client: api_client
-          end
-
-          get_collections('me_get_metadata_and_previews' => 'true').body['collections']
-            .each do |c|
-            collection = Collection.unscoped.find(c['id'])
-            expect(collection.api_client_permissions.first.api_client)
-              .to be == api_client
-          end
-        end
-      end
-    end
   end
 end

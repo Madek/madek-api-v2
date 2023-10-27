@@ -1,8 +1,7 @@
 {
  :paths ["src" "resources"]
  :deps {
-        ;metabase/honeysql-util {:mvn/version "1.0.2"}
-        ;aleph/aleph {:mvn/version "0.6.3"}
+        buddy/buddy-sign {:mvn/version "3.4.333"}
         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
         cheshire/cheshire {:mvn/version "5.12.0"}
         cider-ci/open-session {:mvn/version "2.0.0-beta.1"} ; upgrade will break

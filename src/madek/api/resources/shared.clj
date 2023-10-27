@@ -363,8 +363,8 @@
 ; begin meta-data helpers
 
 (defn query-meta-datum [request]
-  (let [id (or (-> request :params :meta_datum_id) (-> request :parameters :path :meta_datum_id))]
-    (logging/info "query-meta-datum" "\nid\n" id)
+  (let [id (-> request :parameters :path :meta_datum_id)]
+    #_(logging/info "query-meta-datum" "\nid\n" id)
     (or (-> (jdbc/query (get-ds)
                         [(str "SELECT * FROM meta_data "
                               "WHERE id = ? ") id])

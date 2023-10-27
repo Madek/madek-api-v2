@@ -10,10 +10,7 @@
     [madek.api.authentication.token :as token-authentication]
     [madek.api.utils.rdbms :as rdbms]
     [madek.api.resources.shared :as sd]
-<<<<<<< HEAD
-=======
     [clojure.walk :refer [keywordize-keys]]
->>>>>>> upstream/al/master
     )
   (:import
     [java.util Base64]

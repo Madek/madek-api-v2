@@ -87,7 +87,7 @@
 (defn get-meta-datum [request]
   (let [meta-datum (:meta-datum request)
         result (prepare-meta-datum meta-datum)]
-    (logging/info "get-meta-datum" "\nresult\n" result)
+    #_(logging/info "get-meta-datum" "\nresult\n" result)
     (sd/response_ok result)))
 
 ; TODO Q? why no response status

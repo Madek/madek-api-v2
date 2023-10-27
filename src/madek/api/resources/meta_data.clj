@@ -307,6 +307,15 @@
 (defn db-get-meta-data-keywords 
   [md-id]
   (sd/query-eq-find-all :meta_data_keywords :meta_datum_id md-id))
+  #_(let [query (-> (sd/build-query-base :meta_data_keywords :*)
+                  (sql/merge-where [:= :meta_datum_id md-id])
+                  (sql/merge-join :keywords [:= :keywords.id :meta_data_keywords.keyword_id])
+                  (sql/order-by [:keywords.term :asc])
+                  sql/format)]
+    (logging/info "db-get-meta-data-keywords:\n" query)
+    (let [result (jdbc/query (rdbms/get-ds) query)]
+      (logging/info "db-get-meta-data-keywords:\n" result))
+    )
 
 ; TODO only some results
 (defn handle_get-meta-data-keywords
@@ -984,7 +993,7 @@
                          sd/ring-wrap-add-media-resource
                          sd/ring-wrap-authorization-edit-metadata]
             :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:media_entry_id s/Str
+            :parameters {:path {:collection_id s/Str
                                 :meta_key_id s/Str
                                 :role_id s/Str}}
             :responses {200 {:body s/Any}}}}]

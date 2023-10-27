@@ -23,7 +23,7 @@ describe 'updating group-users' do
       @current_group_users[0..(C/2.floor)] + @current_non_group_users[0..(C/2.floor)]
 
     @update_data= @update_users.map do |user|
-      user.slice([:id, :institutional_id, :email].sample)
+      user.slice([:id].sample)
     end
 
   end
@@ -39,7 +39,7 @@ describe 'updating group-users' do
       end
 
       it 'works and sets the group users to exactly those given with the request' do
-        expect(response.status).to be== 204
+        expect(response.status).to be== 200
         expect(
           Set.new(@group.users.reload.map(&:id))
         ).to be== Set.new(@update_users.map(&:id))

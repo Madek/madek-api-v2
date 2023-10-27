@@ -50,8 +50,8 @@ context 'a user in a group' do
           it 'has the expected properties' do
             expect(
               faraday_response.body.with_indifferent_access \
-              .slice(:id, :email, :login, :institutional_id, :person_id)
-            ).to be== @user.slice(:id, :email, :login, :institutional_id, :person_id)
+              .slice(:id, :email, :institutional_id, :person_id)
+            ).to be== @user.slice(:id, :email, :institutional_id, :person_id)
           end
 
         end

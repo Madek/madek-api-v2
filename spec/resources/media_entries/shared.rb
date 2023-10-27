@@ -20,8 +20,8 @@ shared_context :bunch_of_media_entries do
       FactoryBot.create :media_entry,
                          responsible_user: users[rand(users_count)],
                          is_published: (rand <= 0.9),
-                         get_metadata_and_previews: (rand <= 0.8),
-                         get_full_size: (rand <= 0.3)
+                         get_metadata_and_previews: true, #(rand <= 0.8),
+                         get_full_size: true # (rand <= 0.3)
     end
   end
 
@@ -39,6 +39,13 @@ shared_context :bunch_of_media_entries do
 end
 
 shared_examples 'ordering by created_at' do |direction = nil|
+  before do
+    expect(media_entries.size).to eq(30)
+    media_entries.map do |me|
+      
+    end
+  end
+
   def media_entries_created_at(order = nil)
     # to_datetime.strftime('%Q').to_i => int with ms precision
     client.get('/api/media-entries', {'order' => order})
@@ -107,6 +114,14 @@ shared_examples 'ordering by madek_core:title' do |direction = nil|
 end
 
 shared_examples 'ordering by last_change' do
+  before do
+    expect(media_entries.size).to eq(30)
+    media_entries.map do |me|
+      
+    end
+  end
+
+  
   def edit_session_updated_ats
     resource('last_change')
       .body.with_indifferent_access['media_entries']

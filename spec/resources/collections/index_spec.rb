@@ -9,7 +9,7 @@ describe 'a bunch of collections with different properties' do
       describe 'the collections resource' do
         let :resource do
           #collections # force evaluation
-          client.get('/api/collections/')
+          client.get('/api/collections')
         end
 
         it do

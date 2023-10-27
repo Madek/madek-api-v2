@@ -172,17 +172,8 @@
    [auth-info-route
     madek.api.resources/user-routes
     madek.api.resources/admin-routes
-    management/api-routes
-    ;(when (true? (-> (get-config) :services :api :user_enabled))
-    ;  madek.api.resources/user-routes)
-    
-    ;(when (= true (-> (get-config) :services :api :admin_enabled))
-    ;  madek.api.resources/admin-routes)
-    
-    ;(when (= true (-> (get-config) :services :api :mgmt_enabled))
-    ;  management/api-routes)
-  
-    test-routes
+    ;management/api-routes
+    ;test-routes
     swagger-routes
     ]
    (filterv some?)))
@@ -191,20 +182,17 @@
   (->>
    [auth-info-route
     madek.api.resources/user-routes
-    management/api-routes
-
-    test-routes
-    swagger-routes
-    ]
+    ;management/api-routes
+    ;test-routes
+    swagger-routes]
    (filterv some?)))
 
 (def get-router-data-admin
   (->>
    [auth-info-route
     madek.api.resources/admin-routes
-    management/api-routes
-
-    test-routes
+    ;management/api-routes
+    ;test-routes
     swagger-routes
     ]
    (filterv some?)))
@@ -315,7 +303,7 @@
 
 (defn initialize [options]
   (let [handler (case (http-resources-scope-key options)
-                  "ALL" (middleware app-all)
+                  "ALL" (middleware (wrap-reload app-all))
                   "ADMIN" (middleware app-admin)
                   "USER" (middleware app-user))]
     (http-server/start handler options)))
