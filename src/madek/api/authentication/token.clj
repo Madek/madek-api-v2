@@ -2,6 +2,7 @@
   (:require
     [clojure.java.jdbc :as jdbc]
     [clojure.tools.logging :as logging]
+    [clojure.walk :refer [keywordize-keys]]
     [logbug.debug :as debug]
     [logbug.thrown :as thrown]
     [madek.api.utils.rdbms :as rdbms]
@@ -71,7 +72,7 @@
 
 
 (defn find-token-secret-in-header [request]
-  (when-let [header-value (-> request :headers :authorization)]
+  (when-let [header-value (-> request :headers keywordize-keys :authorization)]
     (when (re-matches #"(?i)^token\s+.+$" header-value)
       (last (re-find #"(?i)^token\s+(.+)$" header-value)))))
 

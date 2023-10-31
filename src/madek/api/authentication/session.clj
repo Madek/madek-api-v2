@@ -118,50 +118,35 @@
 (defn- handle [request handler]
   (debug 'handle request)
   (if-let [cookie-value (and (session-enbabled?) (get-cookie-value request))]
-    (let [token-hash (token-hash cookie-value)
-          ;expiration-time (session-expiration-time
-          ;                 session-object (get-validity-duration-secs))
-          ;now (time/now)
-          ]
-      (if-let [user-sessions (user-session token-hash)]
-        (let [user-session (first user-sessions)
-              user-id (:users/user_id user-session)
-              user (assoc (sd/query-eq-find-one :users :id user-id) :type "User")]
-          ;(logging/info "handle session: "
-                        ;"\nfound user session:\n " user-session
-          ;              "\n user-id:  " user-id
-          ;              "\n user: " user)
-          (handler (assoc request
-                          :authenticated-entity user
-                          :is_admin (sd/is-admin user-id)
-                          :authentication-method "Session"
-                          :session-expiration-seconds 3600 ; TODO
-                                  ;(in-seconds now expiration-time)
-                          ))
-          )
-        
-        {:status 401 :body {:message "The session is invalid!"}}
+    (let [token-hash (token-hash cookie-value)]
+      (if-let [user-session (first (user-session token-hash))]
+          (let [user-id (:users/user_id user-session)
+                expires-at (:session_expires_at user-session)
+                user (assoc (sd/query-eq-find-one :users :id user-id) :type "User")]
+            #_(logging/info "handle session: "
+                          "\nfound user session:\n " user-session
+                          "\n user-id:  " user-id
+                          "\n expires-at: " expires-at
+                          "\n user: " user)
+            (handler (assoc request
+                            :authenticated-entity user
+                            :is_admin (sd/is-admin user-id)
+                            :authentication-method "Session"
+                            :session-expires-at expires-at
+                            ;:session-expiration-seconds (in-seconds (time/now) expires-at)
+                            
+                            )))
+          {:status 401 :body {:message "The session is invalid or expired!"}}
         )
-      )
-    ;(if-let [session-object (decrypt-cookie cookie-value)]
-    ;  (if-let [user (-> session-object :user_id get-user)]
-    ;    (if-not (session-signature-valid? user session-object)
-    ;      {:status 401 :body {:message "The session is invalid!"}}
-    ;      (let [expiration-time (session-expiration-time
-    ;                              session-object (get-validity-duration-secs))
-    ;            now (time/now)]
-    ;        (if (time/after? now expiration-time)
-    ;          {:status 401 :body {:message "The session has expired!"}}
-    ;          (handler (assoc request
-    ;                          :authenticated-entity user
-    ;                          ; TODO move into ae
-    ;                          :is_admin (sd/is-admin (:id user))
-    ;                          :authentication-method "Session"
-    ;                          :session-expiration-seconds
-    ;                          (in-seconds now expiration-time))))))
-    ;    {:status 401 :body {:message "The user was not found!"}})
-      ;{:status 401 :body {:message "Decryption of the session cookie failed!"}})
-    (handler request)))
+    )   
+        
+     ;   {:status 401 :body {:message "The session is invalid!"}}
+    
+      ;)
+   
+    (handler request)
+  )
+)
 
 (defn wrap [handler]
   (fn [request]
