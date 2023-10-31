@@ -61,26 +61,30 @@ describe 'generated runs' do
                 end
 
                 context 'MetaDatum::Role resource' do
-                  let(:root) { authenticated_json_roa_client.get }
-
+                  
                   it 'provides valid relations' do
                     if response.status == 200
                       response.body['value'].each do |v|
-                        #meta_data_role = root.relation('meta-datum-role').get('id' => v['id'])
-                        meta_data_role = authenticated_json_client.get("/api/meta-data-roles/#{v['id']}")
-                        
-                        meta_datum_id = meta_data_role.body['meta_datum_id']
-                        expect(authenticated_json_client.get("/api/meta-data/#{meta_datum_id}").status)
-                          .to be == 200
+                        meta_data_role = authenticated_json_client.get("/api/meta-data-role/#{v['id']}")
 
-                        person_id = meta_data_role.body['person_id']
-                        expect(authenticated_json_client.get("/api/people/#{person_id}").status)
-                          .to be == 200
-                        
-                        unless meta_data_role.body['role_id'].nil?
-                          role_id = meta_data_role.body['role_id']
-                          expect(authenticated_json_client.get("/api/meta-data-roles/#{role_id}").status)
+                        expect(meta_data_role.status).to be == 200
+
+                        unless meta_data_role.body['id'].nil?
+
+                          meta_datum_id = meta_data_role.body['meta_datum_id']
+
+                          expect(authenticated_json_client.get("/api/meta-data/#{meta_datum_id}").status)
                             .to be == 200
+
+                          person_id = meta_data_role.body['person_id']
+                          expect(authenticated_json_client.get("/api/people/#{person_id}").status)
+                            .to be == 200
+                          
+                          unless meta_data_role.body['role_id'].nil?
+                            role_id = meta_data_role.body['role_id']
+                            expect(authenticated_json_client.get("/api/roles/#{role_id}").status)
+                              .to be == 200
+                          end
                         end
                       end
                     end
@@ -90,27 +94,14 @@ describe 'generated runs' do
                     it 'has role relation' do
                       if response.status == 200
                         response.body['value'].each do |v|
-                          #meta_data_role = root.relation('meta-datum-role').get('id' => v['id'])
-                          meta_data_role = authenticated_json_client.get("/api/meta-data-roles/#{v['id']}")
+                          meta_data_role = authenticated_json_client.get("/api/meta-data-role/#{v['id']}")
 
-                          #unless meta_data_role.data['role_id'].nil?
+                          unless meta_data_role.body['role_id'].nil?
                           #  expect(meta_data_role.json_roa_data['relations']).to have_key 'role'
-                          #end
-                        end
-                      end
-                    end
-                  end
-
-                  context 'role is not assigned' do
-                    it 'has no role relation' do
-                      if response.status == 200
-                        response.body['value'].each do |v|
-                          #meta_data_role = root.relation('meta-datum-role').get('id' => v['id'])
-                          meta_data_role = authenticated_json_client.get("/api/meta-data-roles/#{v['id']}")
-
-                          #if meta_data_role.data['role_id'].nil?
-                          #  expect(meta_data_role.json_roa_data['relations']).not_to have_key 'role'
-                          #end
+                            role_id = meta_data_role.body['role_id']
+                            expect(authenticated_json_client.get("/api/roles/#{role_id}").status)
+                              .to be == 200
+                          end
                         end
                       end
                     end

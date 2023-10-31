@@ -193,7 +193,8 @@
    media-files/media-file-routes
 
    ;meta_data
-   meta-data/ring-routes
+   meta-data/meta-data-routes
+   meta-data/role-routes
 
    previews/preview-routes
 

@@ -753,9 +753,16 @@
         (handler req)
         ))))
 
+(def schema_export_meta-datum
+     {:id s/Uuid
+      :meta_key_id s/Str
+      :type s/Str
+      :value [{:id s/Uuid}]
+      (s/optional-key :media_entry_id) s/Uuid
+      (s/optional-key :collection_id) s/Uuid})
 
 ; TODO response coercion
-(def ring-routes
+(def meta-data-routes
   ["/meta-data"
    ["/:meta_datum_id" {:get {:handler meta-datum/get-meta-datum
                              :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
@@ -764,8 +771,7 @@
                              :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
                              :coercion reitit.coercion.schema/coercion
                              :parameters {:path {:meta_datum_id s/Str}}
-                              ; TODO response coercion
-                             :responses {200 {:body s/Any}
+                             :responses {200 {:body schema_export_meta-datum}
                                          401 {:body s/Any}
                                          403 {:body s/Any}
                                          500 {:body s/Any}}}}]
@@ -780,14 +786,27 @@
                                          :parameters {:path {:meta_datum_id s/Str}}}}]
                                           ;:responses {200 {:body s/Any}
                                                       ;422 {:body s/Any}}
-   ["/:meta_datum_id/role" {:get {:summary "Get meta-data role for id"
-                                  :handler meta-datum/handle_get-meta-datum-role
-                                  :description "Get meta-data role for id. TODO: should return 404, if no such meta-data role exists."
-                                  :coercion reitit.coercion.schema/coercion
-                                  :parameters {:path {:meta_datum_id s/Str}}
-                                  :responses {200 {:body s/Any}}}}]
-  ])
    
+     ])
+   
+(def schema_export_mdrole
+  {:id s/Uuid
+   :meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :role_id (s/maybe s/Uuid)
+   :position s/Int})
+
+(def role-routes
+  ["/meta-data-role/:meta_data_role_id"
+   {:get {:summary " Get meta-data role for id "
+          :handler meta-datum/handle_get-meta-datum-role
+          :description " Get meta-datum-role for id. returns 404, if no such meta-data role exists. "
+          :coercion reitit.coercion.schema/coercion
+          :parameters {:path {:meta_data_role_id s/Str}}
+          :responses {200 {:body schema_export_mdrole}
+                      404 {:body s/Any}}}}
+   ])
+
 (def collection-routes
   ["/collection"
    ["/:collection_id/meta-data"

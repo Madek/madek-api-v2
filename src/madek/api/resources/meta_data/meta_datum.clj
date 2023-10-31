@@ -69,7 +69,6 @@
                      "MetaDatum::TextDate" (:string meta-datum)
                      (map #(select-keys % [:id])
                           ((case meta-datum-type
-                             ;"MetaDatum::Groups" groups-with-ids
                              "MetaDatum::Keywords" keywords/get-index
                              "MetaDatum::People" get-people-index
                              "MetaDatum::Roles" find-meta-data-roles)
@@ -106,9 +105,12 @@
 
 (defn handle_get-meta-datum-role
   [req]
-  (let [id (-> req :parameters :path :meta_datum_id)
+  (let [id (-> req :parameters :path :meta_data_role_id)
         result (prepare-meta-datum-role id)]
-    (sd/response_ok result)))
+    (if-let [id (:id result)]
+      (sd/response_ok result)
+      (sd/response_not_found "No such meta-data-role"))
+    ))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
