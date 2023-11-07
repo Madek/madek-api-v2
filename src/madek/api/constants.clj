@@ -29,15 +29,6 @@
       "MetaDatum::Vocables" ; old: migrated to: keywords
     })
 
-(def DEFAULT_LOGGING_CONFIG
-  {:min-level [[#{
-                  ;"madek.api.foo"
-                  ;"madek.api.resources.meta-data.index"
-                  } :debug]
-               [#{"madek.api.*"} :info]
-               [#{"*"} :warn]]
-   :log-level nil})
-
 (declare DEFAULT_STORAGE_DIR
          FILE_STORAGE_DIR
          THUMBNAILS_STORAGE_DIR )

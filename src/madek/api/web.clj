@@ -1,52 +1,38 @@
 (ns madek.api.web
   (:require
-    ;[clojure.data.json :as json]
-    ;[clojure.java.io :as io]
     [clj-yaml.core :as yaml]
-    [clojure.tools.logging :as logging]
     [clojure.walk :refer [keywordize-keys]]
-    ;[environ.core :refer [env]]
-    
     [environ.core :refer [env]]
-    [madek.api.utils.cli :refer [long-opt-for-key]]
-
-    [madek.api.db.core :refer [wrap-tx]]
-
     [logbug.catcher :as catcher]
     [logbug.debug :as debug :refer [I> I>>]]
     [logbug.ring :as logbug-ring :refer [wrap-handler-with-logging]]
     [logbug.thrown :as thrown]
     [madek.api.authentication :as authentication]
-    ;[madek.api.authorization :as authorization]
-    [madek.api.resources.auth-info :as auth-info]
-    [madek.api.json-protocol]
-    
-    [madek.api.management :as management]
-    [madek.api.resources]
-    ;[madek.api.semver :as semver]
-    [madek.api.utils.config :refer [get-config]]
+    [madek.api.db.core :refer [wrap-tx]]
     [madek.api.http.server :as http-server]
-        
-    [ring.middleware.cors :as cors-middleware]
-    [ring.middleware.json]
-
-    [ring.middleware.reload :refer [wrap-reload]]
-    [reitit.ring.spec :as rs]
-    [reitit.ring :as rr]
-    [reitit.ring.middleware.exception :as re]
-    [reitit.ring.middleware.parameters :as rmp]
+    [madek.api.json-protocol]
+    [madek.api.management :as management]
+    [madek.api.resources.auth-info :as auth-info]
+    [madek.api.resources]
+    [madek.api.utils.cli :refer [long-opt-for-key]]
+    [madek.api.utils.config :refer [get-config]]
     [muuntaja.core :as m]
+    [reitit.coercion.schema]
+    [reitit.coercion.spec]
+    [reitit.ring :as rr]
+    [reitit.ring.coercion :as rrc]
+    [reitit.ring.middleware.exception :as re]
+    [reitit.ring.middleware.multipart :as multipart]
     [reitit.ring.middleware.muuntaja :as muuntaja]
-   
+    [reitit.ring.middleware.parameters :as rmp]
+    [reitit.ring.spec :as rs]
     [reitit.swagger :as swagger]
     [reitit.swagger-ui :as swagger-ui]
-    [reitit.coercion.spec]
-   
-    [reitit.ring.coercion :as rrc]
-    [reitit.coercion.schema]
+    [ring.middleware.cors :as cors-middleware]
     [ring.middleware.defaults :as ring-defaults]
-    
-    [reitit.ring.middleware.multipart :as multipart]))
+    [ring.middleware.json]
+    [ring.middleware.reload :refer [wrap-reload]]
+    [taoensso.timbre :refer [debug error info spy warn]]))
 
 ;### helper ###################################################################
 
@@ -70,7 +56,7 @@
      (handler request)
      (catch clojure.lang.ExceptionInfo ei
        (reset! last-ex* ei)
-       (logging/error "Cought ExceptionInfo in Webstack" (thrown/stringify ei))
+       (error "Cought ExceptionInfo in Webstack" (thrown/stringify ei))
        (if-let [status (-> ei ex-data :status)]
          {:status status
           :body {:msg (ex-message ei)}}
@@ -78,9 +64,21 @@
           :body {:msg (ex-message ei)}}))
      (catch Exception ex
        (reset! last-ex* ex)
-       (logging/error "Cought ExceptionInfo in Webstack" (thrown/stringify ex))
+       (error "Cought ExceptionInfo in Webstack" (thrown/stringify ex))
        {:status 500
         :body {:msg (ex-message ex)}}))))
+
+
+
+(defn- wrap-log-exception
+  [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Exception ex
+        (reset! last-ex* ex)
+        (error "Cought ExceptionInfo in Webstack" (thrown/stringify ex))
+        (throw ex)))))
 
 
 
@@ -146,7 +144,7 @@
 
 
 (def auth-info-route
-  ["/api/auth-info" 
+  ["/api/auth-info"
    {:get
     {:summary "Authentication help and info."
      :handler auth-info/auth-info
@@ -158,7 +156,7 @@
    ["/exception"
     {:get (fn [_] (throw (ex-info "test exception" {})))
      :skip-auth true}]
-   ["/ok" 
+   ["/ok"
     {:get (constantly {:status 200 :body {:ok "ok"}})
      :skip-auth true}]])
 
@@ -203,32 +201,31 @@
   {:validate rs/validate
    #_#_:compile coercion/compile-request-coercers
    :data {:middleware [swagger/swagger-feature
-  
+
                        ring-wrap-cors
                        rmp/parameters-middleware
-                           ;ring-wrap-parse-json-query-parameters 
+                           ;ring-wrap-parse-json-query-parameters
                        muuntaja/format-negotiate-middleware
                        muuntaja/format-response-middleware
                            ;(ring.middleware.json/wrap-json-body {:keywords? true})
                            ;ring.middleware.json/wrap-json-response
-                       wrap-exception
                        muuntaja/format-request-middleware
                            ;auth/wrap-auth-madek-deps
-                       ;authorization/wrap-authorize-http-method 
-                       
+                       ;authorization/wrap-authorize-http-method
+
                        authentication/wrap
                        authentication/wrap-audit
 
                        wrap-tx
-
                        rrc/coerce-exceptions-middleware
+                       wrap-log-exception
                        rrc/coerce-request-middleware
                        rrc/coerce-response-middleware
                        multipart/multipart-middleware]
           :muuntaja m/instance}})
 
 
-(def app-all 
+(def app-all
   (rr/ring-handler
    (rr/router get-router-data-all get-router-options)
    (rr/routes
@@ -283,7 +280,7 @@
   (concat http-server/cli-options
           [[nil (long-opt-for-key http-resources-scope-key)
             "Either ALL, ADMIN or USER"
-            :default (or (some-> http-resources-scope-key env) 
+            :default (or (some-> http-resources-scope-key env)
                          "ALL")
             :validate [#(some #{%} ["ALL" "ADMIN" "USER"]) "scope must be ALL, ADMIN or USER"]
             ]]))
@@ -309,7 +306,10 @@
                   "ALL" (middleware (wrap-reload app-all))
                   "ADMIN" (middleware app-admin)
                   "USER" (middleware app-user))]
-    (http-server/start handler options)))
+    (http-server/start (-> handler
+                           wrap-exception)
+
+                       options)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

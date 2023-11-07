@@ -4,7 +4,7 @@
     [clojure.java.jdbc :as jdbc]
     [clojure.pprint :refer [pprint]]
     [clojure.tools.cli :as cli]
-    [clojure.tools.logging :as logging]
+    [madek.api.utils.logging :as logging]
     [logbug.catcher :as catcher]
     [logbug.debug :as debug]
     [logbug.thrown]
@@ -17,9 +17,7 @@
     [madek.api.web :as web]
     [madek.api.web]
     [pg-types.all]
-    [taoensso.timbre :as timbre :refer []]
-    [taoensso.timbre.tools.logging]
-    ))
+    [taoensso.timbre :refer [debug error info spy warn]]))
 
 ;; cli ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -60,7 +58,7 @@
     {:level :fatal
      :throwable Throwable
      :return-fn (fn [e] (System/exit -1))}
-    (logging/info 'madek.api.main "initializing ...")
+    (info 'madek.api.main "initializing ...")
     (madek.api.utils.config/initialize
       {:filenames ["./config/settings.yml"
                    "../config/settings.yml",
@@ -68,8 +66,8 @@
                    "../webapp/datalayer/config/settings.yml",
                    "./config/settings.local.yml"
                    "../config/settings.local.yml"]})
-    (logging/info "Effective startup options " options)
-    (logging/info "Effective startup config " (get-config))
+    (info "Effective startup options " options)
+    (info "Effective startup config " (get-config))
     ; WIP switching to new db container; remove old rdbms later 
     (rdbms/initialize (config/get-db-spec :api))
     (db/init options)
@@ -77,7 +75,7 @@
     (nrepl/init options)
     (madek.api.constants/initialize (get-config)) 
     (madek.api.web/initialize options)
-    (logging/info 'madek.api.main "... initialized")))
+    (info 'madek.api.main "... initialized")))
 
 
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,20 +83,20 @@
 (defonce args* (atom nil))
 
 (defn main []
-  (logging/info "main")
+  (logging/init)
+  (info "main")
   (let [args @args*]
     (let [args @args*
           {:keys [options arguments errors summary]}
           (cli/parse-opts args cli-options :in-order true)
           options (merge (sorted-map) options)]
-      (logging/info "options" options)
+      (info "options" options)
       (exit/init options)
       (cond
         (:help options) (helpnexit summary args options)
         :else (run options)))))
 
 (defn -main [& args]
-  (timbre/merge-config! constants/DEFAULT_LOGGING_CONFIG)
   ;(logbug.thrown/reset-ns-filter-regex #".*madek.*")
   (reset! args* args)
   (main))
