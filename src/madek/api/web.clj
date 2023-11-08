@@ -306,10 +306,7 @@
                   "ALL" (middleware (wrap-reload app-all))
                   "ADMIN" (middleware app-admin)
                   "USER" (middleware app-user))]
-    (http-server/start (-> handler
-                           wrap-exception)
-
-                       options)))
+    (http-server/start handler options)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
