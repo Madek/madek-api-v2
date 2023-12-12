@@ -116,7 +116,6 @@
    {:get
     {:summary (sd/sum_adm "Query delegation groups.")
      :handler handle_list-delegations_groups-by-group
-     :swagger {:produces "application/json"}
      :coercion reitit.coercion.schema/coercion
      :parameters {:query {(s/optional-key :delegation_id) s/Uuid
                           (s/optional-key :group_id) s/Uuid}}

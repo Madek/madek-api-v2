@@ -164,7 +164,6 @@
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
-      :swagger {:produces "application/json"}
       :parameters {:query schema_collection-query}
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [schema_collection-export]}}}}}]
@@ -173,8 +172,6 @@
     {:post
      {:summary (sd/sum_usr "Create collection")
       :handler handle_create-collection
-      :swagger {:produces "application/json"
-                :consumes "application/json"}
       :parameters {:body schema_collection-import}
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
@@ -187,7 +184,6 @@
            :middleware [sd/ring-wrap-add-media-resource
                         sd/ring-wrap-authorization-view]
 
-           :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
            :responses {200 {:body schema_collection-export}
@@ -198,8 +194,6 @@
            :handler handle_update-collection
            :middleware [sd/ring-wrap-add-media-resource
                         sd/ring-wrap-authorization-edit-metadata]
-           :swagger {:produces "application/json"
-                     :consumes "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}
                         :body schema_collection-update}
@@ -213,8 +207,6 @@
               :handler handle_delete-collection
               :middleware [sd/ring-wrap-add-media-resource
                            sd/ring-wrap-authorization-edit-permissions]
-              :swagger {:produces "application/json"
-                        :consumes "application/json"}
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid}}
               :responses {200 {:body schema_collection-export}

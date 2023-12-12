@@ -24,19 +24,27 @@
       (sd/response_not_found "No such collection-media-entry-arc"))))
 
 ; TODO test query and paging
-(defn arcs-query [query-params]
+(defn arcs-query [query-params path-params]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
       (sd/build-query-param query-params :collection_id)
       (sd/build-query-param query-params :media_entry_id)
+      (sd/build-query-param path-params :collection_id)
+      (sd/build-query-param path-params :media_entry_id)
       (pagination/add-offset-for-honeysql query-params)
       sql/format))
 
 (defn arcs [request]
   (let [query-params (-> request :parameters :query)
-        db-query (arcs-query query-params)
+        path-params (-> request :parameters :path)
+        db-query (arcs-query query-params path-params)
         db-result (jdbc/query (rdbms/get-ds) db-query)]
     (sd/response_ok {:collection-media-entry-arcs db-result})))
+
+(defn handle_arc-by-col-and-me [request]
+  (if-let [result (-> request :col-me-arc)]
+    (sd/response_ok result)
+    (sd/response_not_found "No such collection media-entry arc.")))
 
 (defn create-col-me-arc
   ([col-id me-id data]
@@ -44,10 +52,11 @@
 
   ([col-id me-id data tx]
    (let [ins-data (assoc data :collection_id col-id :media_entry_id me-id)
-         ins-res (first (jdbc/insert! tx "collection_media_entry_arcs" ins-data))]
+         ins-res (first (jdbc/insert! tx "collection_media_entry_arcs" 
+                                       ins-data
+                                       {:entities (jdbc/quoted \")}))]
      ins-res)))
 
-; TODO logwrite
 (defn handle_create-col-me-arc [req]
   (try
     (catcher/with-logging {}
@@ -65,7 +74,6 @@
       (sql/format)
       (update-in [0] #(clojure.string/replace % "WHERE" ""))))
 
-; TODO logwrite
 (defn handle_update-col-me-arc [req]
   (try
     (catcher/with-logging {}
@@ -75,7 +83,8 @@
             whcl (sql-cls-update col-id me-id)
             result (jdbc/update! (rdbms/get-ds)
                                  :collection_media_entry_arcs
-                                 data whcl)]
+                                 data whcl
+                                 {:entities (jdbc/quoted \")})]
         (if (= 1 (first result))
           (sd/response_ok (sd/query-eq-find-one
                            :collection_media_entry_arcs
@@ -110,7 +119,7 @@
    :collection_id s/Uuid
    :media_entry_id s/Uuid
 
-   :highlight s/Bool
+   :highlight (s/maybe s/Bool)
    :cover (s/maybe s/Bool)
    :order (s/maybe s/Num)
    :position (s/maybe s/Int)
@@ -140,85 +149,96 @@
 
 (def ring-routes
   ["/collection-media-entry-arcs"
-   ["/" {:get {:summary "Query collection media-entry arcs."
+   ["/" {:get {:summary (sd/sum_pub "Query collection media-entry arcs.")
                :handler arcs
-               :swagger {:produces "application/json"}
                :coercion reitit.coercion.schema/coercion
-               ; TODO puery params
                :parameters {:query {(s/optional-key :collection_id) s/Uuid
-                                    (s/optional-key :media_entry_id) s/Uuid}}
-               :responses {200 {:body s/Any}} ; TODO response coercion
+                                    (s/optional-key :media_entry_id) s/Uuid
+                                    (s/optional-key :page) s/Int
+                                    (s/optional-key :count) s/Int}}
+               :responses {200 {:body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}
                }}]
-   ["/:id" {:get {:summary "Get collection media-entry arc."
+   ["/:id" {:get {:summary (sd/sum_pub "Get collection media-entry arc.")
                   :handler arc
-                  :swagger {:produces "application/json"}
                   :coercion reitit.coercion.schema/coercion
-                  :parameters {:path {:id s/Str}}
-                  :responses {200 {:body s/Any}
-                              404 {:body s/Any}} ; TODO response coercion
+                  :parameters {:path {:id s/Uuid}}
+                  :responses {200 {:body schema_collection-media-entry-arc-export}
+                              404 {:body s/Any}}
                   }}]])
 (def collection-routes
   ["/collection/:collection_id"
-   ["/media-entry-arcs"
-    {:get
-     {:summary "Get collection media-entry arcs."
-      :handler arcs
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :swagger {:produces "application/json"}
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}}}]
-   ["/media-entry-arc/:media_entry_id"
-    {:post
-     {:summary (sd/sum_usr "Create collection media-entry arc")
-      :handler handle_create-col-me-arc
-       ; TODO check: if collection edit md and relations is allowed checked
+    ["/media-entry-arcs" 
+     {:get
+      {:summary (sd/sum_usr "Get collection media-entry arcs.")
+       :handler arcs
+       ; checks for collection resource!
+       :middleware [sd/ring-wrap-add-media-resource
+                    sd/ring-wrap-authorization-view]
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid}}
+       :responses {200 {:body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}
+       }}]
+    ["/media-entry-arc/:media_entry_id"
+     {:post
+      {:summary (sd/sum_usr "Create collection media-entry arc")
+       :handler handle_create-col-me-arc
+       ; checks for collection resource and its access!
        ; not the media entry edit md
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-metadata]
-      :swagger {:produces "application/json" :consumes "application/json"}
-      :accept "application/json"
-      :content-type "application/json"
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid
-                          :media_entry_id s/Uuid}
-                   :body schema_collection-media-entry-arc-create}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}
-                  500 {:body s/Any}}}
+       :middleware [sd/ring-wrap-add-media-resource
+                    sd/ring-wrap-authorization-edit-metadata]
+       :accept "application/json"
+       :content-type "application/json"
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid
+                           :media_entry_id s/Uuid}
+                    :body schema_collection-media-entry-arc-create}
+       :responses {200 {:body schema_collection-media-entry-arc-export}
+                   404 {:body s/Any}
+                   406 {:body s/Any}
+                   }}
+       
+      :get
+      {:summary (sd/sum_usr "Get collection media-entry arc.")
+       :handler handle_arc-by-col-and-me
+       :middleware [sd/ring-wrap-add-media-resource
+                    sd/ring-wrap-authorization-view
+                    wrap-add-col-me-arc]
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid
+                           :media_entry_id s/Uuid}}
+       :responses {200 {:body schema_collection-media-entry-arc-export}
+                   404 {:body s/Any}}}
 
-     :put
-     {:summary (sd/sum_usr "Update collection media-entry arc")
-      :handler handle_update-col-me-arc
-      :middleware [wrap-add-col-me-arc
-                   sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-metadata]
-      :swagger {:produces "application/json" :consumes "application/json"}
-      :accept "application/json"
-      :content-type "application/json"
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid
-                          :media_entry_id s/Uuid}
-                   :body schema_collection-media-entry-arc-update}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
-
-     :delete
-     {:summary (sd/sum_usr "Delete collection media-entry arc")
-      :handler handle_delete-col-me-arc
-      :middleware [wrap-add-col-me-arc
-                   sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-metadata]
-      :swagger {:produces "application/json"}
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid
-                          :media_entry_id s/Uuid}}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]])
-
+      :put
+      {:summary (sd/sum_usr "Update collection media-entry arc")
+       :handler handle_update-col-me-arc
+       :middleware [wrap-add-col-me-arc
+                    sd/ring-wrap-add-media-resource
+                    sd/ring-wrap-authorization-edit-metadata]
+       :accept "application/json"
+       :content-type "application/json"
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid
+                           :media_entry_id s/Uuid}
+                    :body schema_collection-media-entry-arc-update}
+       :responses {200 {:body schema_collection-media-entry-arc-export}
+                   404 {:body s/Any}
+                   406 {:body s/Any}}}
+      
+      :delete
+      {:summary (sd/sum_usr "Delete collection media-entry arc")
+       :handler handle_delete-col-me-arc
+       :middleware [wrap-add-col-me-arc
+                    sd/ring-wrap-add-media-resource
+                    sd/ring-wrap-authorization-edit-metadata]
+       :coercion reitit.coercion.schema/coercion
+       :parameters {:path {:collection_id s/Uuid
+                           :media_entry_id s/Uuid}}
+       :responses {200 {:body schema_collection-media-entry-arc-export}
+                   404 {:body s/Any}
+                   406 {:body s/Any}}}}
+    
+   ]
+  ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -65,7 +65,6 @@
   ["/media-file"
    ["/:media_file_id"
     {:get {:summary (sd/sum_usr_pub "Get media-file for id.")
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler media-file/get-media-file
            :middleware [wrap-find-and-add-media-file

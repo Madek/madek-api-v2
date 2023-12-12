@@ -117,6 +117,8 @@
 (def swagger-routes
   [""
    {:no-doc true
+    :swagger {:info {:title "Madek-Api-2"
+                     :version "2.0.0"}}
     :skip-auth true}
    ["/swagger.json" {:get (swagger/create-swagger-handler)}]
    ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]])

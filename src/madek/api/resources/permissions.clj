@@ -360,7 +360,6 @@
    ["/"
     {:get
      {:summary (sd/sum_usr_pub "List media-entry permissions.")
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_list-perms
       :middleware [sd/ring-wrap-add-media-resource
@@ -379,7 +378,6 @@
    ["/resources"
     {:get
      {:summary "Query media-entry permissions."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_get_entity_perms
       :middleware [sd/ring-wrap-add-media-resource
@@ -415,7 +413,6 @@
    ["/users"
     {:get
      {:summary "Query media-entry user permissions."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_list-user-perms
       :middleware [sd/ring-wrap-add-media-resource
@@ -426,7 +423,6 @@
 
    ["/user/:user_id"
     {:get {:summary "Get media-entry user permissions."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler handle_get-user-perms
            :middleware [sd/ring-wrap-add-media-resource
@@ -437,7 +433,6 @@
            :responses {200 {:body schema_export-media-entry-user-permission}}}
 
      :post {:summary "Create media-entry user permissions."
-            :swagger {:produces "application/json"}
             :content-type "application/json"
             :handler handle_create-user-perms
             :middleware [sd/ring-wrap-add-media-resource
@@ -449,7 +444,6 @@
             :responses {200 {:body schema_export-media-entry-user-permission}}}
 
      :delete {:summary "Delete media-entry user permissions."
-              :swagger {:produces "application/json"}
               :content-type "application/json"
               :handler handle_delete-user-perms
               :middleware [sd/ring-wrap-add-media-resource
@@ -478,7 +472,6 @@
    ["/groups"
     {:get
      {:summary "Query media-entry group permissions."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_list-group-perms
       :middleware [sd/ring-wrap-add-media-resource
@@ -489,7 +482,6 @@
 
    ["/group/:group_id"
     {:get {:summary "Get media-entry group permissions."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler handle_get-group-perms
            :middleware [sd/ring-wrap-add-media-resource
@@ -500,7 +492,6 @@
            :responses {200 {:body schema_export-media-entry-group-permission}}}
 
      :post {:summary "Create media-entry group permissions."
-            :swagger {:produces "application/json"}
             :content-type "application/json"
             :handler handle_create-group-perms
             :middleware [sd/ring-wrap-add-media-resource
@@ -512,7 +503,6 @@
             :responses {200 {:body schema_export-media-entry-group-permission}}}
 
      :delete {:summary "Delete media-entry group permissions."
-              :swagger {:produces "application/json"}
               :content-type "application/json"
               :handler handle_delete-group-perms
               :middleware [sd/ring-wrap-add-media-resource
@@ -542,7 +532,6 @@
    ["/"
     {:get
      {:summary "Query collection permissions."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_list-perms
       :middleware [sd/ring-wrap-add-media-resource
@@ -554,7 +543,6 @@
    ["/resources"
     {:get
      {:summary "Query collection permissions."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_get_entity_perms
       :middleware [sd/ring-wrap-add-media-resource
@@ -589,7 +577,6 @@
 
    ["/users"
     {:get {:summary "Query collection permissions."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler handle_list-user-perms
            :middleware [sd/ring-wrap-add-media-resource
@@ -600,7 +587,6 @@
 
    ["/user/:user_id"
     {:get {:summary "Get collection user permissions."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler handle_get-user-perms
            :middleware [sd/ring-wrap-add-media-resource
@@ -611,7 +597,6 @@
            :responses {200 {:body schema_export-collection-user-permission}}}
 
      :post {:summary "Create collection user permissions."
-            :swagger {:produces "application/json"}
             :content-type "application/json"
             :handler handle_create-user-perms
             :middleware [sd/ring-wrap-add-media-resource
@@ -623,7 +608,6 @@
             :responses {200 {:body schema_export-collection-user-permission}}}
 
      :delete {:summary "Delete collection user permissions."
-              :swagger {:produces "application/json"}
               :content-type "application/json"
               :handler handle_delete-user-perms
               :middleware [sd/ring-wrap-add-media-resource
@@ -650,7 +634,6 @@
    ["/groups"
     {:get
      {:summary "Query collection permissions."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_list-group-perms
       :middleware [sd/ring-wrap-add-media-resource
@@ -661,7 +644,6 @@
 
    ["/group/:group_id"
     {:get {:summary "Get collection group permissions."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler handle_get-group-perms
            :middleware [sd/ring-wrap-add-media-resource
@@ -672,7 +654,6 @@
            :responses {200 {:body schema_export-collection-group-permission}}}
 
      :post {:summary "Create collection group permissions."
-            :swagger {:produces "application/json"}
             :content-type "application/json"
             :handler handle_create-group-perms
             :middleware [sd/ring-wrap-add-media-resource
@@ -684,7 +665,6 @@
             :responses {200 {:body schema_export-collection-group-permission}}}
 
      :delete {:summary "Delete collection group permissions."
-              :swagger {:produces "application/json"}
               :content-type "application/json"
               :handler handle_delete-group-perms
               :middleware [sd/ring-wrap-add-media-resource

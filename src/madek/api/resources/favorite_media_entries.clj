@@ -118,24 +118,22 @@
     {:summary (sd/sum_usr "List users favorites media_entries ids.")
      :handler handle_list-favorite_media_entries-by-user
      :middleware [authorization/wrap-authorized-user]
-     :swagger {:produces "application/json"}
      :coercion reitit.coercion.schema/coercion
      :responses {200 {:body {:media_entry_ids [s/Uuid]}}}}}])
 
 (def media-entry-routes
   ["/media-entry/:media_entry_id/favorite"
-   {:post {:summary (sd/sum_usr "Create favorite_media_entry for authed user and media-entry.")
-           :handler handle_create-favorite_media_entry
+    {:post {:summary (sd/sum_usr "Create favorite_media_entry for authed user and media-entry.")
+            :handler handle_create-favorite_media_entry
 
-           :middleware [authorization/wrap-authorized-user
-                        (wwrap-find-media_entry :media_entry_id)
-                        (wwrap-find-favorite_media_entry-by-auth false)]
-           :swagger {:produces "application/json"}
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid}}
-           :responses {200 {:body schema_favorite_media_entries_export}
-                       404 {:body s/Any}
-                       406 {:body s/Any}}}
+            :middleware [authorization/wrap-authorized-user
+                         (wwrap-find-media_entry :media_entry_id)
+                         (wwrap-find-favorite_media_entry-by-auth false)]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:media_entry_id s/Uuid}}
+            :responses {200 {:body schema_favorite_media_entries_export}
+                        404 {:body s/Any}
+                        406 {:body s/Any}}}
 
     :get {:summary (sd/sum_usr "Get favorite_media_entry for authed user and media-entry.")
           :handler handle_get-favorite_media_entry

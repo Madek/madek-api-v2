@@ -40,7 +40,6 @@
    ["/" {:get {:summary "Get list of roles."
                :description "Get list of roles."
                :handler role/get-index
-               :swagger {:produces "application/json"}
                :parameters {:query {(s/optional-key :page) s/Int
                                     (s/optional-key :count) s/Int}}
                :content-type "application/json"
@@ -50,7 +49,6 @@
    ["/:id"
     {:get {:summary "Get role by id"
            :description "Get a role by id. Returns 404, if no such role exists."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler role/handle_get-role-usr
            :coercion reitit.coercion.schema/coercion
@@ -65,7 +63,6 @@
    ["/" {:get {:summary (sd/sum_adm "Get list of roles.")
                :description "Get list of roles."
                :handler role/get-index
-               :swagger {:produces "application/json"}
                :parameters {:query {(s/optional-key :page) s/Int
                                     (s/optional-key :count) s/Int}}
                :content-type "application/json"
@@ -74,8 +71,6 @@
 
          :post {:summary (sd/sum_adm "Create role.")
                 :handler role/handle_create-role
-                :swagger {:produces "application/json"
-                          :consumes "application/json"}
                 :content-type "application/json"
                 :accept "application/json"
                 :coercion reitit.coercion.schema/coercion
@@ -87,7 +82,6 @@
    ["/:id"
     {:get {:summary (sd/sum_adm "Get role by id")
            :description "Get a role by id. Returns 404, if no such role exists."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler role/handle_get-role-admin
            :coercion reitit.coercion.schema/coercion
@@ -97,8 +91,6 @@
 
      :put {:summary (sd/sum_adm "Update role.")
            :handler role/handle_update-role
-           :swagger {:produces "application/json"
-                     :consumes "application/json"}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
@@ -109,7 +101,6 @@
 
      :delete {:summary (sd/sum_adm "Delete role.")
               :handler role/handle_delete-role
-              :swagger {:produces "application/json"}
               :content-type "application/json"
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Uuid}}

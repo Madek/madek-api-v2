@@ -68,7 +68,6 @@
   ["/previews"
    ["/:preview_id"
     {:get {:summary "Get preview for id."
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler preview/get-preview
            :middleware [ring-wrap-find-and-add-preview

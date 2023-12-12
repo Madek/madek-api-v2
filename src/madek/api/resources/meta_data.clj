@@ -835,7 +835,6 @@
                           sd/ring-wrap-authorization-edit-metadata]
              :accept "application/json"
              :content-type "application/json"
-             :swagger {:produces "application/json" :consumes "application/json"}
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:collection_id s/Uuid
                                  :meta_key_id s/Str}
@@ -848,12 +847,13 @@
                          sd/ring-wrap-authorization-edit-metadata]
             :accept "application/json"
             :content-type "application/json"
-            :swagger {:produces "application/json" :consumes "application/json"}
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Uuid
                                 :meta_key_id s/Str}
-                         :body {:string s/Str}}
-            :responses {200 {:body s/Any}}}}]
+                         :body {:string s/Str}
+                         }
+            :responses {200 {:body s/Any}}}
+     }]
 
     ["/:meta_key_id/text-date"
      {:post {:summary "Create meta-data json for collection."

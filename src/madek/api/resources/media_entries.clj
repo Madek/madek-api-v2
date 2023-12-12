@@ -296,7 +296,7 @@
    :media_type s/Str
    :content_type s/Str
    ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
-   :thumbnail s/Str
+   :thumbnail (s/maybe s/Str)
    :width (s/maybe s/Int)
    :height (s/maybe s/Int)
    :filename s/Str
@@ -335,7 +335,6 @@
    ["media-entries"
     {:get
      {:summary "Query media-entries."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry
       :middleware [sd/ring-wrap-parse-json-query-parameters]
@@ -346,7 +345,6 @@
    ["media-entries-related-data"
     {:get
      {:summary "Query media-entries with all related data."
-      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry-related-data
       :middleware [sd/ring-wrap-parse-json-query-parameters]
@@ -354,26 +352,21 @@
       :parameters {:query schema_query_media_entries}
       :responses {200 {:body schema_query_media_entries_related_result}}}}]])
 
-(sa/def ::copy_me_id string?)
-(sa/def ::collection_id string?)
 (def media-entry-routes
-  [["/media-entry"
-    {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready")
-            :handler handle_create-media-entry
-            :swagger {:consumes "multipart/form-data"
-                      :produces "application/json"}
-            :content-type "application/json"
-            :accept "multipart/form-data"
-            :middleware [authorization/wrap-authorized-user]
+  [
+   ["/media-entry"
+   {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready")
+           :handler handle_create-media-entry
+           :content-type "application/json"
+           :accept "multipart/form-data"
+           :middleware [authorization/wrap-authorized-user]
            ; cannot use schema, need to use spec for multiplart
-            :coercion reitit.coercion.spec/coercion
-            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
-                         :multipart {:file multipart/temp-file-part}}}}]
-
+           :coercion reitit.coercion.spec/coercion
+                        :multipart {:file multipart/temp-file-part}}}]
+   
    ["/media-entry/:media_entry_id"
     {:get {:summary "Get media-entry for id."
            :handler handle_get-media-entry
-           :swagger {:produces "application/json"}
            :content-type "application/json"
 
            :middleware [sd/ring-wrap-add-media-resource
@@ -386,7 +379,6 @@
 ; TODO Frage: wer kann einen Eintrag löschen
      :delete {:summary "Delete media-entry for id."
               :handler handle_delete_media_entry
-              :swagger {:produces "application/json"}
               :content-type "application/json"
 
               :middleware [sd/ring-wrap-add-media-resource
@@ -397,7 +389,6 @@
    ["/media-entry/:media_entry_id/publish"
     {:put {:summary "Try publish media-entry for id."
            :handler handle_try-publish-media-entry
-           :swagger {:produces "application/json"}
            :content-type "application/json"
 
            :middleware [sd/ring-wrap-add-media-resource

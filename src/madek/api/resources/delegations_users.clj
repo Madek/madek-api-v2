@@ -114,7 +114,6 @@
    {:get
     {:summary (sd/sum_adm "Query delegation users.")
      :handler handle_list-delegations_users-by-user
-     :swagger {:produces "application/json"}
      :coercion reitit.coercion.schema/coercion
      :parameters {:query {(s/optional-key :delegation_id) s/Uuid
                           (s/optional-key :user_id) s/Uuid}}
@@ -126,7 +125,6 @@
            :handler handle_create-delegations_user
            :middleware [(wwrap-find-delegation :delegation_id)
                         (wwrap-find-delegations_user-by-auth false)]
-           :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:delegation_id s/Uuid}}
            :responses {200 {:body schema_delegations_users_export}

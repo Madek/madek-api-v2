@@ -154,7 +154,6 @@
     {:get {:summary (sd/sum_adm "Get App Settings.")
            :handler handle_get-app-settings
            :middleware [wrap-authorize-admin!]
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:body s/Any}}}
@@ -174,7 +173,6 @@
   [["/app-settings"
     {:get {:summary (sd/sum_pub "Get App Settings.")
            :handler handle_get-app-settings
-           :swagger {:produces "application/json"}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:body schema_export-app-settings}}}}]])

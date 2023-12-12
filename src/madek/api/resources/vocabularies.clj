@@ -126,7 +126,7 @@
            :parameters {:query {(s/optional-key :page) s/Int
                                 (s/optional-key :count) s/Int}}
            :responses {200 {:body {:vocabularies [schema_export-vocabulary]}}}
-           :swagger {:produces "application/json"}}
+           }
 
      :post {:summary (sd/sum_adm "Create vocabulary.")
             :handler handle_create-vocab
@@ -137,14 +137,13 @@
             :parameters {:body schema_import-vocabulary}
             :responses {200 {:body schema_export-vocabulary}
                         406 {:body s/Any}}
-            :swagger {:consumes "application/json" :produces "application/json"}}}]
+            }}]
 
    ["/:id"
     {:get {:summary (sd/sum_adm "Get vocabulary by id.")
            :description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
            :handler get-vocabulary
            :middleware [wrap-authorize-admin!]
-           :swagger {:produces "application/json"}
            :content-type "application/json"
 
            :coercion reitit.coercion.schema/coercion
@@ -152,7 +151,7 @@
            :responses {200 {:body schema_export-vocabulary}
                        404 {:body s/Any}}}
 
-     :put {:summary (sd/sum_adm_todo "Update vocabulary.")
+     :put {:summary (sd/sum_adm "Update vocabulary.")
            :handler handle_update-vocab
            :middleware [wrap-authorize-admin!]
            :content-type "application/json"
@@ -162,9 +161,9 @@
                         :body schema_update-vocabulary}
            :responses {200 {:body schema_export-vocabulary}
                        404 {:body s/Any}}
-           :swagger {:consumes "application/json" :produces "application/json"}}
+           }
 
-     :delete {:summary (sd/sum_adm_todo "Delete vocabulary.")
+     :delete {:summary (sd/sum_adm "Delete vocabulary.")
               :handler handle_delete-vocab
               :middleware [wrap-authorize-admin!]
               :content-type "application/json"
@@ -173,8 +172,8 @@
               :parameters {:path {:id s/Str}}
               :responses {200 {:body schema_export-vocabulary}
                           404 {:body s/Any}}
-              :swagger {:produces "application/json"}}}]
-
+              }}]
+   
    ["/:id/perms"
     ["/"
      {:get
@@ -201,7 +200,7 @@
 
     ["/users"
      {:get
-      {:summary (sd/sum_adm_todo "List vocabulary user permissions")
+      {:summary (sd/sum_adm "List vocabulary user permissions")
        :handler permissions/handle_list-vocab-user-perms
        :middleware [wrap-authorize-admin!]
        :content-type "application/json"
@@ -213,7 +212,7 @@
 
     ["/user/:user_id"
      {:get
-      {:summary (sd/sum_adm_todo "Get vocabulary user permissions")
+      {:summary (sd/sum_adm "Get vocabulary user permissions")
        :handler permissions/handle_get-vocab-user-perms
        :middleware [wrap-authorize-admin!]
        :content-type "application/json"
@@ -263,7 +262,7 @@
 
     ["/groups"
      {:get
-      {:summary (sd/sum_adm_todo "List vocabulary group permissions")
+      {:summary (sd/sum_adm "List vocabulary group permissions")
        :handler permissions/handle_list-vocab-group-perms
        :middleware [wrap-authorize-admin!]
        :content-type "application/json"
@@ -275,7 +274,7 @@
 
     ["/group/:group_id"
      {:get
-      {:summary (sd/sum_adm_todo "Get vocabulary group permissions")
+      {:summary (sd/sum_adm "Get vocabulary group permissions")
        :handler permissions/handle_get-vocab-group-perms
        :middleware [wrap-authorize-admin!]
        :content-type "application/json"
@@ -287,7 +286,7 @@
                    404 {:body s/Any}}}
 
       :post
-      {:summary (sd/sum_adm_todo "Create vocabulary group permissions")
+      {:summary (sd/sum_adm "Create vocabulary group permissions")
        :handler permissions/handle_create-vocab-group-perms
        :middleware [wrap-authorize-admin!]
        :content-type "application/json"
@@ -300,7 +299,7 @@
                    404 {:body s/Any}}}
 
       :put
-      {:summary (sd/sum_adm_todo "Update vocabulary group permissions")
+      {:summary (sd/sum_adm "Update vocabulary group permissions")
        :handler permissions/handle_update-vocab-group-perms
        :middleware [wrap-authorize-admin!]
        :content-type "application/json"
@@ -313,7 +312,7 @@
                    404 {:body s/Any}}}
 
       :delete
-      {:summary (sd/sum_adm_todo "Delete vocabulary group permissions")
+      {:summary (sd/sum_adm "Delete vocabulary group permissions")
        :handler permissions/handle_delete-vocab-group-perms
        :middleware [wrap-authorize-admin!]
        :content-type "application/json"
@@ -332,12 +331,11 @@
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
                :parameters {:query {(s/optional-key :page) s/Int}}
-               :responses {200 {:body {:vocabularies [schema_export-vocabulary]}}}
-               :swagger {:produces "application/json"}}}]
+               :responses {200 {:body {:vocabularies [ schema_export-vocabulary ]}}}
+               }}]
 
    ["/:id" {:get {:summary "Get vocabulary by id."
                   :description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
-                  :swagger {:produces "application/json"}
                   :content-type "application/json"
                   :handler get-vocabulary
                   :coercion reitit.coercion.schema/coercion
