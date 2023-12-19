@@ -13,7 +13,6 @@ context 'people' do
 
       context 'retriving a standard person' do
         let :get_person_result do
-          #client.get.relation('person').get(id: @person.id)
           client.get("/api/people/#{@person.id}")
         end
 
@@ -21,37 +20,32 @@ context 'people' do
           expect(get_person_result.status).to be==200
         end
 
-        # TODO json roa remove: test links
-        #it 'lets us navigate to the person itself via the self-relation' do
-        #  expect(get_person_result.json_roa_data['self-relation']['href']).to match /#{@person.id}/
-        #end
-
         it 'has the proper data' do
           person = get_person_result.body
           expect(
-            person.except("searchable", "created_at", "updated_at")
+            person.with_indifferent_access.except(:created_at, :updated_at, :searchable)
           ).to eq(
-            @person.attributes.with_indifferent_access
-              .except(:searchable, :created_at, :updated_at)
-              .merge(external_uri: person["external_uris"].first)
-          )
+            @person.attributes \
+              .with_indifferent_access.except(:created_at, :updated_at, :searchable))
         end
       end
 
       context 'a institunal person (with naughty institutional_id)' do
         before :each do
           @inst_person = FactoryBot.create :people_instgroup ,
-            institutional_id: '?this#id/needs/to/be/url&encoded'
+            institution: 'fake-university.com',
+            institutional_id: 'https://fake-university.com/students/12345'
         end
-        it 'can be retrieved by the institutional_id' do
-          expect(
-            #client.get.relation('person').get(id: @inst_person.institutional_id).response.status
-            client.get("/api/people/#{CGI.escape(@inst_person.institutional_id)}").status
-          ).to be== 200
-          expect(
-            #client.get.relation('person').get(id: @inst_person.institutional_id).data["id"]
-            client.get("/api/people/#{CGI.escape(@inst_person.institutional_id)}").body["id"]
-          ).to be== @inst_person["id"]
+
+        let :result do
+          client.get(
+            "/api/people/" +
+            CGI.escape(['fake-university.com','https://fake-university.com/students/12345'].to_json))
+        end
+
+        it 'can be retrieved by the pair [institution, institutional_id]' do
+          expect(result.status).to be== 200
+          expect(result.body["id"]).to be== @inst_person["id"]
         end
       end
 
