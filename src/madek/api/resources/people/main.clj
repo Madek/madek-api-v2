@@ -9,7 +9,17 @@
    [madek.api.utils.logging :as logging]
    [taoensso.timbre :refer [debug error info spy warn]]))
 
-(def routes
+(def user-routes
+  ["/people"
+   ["/"
+    {;:get index/route
+     ;:post create-person/route
+     }]
+   ["/:id"
+    {:get get-person/route}]])
+
+
+(def admin-routes
   ["/people"
    ["/"
     {;:get index/route
