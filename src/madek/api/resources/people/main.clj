@@ -13,7 +13,7 @@
   ["/people"
    ["/"
     {;:get index/route
-     :post create-person/route}]
+     }]
    ["/:id"
     {:get get-person/route}]])
 
@@ -21,7 +21,7 @@
   ["/people"
    ["/"
     {;:get index/route
-     ;:post create-person/route
+     :post create-person/route
      }]
    ["/:id"
     {:get get-person/route

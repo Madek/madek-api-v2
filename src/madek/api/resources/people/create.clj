@@ -29,7 +29,7 @@
       (error "handle-create-person failed" {:request req})
       (sd/response_exception e))))
 
-(def schema_import_person
+(def schema
   {:subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    (s/optional-key :description) (s/maybe s/Str)
    (s/optional-key :external_uris) [s/Str]
@@ -46,7 +46,7 @@
    :description "Create a person.\n The \nThe [subtype] has to be one of [Person, ...]. \nAt least one of [first_name, last_name, description] must have a value."
    :handler handle-create-person
    :middleware [wrap-authorize-admin!]
-   :parameters {:body schema_import_person}
+   :parameters {:body schema}
    :responses {201 {:body get-person/schema}}
    :summary "Create a person"
    :swagger {:produces "application/json"

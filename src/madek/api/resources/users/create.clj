@@ -22,12 +22,11 @@
 (defn handle-create-user
   [{{data :body} :parameters ds :tx :as req}]
   (try
-    (if-let [{id :id} (-> (sql/insert-into :users)
-                          (sql/values [data])
-                          (sql-format)
-                          ((partial jdbc/execute-one! ds) {:return-keys true}))]
-      (sd/response_ok (find-user-by-uid id ds) 201)
-      (sd/response_failed "Could not create user." 406))
+    (let [{id :id} (-> (sql/insert-into :users)
+                       (sql/values [data])
+                       (sql-format)
+                       ((partial jdbc/execute-one! ds) {:return-keys true}))]
+      (sd/response_ok (find-user-by-uid id ds) 201))
     (catch Exception e
       (error "handle-create-user failed" {:request req})
       (sd/response_exception e))))
@@ -52,8 +51,7 @@
    :handler handle-create-user
    :middleware [wrap-authorize-admin!]
    :parameters {:body schema}
-   :responses {201 {:body get-user/schema}
-               406 {:body s/Any}}
+   :responses {201 {:body get-user/schema}}
    :summary (sd/sum_adm "Create user.")
    :swagger {:consumes "application/json"
              :produces "application/json"}})
