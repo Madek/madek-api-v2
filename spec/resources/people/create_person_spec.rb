@@ -22,11 +22,10 @@ context 'people' do
         describe 'an institutional person' do
           it 'works' do
             expect( client.post('/api/admin/people/') do |req|
-              
+
               req.body = { first_name: nil,
                            last_name: 'Bachelor',
                            pseudonym: 'BA.alle',
-                           searchable: 'Bachelor BA.alle',
                            institutional_id: '162645.alle',
                            subtype: 'PeopleInstitutionalGroup'}.to_json
               req.headers['Content-Type'] = 'application/json'
@@ -52,7 +51,7 @@ context 'people' do
             expect(created_person.body['institutional_id']).to be== "12345/x"
           end
         end
-        
+
       end
     end
   end
