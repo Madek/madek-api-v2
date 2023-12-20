@@ -41,8 +41,8 @@
     (sd/response_failed "No such person found" 404)))
 
 (def route
-  {:summary (sd/sum_adm "Get person by id")
-   :description "Get a person by id (either uuid or pair of json encoded [institution, institutional_id]). Returns 404, if no such people exists."
+  {:summary (sd/sum_adm "Get person by uid")
+   :description "Get a person by uid (either uuid or pair of json encoded [institution, institutional_id]). Returns 404, if no such people exists."
    :handler handler
    :middleware []
    :swagger {:produces "application/json"}

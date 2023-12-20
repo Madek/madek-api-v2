@@ -28,16 +28,34 @@
    :people.updated_at])
 
 
-(def people-base-query
+
+(defn where-uid
+  "Adds a where condition to the people people query against a unique id. The
+  uid can be either the id, or the json encoded pair [insitution, institutional_id]."
+  ([sql-map uid]
+   (-> sql-map
+       (sql/where
+         (if (uuid/uuidable? uid)
+           [:= :id (as-uuid uid)]
+           (let [[institution institutional_id] (json/decode uid)]
+             [:and
+              [:= :people.institution institution]
+              [:= :people.institutional_id institutional_id]]))))))
+
+
+(def base-query
   (-> (apply sql/select people-select-keys)
       (sql/from :people)))
 
+
 (defn person-query [uid]
-  (-> people-base-query
-      (sql/where
-        (if (uuid/uuidable? uid)
-          [:= :id (as-uuid uid)]
-          (let [[institution institutional_id] (json/decode uid)]
-            [:and
-             [:= :people.institution institution]
-             [:= :people.institutional_id institutional_id]])))))
+  (-> base-query
+      (where-uid uid)))
+
+
+(defn find-person-by-uid [uid ds]
+  (-> (person-query uid)
+      (sql-format)
+      (->> (jdbc/execute-one! ds))))
+
+

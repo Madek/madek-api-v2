@@ -26,12 +26,12 @@ context 'people' do
         end
 
         it 'returns the expected status code 200' do
-          expect(delete_person_result.status).to be==200
+          expect(delete_person_result.status).to be==204
         end
 
         it 'effectively removes the person' do
-          expect(delete_person_result.status).to be==200
-          expect(Group.find_by(id: @person.id)).not_to be
+          expect(delete_person_result.status).to be==204
+          expect(Person.find_by(id: @person.id)).not_to be
         end
 
       end
