@@ -24,7 +24,7 @@
 (def LOGGING_CONFIG
   {:min-level [[#{;"madek.api.*"
                   ;"madek.api.authentication" ;
-                  ;"madek.api.resources.*"
+                  "madek.api.resources.*"
                   "madek.api.resources.people.*"
                   ;"madek.api.resources.users.*"
                   ;"madek.api.resources.users.create"

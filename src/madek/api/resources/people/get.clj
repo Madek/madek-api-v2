@@ -1,11 +1,11 @@
 (ns madek.api.resources.people.get
   (:require
-    [madek.api.resources.people.common :refer [person-query]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.debug :as debug]
    [madek.api.authorization :as authorization]
    [madek.api.db.core :refer [get-ds]]
+   [madek.api.resources.people.common :refer [person-query]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.logging :as logging]
@@ -32,11 +32,11 @@
     ds :tx :as req}]
   (debug req)
   (debug id)
-  (if-let [person  (-> (person-query id)
-                       spy
-                       (sql-format)
-                       spy
-                       (->> (jdbc/execute-one! ds)))]
+  (if-let [person (-> (person-query id)
+                      spy
+                      (sql-format)
+                      spy
+                      (->> (jdbc/execute-one! ds)))]
     (sd/response_ok person)
     (sd/response_failed "No such person found" 404)))
 
