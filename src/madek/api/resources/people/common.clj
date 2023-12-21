@@ -4,10 +4,8 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.debug :as debug]
-   [madek.api.resources.shared :as sd]
    [madek.api.utils.json :as json]
    [next.jdbc :as jdbc]
-   [schema.core :as s]
    [taoensso.timbre :refer [debug error info spy warn]]))
 
 ;;; schema ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,5 +50,3 @@
   (-> (person-query uid)
       (sql-format)
       (->> (jdbc/execute-one! ds))))
-
-
