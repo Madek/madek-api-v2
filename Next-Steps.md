@@ -6,7 +6,7 @@ Done
    2. Beispiel bez. Field-Valdierungen
    3. Generelle Nutzung von [taoensso.timbre]
    4. Keep in mind
-      1. Bestimmte Attr müssen unterschiedliche Typen handeln (uuid/email/char)
+      1. Bestimmte Attr müssen unterschiedliche Typen verarbeiten können (uuid/email/char)
    5. Generischer Exception-Handler (sd/parsed_response_exception) um DB-Internas zu handhaben
    6. Use next-helper-fnc in general
    7. Removed java.jdbc-dep
