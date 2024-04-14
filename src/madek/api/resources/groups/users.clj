@@ -129,11 +129,11 @@
   (-> (sql/select :id)
       (sql/from :users)
       (sql/where ;[:or
-        [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]
+       [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]
         ;[:in :users.institutional_id (->> users (map #(-> % :institutional_id str)) (filter identity))]
         ;[:in :users.email (->> users (map :email) (filter identity))]
         ;]
-        )
+       )
       sql-format))
 
 (defn target-group-users-ids [tx users]

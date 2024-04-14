@@ -38,11 +38,11 @@
                uid)]
      (-> sql-map
          (sql/where
-           (if (uuid/uuidable? uid)
-             [:= :users.id uid]
-             [:or
-              [:= :users.login [:lower uid]]
-              [:= [:lower :users.email] [:lower uid]]]))))))
+          (if (uuid/uuidable? uid)
+            [:= :users.id uid]
+            [:or
+             [:= :users.login [:lower uid]]
+             [:= [:lower :users.email] [:lower uid]]]))))))
 
 (def is-admin-sub
   [:exists

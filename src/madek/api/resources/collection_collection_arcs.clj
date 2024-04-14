@@ -75,7 +75,7 @@
                       (sql/set data)
                       (sql/where [:= :parent_id parent-id
                                   := :child_id child-id])
-                      sql-format  )
+                      sql-format)
 
             result (next.jdbc/execute! (get-ds) query)]
 
@@ -100,7 +100,7 @@
             query (-> (sql/delete :collection_collection_arcs)
                       (sql/where [:= :parent_id parent-id
                                   := :child_id child-id])
-                      sql-format  )
+                      sql-format)
 
             delresult (next.jdbc/execute! (get-ds) query)]
 

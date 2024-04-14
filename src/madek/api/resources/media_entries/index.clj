@@ -131,7 +131,7 @@
   (let [query (-> (sql/select :sorting)
                   (sql/from :collections)
                   (sql/where [:= :collections.id collection-id])
-                  sql-format)        ]
+                  sql-format)]
     (:sorting (jdbc/execute-one! (get-ds) query))))
 
 (defn- handle-missing-collection-id [collection-id code-to-run]
@@ -171,14 +171,14 @@
             order (sd/try-as-json qorder)
             collection-id (-> query-params :collection_id)
             result (cond
-                      (nil? order) (default-order query)
-                      (string? order) (cond
-                                        (some #(= order %) available-sortings) (order-by-string query order collection-id)
-                                        (= order "stored_in_collection") (order-by-collection-sorting query collection-id)
-                                        :else (throw (ex-info not-allowed-order-param-message
-                                                              {:status 422})))
-                      (seq? order) (reduce order-reducer query order)
-                      :else (default-order query))]
+                     (nil? order) (default-order query)
+                     (string? order) (cond
+                                       (some #(= order %) available-sortings) (order-by-string query order collection-id)
+                                       (= order "stored_in_collection") (order-by-collection-sorting query collection-id)
+                                       :else (throw (ex-info not-allowed-order-param-message
+                                                             {:status 422})))
+                     (seq? order) (reduce order-reducer query order)
+                     :else (default-order query))]
         (info "set-order" "\norder\n" order)
         result)
       (sql/order-by :media_entries.id)))

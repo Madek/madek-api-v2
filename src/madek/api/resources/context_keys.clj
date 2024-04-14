@@ -96,9 +96,9 @@
             id (to-uuid (-> req :parameters :path :id))
             dwid (assoc data :id id)
             query (-> (sql/update :context_keys)
-                    (sql/set (cast-to-hstore dwid))
-                    (sql/where [:= :id id])
-                    sql-format)
+                      (sql/set (cast-to-hstore dwid))
+                      (sql/where [:= :id id])
+                      sql-format)
             upd-result (jdbc/execute-one! (get-ds) query)]
 
         (sd/logwrite req (str "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result))

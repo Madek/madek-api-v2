@@ -3,9 +3,9 @@
    [clojure.string :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.pagination :refer [add-offset-for-honeysql]]
    [logbug.catcher :as catcher]
    [madek.api.db.core :refer [get-ds]]
+   [madek.api.pagination :refer [add-offset-for-honeysql]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
@@ -35,7 +35,7 @@
      (-> select
          (sql/from :vocabularies)
          (sql/where (where-clause user-id))
-       (add-offset-for-honeysql query-params)
+         (add-offset-for-honeysql query-params)
          sql-format))))
 
 (defn- query-index-resources [request]

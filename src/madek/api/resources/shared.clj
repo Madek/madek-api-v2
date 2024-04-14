@@ -44,7 +44,6 @@
                  :type "number"
                  :pattern "^[1-9][0-9]*$"}]})
 
-
 ; begin db-helpers
 ; TODO move to sql file
 ; TODO sql injection protection
