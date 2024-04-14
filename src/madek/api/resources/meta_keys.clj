@@ -2,11 +2,10 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [logbug.debug :as debug]
+   [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
-   [madek.api.resources.shared :as sd]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist f replace-java-hashmaps t v]]
@@ -230,26 +229,6 @@
                                         param
                                         :meta_keys colname
                                         :meta_key send404))))
-
-;; TODO: move to shared
-(defn generate-swagger-pagination-params []
-  {:produces "application/json"
-   :parameters [{:name "page"
-                 :in "query"
-                 :description "Page number, defaults to 1"
-                 :required true
-                 :value 1
-                 :default 1
-                 :type "number"
-                 :pattern "^[1-9][0-9]*$"}
-                {:name "count"
-                 :in "query"
-                 :description "Number of items per page, defaults to 100"
-                 :required true
-                 :value 100
-                 :default 100
-                 :type "number"
-                 :pattern "^[1-9][0-9]*$"}]})
 
 (def admin-routes
   ["/meta-keys"

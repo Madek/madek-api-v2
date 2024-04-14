@@ -25,6 +25,26 @@
     nil
     (keywordize-keys (zipmap (.keySet hashMap) (.values hashMap)))))
 
+(defn generate-swagger-pagination-params []
+  {:produces "application/json"
+   :parameters [{:name "page"
+                 :in "query"
+                 :description "Page number, defaults to 1"
+                 :required true
+                 :value 1
+                 :default 1
+                 :type "number"
+                 :pattern "^[1-9][0-9]*$"}
+                {:name "count"
+                 :in "query"
+                 :description "Number of items per page, defaults to 100"
+                 :required true
+                 :value 100
+                 :default 100
+                 :type "number"
+                 :pattern "^[1-9][0-9]*$"}]})
+
+
 ; begin db-helpers
 ; TODO move to sql file
 ; TODO sql injection protection

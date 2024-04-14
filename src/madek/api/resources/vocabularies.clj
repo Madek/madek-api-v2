@@ -5,6 +5,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.db.core :refer [get-ds]]
+   [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.vocabularies.index :refer [get-index]]
    [madek.api.resources.vocabularies.permissions :as permissions]
@@ -143,29 +144,6 @@
    :users [schema_export-user-perms]
    :groups [schema_export-group-perms]})
 
-;; TODO: move to shared
-(defn generate-swagger-pagination-params []
-  {:produces "application/json"
-   :parameters [{:name "page"
-                 :in "query"
-                 :description "Page number, defaults to 0"
-                 :required true
-                 :value 0
-                 :default 0
-                 :type "integer"
-                 :minimum 0
-                 ;:pattern "^[1-9][0-9]*$"
-                 }
-                {:name "count"
-                 :in "query"
-                 :description "Number of items per page, defaults to 100"
-                 :required true
-                 :value 100
-                 :default 100
-                 :type "integer"
-                 :minimum 1
-                 ;:pattern "^[1-9][0-9]*$"
-                 }]})
 ; TODO vocab permission
 (def admin-routes
   ["/vocabularies"

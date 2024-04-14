@@ -13,9 +13,6 @@ Done
    8. Deps updated
 
 
-confidential_links _> :where
-move to shared
-
 Todo
 --
 1. Swagger-UI
@@ -24,7 +21,7 @@ Todo
       via primärer Middlewarehandler validiert werden. Testen via UI & cUrl
    3. Generelle Verwendung von:
       1. Pagination (zero-based, max 1000)
-      2. LevelOfDetail
+      2. LevelOfDetail nur für bestimmte Endpoints?
    4. Deklaration von Responses
       1. 500er sollten nicht nötig sein
       2. 500er via 4xx & UserInputValidation vermieden werden
@@ -32,6 +29,7 @@ Todo
    6. Remove dead code? _> "TODO: not in use" 
    7. Duplikate: pagination
    8. Helper um next.jdbc/update-count nochmal zu testen (assert)
+   9. MD-Beschreibung in clojure-files
 
 
 Prio
@@ -40,4 +38,4 @@ Prio
    - Womöglich fallen hiermit schon zusätzliche Validierungsmassnahmen weg
    - Durch strikte schema-Definitionen sollen Anfrangen mit invaliden Daten in vorhinein Abgefangen werden
    - Überprüfen ob dies bei Middleware-Fetch wirklich funktioniert (fetch by filter-params / ui & curl)
-2. 
+2. Vollständige Schema-Definition sollte die Reduzierung der casts/casting-helpers im Code möglich machen
