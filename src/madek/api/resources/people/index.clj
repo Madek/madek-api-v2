@@ -52,6 +52,7 @@
 
 (comment
   (-> (build-query {:search-term "Schänk Thomas"})
+      spy
       (sql-format :inline true)
       (->> (jdbc/execute! (get-ds)))))
 

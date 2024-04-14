@@ -32,17 +32,15 @@
   "Adds a where condition to the users users query against a unique id. The uid
   can be either the id, the email_address, or the login. If uid is a UUID only
   users.id can be a match, otherwise either email or could be a match."
-  ([sql-map uid]
-   (let [uid (if (and (uuid/uuidable? uid) (not (instance? java.util.UUID uid)))
-               (uuid/as-uuid uid)
-               uid)]
-     (-> sql-map
-         (sql/where
-          (if (uuid/uuidable? uid)
-            [:= :users.id uid]
-            [:or
-             [:= :users.login [:lower uid]]
-             [:= [:lower :users.email] [:lower uid]]]))))))
+([sql-map uid]
+  (let [uid (uuid/as-uuid uid)]
+    (-> sql-map
+        (sql/where
+         (if (uuid/uuidable? uid)
+           [:= :users.id uid]
+           [:or
+            [:= :users.login [:lower uid]]
+            [:= [:lower :users.email] [:lower uid]]])))))
 
 (def is-admin-sub
   [:exists
@@ -58,11 +56,7 @@
 ;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn find-user-by-uid [uid ds]
-
-  (let [res (-> base-query
-                (where-uid uid)
-                sql-format)]
-    (jdbc/execute-one! ds res)))
+  (jdbc/execute-one! ds (-> base-query (where-uid uid) sql-format)))
 
 (defn wrap-find-user [param]
   (fn [handler]

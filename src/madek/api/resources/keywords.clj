@@ -123,11 +123,6 @@
           (sd/response_failed "Could not create keyword" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
-(defn urls-to-custom-format [urls]
-  (let [transformed-urls urls
-        combined-str (str "'{" (clojure.string/join "," transformed-urls) "}'")]
-    [:raw combined-str]))
-
 (defn handle_update-keyword [req]
   (try
     (catcher/with-logging {}

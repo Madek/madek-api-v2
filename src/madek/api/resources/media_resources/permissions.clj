@@ -164,7 +164,7 @@
                      (build-user-permission-get-query
                       (:id resource) mr-type user-id)))
 
-(defn- sql-cls-resource-and-new
+(defn- sql-cls-resource-and
   [stmt mr-type mr-id and-key and-id]
   (-> stmt
       (sql/where [:= (resource-key mr-type) mr-id]
@@ -199,7 +199,7 @@
   (let [mr-id (:id resource)
         tname (user-table mr-type)
         delete-stmt (-> (sql/delete-from tname)
-                        (sql-cls-resource-and-new mr-type mr-id :user_id user-id)
+                        (sql-cls-resource-and mr-type mr-id :user_id user-id)
                         sql-format)
         delresult (jdbc/execute-one! (get-ds) delete-stmt)]
     (info "delete-user-permissions: " mr-id user-id delresult)
@@ -219,7 +219,7 @@
         perm-data {(keyword perm-name) perm-val}
         update-stmt (-> (sql/update tname)
                         (sql/set perm-data)
-                        (sql-cls-resource-and-new mr-type mr-id :user_id user-id)
+                        (sql-cls-resource-and mr-type mr-id :user_id user-id)
                         sql-format)
         result (jdbc/execute-one! (get-ds) update-stmt)]
     (info "update user permissions"
@@ -273,7 +273,7 @@
   (let [mr-id (:id resource)
         tname (group-table mr-type)
         delete-stmt (-> (sql/delete-from tname)
-                        (sql-cls-resource-and-new mr-type mr-id :group_id group-id)
+                        (sql-cls-resource-and mr-type mr-id :group_id group-id)
                         sql-format)
         delresult (jdbc/execute-one! (get-ds) delete-stmt)]
     (info "delete-group-permissions: " mr-id group-id delresult)
@@ -292,7 +292,7 @@
         perm-data {(keyword perm-name) perm-val}
         update-stmt (-> (sql/update tname)
                         (sql/set perm-data)
-                        (sql-cls-resource-and-new mr-type mr-id :group_id group-id)
+                        (sql-cls-resource-and mr-type mr-id :group_id group-id)
                         sql-format)
         result (jdbc/execute-one! (get-ds) update-stmt)]
     (info "update group permissions"

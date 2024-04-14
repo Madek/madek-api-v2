@@ -128,9 +128,12 @@
 (defn target-group-users-query [users]
   (-> (sql/select :id)
       (sql/from :users)
-      (sql/where [:in :users.id (->> users
-                                     (map #(-> % :id to-uuid))
-                                     (filter identity))])
+      (sql/where ;[:or
+        [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]
+        ;[:in :users.institutional_id (->> users (map #(-> % :institutional_id str)) (filter identity))]
+        ;[:in :users.email (->> users (map :email) (filter identity))]
+        ;]
+        )
       sql-format))
 
 (defn target-group-users-ids [tx users]
@@ -208,6 +211,7 @@
         user-id (-> req :parameters :path :user-id)
         converted (convert-groupid-userid group-id user-id)
 
+        ;; TODO: test already exists?
         _ (if (-> converted :is_userid_valid)
             (sd/response_failed "Invalid user-id." 400))
 

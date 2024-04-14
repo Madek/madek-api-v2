@@ -18,9 +18,7 @@ context 'users' do
   context 'admin user' do
     include_context :json_client_for_authenticated_admin_user do
 
-      let :admin_users_route do
-        '/api/admin/users'
-      end
+      let :admin_users_route do '/api/admin/users' end
 
       context 'retriving a standard user' do
         let :get_user_result do
@@ -50,7 +48,6 @@ context 'users' do
       end
 
       # TODO: write tests for in/valid email addresses
-
       context 'a user (with a naughty email)' do
         before :each do
           valid_email_addresses = [
@@ -76,10 +73,9 @@ context 'users' do
         end
         it 'can be retrieved by the email_address' do
           @users.each do |user|
-            resp = client.get("#{admin_users_route}/#{CGI.escape(user.email)}")
             expect(
-              resp.status
-            ).to be == 200
+              client.get("#{admin_users_route}/#{CGI.escape(user.email)}").status
+            ).to be== 200
             expect(
               client.get("#{admin_users_route}/#{CGI.escape(user.email)}").body["id"]
             ).to be == user["id"]

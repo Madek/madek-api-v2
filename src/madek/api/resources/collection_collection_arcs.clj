@@ -65,12 +65,6 @@
           (sd/response_failed "Could not create collection-collection-arc" 406))))
     (catch Exception e (sd/response_exception e))))
 
-(defn- sql-cls-update [parent-id child-id]
-  (-> (sql/where [:= :parent_id parent-id]
-                 [:= :child_id child-id])
-      sql-format
-      (update-in [0] #(clojure.string/replace % "WHERE" ""))))
-
 (defn handle_update-arc [req]
   (try
     (catcher/with-logging {}

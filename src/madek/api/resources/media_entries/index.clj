@@ -169,7 +169,7 @@
   (-> (let [qorder (-> query-params :order)
             order (sd/try-as-json qorder)
             collection-id (-> query-params :collection_id)
-            my-cond (cond
+            result (cond
                       (nil? order) (default-order query)
                       (string? order) (cond
                                         (some #(= order %) available-sortings) (order-by-string query order collection-id)
@@ -179,7 +179,7 @@
                       (seq? order) (reduce order-reducer query order)
                       :else (default-order query))]
         (info "set-order" "\norder\n" order)
-        my-cond)
+        result)
       (sql/order-by :media_entries.id)))
 
 ; example queries

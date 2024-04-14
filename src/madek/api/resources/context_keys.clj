@@ -72,25 +72,6 @@
     ;(info "handle_usr-get-context_key" "\nbefore\n" context_key "\nresult\n" result)
     (sd/response_ok result)))
 
-(defn convert-hints [data]
-  (let [cast-keys [:hints :descriptions]
-        process-hstore-cast (fn [data key]
-
-                              (if (contains? data key)
-                                (let [val (get data key)
-                                      hstore-val (when val
-                                                   (str [:cast
-                                                         (clojure.string/join ", "
-                                                                              (map (fn [[k v]] (str (name k) " => \"" v "\""))
-                                                                                   val))
-                                                         :hstore]))]
-                                  (assoc data key hstore-val))
-                                data))]
-    (reduce process-hstore-cast data cast-keys)))
-
-(defn map-to-hstore [m]
-  (clojure.string/join ", " (map (fn [[k v]] (str "\"" k "\" => \"" (clojure.string/replace v "\"" "\\\"") "\"")) m)))
-
 (defn handle_create-context_keys
   [req]
   (try
@@ -112,14 +93,13 @@
   (try
     (catcher/with-logging {}
       (let [data (-> req :parameters :body)
-            id (-> req :parameters :path :id)
-            id (to-uuid id)
+            id (to-uuid (-> req :parameters :path :id))
             dwid (assoc data :id id)
-            fir (-> (sql/update :context_keys)
+            query (-> (sql/update :context_keys)
                     (sql/set (cast-to-hstore dwid))
                     (sql/where [:= :id id])
                     sql-format)
-            upd-result (jdbc/execute-one! (get-ds) fir)]
+            upd-result (jdbc/execute-one! (get-ds) query)]
 
         (sd/logwrite req (str "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result))
 

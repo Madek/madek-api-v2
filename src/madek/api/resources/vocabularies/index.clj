@@ -21,11 +21,13 @@
 
 (defn- base-query
   ([user-id size offset]
+  ([user-id query-params]
    (-> (sql/select :*)
        (sql/from :vocabularies)
        (sql/where (where-clause user-id))
-       (sql/offset offset)
-       (sql/limit size)
+       (pagination/add-offset-for-honeysql query-params)
+       ;(sql/offset offset)
+       ;(sql/limit size)
        sql-format))
 
   ([user-id size offset request]
@@ -44,14 +46,15 @@
   (let [user-id (-> request :authenticated-entity :id)
         qparams (-> request :query-params)
 
-        ;; TODO: unify pagination-handling
-        page (get qparams "page")
-        count (get qparams "count")
-
-        offset (str-to-int page 0)
-        size (str-to-int count 100)
-
-        query (base-query user-id size offset request)]
+        ; TODO: unify pagination-handling
+        ;page (get qparams "page")
+        ;count (get qparams "count")
+        ;
+        ;offset (str-to-int page 0)
+        ;size (str-to-int count 100)
+        ;
+        ;query (base-query user-id size offset request)]
+        query (base-query user-id qparams request)]
 
 ;(info "query-index-resources: " query)
     (jdbc/execute! (get-ds) query)))

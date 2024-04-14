@@ -110,7 +110,7 @@
    (s/optional-key :layout) schema_layout_types
    (s/optional-key :is_master) s/Bool
    (s/optional-key :sorting) schema_sorting_types
-   (s/optional-key :default_context_id) (s/maybe s/Str) ;;cautioin
+   (s/optional-key :default_context_id) (s/maybe s/Str) ;;caution
    ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
    (s/optional-key :workflow_id) (s/maybe s/Uuid)
 

@@ -62,9 +62,6 @@
      value
      (to-uuid value key))))
 
-(defn format-uris [uris]
-  (clojure.string/join "" (map #(str "{" % "}") uris)))
-
 ; [madek.api.utils.helper :refer [urls-to-custom-format]]
 ;; TODO: maybe possible with json/dump?
 (defn convert-to-raw-set [urls]
@@ -196,6 +193,7 @@
              :is_valid_uuid is_uuid}]
     res))
 
+;; TODO / remove this fnc, just use to-uuid: if its valid it will be casted
 ; [madek.api.utils.helper :refer [convert-groupid]]
 (defn convert-groupid [group-id]
   (let [is_uuid (boolean (re-matches

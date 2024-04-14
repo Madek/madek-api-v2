@@ -18,17 +18,17 @@
 ;### create group #############################################################
 
 ;; FIXME: not in use?
-(defn create-group [request]
-  (let [params (as-> (:body request) params
-                 (or params {})
-                 (assoc params :id (or (:id params) (clj-uuid/v4))))]
-    {:body (dissoc
-            (->> (jdbc/execute-one! (get-ds) (-> (sql/insert-into :groups)
-                                                 (sql/values [params])
-                                                 (sql/returning :*)
-                                                 sql-format)))
-            :previous_id :searchable)
-     :status 201}))
+;(defn create-group [request]
+;  (let [params (as-> (:body request) params
+;                 (or params {})
+;                 (assoc params :id (or (:id params) (clj-uuid/v4))))]
+;    {:body (dissoc
+;            (->> (jdbc/execute-one! (get-ds) (-> (sql/insert-into :groups)
+;                                                 (sql/values [params])
+;                                                 (sql/returning :*)
+;                                                 sql-format)))
+;            :previous_id :searchable)
+;     :status 201}))
 
 ;### get group ################################################################
 
