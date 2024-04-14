@@ -48,7 +48,7 @@
         update-count (get res :next.jdbc/update-count)]
 
     (if (= 1 update-count)
-      {:status 204 :content-type "application/json"} ;TODO / FIXME: repsonse is of type octet-stream?
+      {:status 204 :content-type "application/json"} ;TODO / FIXME: response should support octet-stream as well?
       {:status 404})))
 
 ;### patch group ##############################################################

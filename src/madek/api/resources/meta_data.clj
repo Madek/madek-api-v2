@@ -26,16 +26,7 @@
          (col-key-for-mr-type mr)
          (-> mr :id)))
 
-(defn- sql-cls-upd-meta-data [mr mk-id]
-  (let [colomn (col-key-for-mr-type mr)
-        md-sql (-> (sql/where [:and
-                               [:= :meta_key_id mk-id]
-                               [:= colomn (to-uuid (-> mr :id) colomn)]])
-                   sql-format
-                   sd/hsql-upd-clause-format)]
-    md-sql))
-
-(defn- sql-cls-upd-meta-data-new [stmt mr mk-id]
+(defn- sql-cls-upd-meta-data [stmt mr mk-id]
   (let [colomn (col-key-for-mr-type mr)
         md-sql (-> stmt
                    (sql/where [:and
@@ -43,7 +34,7 @@
                                [:= colomn (to-uuid (-> mr :id) colomn)]]))]
     md-sql))
 
-(defn- sql-cls-upd-meta-data-typed-id-new [stmt mr mk-id md-type]
+(defn- sql-cls-upd-meta-data-typed-id [stmt mr mk-id md-type]
   (let [colomn (col-key-for-mr-type mr)
 
         md-sql (-> stmt
@@ -113,7 +104,7 @@
         meta-data (-> req :meta-data)
         meta-key-id (:meta_key_id meta-data)
         sql-query (-> (sql/delete-from :meta_data)
-                      (sql-cls-upd-meta-data-new mr meta-key-id)
+                      (sql-cls-upd-meta-data mr meta-key-id)
                       sql-format)
         del-result (jdbc/execute-one! (get-ds) sql-query)]
     (if (= 1 (::jdbc/update-count del-result))
@@ -129,7 +120,7 @@
             meta-key-id (-> req :parameters :path :meta_key_id)
             sql-query (-> (sql/update :meta_data)
                           (sql/set (convert-map-if-exist upd-data))
-                          (sql-cls-upd-meta-data-typed-id-new mr meta-key-id md-type)
+                          (sql-cls-upd-meta-data-typed-id mr meta-key-id md-type)
                           sql-format)
             upd-result (jdbc/execute-one! (get-ds) sql-query)
             result-data (db-get-meta-data mr meta-key-id md-type)]

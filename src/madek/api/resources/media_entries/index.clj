@@ -128,10 +128,11 @@
     (reduce order-reducer [query ["MetaDatum::Text" "madek_core:title" direction]])))
 
 (defn- find-collection-default-sorting [collection-id]
-  (let [query {:select [:sorting]
-               :from [:collections]
-               :where [:= :collections.id collection-id]}]
-    (:sorting (jdbc/execute-one! (get-ds) (-> query sql-format)))))
+  (let [query (-> (sql/select :sorting)
+                  (sql/from :collections)
+                  (sql/where [:= :collections.id collection-id])
+                  sql-format)        ]
+    (:sorting (jdbc/execute-one! (get-ds) query))))
 
 (defn- handle-missing-collection-id [collection-id code-to-run]
   (if (or (not collection-id) (nil? collection-id))

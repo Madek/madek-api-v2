@@ -3,6 +3,8 @@
    [clojure.string :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.pagination :refer [add-offset-for-honeysql]]
+
    [logbug.catcher :as catcher]
    [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
@@ -20,17 +22,18 @@
        [:in :vocabularies.id vocabulary-ids]])))
 
 (defn- base-query
-  ([user-id size offset]
+  ;([user-id size offset]
   ([user-id query-params]
    (-> (sql/select :*)
        (sql/from :vocabularies)
        (sql/where (where-clause user-id))
-       (pagination/add-offset-for-honeysql query-params)
+       (add-offset-for-honeysql query-params)
        ;(sql/offset offset)
        ;(sql/limit size)
        sql-format))
 
-  ([user-id size offset request]
+  ;([user-id size offset request]
+  ([user-id query-params request]
    (let [is_admin_endpoint (str/includes? (-> request :uri) "/admin/")
          select (if is_admin_endpoint
                   (sql/select :*)
@@ -38,8 +41,10 @@
      (-> select
          (sql/from :vocabularies)
          (sql/where (where-clause user-id))
-         (sql/offset offset)
-         (sql/limit size)
+
+       (add-offset-for-honeysql query-params)
+         ;(sql/offset offset)
+         ;(sql/limit size)
          sql-format))))
 
 (defn- query-index-resources [request]

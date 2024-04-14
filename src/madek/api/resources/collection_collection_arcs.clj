@@ -71,12 +71,13 @@
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
             data (-> req :parameters :body)
-            sql-map {:update :collection_collection_arcs
-                     :set data
-                     :where [:= :parent_id parent-id
-                             := :child_id child-id]}
-            sql (-> sql-map sql-format)
-            result (next.jdbc/execute! (get-ds) [sql data])]
+            query (-> (sql/update :collection_collection_arcs)
+                      (sql/set data)
+                      (sql/where [:= :parent_id parent-id
+                                  := :child_id child-id])
+                      sql-format  )
+
+            result (next.jdbc/execute! (get-ds) query)]
 
         (if (= 1 (first result))
           (sd/response_ok (sd/query-eq-find-one
@@ -91,15 +92,17 @@
     (catcher/with-logging {}
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
+            ;; TODO: fetch old data by delete-query
             olddata (sd/query-eq-find-one
                      :collection_collection_arcs
                      :parent_id parent-id
                      :child_id child-id)
-            sql-map {:delete :collection_collection_arcs
-                     :where [:= :parent_id parent-id
-                             := :child_id child-id]}
-            sql (-> sql-map sql-format)
-            delresult (next.jdbc/execute! (get-ds) [sql [parent-id child-id]])]
+            query (-> (sql/delete :collection_collection_arcs)
+                      (sql/where [:= :parent_id parent-id
+                                  := :child_id child-id])
+                      sql-format  )
+
+            delresult (next.jdbc/execute! (get-ds) query)]
 
         (if (= 1 (first delresult))
           (sd/response_ok olddata)

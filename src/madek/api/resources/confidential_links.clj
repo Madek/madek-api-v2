@@ -2,6 +2,7 @@
   (:require [buddy.core.codecs :refer [bytes->b64u bytes->str]]
             [buddy.core.hash :as hash]
             [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [get-ds]]
             [madek.api.resources.shared :as sd]
@@ -77,11 +78,12 @@
       (let [id (-> req :parameters :path :id)
             data (-> req :parameters :body)
             upd-data (sd/try-instant-on-presence data :expires_at)
-            sql-map {:update :confidential_links
-                     :set upd-data
-                     :where [:= :id id]}
-            sql (-> sql-map sql-format)
-            upd-result (jdbc/execute! (get-ds) [sql (vals upd-data)])]
+            query (-> (sql/update :confidential_links)
+                      (sql/set upd-data)
+                      (sql/where [:= :id id])
+                      sql-format)
+
+            upd-result (jdbc/execute! (get-ds) query)]
 
         (sd/logwrite req (str "handle_update-conf-link:" "\nupdate data: " upd-data "\nresult: " upd-result))
         (if (= 1 (first upd-result))
@@ -96,10 +98,11 @@
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)]
         (if-let [del-data (sd/query-eq-find-one :confidential_links :id id)]
-          (let [sql-map {:delete :confidential_links
-                         :where [:= :id id]}
-                sql (-> sql-map sql-format)
-                del-result (jdbc/execute! (get-ds) [sql [id]])]
+          (let [query (-> (sql/delete-from :confidential_links)
+                          (sql/where [:= :id id])
+                          sql-format)
+
+                del-result (jdbc/execute! (get-ds) query)]
             (sd/logwrite req (str "handle_delete-conf-link:" "\ndelete data: " del-data "\nresult: " del-result))
             (if (= 1 (first del-result))
               (sd/response_ok del-data)

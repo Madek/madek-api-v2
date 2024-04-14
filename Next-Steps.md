@@ -16,7 +16,7 @@ Done
 confidential_links _> :where
 move to shared
 
-Dodo
+Todo
 --
 1. Swagger-UI
    1. Testen von Auth-Interface für BasicAuth & Token
@@ -31,6 +31,7 @@ Dodo
    5. ? POST/PUT/MissingObjectType: Deklaration von Body-Examples in description
    6. Remove dead code? _> "TODO: not in use" 
    7. Duplikate: pagination
+   8. Helper um next.jdbc/update-count nochmal zu testen (assert)
 
 
 Prio
