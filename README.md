@@ -5,10 +5,40 @@ The madek-api2 is a JSON API for Madek.
 
 ## API v2 TODOs
 
-* make DB Audits works
-* upgrade to clj-jdbc-next and honeysql2
-* some resources, like `admins` are likely to change in the not to fare future:
-    hide most of that behind generic resources or properties
+* make DB Audits works, including:
+
+    * also there are a lot of `(get-ds)`, at least for writes these must be
+        replaced by tx from the wrapper
+
+    * consider to replace all of them with `tx`; that might cost (a little?)
+        performance but generally should be safer
+
+* some Files are very large and contain too much functionality, split then
+    up in smaller pieces, i.e. per method `get`, `put`, ...
+
+
+* Schemas:
+
+    * incomplete and too unspecific in many places
+
+    * verbose and hard to maintain: is there a way to automatize this by
+      generating it from the db schema?
+
+
+* Permissions:
+
+    Some resources for public and signed in users leak to much information.
+
+    Pagination over all entities, in particular for `users` and `people` must
+    be prevented. How can we do this? Enforce query params and return only a
+    fixed limit?
+
+    A lot of open discussions here.
+
+    We could make it part of a Madek release with per default only `/admin`
+    beeing enabled and other resources only per configuration? That could
+    bring us timewiese nearer  a to release of the API v2.
+
 
 
 
