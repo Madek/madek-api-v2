@@ -1,13 +1,40 @@
 (ns madek.api.resources.people.get
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
    [logbug.debug :as debug]
+   [madek.api.db.core :refer [get-ds]]
+   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.people.common :refer [person-query]]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [debug error info spy warn]]))
+
+
+(comment
+
+  (for [coldef (-> (sql/select :column_name :data_type :is_nullable :column_default)
+                   (sql/from :INFORMATION_SCHEMA.COLUMNS)
+                   (sql/where [:= :table_name "people"])
+                   (sql-format :inline true)
+                   (->> (jdbc/execute! (get-ds))))]
+    [(keyword (:column_name coldef))
+     (case (:data_type coldef)
+       "uuid" s/Uuid
+       s/Any)]
+
+    )
+
+
+
+
+
+
+  SELECT column_name, data_type, is_nullable, column_default FROM INFORMATION_SCHEMA.COLUMNS where table_name ='people';
+
+  )
 
 (def schema
   {:created_at s/Any
