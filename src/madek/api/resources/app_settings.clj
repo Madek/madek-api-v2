@@ -150,9 +150,9 @@
 ;;; routes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def admin-routes
-  [["/app-settings"
+  [["/"
     {:swagger {:tags ["admin/app-settings"] :security [{"auth" []}]}}
-    ["/"
+    ["app-settings"
      {:get {:summary (sd/sum_adm "Get App Settings.")
             :handler handle_get-app-settings
             :middleware [wrap-authorize-admin!]
@@ -175,9 +175,9 @@
                         404 {:message "<Groups|Meta-Keys> entry does not exist"}}}}]]])
 
 (def user-routes
-  [["/app-settings"
+  [["/"
     {:swagger {:tags ["app-settings"]}}
-    ["/"
+    ["app-settings"
      {:get {:summary (sd/sum_pub "Get App Settings.")
             :handler handle_get-app-settings
             :swagger {:produces "application/json"}

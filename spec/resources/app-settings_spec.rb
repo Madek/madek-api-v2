@@ -7,7 +7,7 @@ context 'Getting app-settings resource without authentication' do
   end
 
   let :plain_json_response do
-    plain_faraday_json_client.get("/api/app-settings/")
+    plain_faraday_json_client.get("/api/app-settings")
   end
 
   it 'responds with 200' do
