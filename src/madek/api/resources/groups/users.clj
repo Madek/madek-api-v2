@@ -3,7 +3,6 @@
    [clj-uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.shared :as sd]
@@ -42,9 +41,9 @@
       (sql/from :users)
       sql-format))
 
-(defn find-user [some-id]
+(defn find-user [some-id tx]
   (->> some-id find-user-sql
-       (jdbc/execute-one! (get-ds))))
+       (jdbc/execute-one! tx)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -58,12 +57,12 @@
    (groups/sql-merge-where-id group-id)
    sql-format))
 
-(defn find-group-user [group-id user-id]
+(defn find-group-user [group-id user-id tx]
   (->> (group-user-query group-id user-id)
-       (jdbc/execute-one! (get-ds))))
+       (jdbc/execute-one! tx)))
 
-(defn get-group-user [group-id user-id]
-  (if-let [user (find-group-user group-id user-id)]
+(defn get-group-user [group-id user-id tx]
+  (if-let [user (find-group-user group-id user-id tx)]
     (sd/response_ok user)
     (sd/response_failed "No such group or user." 404)))
 
@@ -80,7 +79,10 @@
       sql-format))
 
 (defn group-users [group-id request]
-  (jdbc/execute! (get-ds)
+   (println ">o> 0 request=" request)
+   (println ">o> 1 (:tx request)=" (:tx request))
+   (println ">o> 2 (:tx request)=" (get request :tx ))
+  (jdbc/execute! (:tx request)
                  (group-users-query group-id request)))
 
 (defn get-group-users [group-id request]
@@ -88,31 +90,31 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn add-user [group-id user-id]
+(defn add-user [group-id user-id req]
   (info "add-user" group-id ":" user-id)
-  (if-let [user (find-group-user group-id user-id)]
-    (sd/response_ok {:users (group-users group-id nil)})
+  (if-let [user (find-group-user group-id user-id (:tx req))]
+    (sd/response_ok {:users (group-users group-id req)})
     (let [group (groups/find-group group-id)
-          user (find-user user-id)]
+          user (find-user user-id (:tx req))]
       (if-not (and group user)
         (sd/response_not_found "No such user or group.")
-        (do (jdbc/execute! (get-ds)
+        (do (jdbc/execute! (:tx req)
                            (-> (sql/insert-into :groups_users)
                                (sql/values [{:group_id (:id group)
                                              :user_id (:id user)}])
                                sql-format))
-            (sd/response_ok {:users (group-users group-id nil)}))))))
+            (sd/response_ok {:users (group-users group-id req)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn remove-user [group-id user-id]
-  (if-let [user (find-group-user group-id user-id)]
+(defn remove-user [group-id user-id req]
+  (if-let [user (find-group-user group-id user-id (:tx req))]
     (if-let [group (groups/find-group group-id)]
-      (let [delok (jdbc/execute! (get-ds)
+      (let [delok (jdbc/execute!  (:tx req)
                                  (-> (sql/delete-from :groups_users)
                                      (sql/where [:= :group_id (:id group)] [:= :user_id (:id user)])
                                      sql-format))]
-        (sd/response_ok {:users (group-users group-id nil)}))
+        (sd/response_ok {:users (group-users group-id req)}))
       (sd/response_not_found "No such group"))
     (sd/response_not_found "No such group or user.")))
 
@@ -152,8 +154,8 @@
       (sql/values (->> ids (map (fn [id] [group-id id]))))
       sql-format))
 
-(defn update-group-users [group-id data]
-  (jdbc/with-transaction [tx (get-ds)]
+(defn update-group-users [group-id data tx]
+  (jdbc/with-transaction [tx tx]
     (let [current-group-users-ids (current-group-users-ids tx group-id)
           target-group-users-ids (if (first (:users data))
                                    (target-group-users-ids tx (:users data))
@@ -211,6 +213,8 @@
         user-id (-> req :parameters :path :user-id)
         converted (convert-groupid-userid group-id user-id)
 
+        tx (:tx req)
+
         ;; TODO: test already exists?
         _ (if (-> converted :is_userid_valid)
             (sd/response_failed "Invalid user-id." 400))
@@ -219,13 +223,15 @@
         user-id (-> converted :user-id)]
 
     (info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
-    (get-group-user group-id user-id)))
+    (get-group-user group-id user-id tx)))
 
 (defn handle_delete-group-user [req]
   (let [group-id (-> req :parameters :path :group-id)
-        user-id (-> req :parameters :path :user-id)]
+        user-id (-> req :parameters :path :user-id)
+        tx (:tx req)
+        ]
     (info "handle_delete-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
-    (remove-user group-id user-id)))
+    (remove-user group-id user-id req)))
 
 (defn handle_get-group-users [request]
   (let [id (-> request :parameters :path :group-id)]
@@ -233,17 +239,21 @@
 
 (defn handle_update-group-users [req]
   (let [id (-> req :parameters :path :group-id)
-        data (-> req :parameters :body)]
+        data (-> req :parameters :body)
+        tx (:tx req)
+        ]
     (info "handle_update-group-users" "\nid\n" id "\ndata\n" data)
-    (update-group-users id data)))
+    (update-group-users id data tx)))
 
 (defn handle_add-group-user [req]
   (let [group-id (-> req :parameters :path :group-id)
         user-id (-> req :parameters :path :user-id)
         converted (convert-groupid-userid group-id user-id)
         group-id (-> converted :group-id)
-        user-id (-> converted :user-id)]
-    (add-user group-id user-id)))
+        user-id (-> converted :user-id)
+        tx (:tx req)
+        ]
+    (add-user group-id user-id req)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

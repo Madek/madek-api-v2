@@ -66,6 +66,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn wrap-tx [handler]
+  (println ">o> wrap-tx!!!!!!!!!!!!!!!!!¨")
   (fn [request]
     (jdbc/with-transaction [tx @ds*]
       (try

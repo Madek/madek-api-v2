@@ -2,6 +2,7 @@
   (:require [clj-uuid]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
+            [madek.api.db.core :as db]
             [madek.api.db.core :refer [get-ds]]
             [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
@@ -345,7 +346,9 @@
                                           ;:swagger {:produces "application/json"}
                                           ;:content-type "application/json"
                                           :handler group-users/handle_delete-group-user
-                                          :middleware [wrap-authorize-admin!]
+                                          :middleware [
+                                                       ;db/wrap-tx
+                                                       wrap-authorize-admin!]
                                           :coercion reitit.coercion.schema/coercion
                                           :parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
                                           :responses {200 {:body {:users [group-users/schema_export-group-user-simple]}}
