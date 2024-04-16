@@ -15,8 +15,10 @@ context 'admin keywords' do
     "/api/admin/keywords/#{@keyword.id}"
   end
 
+  
   context 'Responds not authorized without authentication' do
-
+  
+  
     describe 'not authorized' do
       it 'query responds with 403' do
         expect(plain_faraday_json_client.get(query_url).status).to be == 403
@@ -42,20 +44,21 @@ context 'admin keywords' do
         expect(resonse.status).to be == 403
       end
 
-      it 'delete responds with 403' do
+      it 'delete responds with 403' do      
         expect(plain_faraday_json_client.delete(keyword_url).status).to be == 403
       end
     end
   end
 
+
   context 'Responds not authorized as user' do
     include_context :json_client_for_authenticated_user do
-
+      
       describe 'not authorized' do
         it 'query responds with 403' do
           expect(client.get(query_url).status).to be == 403
         end
-        it 'get responds with 403' do
+        it 'get responds with 403' do      
           expect(client.get(keyword_url).status).to be == 403
         end
         it 'post responds with 403' do
@@ -64,19 +67,19 @@ context 'admin keywords' do
               term: 'invalid',
               meta_key_id: 'invalid',
               position: 1,
-            }.to_json
+             }.to_json
             req.headers['Content-Type'] = 'application/json'
           end
           expect(response.status).to be == 403
         end
         it 'put responds with 403' do
           response = client.put(keyword_url) do |req|
-            req.body = {}.to_json
-            req.headers['Content-Type'] = 'application/json'
+          req.body = { }.to_json
+          req.headers['Content-Type'] = 'application/json'
           end
           expect(response.status).to be == 403
         end
-        it 'delete responds with 403' do
+        it 'delete responds with 403' do      
           expect(client.delete(keyword_url).status).to be == 403
         end
       end
@@ -87,6 +90,7 @@ context 'admin keywords' do
     include_context :json_client_for_authenticated_admin_user do
 
       context 'get' do
+        
         it 'responds 400 with bad formatted uuid' do
           badid = Faker::Internet.slug(words: nil, glue: '-')
           response = client.get("/api/admin/keywords/#{badid}")
@@ -113,12 +117,13 @@ context 'admin keywords' do
             expect(
               data.except("created_at", "updated_at", "external_uri")
             ).to eq(
-                   @keyword.attributes.with_indifferent_access
-                           .except(:created_at, :updated_at, :external_uri)
-                 )
+              @keyword.attributes.with_indifferent_access
+                .except(  :created_at, :updated_at, :external_uri)
+            )
           end
         end
       end
+
 
       context 'post' do
         before :each do
@@ -151,15 +156,15 @@ context 'admin keywords' do
           expect(
             data.except("id", "created_at", "updated_at", "external_uri", "creator_id")
           ).to eq(
-                 @create_data.with_indifferent_access
-                             .except(:id, :created_at, :updated_at, :external_uri, :creator_id)
-               )
+            @create_data.with_indifferent_access
+              .except(:id, :created_at, :updated_at, :external_uri, :creator_id)
+          )
         end
       end
 
       # TODO test more data
       context 'put' do
-
+        
         let :response do
           client.put(keyword_url) do |req|
             req.body = {
@@ -177,18 +182,18 @@ context 'admin keywords' do
           data = response.body
           expect(
             data.except("created_at", "updated_at",
-                        "position", "external_uri")
+              "position", "external_uri")
           ).to eq(
-                 @keyword.attributes.with_indifferent_access
-                         .except(:created_at, :updated_at,
-                                 :position, :external_uri)
-               )
+            @keyword.attributes.with_indifferent_access
+              .except( :created_at, :updated_at,
+                :position, :external_uri)
+          )
           expect(data['position']).to be == 2
         end
       end
 
-      context 'delete' do
-
+      context 'delete' do      
+        
         let :response do
           client.delete(keyword_url)
         end
@@ -202,9 +207,9 @@ context 'admin keywords' do
           expect(
             data.except("created_at", "updated_at", "external_uri")
           ).to eq(
-                 @keyword.attributes.with_indifferent_access
-                         .except(:created_at, :updated_at, :external_uri)
-               )
+            @keyword.attributes.with_indifferent_access
+              .except( :created_at, :updated_at, :external_uri)
+          )
         end
       end
 

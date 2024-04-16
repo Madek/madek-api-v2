@@ -19,8 +19,8 @@ context 'Getting app-settings resource without authentication' do
     expect(
       app_setting.except("created_at", "updated_at")
     ).to eq(
-           @app_setting.attributes.with_indifferent_access
-                       .except(:created_at, :updated_at))
+      @app_setting.attributes.with_indifferent_access
+      .except(:created_at, :updated_at))
   end
 
 end

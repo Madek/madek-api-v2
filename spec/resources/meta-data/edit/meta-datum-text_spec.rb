@@ -11,11 +11,12 @@ describe 'generated runs' do
         let :meta_key do
           FactoryBot.create "meta_key_text"
         end
-        let (:post_url) { resource_url_typed(meta_key.id, "text") }
-        let (:delete_url) { resource_url(meta_key.id) }
-
+        let (:post_url) { resource_url_typed( meta_key.id, "text") }
+        let (:delete_url) { resource_url( meta_key.id) }
+        
         let (:create_data) { "Hello Lala" }
         let (:update_data) { "Bye Bye Ugale" }
+        
 
         describe 'authenticated_json_client' do
           include_context :authenticated_json_client
@@ -24,7 +25,7 @@ describe 'generated runs' do
             if example.exception
               example.exception.message << \
                 "\n  MediaResource: #{media_resource} " \
-                  " #{media_resource.attributes}"
+                " #{media_resource.attributes}"
               example.exception.message << "\n  Client: #{client_entity} " \
                 " #{client_entity.attributes}"
 
@@ -44,7 +45,7 @@ describe 'generated runs' do
               let :response do
                 authenticated_json_client.post(post_url) do |req|
                   req.body = { string: create_data }.to_json
-                  req.headers['Content-Type'] = 'application/json'
+                  req.headers['Content-Type'] = 'application/json'        
                 end
               end
 
@@ -61,7 +62,7 @@ describe 'generated runs' do
               let :response do
                 authenticated_json_client.post(post_url) do |req|
                   req.body = { string: create_data }.to_json
-                  req.headers['Content-Type'] = 'application/json'
+                  req.headers['Content-Type'] = 'application/json'        
                 end
 
                 authenticated_json_client.get(delete_url)
@@ -94,17 +95,17 @@ describe 'generated runs' do
               end
 
               it 'holds the proper value' do
-                expect(response.body['string']).to eq(update_data)
+                  expect(response.body['string']).to eq(update_data)
               end
             end
-
+          
             describe 'delete the meta-datum resource' do
               let :response do
                 authenticated_json_client.post(post_url) do |req|
                   req.body = { string: create_data }.to_json
-                  req.headers['Content-Type'] = 'application/json'
+                  req.headers['Content-Type'] = 'application/json'        
                 end
-
+  
                 authenticated_json_client.delete(delete_url)
               end
 

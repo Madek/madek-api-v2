@@ -4,7 +4,7 @@ require Pathname(File.expand_path('..', __FILE__)).join('shared')
 describe 'Getting a preview resource without authentication' do
   before :example do
     @media_entry = FactoryBot.create(:media_entry_with_image_media_file,
-                                     get_metadata_and_previews: false)
+                                      get_metadata_and_previews: false)
     @preview = @media_entry.media_file.previews.sample
   end
 
@@ -34,14 +34,14 @@ describe 'Getting a preview resource with authentication' do
     before :example do
       @media_entry.user_permissions << \
         FactoryBot.create(:media_entry_user_permission,
-                          get_metadata_and_previews: false,
-                          user: @entity)
+                           get_metadata_and_previews: false,
+                           user: @entity)
       group = FactoryBot.create(:group)
       @entity.groups << group
       @media_entry.group_permissions << \
         FactoryBot.create(:media_entry_group_permission,
-                          get_metadata_and_previews: false,
-                          group: group)
+                           get_metadata_and_previews: false,
+                           group: group)
     end
     it 'is forbidden 403' do
       expect(response.status).to be == 403
@@ -77,8 +77,8 @@ describe 'Getting a preview resource with authentication' do
       @entity.groups << group
       @media_entry.group_permissions << \
         FactoryBot.create(:media_entry_group_permission,
-                          get_metadata_and_previews: true,
-                          group: group)
+                           get_metadata_and_previews: true,
+                           group: group)
     end
 
     it 'is allowed 200' do

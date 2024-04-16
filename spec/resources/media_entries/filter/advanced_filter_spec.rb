@@ -3,12 +3,12 @@ require Pathname(File.expand_path('datalayer/spec/models/media_entry/combined_fi
 require Pathname(File.expand_path('datalayer/spec/models/media_entry/search_in_all_meta_data_shared_context.rb'))
 
 describe 'advanced filtering of media entries' do
-  # let :media_entries_relation do
+  #let :media_entries_relation do
   #  json_roa_client.get.relation('media-entries')
-  # end
+  #end
 
   def get_media_entries(filter = nil)
-    # media_entries_relation.get(filter).data['media-entries']
+    #media_entries_relation.get(filter).data['media-entries']
     plain_faraday_json_client.get("/api/media-entries", filter).body['media_entries']
   end
 
@@ -20,7 +20,7 @@ describe 'advanced filtering of media entries' do
         FactoryBot.create \
           [:media_entry_with_image_media_file,
            :media_entry_with_audio_media_file].sample,
-          :fat
+           :fat
       end
 
       filter = \
@@ -30,8 +30,6 @@ describe 'advanced filtering of media entries' do
 
       fetched_media_entries = \
         get_media_entries('filter_by' => filter.deep_stringify_keys.to_json)
-
-      # binding.pry
       expect(fetched_media_entries.size).to be == 1
       expect(fetched_media_entries.first['id']).to be == media_entry.id
     end
@@ -51,7 +49,6 @@ describe 'advanced filtering of media entries' do
       fetched_media_entries = \
         get_media_entries('filter_by' => filter.deep_stringify_keys.to_json)
 
-      # binding.pry
       media_entries.each do |me|
         expect(fetched_media_entries.map { |me| me['id'] }).to include me.id
       end

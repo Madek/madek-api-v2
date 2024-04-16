@@ -3,10 +3,10 @@ require 'spec_helper'
 context 'admin vocabularies' do
 
   before :each do
-
+    
     @vocabulary = FactoryBot.create :vocabulary
     # TODO use Faker and indiv. data
-    @labels = { de: "labelde", en: "labelen" }
+    @labels = {de:"labelde", en:"labelen"}
 
     @create_data = {
       id: "myvocab",
@@ -27,9 +27,11 @@ context 'admin vocabularies' do
   let :vocabulary_url do
     "/api/admin/vocabularies/#{@vocabulary.id}"
   end
-
+  
   context 'Responds not authorized without authentication' do
 
+    
+  
     describe 'not authorized' do
       it 'query responds with 403' do
         expect(plain_faraday_json_client.get(query_url).status).to be == 403
@@ -45,7 +47,7 @@ context 'admin vocabularies' do
         expect(resonse.status).to be == 403
       end
       it 'put responds with 403' do
-
+        
         resonse = plain_faraday_json_client.put(vocabulary_url) do |req|
           req.body = {}.to_json
           req.headers['Content-Type'] = 'application/json'
@@ -53,11 +55,12 @@ context 'admin vocabularies' do
         expect(resonse.status).to be == 403
       end
 
-      it 'delete responds with 403' do
+      it 'delete responds with 403' do      
         expect(plain_faraday_json_client.delete(vocabulary_url).status).to be == 403
       end
     end
   end
+
 
   context 'Responds not authorized as user' do
     include_context :json_client_for_authenticated_user do
@@ -65,12 +68,12 @@ context 'admin vocabularies' do
       before :each do
         @vocabulary = FactoryBot.create :vocabulary
       end
-
+      
       describe 'not authorized' do
         it 'query responds with 403' do
           expect(client.get(query_url).status).to be == 403
         end
-        it 'get responds with 403' do
+        it 'get responds with 403' do      
           expect(client.get(vocabulary_url).status).to be == 403
         end
         it 'post responds with 403' do
@@ -82,12 +85,12 @@ context 'admin vocabularies' do
         end
         it 'put responds with 403' do
           response = client.put(vocabulary_url) do |req|
-            req.body = {}.to_json
-            req.headers['Content-Type'] = 'application/json'
+          req.body = { }.to_json
+          req.headers['Content-Type'] = 'application/json'
           end
           expect(response.status).to be == 403
         end
-        it 'delete responds with 403' do
+        it 'delete responds with 403' do      
           expect(client.delete(vocabulary_url).status).to be == 403
         end
       end
@@ -119,16 +122,18 @@ context 'admin vocabularies' do
             expect(
               data.except("created_at", "updated_at", "admin_comment")
             ).to eq(
-                   @vocabulary.attributes.with_indifferent_access
-                              .except(:created_at, :updated_at, :admin_comment)
-                 )
+              @vocabulary.attributes.with_indifferent_access
+                .except(  :created_at, :updated_at, :admin_comment)
+            )
           end
         end
       end
 
+
       context 'post' do
         before :each do
-
+          
+          
         end
 
         let :response do
@@ -144,13 +149,13 @@ context 'admin vocabularies' do
 
         it 'has the proper data' do
           data = response.body
-
+          
           expect(
-            data.except("created_at", "updated_at")
+            data.except( "created_at", "updated_at")
           ).to eq(
-                 @create_data.with_indifferent_access
-                             .except(:created_at, :updated_at)
-               )
+            @create_data.with_indifferent_access
+              .except( :created_at, :updated_at)   
+          )
         end
       end
 
@@ -173,12 +178,12 @@ context 'admin vocabularies' do
           data = response.body
           expect(
             data.except("created_at", "updated_at",
-                        "position")
+              "position")
           ).to eq(
-                 @vocabulary.attributes.with_indifferent_access
-                            .except(:created_at, :updated_at,
-                                    :position)
-               )
+            @vocabulary.attributes.with_indifferent_access
+              .except( :created_at, :updated_at,
+                :position)
+          )
           expect(data['position']).to be == 1
         end
       end
@@ -198,9 +203,9 @@ context 'admin vocabularies' do
           expect(
             data.except("created_at", "updated_at")
           ).to eq(
-                 @vocabulary.attributes.with_indifferent_access
-                            .except(:created_at, :updated_at)
-               )
+            @vocabulary.attributes.with_indifferent_access
+              .except( :created_at, :updated_at)        
+          )
         end
       end
 

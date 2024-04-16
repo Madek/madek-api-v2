@@ -6,9 +6,6 @@ PROJECT=madek-api
 PLUGIN=java
 PLUGIN_URL=https://github.com/halcyon/asdf-java.git
 
-echo "INFO: setting up $PLUGIN"
-echo "INFO: project dir: $PROJECT_DIR"
-
 source $PROJECT_DIR/bin/env/asdf-helper.bash
 asdf-update-plugin
 

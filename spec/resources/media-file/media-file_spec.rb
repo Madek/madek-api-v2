@@ -16,8 +16,8 @@ describe 'MediaFile Resource' do
   describe 'the image media file' do
     let :media_entry do
       media_entry = FactoryBot.create :media_entry,
-                                      get_full_size: true,
-                                      get_metadata_and_previews: true
+                                       get_full_size: true,
+                                       get_metadata_and_previews: true
     end
 
     let :media_file do
@@ -29,7 +29,7 @@ describe 'MediaFile Resource' do
     end
 
     # TODO remove json roa: test links: media-entry to media-file
-    # describe 'the media-entry resource' do
+    #describe 'the media-entry resource' do
     #  let :media_entry_resource do
     #    authenticated_json_roa_client.get.relation('media-entry')
     #      .get('id' => media_file.media_entry.id)
@@ -41,13 +41,13 @@ describe 'MediaFile Resource' do
     #    expect(media_entry_resource.relation('media-file').data['href']).to \
     #      match %r{.*/media-files/#{media_file.id}}
     #  end
-    # end
+    #end
 
     describe 'the media-file resource' do
-      # let :resource do
-      # authenticated_json_roa_client.get.relation('media-file') \
-      #  .get('id' => media_file.id)
-      # end
+      #let :resource do
+        #authenticated_json_roa_client.get.relation('media-file') \
+        #  .get('id' => media_file.id)
+      #end
 
       describe 'the response' do
         let :response do
@@ -74,13 +74,13 @@ describe 'MediaFile Resource' do
       end
 
       describe 'the data-stream resource' do
-        # let :data_stream_resource do
+        #let :data_stream_resource do
         #  resource.relation('data-stream').get
-        # end
+        #end
 
         describe 'the response' do
           let :data_stream_resource_response do
-            # data_stream_resource.response
+            #data_stream_resource.response
             authenticated_json_client.get("/api/media-file/#{media_file.id}/data-stream")
           end
 
@@ -113,7 +113,7 @@ describe 'MediaFile Resource' do
             end
             it 'has the proper hashsum' do
               expect(Digest::SHA256.hexdigest body).to be ==
-                                                         '66e1eb76ef8079968ff6a3e7519749be3fbb7b05d54a6f1270727273ccb2a539'
+                '66e1eb76ef8079968ff6a3e7519749be3fbb7b05d54a6f1270727273ccb2a539'
             end
           end
         end

@@ -5,10 +5,6 @@ PROJECT_NAME="madek-api-v2"
 JAR_NAME="${PROJECT_NAME}.jar"
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
 
-echo "INFO: building $PROJECT_NAME"
-echo "INFO: project dir: $PROJECT_DIR"
-echo "INFO: jar name: $JAR_NAME"
-
 # dirty working tree checking is problematic on CI => disabled for now
 # IGNORE_DIRTY_WORKING_DIR="${IGNORE_DIRTY_WORKING_DIR:-NO}"
 # if [ $IGNORE_DIRTY_WORKING_DIR == "NO" ]; then
@@ -21,13 +17,6 @@ mkdir -p ${LOCAL_CACHE_DIR}
 LOCAL_CACHED_ARTEFACT_PATH="${LOCAL_CACHE_DIR}/${PROJECT_NAME}_${DIGEST}.jar"
 BUILD_CACHE_DISABLED="${BUILD_CACHE_DISABLED:-NO}"
 
-
-echo "INFO: build cache dir: $LOCAL_CACHE_DIR"
-echo "INFO: build cache disabled: $BUILD_CACHE_DISABLED"
-echo "INFO: local cached artefact path: $LOCAL_CACHED_ARTEFACT_PATH"
-echo "INFO: project dir: $PROJECT_DIR"
-echo "INFO: jar name: $JAR_NAME"
-
 function build {
   cd $PROJECT_DIR
   ./bin/clean
@@ -38,15 +27,12 @@ function build {
 }
 
 if [ $BUILD_CACHE_DISABLED == "YES" ]; then
-  echo "INFO: build cache disabled"
   build
 else
-  echo "INFO: build cache enabled"
   if [ -e $LOCAL_CACHED_ARTEFACT_PATH ]; then
     echo "INFO: locally cached jar found"
     cp $LOCAL_CACHED_ARTEFACT_PATH $PROJECT_DIR/$JAR_NAME
   else
-    echo "INFO: locally cached jar not found"
     build
     cp $PROJECT_DIR/$JAR_NAME $LOCAL_CACHED_ARTEFACT_PATH
   fi

@@ -4,7 +4,7 @@ require Pathname(File.expand_path('datalayer/spec/models/keyword/terms_for_sorti
 
 describe 'generated runs' do
   (1..ROUNDS).each do |round|
-    # (1..1).each do |round|
+  #(1..1).each do |round|
     describe "ROUND #{round}" do
       describe 'meta_datum_keywords_for_random_resource_type' do
         include_context :meta_datum_for_random_resource_type
@@ -16,7 +16,7 @@ describe 'generated runs' do
             if example.exception
               example.exception.message << \
                 "\n  MediaResource: #{media_resource} " \
-                  " #{media_resource.attributes}"
+                " #{media_resource.attributes}"
               example.exception.message << "\n  Client: #{client_entity} " \
                 " #{client_entity.attributes}"
             end
@@ -31,10 +31,10 @@ describe 'generated runs' do
                 authenticated_json_client.get("/api/meta-data/#{meta_datum_keywords.id}")
               end
 
-              it 'status, either 200 success or 403 forbidden, ' \
-                   'corresponds to the get_metadata_and_previews value' do
+              it 'status, either 200 success or 403 forbidden, '\
+                  'corresponds to the get_metadata_and_previews value' do
                 expect(response.status).to be == \
-                                             (media_resource.get_metadata_and_previews ? 200 : 403)
+                  (media_resource.get_metadata_and_previews ? 200 : 403)
               end
 
               context 'if the response is 200' do
@@ -51,6 +51,7 @@ describe 'generated runs' do
                   end
                 end
 
+                
                 it 'it provides valid collection and relations' do
                   if response.status == 200
                     collection_data = response.body['value']
@@ -61,7 +62,7 @@ describe 'generated runs' do
                     meta_key_id = response.body['meta_key_id']
                     expect(authenticated_json_client.get("/api/meta-keys/#{meta_key_id}").status)
                       .to be == 200
-
+                    
                     if response.body['media_entry_id'] == media_resource.id
                       media_entry_id = response.body['media_entry_id']
                       expect(authenticated_json_client.get("/api/media-entry/#{media_entry_id}").status)

@@ -18,13 +18,13 @@ SHAS = \
 describe 'Getting a random preview for a specific media-entry' do
   before :each do
     media_entry = FactoryBot.create(:media_entry_with_image_media_file,
-                                    get_metadata_and_previews: true)
+                                      get_metadata_and_previews: true)
     previews = media_entry.media_file.previews
     @preview = previews.sample
   end
 
   (1..ROUNDS).each do |round|
-    #(1..1).each do |round|
+  #(1..1).each do |round|
     include_context :preview_resource_via_plain_json
 
     context "ROUND #{round}" do
@@ -33,11 +33,11 @@ describe 'Getting a random preview for a specific media-entry' do
       end
 
       describe 'getting the data-stream resource' do
-        # let :data_stream_resource do
+        #let :data_stream_resource do
         #  resource.relation('data-stream').get
-        # end
+        #end
         let :data_stream_resource_response do
-          # data_stream_resource.response
+          #data_stream_resource.response
           plain_faraday_json_client.get("/api/previews/#{@preview.id}/data-stream")
           # TODO json roa remove: test relation: preview data stream
         end
@@ -55,11 +55,11 @@ describe 'Getting a random preview for a specific media-entry' do
         context 'for not existing file' do
           it 'responds with 404' do
             media_entry = FactoryBot.create(:media_entry,
-                                            get_metadata_and_previews: true)
+                                              get_metadata_and_previews: true)
             media_file = FactoryBot.create(:media_file,
-                                           media_entry: media_entry)
+                                            media_entry: media_entry)
             @preview = FactoryBot.create(:preview,
-                                         media_file: media_file)
+                                          media_file: media_file)
             expect(data_stream_resource_response.status).to be == 404
           end
         end

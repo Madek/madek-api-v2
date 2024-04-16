@@ -23,11 +23,12 @@ describe 'generated runs' do
           [keyword_data.id, keyword_data2.id]
         end
 
-        # let (:md_url) { resource_url( meta_key.id) }
-        let (:mdtype_url) { resource_url_typed(meta_key.id, "keyword") }
-        let (:mdkw_url) { resource_url_typed_ided(meta_key.id, "keyword", keyword_data.id) }
-        let (:mdkw2_url) { resource_url_typed_ided(meta_key.id, "keyword", keyword_data2.id) }
-
+        #let (:md_url) { resource_url( meta_key.id) }
+        let (:mdtype_url) { resource_url_typed( meta_key.id, "keyword" ) }
+        let (:mdkw_url) { resource_url_typed_ided( meta_key.id, "keyword", keyword_data.id ) }
+        let (:mdkw2_url) { resource_url_typed_ided( meta_key.id, "keyword", keyword_data2.id ) }
+        
+        
         describe 'authenticated_json_client' do
           include_context :authenticated_json_client
 
@@ -35,7 +36,7 @@ describe 'generated runs' do
             if example.exception
               example.exception.message << \
                 "\n  MediaResource: #{media_resource} " \
-                  " #{media_resource.attributes}"
+                " #{media_resource.attributes}"
               example.exception.message << "\n  Client: #{client_entity} " \
                 " #{client_entity.attributes}"
 
@@ -115,13 +116,14 @@ describe 'generated runs' do
               let :get_response do
                 expect(authenticated_json_client.post(mdkw_url).status).to be == 200
                 expect(authenticated_json_client.post(mdkw2_url).status).to be == 200
-
+                
                 del_response = authenticated_json_client.delete(mdkw_url)
                 expect(del_response.status).to be == 200
                 expect(del_response.body['md_keywords'][0]['keyword_id']).to be == keyword_data2.id
 
                 authenticated_json_client.get(mdtype_url)
               end
+
 
               it 'status 200' do
                 expect(get_response.status).to be == 200
