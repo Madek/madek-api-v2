@@ -157,11 +157,7 @@
     ["app-settings"
      {:get {:summary (sd/sum_adm "Get App Settings.")
             :handler handle_get-app-settings
-
             :middleware [wrap-authorize-admin!]
-            ;:middleware [db/wrap-tx ring-audits/wrap
-            ;             wrap-authorize-admin!]
-
             :swagger {:produces "application/json"}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion

@@ -1,21 +1,14 @@
-;(ns madek.auth.utils.ring-audits
 (ns madek.api.utils.ring-audits
   (:require
    [cuerdas.core :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [logbug.debug :refer [debug-ns]]
-
-   ;[madek.auth.db.core :as db]
-   ;[madek.auth.http.shared :refer [HTTP_SAFE_METHODS]]
-
    [madek.api.db.core :as db]
    [madek.api.utils.shared :refer [HTTP_SAFE_METHODS]]
-
    [next.jdbc :as jdbc]
    [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-   [taoensso.timbre :refer [error warn info debug spy]])
-  (:import [clojure.lang ExceptionInfo]))
+   [taoensso.timbre :refer [debug warn]])
+  (:import (clojure.lang ExceptionInfo)))
 
 (defn txid [tx]
   (->> ["SELECT txid() AS txid"]
@@ -24,23 +17,6 @@
 
 (defn persist-request [txid request]
   "Persist the request; does not use the main transation to avoid rollback"
-
-  (let [
-
-        header (-> request :headers (get "http-uid"))
-        p (println ">o> 1header=" header)
-
-        header (-> request :headers)
-        p (println ">o> 2header=" header)
-
-        data {:txid txid
-              :http_uid (-> request :headers (get "http-uid"))
-              :path (-> request :uri)
-              :user_id (-> request :authenticated-entity :user_id)
-              :method (-> request :request-method name str/upper)}
-        p (println ">o> data=" data)
-        ])
-
   (-> (sql/insert-into :audited_requests)
       (sql/values [{:txid txid
                     :http_uid (-> request :headers (get "http-uid"))
@@ -70,14 +46,9 @@
   ([handler {handler-key :handler-key
              method :request-method
              tx :tx :as request}]
-
-   (println ">o> wrap!!!")
-
    (letfn [(audited-handler [request]
              (println ">o> within letfn!!!!")
-             (let [txid (txid tx)
-                   p (println ">o> persist now!!!!")
-                   ]
+             (let [txid (txid tx)]
                (persist-request txid request)
                (let [response (try (handler request)
                                    (catch Exception e
@@ -90,12 +61,7 @@
                  (when (#{:external-authentication-sign-in :sign-in} handler-key)
                    (update-request-user-id-from-session txid tx))
                  response)))]
-     (println ">o> " request)
-     ;(debug request)
-     ;(if (HTTP_SAFE_METHODS method)
-     ;  (handler request)
-     ;  (audited-handler request)))))
-
+     (debug request)
      (if (HTTP_SAFE_METHODS method)
        (handler request)
        (audited-handler request)))))

@@ -9,10 +9,7 @@
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.utils.cli :refer [long-opt-for-key]]
-
    [madek.api.utils.ring-audits :as ring-audits]
-
-
    [madek.api.utils.helper :refer [mslurp]]
    [muuntaja.core :as m]
    [reitit.coercion.schema]
@@ -155,14 +152,10 @@
    rmp/parameters-middleware
    muuntaja/format-negotiate-middleware
    muuntaja/format-response-middleware
-
-
    wrap-catch-exception
    muuntaja/format-request-middleware
    authentication/wrap
    authentication/wrap-log
-
-
    rrc/coerce-exceptions-middleware
    rrc/coerce-request-middleware
    rrc/coerce-response-middleware
