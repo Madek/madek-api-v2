@@ -131,7 +131,9 @@
   (try
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
-            uid (to-uuid (-> req :parameters :path :user_id))]
+            uid (to-uuid (-> req :parameters :path :user_id))
+            tx (:tx req )
+            ]
         (if-let [old-data (sd/query-eq-find-one
                            :vocabulary_user_permissions
                            :vocabulary_id vid
@@ -140,7 +142,7 @@
                 query (-> (sql/delete-from :vocabulary_user_permissions)
                           (sql/where [:= :vocabulary_id vid] [:= :user_id uid])
                           sql-format)
-                del-result (jdbc/execute-one! (get-ds) query)]
+                del-result (jdbc/execute-one! tx query)]
             (if (= 1 (::jdbc/update-count del-result))
               (sd/response_ok old-data)
               (sd/response_failed "Could not delete vocabulary user permission" 406)))
@@ -170,6 +172,7 @@
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
             data (-> req :parameters :body)
+            tx (:tx req )
             ins-data (assoc data
                             :vocabulary_id vid
                             :group_id gid)
@@ -177,7 +180,7 @@
                       (sql/values [ins-data])
                       (sql/returning :*)
                       sql-format)
-            ins-result (jdbc/execute-one! (get-ds) query)]
+            ins-result (jdbc/execute-one! tx query)]
         (if-let [result ins-result]
           (sd/response_ok result)
           (sd/response_failed "Could not create vocabulary group permission" 406))))
@@ -187,7 +190,9 @@
   (try
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
-            gid (-> req :parameters :path :group_id)]
+            gid (-> req :parameters :path :group_id)
+            tx (:tx req )
+            ]
         (if-let [old-data (sd/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
@@ -198,7 +203,7 @@
                           (sql/where [:= :vocabulary_id vid] [:= :group_id gid])
                           (sql/returning :*)
                           sql-format)
-                upd-result (jdbc/execute-one! (get-ds) query)]
+                upd-result (jdbc/execute-one! tx query)]
             (if upd-result
               (sd/response_ok upd-result)
               (sd/response_failed "Could not update vocabulary group permission" 406)))
@@ -209,7 +214,9 @@
   (try
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
-            gid (-> req :parameters :path :group_id)]
+            gid (-> req :parameters :path :group_id)
+            tx (:tx req )
+            ]
         (if-let [old-data (sd/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
@@ -218,7 +225,7 @@
                           (sql/where [:= :vocabulary_id vid] [:= :group_id gid])
                           (sql/returning :*)
                           sql-format)
-                del-result (jdbc/execute-one! (get-ds) query)]
+                del-result (jdbc/execute-one! tx query)]
             (if del-result
               (sd/response_ok del-result)
               (sd/response_failed "Could not delete vocabulary group permission" 406)))

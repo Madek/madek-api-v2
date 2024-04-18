@@ -3,10 +3,12 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.core :as db]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist t]]
    [madek.api.utils.helper :refer [mslurp]]
+   [madek.api.utils.ring-audits :as ring-audits]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -155,7 +157,11 @@
     ["app-settings"
      {:get {:summary (sd/sum_adm "Get App Settings.")
             :handler handle_get-app-settings
+
             :middleware [wrap-authorize-admin!]
+            ;:middleware [db/wrap-tx ring-audits/wrap
+            ;             wrap-authorize-admin!]
+
             :swagger {:produces "application/json"}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
