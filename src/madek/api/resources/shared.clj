@@ -366,15 +366,19 @@
 (defn- get-media-resource
   "First checks for collection_id, then for media_entry_id.
    If creating collection-media-entry-arc, the collection permission is checked."
-  ([request]
-   (or (get-media-resource request :collection_id "collections" "Collection")
-       (get-media-resource request :media_entry_id "media_entries" "MediaEntry")))
+  ([params ds]
+   (or (get-media-resource params :collection_id "collections" "Collection" ds)
+       (get-media-resource params :media_entry_id "media_entries" "MediaEntry" ds)))
 
-  ([request id-key table-name type]
+  ([params id-key table-name type ds]
+
+   (println ">o> 1tx=" (:tx params) " id=" id-key " table=" table-name " type=" type)
+   (println ">o> 2tx=" params)
+
    (try
-     (when-let [id (-> request :parameters :path id-key)]
+     (when-let [id (-> params :parameters :path id-key)]
        ;(info "get-media-resource" "\nid\n" id)
-       (when-let [resource (jdbc/execute-one! (:tx request)
+       (when-let [resource (jdbc/execute-one! ds
                                               (-> (sql/select :*)
                                                   (sql/from (keyword table-name))
                                                   (sql/where [:= :id (to-uuid id)])
@@ -386,8 +390,8 @@
        (merge (ex-data e)
               {:statuc 406, :body {:message (.getMessage e)}})))))
 
-(defn- ring-add-media-resource [request handler] ;;here
-  (if-let [media-resource (get-media-resource request)]
+(defn- ring-add-media-resource [request handler ds] ;;here
+  (if-let [media-resource (get-media-resource request ds)]
     (let [request-with-media-resource (assoc request :media-resource media-resource)]
       ;(info "ring-add-media-resource" "\nmedia-resource\n" media-resource)
       (handler request-with-media-resource))
@@ -410,20 +414,20 @@
      (throw (IllegalStateException. (str "We expected to find a MetaDatum for "
                                          id " but did not."))))))
 
-(defn- query-media-resource-for-meta-datum [meta-datum]
+(defn- query-media-resource-for-meta-datum [meta-datum ds]
   (or (when-let [id (:media_entry_id meta-datum)]
         (get-media-resource {:parameters {:path {:media_entry_id id}}}
-                            :media_entry_id "media_entries" "MediaEntry"))
+                            :media_entry_id "media_entries" "MediaEntry" ds ))
       (when-let [id (:collection_id meta-datum)]
         (get-media-resource {:parameters {:path {:collection_id id}}}
-                            :collection_id "collections" "Collection"))
+                            :collection_id "collections" "Collection" ds))
       (throw (IllegalStateException. (str "Getting the resource for "
                                           meta-datum "
                                           is not implemented yet.")))))
 
 (defn- ring-add-meta-datum-with-media-resource [request handler]
   (if-let [meta-datum (query-meta-datum request)]
-    (let [media-resource (query-media-resource-for-meta-datum meta-datum)]
+    (let [media-resource (query-media-resource-for-meta-datum meta-datum (:tx request))]
       ;(info "add-meta-datum-with-media-resource" "\nmeta-datum\n" meta-datum "\nmedia-resource\n" media-resource)
       (handler (assoc request
                       :meta-datum meta-datum
@@ -493,7 +497,7 @@
 
 (defn ring-wrap-add-media-resource [handler]
   (fn [request]
-    (ring-add-media-resource request handler)))
+    (ring-add-media-resource request handler (:tx request))))
 
 (defn ring-wrap-add-meta-datum-with-media-resource [handler]
   (fn [request]
