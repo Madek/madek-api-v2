@@ -98,7 +98,7 @@
   (-> token-hash
       user-session-query
       (sql-format :inline false)
-      (#(jdbc/execute!  %))))
+      (#(jdbc/execute! ds  %))))
 
 (defn- session-enbabled? []
   (-> (get-config) :madek_api_session_enabled boolean))
