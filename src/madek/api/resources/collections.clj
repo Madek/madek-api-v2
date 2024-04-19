@@ -4,7 +4,6 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.helper :refer [convert-map-if-exist f t]]
@@ -36,11 +35,12 @@
         (let [req-data (-> req :parameters :body)
               ins-data (assoc req-data :creator_id auth-id :responsible_user_id auth-id)
               ins-data (convert-map-if-exist ins-data)
+              ds (:tx req)
               query (-> (sql/insert-into :collections)
                         (sql/values [ins-data])
                         (sql/returning :*)
                         sql-format)
-              ins-result (jdbc/execute! (get-ds) query)]
+              ins-result (jdbc/execute! ds query)]
           (sd/logwrite req (str "handle_create-collection: " ins-result))
           (if-let [result (first ins-result)]
             (sd/response_ok result)
@@ -54,12 +54,13 @@
       (let [collection (:media-resource req)
             col-id (:id collection)
             data (-> req :parameters :body)
+              ds (:tx req)
             query (-> (sql/update :collections)
                       (sql/set (convert-map-if-exist data))
                       (sql/where [:= :id col-id])
                       (sql/returning :*)
                       sql-format)
-            result (jdbc/execute! (get-ds) query)]
+            result (jdbc/execute! ds query)]
 
         (sd/logwrite req (str "handle_update-collection: " col-id result))
 
@@ -73,12 +74,13 @@
   (try
     (catcher/with-logging {}
       (let [collection (:media-resource req)
+              ds (:tx req)
             col-id (:id collection)
             query (-> (sql/delete-from :collections)
                       (sql/where [:= :id col-id])
                       (sql/returning :*)
                       sql-format)
-            delresult (jdbc/execute-one! (get-ds) query)]
+            delresult (jdbc/execute-one! ds query)]
 
         (sd/logwrite req (str "handle_delete-collection: " col-id delresult))
         (if delresult

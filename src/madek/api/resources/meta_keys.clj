@@ -2,7 +2,6 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
    [madek.api.resources.shared :as sd]
@@ -74,23 +73,27 @@
 
 (defn handle_adm-get-meta-key [req]
   (let [mk (-> req :meta_key)
+        ds (:tx req)
         result (mk/include-io-mappings
-                (adm-export-meta-key mk) (:id mk))]
+                (adm-export-meta-key mk) (:id mk) ds)]
     (sd/response_ok result)))
 
 (defn handle_usr-get-meta-key [req]
   (let [mk (-> req :meta_key)
+        ds (:tx req)
         result (mk/include-io-mappings
-                (user-export-meta-key mk) (:id mk))]
+                (user-export-meta-key mk) (:id mk) ds)]
     (sd/response_ok result)))
 
 (defn handle_create_meta-key [req]
   (let [data (-> req :parameters :body)
+
+        ds (:tx req)
         sql-query (-> (sql/insert-into :meta_keys)
                       (sql/values [(convert-map-if-exist (cast-to-hstore data))])
                       (sql/returning :*)
                       sql-format)
-        db-result (jdbc/execute-one! (get-ds) sql-query)
+        db-result (jdbc/execute-one! ds sql-query)
         db-result (replace-java-hashmaps db-result)]
     (sd/response_ok db-result)))
 
@@ -98,13 +101,14 @@
   (let [data (-> req :parameters :body)
         id (-> req :path-params :id)
         dwid (assoc data :id id)
+        ds (:tx req)
         dwid (convert-map-if-exist (cast-to-hstore dwid))
         sql-query (-> (sql/update :meta_keys)
                       (sql/set dwid)
                       (sql/returning :*)
                       (sql/where [:= :id id])
                       sql-format)
-        db-result (jdbc/execute-one! (get-ds) sql-query)
+        db-result (jdbc/execute-one! ds sql-query)
         db-result (replace-java-hashmaps db-result)]
 
     (info "handle_update_meta-key:"
@@ -117,11 +121,12 @@
 
 (defn handle_delete_meta-key [req]
   (let [id (-> req :path-params :id)
+        ds (:tx req)
         sql-query (-> (sql/delete-from :meta_keys)
                       (sql/where [:= :id id])
                       (sql/returning :*)
                       sql-format)
-        db-result (jdbc/execute-one! (get-ds) sql-query)]
+        db-result (jdbc/execute-one! ds sql-query)]
 
     (if db-result
       (sd/response_ok db-result)

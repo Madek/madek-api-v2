@@ -3,15 +3,14 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.constants :as constants]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
 
 ; TODO error if user-id is undefined (public)
 (defn md-vocab-where-clause
-  [user-id]
-  (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id)]
+  [user-id ds]
+  (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id ds)]
     (if (empty? vocabulary-ids)
       [:= :vocabularies.enabled_for_public_view true]
       [:or
@@ -19,7 +18,7 @@
        [:in :vocabularies.id vocabulary-ids]])))
 
 (defn- base-query
-  [user-id]
+  [user-id ds]
   ;(-> (sql/select :*)
   (-> (sql/select :meta_data.id
                   :meta_data.type
@@ -36,18 +35,18 @@
       ; TODO use in other md access
       (sql/join :meta_keys [:= :meta_data.meta_key_id :meta_keys.id])
       (sql/join :vocabularies [:= :meta_keys.vocabulary_id :vocabularies.id])
-      (sql/where (md-vocab-where-clause user-id))
+      (sql/where (md-vocab-where-clause user-id ds))
 
       (sql/order-by [:vocabularies.position :asc]
                     [:meta_keys.position :asc]
                     [:meta_data.id :asc])))
 
-(defn- meta-data-query-for-media-entry [media-entry-id user-id]
-  (-> (base-query user-id)
+(defn- meta-data-query-for-media-entry [media-entry-id user-id ds]
+  (-> (base-query user-id ds)
       (sql/where [:= :meta_data.media_entry_id media-entry-id])))
 
-(defn- meta-data-query-for-collection [collection-id user-id]
-  (-> (base-query user-id)
+(defn- meta-data-query-for-collection [collection-id user-id ds]
+  (-> (base-query user-id ds)
       (sql/where [:= :meta_data.collection_id collection-id])))
 
 ; TODO test with json
@@ -70,14 +69,14 @@
     ;(info "MD:build-query:\n " query)
     query))
 
-(defn get-media-entry-meta-data [id user-id]
-  (->> (meta-data-query-for-media-entry id user-id)
+(defn get-media-entry-meta-data [id user-id ds]
+  (->> (meta-data-query-for-media-entry id user-id ds)
        (build-query nil)
-       (jdbc/execute! (get-ds))))
+       (jdbc/execute! ds)))
 
-(defn get-collection-meta-data [id user-id]
-  (let [mdq (sql-format (meta-data-query-for-collection id user-id))
-        result (jdbc/execute! (get-ds) mdq)]
+(defn get-collection-meta-data [id user-id ds]
+  (let [mdq (sql-format (meta-data-query-for-collection id user-id ds))
+        result (jdbc/execute! ds mdq)]
     ;(info "get-collection-meta-data:"
     ;              "\n col id: " id
     ;              "\n user id: " user-id
@@ -85,25 +84,25 @@
     ;              "\n result: " result)
     result))
 
-;(defn get-collection-meta-data [id user-id]
+;(defn get-collection-meta-data [id user-id ds]
 ;  (->> (meta-data-query-for-collection id user-id)
 ;       (build-query nil)
-;       (jdbc/query (get-ds))))
+;       (jdbc/query ds)))
 
-(defn get-meta-data [request media-resource]
+(defn get-meta-data [request media-resource ds]
   (let [user-id (-> request :authenticated-entity :id)]
     (when-let [id (:id media-resource)]
       (let [db-query (build-query request
                                   (case (:type media-resource)
-                                    "MediaEntry" (meta-data-query-for-media-entry id user-id)
-                                    "Collection" (meta-data-query-for-collection id user-id)))]
+                                    "MediaEntry" (meta-data-query-for-media-entry id user-id ds)
+                                    "Collection" (meta-data-query-for-collection id user-id ds)))]
         ;(info "get-meta-data" "\n db-query \n" db-query)
-        (jdbc/execute! (get-ds) db-query)))))
+        (jdbc/execute! ds db-query)))))
 
 (defn get-index [request]
   ;(info "get-index" "\nmedia-resource\n" (:media-resource request))
   (when-let [media-resource (:media-resource request)]
-    (when-let [meta-data (get-meta-data request media-resource)]
+    (when-let [meta-data (get-meta-data request media-resource (:tx request))]
       (let [data (conj
                   {:meta-data meta-data}
                   (case (:type media-resource)

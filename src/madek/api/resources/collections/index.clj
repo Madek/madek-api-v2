@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared :as sd]
@@ -52,7 +51,7 @@
     sql-query))
 
 (defn- query-index-resources [request]
-  (jdbc/execute! (get-ds) (build-query request)))
+  (jdbc/execute! (:tx request) (build-query request)))
 
 ;### index ####################################################################
 

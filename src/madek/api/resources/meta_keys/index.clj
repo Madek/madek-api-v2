@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :refer [add-offset-for-honeysql]]
    [madek.api.resources.shared]
    [madek.api.resources.shared :as sd]
@@ -12,8 +11,8 @@
    [taoensso.timbre :refer [info]]))
 
 (defn- where-clause
-  [user-id scope]
-  (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id scope)
+  [user-id scope ds]
+  (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id scope ds)
         perm-kw (keyword (str "vocabularies.enabled_for_public_" scope))]
     (info "vocabs where clause: " vocabulary-ids " for user " user-id " and " scope)
     (if (empty? vocabulary-ids)
@@ -58,9 +57,10 @@
 
 (defn db-query-meta-keys [request]
   (catcher/with-logging {}
-    (let [query (build-query request)]
+    (let [query (build-query request)
+          ds (:tx request)]
       (info "db-query-meta-keys: query: " query)
-      (jdbc/execute! (get-ds) query))))
+      (jdbc/execute! ds query))))
 
 ;(defn get-index [request]
 ;  (catcher/with-logging {}

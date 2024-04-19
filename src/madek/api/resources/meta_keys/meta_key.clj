@@ -2,25 +2,24 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
-   [madek.api.resources.locales :refer [add-field-for-default-locale]]
+   ;[madek.api.resources.locales :refer [add-field-for-default-locale]]
    [next.jdbc :as jdbc]))
 
 ;; TODO: not in use
-(defn add-fields-for-default-locale
-  [result]
-  (add-field-for-default-locale
-   "label" (add-field-for-default-locale
-            "description" (add-field-for-default-locale
-                           "hint" result))))
+;(defn add-fields-for-default-locale
+;  [result ds]
+;  (add-field-for-default-locale
+;   "label" (add-field-for-default-locale
+;            "description" (add-field-for-default-locale
+;                           "hint" result ds) ds)ds))
 
 (defn- get-io-mappings
-  [id]
+  [id ds]
   (let [query (-> (sql/select :key_map, :io_interface_id)
                   (sql/from :io_mappings)
                   (sql/where [:= :io_mappings.meta_key_id id])
                   (sql-format))]
-    (jdbc/execute! (get-ds) query)))
+    (jdbc/execute! ds query)))
 
 (defn- prepare-io-mappings-from
   [io-mappings]
@@ -33,8 +32,8 @@
                                                 (get groupped io-interface-id))}) io-interfaces))))
 
 (defn include-io-mappings
-  [result id]
-  (let [io-mappings (prepare-io-mappings-from (get-io-mappings id))]
+  [result id ds]
+  (let [io-mappings (prepare-io-mappings-from (get-io-mappings id ds))]
     (assoc result :io_mappings io-mappings)))
 
 (defn build-meta-key-query [id]
@@ -46,7 +45,7 @@
 ;(defn get-meta-key [request]
 ;  (let [id (-> request :parameters :path :id)
 ;        query (build-meta-key-query id)]
-;    (if-let [meta-key (first (jdbc/query (get-ds) query))]
+;    (if-let [meta-key (first (jdbc/query (:tx request) query))]
 ;      (let [result (include-io-mappings
 ;                    (sd/remove-internal-keys
 ;                     (add-fields-for-default-locale meta-key)) id)]
