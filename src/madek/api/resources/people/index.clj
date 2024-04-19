@@ -3,7 +3,6 @@
    [cuerdas.core :refer [empty-or-nil?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.people.common :as common]
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared :as sd]
@@ -49,12 +48,6 @@
                     [:people.id :asc])
       (pagination/sql-offset-and-limit query-params)
       (filter-query query-params)))
-
-(comment
-  (-> (build-query {:search-term "Schänk Thomas"})
-      spy
-      (sql-format :inline true)
-      (->> (jdbc/execute! (get-ds)))))
 
 (defn handler
   "Get an index of the people. Query parameters are pending to be implemented."
