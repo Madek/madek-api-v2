@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [madek.api.utils.helper :refer [cast-to-hstore t]]
@@ -35,7 +34,7 @@
                           (sql/values [ins-data])
                           (sql/returning :*)
                           sql-format)
-            ins-res (jdbc/execute-one! (get-ds) sql-query)
+            ins-res (jdbc/execute-one! (:tx req) sql-query)
             ins-res (sd/transform_ml_map ins-res)]
 
         (info "handle_create-static-page:"
@@ -58,7 +57,7 @@
                           (sql/where [:= :id id])
                           (sql/returning :*)
                           sql-format)
-            upd-result (jdbc/execute-one! (get-ds) sql-query)
+            upd-result (jdbc/execute-one! (:tx req) sql-query)
             upd-result (sd/transform_ml_map upd-result)]
 
         (info "handle_update-static_pages: "
@@ -79,7 +78,7 @@
                           (sql/where [:= :id id])
                           (sql/returning :*)
                           sql-format)
-            delresult (jdbc/execute-one! (get-ds) sql-query)
+            delresult (jdbc/execute-one! (:tx req) sql-query)
             delresult (sd/transform_ml_map delresult)]
 
         (info "handle_delete-static_page: "

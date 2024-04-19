@@ -3,12 +3,10 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :as db]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist t]]
+   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
-   [madek.api.utils.ring-audits :as ring-audits]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))

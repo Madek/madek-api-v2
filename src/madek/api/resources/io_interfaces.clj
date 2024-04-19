@@ -3,10 +3,8 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -39,7 +37,7 @@
                           (sql/values [data])
                           (sql/returning :*)
                           sql-format)
-            ins-res (jdbc/execute-one! (get-ds) sql-query)]
+            ins-res (jdbc/execute-one! (:tx req) sql-query)]
         (info "handle_create-io_interfaces: " "\ndata:\n" data "\nresult:\n" ins-res)
 
         (if-let [result ins-res]
@@ -59,7 +57,7 @@
                           (sql/set dwid)
                           (sql/where [:= :id id])
                           sql-format)
-            upd-result (jdbc/execute-one! (get-ds) sql-query)]
+            upd-result (jdbc/execute-one! ds sql-query)]
 
         (info "handle_update-io_interfaces: " "id: " id "\nnew-data:\n" dwid "\nresult: " upd-result)
 
@@ -77,7 +75,7 @@
             sql-query (-> (sql/delete-from :io_interfaces)
                           (sql/where [:= :id id])
                           sql-format)
-            del-result (jdbc/execute-one! (get-ds) sql-query)]
+            del-result (jdbc/execute-one! (:tx req) sql-query)]
 
         (if (= 1 (::jdbc/update-count del-result))
           (sd/response_ok io_interface)

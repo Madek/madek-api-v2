@@ -4,7 +4,6 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
-            [madek.api.db.core :refer [get-ds]]
             [madek.api.resources.shared :as sd]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -47,7 +46,7 @@
             sql-map {:insert-into :confidential_links
                      :values [ins-data]}
             sql (-> sql-map sql-format)
-            ins-result (jdbc/execute! (get-ds) [sql ins-data])]
+            ins-result (jdbc/execute! (:tx req) [sql ins-data])]
         (if-let [result (first ins-result)]
           (sd/response_ok result)
           (sd/response_failed "Could not create confidential link." 406))))
@@ -84,7 +83,7 @@
                       (sql/where [:= :id id])
                       sql-format)
 
-            upd-result (jdbc/execute! (get-ds) query)]
+            upd-result (jdbc/execute! (:tx req) query)]
 
         (sd/logwrite req (str "handle_update-conf-link:" "\nupdate data: " upd-data "\nresult: " upd-result))
         (if (= 1 (first upd-result))
@@ -103,7 +102,7 @@
                           (sql/where [:= :id id])
                           sql-format)
 
-                del-result (jdbc/execute! (get-ds) query)]
+                del-result (jdbc/execute! (:tx req) query)]
             (sd/logwrite req (str "handle_delete-conf-link:" "\ndelete data: " del-data "\nresult: " del-result))
             (if (= 1 (first del-result))
               (sd/response_ok del-data)

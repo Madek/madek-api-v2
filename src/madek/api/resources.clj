@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.authentication :as authentication]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.admins :as admins]
    [madek.api.resources.app-settings :as app-settings]
    [madek.api.resources.collection-collection-arcs :as collection-collection-arcs]
@@ -50,9 +49,9 @@
 (defn redirect-to-meta-datum-data-stream
   [{{media-entry-id :media_entry_id
      meta-key-id :meta_key_id} :route-params
-    context :context :as request}]
+    context :context ds :tx :as request}]
   (debug request)
-  (if-let [meta-data-id (-> (jdbc/execute! (get-ds)
+  (if-let [meta-data-id (-> (jdbc/execute! ds
                                            (-> (sql/select :id)
                                                (sql/from :meta_data)
                                                (sql/where [:and [:= :media_entry_id media-entry-id] [:= :meta_key_id meta-key-id]])
@@ -62,9 +61,9 @@
 
 (defn redirect-to-media-file-data-stream
   [{{media-entry-id :media_entry_id} :route-params
-    context :context :as request}]
+    context :context ds :tx :as request}]
   (debug request)
-  (if-let [media-file-id (-> (jdbc/execute! (get-ds)
+  (if-let [media-file-id (-> (jdbc/execute! ds
                                             (-> (sql/select :id)
                                                 (sql/from :media_files)
                                                 (sql/where [:= :media_entry_id media-entry-id])

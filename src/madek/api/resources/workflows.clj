@@ -39,7 +39,7 @@
             sql-query (-> (sql/insert-into :workflows)
                           (sql/values [ins-data])
                           sql-format)
-            ins-res (jdbc/execute-one! (get-ds) sql-query)]
+            ins-res (jdbc/execute-one! (:tx req) sql-query)]
 
         (info "handle_create-workflow: "
               "\ndata:\n" ins-data
@@ -62,7 +62,7 @@
                           (sql/set dwid)
                           (sql/where upd-query)
                           sql-format)
-            upd-result (jdbc/execute! (get-ds) sql-query)]
+            upd-result (jdbc/execute! (:tx req) sql-query)]
 
         (info "handle_update-workflow: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
@@ -79,7 +79,7 @@
             sql-query (-> (sql/delete-from :workflows)
                           (sql/where [:= :id id])
                           sql-format)
-            delresult (jdbc/execute! (get-ds) sql-query)]
+            delresult (jdbc/execute! (:tx req) sql-query)]
 
         (if (= 1 (::jdbc/update-count delresult))
           (sd/response_ok olddata)

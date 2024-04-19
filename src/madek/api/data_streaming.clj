@@ -1,6 +1,5 @@
 (ns madek.api.data-streaming
   (:require
-   [clojure.tools.logging :as logging]
    [ring.util.response]))
 
 (defn respond-with-file [file-path content-type]

@@ -1,10 +1,7 @@
 (ns madek.api.management
   (:require
-   [clojure.tools.logging :as logging]
-   [logbug.debug :as debug]
-   [logbug.thrown :as thrown]
    [madek.api.authentication.basic :as basic-auth]
-   [madek.api.utils.config :as config :refer [get-config]]
+   [madek.api.utils.config :refer [get-config]]
    [madek.api.utils.rdbms :as rdbms]))
 
 (defn- shutdown [_]

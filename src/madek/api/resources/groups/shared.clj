@@ -3,7 +3,6 @@
    [clj-uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -25,6 +24,6 @@
       (sql/from :groups)
       sql-format))
 
-(defn find-group [id]
-  (jdbc/execute-one! (get-ds) (find-group-sql id)))
+(defn find-group [id ds]
+  (jdbc/execute-one! ds (find-group-sql id)))
 
