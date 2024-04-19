@@ -8,7 +8,6 @@
             [logbug.catcher :as catcher]
             [madek.api.authorization :refer [authorized?]]
             [madek.api.constants :as mc]
-            [madek.api.db.core :refer [get-ds]]
             [madek.api.semver :as semver]
             [madek.api.utils.helper :refer [to-uuid]]
             [next.jdbc :as jdbc]
@@ -159,48 +158,48 @@
   (update-in sql-cls [0] #(clojure.string/replace % "WHERE" "")))
 
 (defn query-find-all
-  [table-key col-keys]
+  [table-key col-keys ds]
   (let [db-query (-> (build-query-base table-key col-keys)
                      sql-format)
-        db-result (jdbc/execute! (get-ds) db-query)]
+        db-result (jdbc/execute! ds db-query)]
     db-result))
 
 (defn query-eq-find-all
-  ([table-name col-name row-data]
+  ([table-name col-name row-data ds]
    (catcher/snatch {}
                    (jdbc/execute!
-                    (get-ds)
+                    ds
                     (sql-query-find-eq table-name col-name row-data))))
 
-  ([table-name col-name row-data col-name2 row-data2]
+  ([table-name col-name row-data col-name2 row-data2 ds]
    (catcher/snatch {}
                    (jdbc/execute!
-                    (get-ds)
+                    ds
                     (sql-query-find-eq table-name col-name row-data col-name2 row-data2)))))
 
 (defn query-eq-find-all-one
-  ([table-name col-name row-data]
+  ([table-name col-name row-data ds]
    (catcher/snatch {}
                    (jdbc/execute-one!
-                    (get-ds)
+                    ds
                     (sql-query-find-eq table-name col-name row-data))))
 
-  ([table-name col-name row-data col-name2 row-data2]
+  ([table-name col-name row-data col-name2 row-data2 ds]
    (catcher/snatch {}
                    (jdbc/execute-one!
-                    (get-ds)
+                    ds
                     (sql-query-find-eq table-name col-name row-data col-name2 row-data2)))))
 
 (defn query-eq-find-one
-  ([table-name col-name row-data]
-   (query-eq-find-all-one table-name col-name row-data))
-  ([table-name col-name row-data col-name2 row-data2]
-   (query-eq-find-all-one table-name col-name row-data col-name2 row-data2)))
+  ([table-name col-name row-data ds]
+   (query-eq-find-all-one table-name col-name row-data ds))
+  ([table-name col-name row-data col-name2 row-data2 ds]
+   (query-eq-find-all-one table-name col-name row-data col-name2 row-data2 ds)))
 
-#_(defn query-eq2-find-all [table-name col-name row-data col-name2 row-data2]
+#_(defn query-eq2-find-all [table-name col-name row-data col-name2 row-data2 ds]
     (catcher/snatch {}
                     (jdbc/query
-                     (get-ds)
+                     ds
                      (sql-query-find-eq table-name col-name row-data col-name2 row-data2))))
 
 #_(defn query-eq2-find-one [table-name col-name row-data col-name2 row-data2]
@@ -291,9 +290,10 @@
    It does send404 if set true and no such entity is found.
    If it exists it is associated with the request as reqkey"
   [request handler path-param db_table db_col_name reqkey send404]
-  (let [search (-> request :parameters :path path-param)]
+  (let [search (-> request :parameters :path path-param)
+        ds (:tx request)]
     ;(info "req-find-data: " search " " db_table " " db_col_name)
-    (if-let [result-db (query-eq-find-one db_table db_col_name search)]
+    (if-let [result-db (query-eq-find-one db_table db_col_name search ds)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)
         (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search))
@@ -304,9 +304,10 @@
    It does send404 if set true and no such entity is found.
    If it exists it is associated with the request as reqkey"
   [request handler path-param db_table db_col_name reqkey send404]
-  (let [search (-> request :path-params path-param)]
+  (let [search (-> request :path-params path-param)
+        ds (:tx request)]
     ;(info "req-find-data: " search " " db_table " " db_col_name)
-    (if-let [result-db (query-eq-find-one db_table db_col_name search)]
+    (if-let [result-db (query-eq-find-one db_table db_col_name search ds)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)
         (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search))
@@ -318,7 +319,7 @@
    If it exists it is associated with the request as reqkey"
   [request handler search search2 db_table db_col_name db_col_name2 reqkey send404]
   (info "req-find-data-search2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
-  (if-let [result-db (query-eq-find-one db_table db_col_name search db_col_name2 search2)]
+  (if-let [result-db (query-eq-find-one db_table db_col_name search db_col_name2 search2 (:tx request))]
     (handler (assoc request reqkey result-db))
     (if (= true send404)
       (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search " and " db_col_name2 " with " search2))
@@ -332,7 +333,8 @@
   [request handler path-param path-param2 db_table db_col_name db_col_name2 reqkey send404]
   (let [search (-> request :parameters :path path-param str)
         search2 (-> request :parameters :path path-param2 str)
-        res (query-eq-find-one db_table db_col_name search db_col_name2 search2)]
+        ds (:tx request)
+        res (query-eq-find-one db_table db_col_name search db_col_name2 search2 ds)]
 
 ;(info "req-find-data2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
     (if-let [result-db res]
@@ -345,10 +347,10 @@
 
 ; begin user and other util wrappers
 
-(defn is-admin [user-id]
+(defn is-admin [user-id ds]
   (let [none (->
               (jdbc/execute!
-               (get-ds)
+               ds
                (-> (sql/select :*)
                    (sql/from :admins)
                    (sql/where [:= :user_id (to-uuid user-id)])
@@ -372,7 +374,7 @@
    (try
      (when-let [id (-> request :parameters :path id-key)]
        ;(info "get-media-resource" "\nid\n" id)
-       (when-let [resource (jdbc/execute-one! (get-ds)
+       (when-let [resource (jdbc/execute-one! (:tx request)
                                               (-> (sql/select :*)
                                                   (sql/from (keyword table-name))
                                                   (sql/where [:= :id (to-uuid id)])
@@ -399,7 +401,7 @@
   (let [id (-> request :parameters :path :meta_datum_id)]
     #_(info "query-meta-datum" "\nid\n" id)
     (or
-     (jdbc/execute-one! (get-ds)
+     (jdbc/execute-one! (:tx request)
                         (-> (sql/select :*)
                             (sql/from :meta_data)
                             (sql/where [:= :id (to-uuid id)])

@@ -4,7 +4,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.resources.vocabularies.index :refer [get-index]]
@@ -27,7 +26,7 @@
                           (sql/values [(convert-map-if-exist (cast-to-hstore data))])
                           (sql/returning :*)
                           sql-format)
-            ins-res (jdbc/execute-one! (get-ds) sql-query)
+            ins-res (jdbc/execute-one! (:tx req) sql-query)
             ins-res (sd/transform_ml_map ins-res)]
 
         (if ins-res
@@ -41,8 +40,9 @@
       (let [data (-> req :parameters :body)
             id (-> req :path-params :id)
             dwid (assoc data :id id)
+            ds (:tx req)
             dwid (convert-map-if-exist (cast-to-hstore dwid))
-            old-data (sd/query-eq-find-one :vocabularies :id id)]
+            old-data (sd/query-eq-find-one :vocabularies :id id ds)]
 
         (if old-data
           (let [is_admin_endpoint (str/includes? (-> req :uri) "/admin/")
@@ -53,7 +53,7 @@
                 sql-query (apply sql/returning sql-query cols)
                 sql-query (-> sql-query
                               sql-format)
-                upd-res (jdbc/execute-one! (get-ds) sql-query)
+                upd-res (jdbc/execute-one! ds sql-query)
                 upd-res (sd/transform_ml_map upd-res)]
 
             (if upd-res
@@ -67,13 +67,15 @@
 (defn handle_delete-vocab [req]
   (try
     (catcher/with-logging {}
-      (let [id (-> req :parameters :path :id)]
-        (if-let [old-data (sd/query-eq-find-one :vocabularies :id id)]
+      (let [id (-> req :parameters :path :id)
+            ds (:tx req)
+            ]
+        (if-let [old-data (sd/query-eq-find-one :vocabularies :id id ds)]
           (let [sql-query (-> (sql/delete-from :vocabularies)
                               (sql/where [:= :id id])
                               (sql/returning :*)
                               sql-format)
-                db-result (jdbc/execute-one! (get-ds) sql-query)]
+                db-result (jdbc/execute-one! ds sql-query)]
 
             (if db-result
               (sd/response_ok (sd/transform_ml_map old-data))

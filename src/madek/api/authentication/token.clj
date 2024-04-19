@@ -3,7 +3,6 @@
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
    [pandect.algo.sha256 :as algo.sha256])
@@ -18,7 +17,7 @@
        algo.sha256/sha256-bytes
        base64-encode))
 
-(defn find-user-token-by-some-secret [secrets]
+(defn find-user-token-by-some-secret [secrets ds]
   (->> (-> (sql/select :users.*
                        [:scope_read :token_scope_read]
                        [:scope_write :token_scope_write]
@@ -33,7 +32,7 @@
            (sql/where [:raw "now() < api_tokens.expires_at"])
            (sql/join :users [:= :users.id :api_tokens.user_id])
            (sql-format))
-       (jdbc/execute! (get-ds))
+       (jdbc/execute! ds)
        (map #(clojure.set/rename-keys % {:email :email_address}))
        first))
 
@@ -63,7 +62,7 @@
            (assoc request
                   :authenticated-entity (assoc user-token :type "User")
                    ; TODO move into ae
-                  :is_admin (sd/is-admin (:user_id user-token))))))
+                  :is_admin (sd/is-admin (:user_id user-token) (:tx request))))))
 
 (defn find-token-secret-in-header [request]
   (when-let [header-value (-> request :headers keywordize-keys :authorization)]
@@ -72,7 +71,7 @@
 
 (defn find-and-authenticate-token-secret-or-continue [handler request]
   (if-let [token-secret (find-token-secret-in-header request)]
-    (if-let [user-token (find-user-token-by-some-secret [token-secret])]
+    (if-let [user-token (find-user-token-by-some-secret [token-secret] (:tx request))]
       (authenticate user-token handler request)
       {:status 401
        :body {:message "No token for this token-secret found!"}})

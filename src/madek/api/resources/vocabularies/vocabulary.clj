@@ -3,8 +3,6 @@
    [clojure.string :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
-   [madek.api.resources.locales :refer [add-field-for-default-locale]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
@@ -14,18 +12,19 @@
          :labels (sd/transform_ml (:labels vocab))
          :descriptions (sd/transform_ml (:descriptions vocab))))
 
-(defn- add-fields-for-default-locale
-  [result]
-  (add-field-for-default-locale
-   "label" (add-field-for-default-locale
-            "description" result)))
+;; TODO: not in use?
+;(defn- add-fields-for-default-locale
+;  [result]
+;  (add-field-for-default-locale
+;   "label" (add-field-for-default-locale
+;            "description" result)))
 
 (defn- where-clause
-  [id user-id]
+  [id user-id ds]
   (let [public [:= :vocabularies.enabled_for_public_view true]
         id-match [:= :vocabularies.id id]]
     (if user-id
-      (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id)]
+      (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id ds)]
         [:and
          (if-not (empty? vocabulary-ids)
            [:or
@@ -35,10 +34,10 @@
          id-match])
       [:and public id-match])))
 
-(defn build-vocabulary-query [id user-id]
+(defn build-vocabulary-query [id user-id ds]
   (-> (sql/select :*)
       (sql/from :vocabularies)
-      (sql/where (where-clause id user-id))
+      (sql/where (where-clause id user-id ds))
       (sql-format)))
 
 ; TODO for admin do not remove internal keys (admin_comment)
@@ -46,9 +45,10 @@
 (defn get-vocabulary [request]
   (let [id (-> request :parameters :path :id)
         user-id (-> request :authenticated-entity :id)
-        query (build-vocabulary-query id user-id)
+        ds (:tx request)
+        query (build-vocabulary-query id user-id ds)
         is_admin_endpoint (str/includes? (-> request :uri) "/admin/")
-        db-result (jdbc/execute-one! (get-ds) query)
+        db-result (jdbc/execute-one! (:tx request) query)
         result (if (not (nil? db-result))
                  (if is_admin_endpoint
                    (-> db-result

@@ -3,7 +3,6 @@
    [clj-uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [next.jdbc :as jdbc]))
 
 ;### admin check ##############################################################
@@ -23,7 +22,7 @@
                      (sql/from :admins)
                      (sql/where [:= :admins.user_id (-> request :authenticated-entity :id)])
                      sql-format)
-                 (jdbc/execute! (get-ds))
+                 (jdbc/execute! (:tx request))
                  first :is_admin)
           ;(assoc-in request [:authenticated-entity :is_admin] true)))
         (assoc-in request [:is_admin] true)))
