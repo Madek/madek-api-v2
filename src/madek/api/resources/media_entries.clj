@@ -6,7 +6,6 @@
             [honey.sql.helpers :as sql]
             [madek.api.authorization :as authorization]
             [madek.api.constants :refer [FILE_STORAGE_DIR]]
-            [madek.api.db.core :refer [get-ds]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
@@ -33,14 +32,15 @@
 (defn handle_delete_media_entry [req]
   (let [eid (-> req :parameters :path :media_entry_id)
         mr (-> req :media-resource)
+        ds (:tx req)
         sql-query-files (-> (sql/delete :media_files)
                             (sql/where [:= :media_entry_id eid])
                             sql-format)
-        fresult (jdbc/execute! (get-ds) sql-query-files)
+        fresult (jdbc/execute! ds sql-query-files)
         sql-query-entries (-> (sql/delete :media_entries)
                               (sql/where [:= :id eid])
                               sql-format)
-        dresult (jdbc/execute! (get-ds) sql-query-entries)]
+        dresult (jdbc/execute! ds sql-query-entries)]
 
     (info "handle_delete_media_entry"
           "\n eid: \n" eid
@@ -50,12 +50,12 @@
       (sd/response_ok {:deleted mr})
       (sd/response_failed {:message "Failed to delete media entry"} 406))))
 
-(defn- get-context-keys-4-context [contextId]
+(defn- get-context-keys-4-context [contextId ds]
   (map :meta_key_id
-       (sd/query-eq-find-all :context_keys :context_id (to-uuid contextId))))
+       (sd/query-eq-find-all :context_keys :context_id (to-uuid contextId)ds)))
 
-(defn- check-has-meta-data-for-context-key [meId mkId]
-  (let [md (sd/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId)
+(defn- check-has-meta-data-for-context-key [meId mkId ds]
+  (let [md (sd/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId ds)
         hasMD (not (nil? md))
         result {(keyword mkId) hasMD}]
     result))
@@ -66,13 +66,14 @@
    In that case, the is_publishable of the entry is set to true."
   (let [eid (-> req :parameters :path :media_entry_id)
         mr (-> req :media-resource)
+        ds (:tx req)
 
-        validationContexts (-> (sd/query-find-all :app_settings :contexts_for_entry_validation)
+        validationContexts (-> (sd/query-find-all :app_settings :contexts_for_entry_validation ds)
                                first
                                :contexts_for_entry_validation)
         contextKeys (first (map get-context-keys-4-context validationContexts))
         hasMetaData (for [cks contextKeys]
-                      (check-has-meta-data-for-context-key eid cks))
+                      (check-has-meta-data-for-context-key eid cks ds))
         tf (for [elem hasMetaData] (vals elem))
         publishable (reduce (fn [tfresult tfval] (and tfresult (first tfval))) [true] tf)]
 
@@ -90,14 +91,14 @@
                           (sql/set data)
                           (sql/where [:= :id eid])
                           sql-format)
-            dresult (jdbc/execute-one! (get-ds) sql-query)]
+            dresult (jdbc/execute-one! ds sql-query)]
 
         (info "handle_try-publish-media-entry"
               "\n published: entry_id: \n" eid
               "\n dresult: \n" dresult)
 
         (if (= 1 (::jdbc/update-count dresult))
-          (sd/response_ok (sd/query-eq-find-one :media_entries :id eid))
+          (sd/response_ok (sd/query-eq-find-one :media_entries :id eid ds))
           (sd/response_failed "Could not update publish on media_entry." 406)))
 
       (sd/response_failed {:is_publishable publishable
@@ -155,7 +156,7 @@
 
 (defn create-media_entry
   "Only for testing. Does not trigger media convert. So previews are missing."
-  [file auth-entity mime collection-id]
+  [file auth-entity mime collection-id ds]
   (let [user-id (:id auth-entity)
         new-me {:responsible_user_id (str user-id)
                 :creator_id (str user-id)
@@ -168,21 +169,20 @@
           sql-query (-> (sql/insert-into :media_entries)
                         (sql/values [(convert-map-if-exist new-me)])
                         sql-format)
-          new-mer (jdbc/execute! (get-ds) sql-query)]
+          new-mer (jdbc/execute! ds sql-query)]
       (if new-mer
-        (let [tx (get-ds)
-              me-id (:id new-mer)
+        (let [me-id (:id new-mer)
               mf (new_media_file_attributes file user-id mime)
               new-mf (assoc mf :media_entry_id me-id)
               sql-query (-> (sql/insert-into :media_files)
                             (sql/values [(convert-map-if-exist new-mf)])
                             sql-format)
-              new-mfr (jdbc/execute-one! tx sql-query)]
+              new-mfr (jdbc/execute-one! ds sql-query)]
 
           (info "\ncreate-me: " "\ncreated media-entry: " new-mer "\nnew media-file: " new-mf)
 
           (if new-mfr
-            (handle_uploaded_file_resp_ok file new-mfr new-mer collection-id tx)
+            (handle_uploaded_file_resp_ok file new-mfr new-mer collection-id ds)
             (sd/response_failed "Could not create media-file" 406)))
         (sd/response_failed "Could not create media-entry" 406)))))
 ; this is only for dev
@@ -195,7 +195,7 @@
 (defn handle_create-media-entry [req]
   (let [copy-md-id (-> req :parameters :query :copy_me_id)
         collection-id (-> req :parameters :query :collection_id)
-
+        ds (:tx req)
         file (-> req :parameters :multipart :file)
         file-content-type (-> file :content-type)
         temppath (.getPath (:tempfile file))
@@ -215,7 +215,7 @@
       (info "handle_create-media-entry" "\nmime-type\n" mime)
       (if (nil? auth)
         (sd/response_failed "Not authed" 406)
-        (create-media_entry file auth mime collection-id)))))
+        (create-media_entry file auth mime collection-id ds)))))
 
 (def schema_query_media_entries
   {(s/optional-key :collection_id) s/Uuid

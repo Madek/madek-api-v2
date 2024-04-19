@@ -9,7 +9,6 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [logbug.debug :refer [I> identity-with-logging]]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
@@ -127,12 +126,12 @@
   (let [direction (-> (str/split order #"_") (last))]
     (reduce order-reducer [query ["MetaDatum::Text" "madek_core:title" direction]])))
 
-(defn- find-collection-default-sorting [collection-id]
+(defn- find-collection-default-sorting [collection-id ds]
   (let [query (-> (sql/select :sorting)
                   (sql/from :collections)
                   (sql/where [:= :collections.id collection-id])
                   sql-format)]
-    (:sorting (jdbc/execute-one! (get-ds) query))))
+    (:sorting (jdbc/execute-one! ds query))))
 
 (defn- handle-missing-collection-id [collection-id code-to-run]
   (if (or (not collection-id) (nil? collection-id))
@@ -228,7 +227,7 @@
     query-res))
 
 (defn- query-index-resources [request]
-  (jdbc/execute! (get-ds) (build-query request)))
+  (jdbc/execute! (:tx request) (build-query request)))
 
 ;### index ####################################################################
 

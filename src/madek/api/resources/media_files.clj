@@ -12,14 +12,14 @@
 
 ;##############################################################################
 
-(defn- query-media-file [media-file-id]
-  (sd/query-eq-find-one :media_files :id media-file-id))
+(defn- query-media-file [media-file-id ds]
+  (sd/query-eq-find-one :media_files :id media-file-id ds))
 
-(defn query-media-file-by-media-entry-id [media-entry-id]
-  (sd/query-eq-find-one :media_files :media_entry_id media-entry-id))
+(defn query-media-file-by-media-entry-id [media-entry-id ds]
+  (sd/query-eq-find-one :media_files :media_entry_id media-entry-id ds))
 
-(defn query-media-files-by-media-entry-id [media-entry-id]
-  (sd/query-eq-find-all :media_files :media_entry_id media-entry-id))
+(defn query-media-files-by-media-entry-id [media-entry-id ds]
+  (sd/query-eq-find-all :media_files :media_entry_id media-entry-id ds))
 
 (defn wrap-find-and-add-media-file
   "Extracts path parameter media_entry_id,
@@ -27,7 +27,7 @@
   [handler]
   (fn [request]
     (when-let [media-file-id (-> request :parameters :path :media_file_id)]
-      (if-let [media-file (query-media-file media-file-id)]
+      (if-let [media-file (query-media-file media-file-id (:tx request))]
         (handler (assoc request :media-file media-file))
         (sd/response_not_found "No media-file for media_file_id")))))
 
@@ -37,7 +37,7 @@
   [handler]
   (fn [request]
     (when-let [media-entry-id (-> request :parameters :path :media_entry_id)]
-      (if-let [media-files (query-media-files-by-media-entry-id media-entry-id)]
+      (if-let [media-files (query-media-files-by-media-entry-id media-entry-id (:tx request))]
         (handler (assoc request :media-file (first media-files)))
         (sd/response_not_found "No media-file for media_entry_id")))))
 

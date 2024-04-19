@@ -218,6 +218,47 @@
           (sd/response_failed "No such person data." 404))))
     (catch Exception ex (sd/response_exception ex))))
 
+
+;(ns leihs.my.back.html
+;    (:refer-clojure :exclude [keyword str])
+;    (:require
+;      [hiccup.page :refer [html5]]
+;      [honey.sql :refer [format] :rename {format sql-format}]
+;      [honey.sql.helpers :as sql]
+;      [leihs.core.http-cache-buster2 :as cache-buster]
+;      [leihs.core.json :refer [to-json]]
+;      [leihs.core.remote-navbar.shared :refer [navbar-props]]
+;      [leihs.core.shared :refer [head]]
+;      [leihs.core.url.core :as url]
+;      [leihs.my.authorization :as auth]
+;      [leihs.core.db :as db]
+;      [next.jdbc :as jdbc]))
+
+(comment
+
+  (let [
+        tx (db/get-ds-next)
+        request {:route-params {:user-id #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"}
+                 :tx           tx}
+        user-id #uuid "37bb3d3d-3a61-4f98-863e-c549568317f0"
+        query (sql-format {:select :*
+                           :from [:users]
+                           :where [:= :id [:cast user-id :uuid]]})
+
+        ;query2 (-> (sql/select :*)
+        ;           (sql/from :users)
+        ;           (sql/where [:= :id user-id])
+        ;           sql-format
+        ;           (->> (jdbc/execute! tx))
+        ;           )
+
+        p (println "\nquery" query)
+        ;p (println "\nquery2" query2)
+        ]
+
+       )
+  )
+
 (defn handle_patch-person
   [req]
   (try

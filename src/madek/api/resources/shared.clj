@@ -456,7 +456,7 @@
           (handler request)
 
           ; if not admin check user auth
-          (if (authorized? auth-entity media-resource scope)
+          (if (authorized? auth-entity media-resource scope (:tx request))
             (handler request)
             ;else
             {:status 403 :body {:message "Not authorized for media-resource"}}))

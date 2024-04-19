@@ -1,7 +1,6 @@
 (ns madek.api.resources.media-entries.advanced-filter.meta-data
   (:require
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.meta-keys.meta-key :as meta-key]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
@@ -12,12 +11,12 @@
                               "meta_data_keywords" {:table "keywords",
                                                     :resource "keyword",
                                                     :match_column "term"}})
-(defn- get-meta-datum-object-type [meta-datum-spec]
+(defn- get-meta-datum-object-type [meta-datum-spec ds]
   (or (:type meta-datum-spec)
       (:meta_datum_object_type
        (first
         (jdbc/execute!
-         (get-ds)
+         ds
          (meta-key/build-meta-key-query (:key meta-datum-spec)))))))
 
 (defn- sql-merge-join-related-meta-data

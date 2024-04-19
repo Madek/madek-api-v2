@@ -54,10 +54,11 @@
             perm-val (-> req :parameters :path :perm_val)
             perm-data {perm-name perm-val}
             mr (-> req :media-resource)
+            ds (:tx req)
             mr-type (:type mr)
-            upd-result (mr-permissions/update-resource-permissions mr perm-data)]
+            upd-result (mr-permissions/update-resource-permissions mr perm-data ds)]
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (get-entity-perms (mr-permissions/resource-permission-get-query mr) mr-type))
+          (sd/response_ok (get-entity-perms (mr-permissions/resource-permission-get-query mr ds) mr-type))
           (sd/response_failed (str "Could not update permissions" upd-result) 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -67,10 +68,11 @@
     (catcher/with-logging {}
       (let [perm-data (-> req :parameters :body)
             mr (-> req :media-resource)
+            ds (:tx req)
             mr-type (:type mr)
-            upd-result (mr-permissions/update-resource-permissions mr perm-data)]
+            upd-result (mr-permissions/update-resource-permissions mr perm-data ds)]
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (get-entity-perms (mr-permissions/resource-permission-get-query mr) mr-type))
+          (sd/response_ok (get-entity-perms (mr-permissions/resource-permission-get-query mr ds) mr-type))
           (sd/response_failed (str "Could not update permissions" upd-result) 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -78,15 +80,17 @@
   [req]
   (let [mr (-> req :media-resource)
         mr-type (mr-table-type mr)
-        data (mr-permissions/query-list-user-permissions mr mr-type)]
+        ds (:tx req)
+        data (mr-permissions/query-list-user-permissions mr mr-type ds)]
     (sd/response_ok data)))
 
 (defn- handle_get-user-perms
   [req]
   (let [user-id (-> req :parameters :path :user_id)
         mr (-> req :media-resource)
+        ds (:tx req)
         mr-type (mr-table-type mr)]
-    (if-let [data (mr-permissions/query-get-user-permission mr mr-type user-id)]
+    (if-let [data (mr-permissions/query-get-user-permission mr mr-type user-id ds)]
       (sd/response_ok data)
       (sd/response_not_found "No such resource user permission."))))
 
@@ -96,8 +100,9 @@
       (let [user-id (-> req :parameters :path :user_id)
             mr (-> req :media-resource)
             mrt (mr-table-type mr)
+            ds (:tx req)
             data (-> req :parameters :body)
-            result (mr-permissions/create-user-permissions mr mrt user-id data)]
+            result (mr-permissions/create-user-permissions mr mrt user-id data ds)]
 
         (if (nil? result)
           (sd/response_failed "Could not create user permissions." 422)
@@ -109,10 +114,11 @@
     (catcher/with-logging {}
       (let [user-id (-> req :parameters :path :user_id)
             mr (-> req :media-resource)
+            ds (:tx req)
             mrt (mr-table-type mr)]
 
-        (if-let [user-perm (mr-permissions/query-get-user-permission mr mrt user-id)]
-          (let [delok (mr-permissions/delete-user-permissions mr mrt user-id)]
+        (if-let [user-perm (mr-permissions/query-get-user-permission mr mrt user-id ds)]
+          (let [delok (mr-permissions/delete-user-permissions mr mrt user-id ds)]
             (if (true? delok)
               (sd/response_ok user-perm)
               (sd/response_failed "Could not delete resource user permission." 406)))

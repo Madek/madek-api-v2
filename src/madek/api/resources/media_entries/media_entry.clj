@@ -2,7 +2,6 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -21,7 +20,7 @@
                   (sql/join :previews [:= :media_files.id :previews.media_file_id])
                   (sql/where [:= :previews.id (to-uuid preview-id)])
                   (sql-format))
-        dbresult (jdbc/execute-one! (get-ds) query)]
+        dbresult (jdbc/execute-one! (:tx request) query)]
     ;(info "get-media-entry-for-preview" "\npreview-id\n" preview-id "\ndbresult\n" dbresult)
     dbresult))
 
