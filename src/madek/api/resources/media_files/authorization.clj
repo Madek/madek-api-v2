@@ -8,6 +8,7 @@
 
 (defn- media-file-authorize [request handler scope]
   (let [media-entry-id (get-in request [:media-file :media_entry_id])
+        ds (:tx request)
         media-entry (-> (jdbc/execute-one! (:tx request) (-> (sql/select :*)
                                                         (sql/from :media_entries)
                                                         (sql/where [:= :id media-entry-id])
@@ -18,9 +19,9 @@
       (if-let [auth-entity (:authenticated-entity request)]
         (if (case scope
               :get_full_size (me-permissions/downloadable-by-auth-entity?
-                              media-entry auth-entity)
+                              media-entry auth-entity ds)
               :get_metadata_and_previews (me-permissions/viewable-by-auth-entity?
-                                          media-entry auth-entity))
+                                          media-entry auth-entity ds))
           (handler request)
           {:status 403})
         {:status 401}))))

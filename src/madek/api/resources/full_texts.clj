@@ -2,7 +2,6 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
-            [madek.api.db.core :refer [get-ds]]
             [madek.api.pagination :as pagination]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -25,7 +24,7 @@
                      (sd/build-query-param-like query-params :text)
                      (pagination/add-offset-for-honeysql query-params)
                      sql-format)
-        db-result (jdbc/execute! (get-ds) db-query)]
+        db-result (jdbc/execute! (:tx req) db-query)]
 
     (info "handle_list-full_texts:" "\nquery:\n" db-query)
     (sd/response_ok db-result)))
@@ -49,7 +48,7 @@
                           (sql/values [ins-data])
                           (sql/returning :*)
                           sql-format)
-            ins-res (jdbc/execute-one! (get-ds) sql-query)]
+            ins-res (jdbc/execute-one! (:tx req) sql-query)]
 
         (info "handle_create-full_texts: " "\nnew-data:\n" ins-data "\nresult:\n" ins-res)
 
@@ -73,7 +72,7 @@
                           (sql/where [:= :media_resource_id mr-id])
                           (sql/returning :*)
                           sql-format)
-            upd-result (jdbc/execute-one! (get-ds) sql-query)]
+            upd-result (jdbc/execute-one! (:tx req) sql-query)]
 
         (info "handle_update-full_texts: " mr-id "\new-data:\n" dwid "\nresult:\n" upd-result)
 
@@ -92,7 +91,7 @@
                           (sql/where [:= :media_resource_id mr-id])
                           (sql/returning :*)
                           sql-format)
-            del-result (jdbc/execute-one! (get-ds) sql-query)]
+            del-result (jdbc/execute-one! (:tx req) sql-query)]
 
         (info "handle_delete-full_texts: " mr-id " result: " del-result)
 

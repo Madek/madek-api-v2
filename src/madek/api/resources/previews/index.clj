@@ -29,7 +29,7 @@
                    (sql/where [:= :previews.media_file_id (:id media-file)])
                    (sql/order-by [:previews.created_at :desc])
                    sql-format)]
-    (let [detected-id (detect-ui-preview-id sqlmap (:media_type media-file))]
+    (let [detected-id (detect-ui-preview-id sqlmap (:media_type media-file) ds)]
       (add-preview-pointer-to
        (jdbc/execute! ds sqlmap)
        detected-id))))

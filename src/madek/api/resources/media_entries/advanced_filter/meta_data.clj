@@ -148,8 +148,8 @@
                               (sql/where [:= :meta_data.media_entry_id :media_entries.id]))])
                       (keys match-columns)))))))
 
-(defn- extend-sqlmap-according-to-meta-datum-spec [sqlmap [meta-datum-spec counter]]
-  (let [meta-datum-object-type (get-meta-datum-object-type meta-datum-spec)
+(defn- extend-sqlmap-according-to-meta-datum-spec [sqlmap [meta-datum-spec counter] ds]
+  (let [meta-datum-object-type (get-meta-datum-object-type meta-datum-spec ds)
         related-meta-data-table (case meta-datum-object-type
                                   "MetaDatum::People" "meta_data_people"
                                   "MetaDatum::Keywords" "meta_data_keywords"

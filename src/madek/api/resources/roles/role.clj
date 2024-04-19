@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.helper :refer [cast-to-hstore]]
@@ -27,7 +26,7 @@
 (defn get-index
   [request]
   (let [query-params (-> request :parameters :query)
-        dbresult (jdbc/execute! (get-ds) (query-index query-params))
+        dbresult (jdbc/execute! (:tx request) (query-index query-params))
         result (map transform-ml-role dbresult)]
     (sd/response_ok {:roles result})))
 
@@ -37,14 +36,15 @@
       (sql/where [:= :roles.id id])
       (sql-format)))
 
-(defn db_role-find-one [id]
+(defn db_role-find-one [id ds]
   (let [query (query_role-find-one id)
-        resultdb (jdbc/execute-one! (get-ds) query)]
+        resultdb (jdbc/execute-one! ds query)]
     resultdb))
 
 (defn handle_get-role-usr [request]
-  (let [id (-> request :parameters :path :id)]
-    (if-let [resultdb (db_role-find-one id)]
+  (let [id (-> request :parameters :path :id)
+        ds (:tx request)]
+    (if-let [resultdb (db_role-find-one id ds)]
       (let [result (-> resultdb
                        export-role
                        transform-ml-role)]
@@ -52,8 +52,9 @@
       (sd/response_failed "No such role." 404))))
 
 (defn handle_get-role-admin [request]
-  (let [id (-> request :parameters :path :id)]
-    (if-let [resultdb (db_role-find-one id)]
+  (let [id (-> request :parameters :path :id)
+        ds (:tx request)]
+    (if-let [resultdb (db_role-find-one id ds)]
       (let [result (transform-ml-role resultdb)]
         (sd/response_ok result))
       (sd/response_failed "No such role." 404))))
@@ -69,7 +70,8 @@
                             (sql/values [(cast-to-hstore ins-data)])
                             (sql/returning :*)
                             sql-format)
-            ins-res (jdbc/execute-one! (get-ds) insert-stmt)
+            ds (:tx req)
+            ins-res (jdbc/execute-one! ds insert-stmt)
             ins-res (transform-ml-role ins-res)]
 
         (info "handle_create-role: " "\new-data:\n" data "\nresult:\n" ins-res)
@@ -87,18 +89,19 @@
       (let [data (-> req :parameters :body)
             id (-> req :parameters :path :id)
             dwid (assoc data :id id)
+            ds (:tx req)
             update-stmt (-> (sql/update :roles)
                             (sql/set (cast-to-hstore dwid))
                             (sql/where [:= :id id])
                             (sql/returning :*)
                             sql-format)
-            upd-result (jdbc/execute-one! (get-ds) update-stmt)]
+            upd-result (jdbc/execute-one! ds update-stmt)]
 
         (info "handle_update-role: " id "\nnew-data\n" dwid "\nupd-result\n" upd-result)
 
         (if upd-result
           (sd/response_ok (transform-ml-role
-                           (sd/query-eq-find-one :roles :id id)))
+                           (sd/query-eq-find-one :roles :id id ds)))
           (sd/response_failed "Could not update role." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -106,14 +109,15 @@
   [req]
   (try
     (catcher/with-logging {}
-      (let [id (-> req :parameters :path :id)]
-        (if-let [role (sd/query-eq-find-one :roles :id id)]
-
+      (let [id (-> req :parameters :path :id)
+            ds (:tx req)]
+        (if-let [role (sd/query-eq-find-one :roles :id id ds)]
           (let [delete-stmt (-> (sql/delete-from :roles)
                                 (sql/where [:= :id id])
                                 (sql/returning :*)
                                 (sql-format))
-                del-result (jdbc/execute-one! (get-ds) delete-stmt)
+
+                del-result (jdbc/execute-one! ds delete-stmt)
                 del-result (transform-ml-role del-result)]
 
             (info "handle_delete-role: " id " result: " del-result)

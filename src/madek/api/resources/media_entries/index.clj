@@ -154,9 +154,9 @@
 (defn- default-order [query]
   (sql/order-by query [:media_entries.created_at :asc]))
 
-(defn- order-by-collection-sorting [query collection-id]
+(defn- order-by-collection-sorting [query collection-id ds]
   (handle-missing-collection-id collection-id
-                                (if-let [sorting (find-collection-default-sorting collection-id)]
+                                (if-let [sorting (find-collection-default-sorting collection-id ds)]
                                   (let [prepared-sorting (->> (str/split (str/replace sorting "created_at " "") #" ") (str/join "_") str/lower-case)]
                                     (order-by-string query prepared-sorting collection-id))
                                   (sql/order-by query [:media_entries.created_at :asc]))))
@@ -165,7 +165,7 @@
   (str "only the following values are allowed as order parameter: "
        (str/join ", " available-sortings) " and stored_in_collection"))
 
-(defn- set-order [query query-params]
+(defn- set-order [query query-params ds]
   (-> (let [qorder (-> query-params :order)
             order (sd/try-as-json qorder)
             collection-id (-> query-params :collection_id)
@@ -173,7 +173,7 @@
                      (nil? order) (default-order query)
                      (string? order) (cond
                                        (some #(= order %) available-sortings) (order-by-string query order collection-id)
-                                       (= order "stored_in_collection") (order-by-collection-sorting query collection-id)
+                                       (= order "stored_in_collection") (order-by-collection-sorting query collection-id ds)
                                        :else (throw (ex-info not-allowed-order-param-message
                                                              {:status 422})))
                      (seq? order) (reduce order-reducer query order)
@@ -209,15 +209,20 @@
   (let [query-params (-> request :parameters :query)
         filter-by (json/decode (:filter_by query-params) true)
         props-by (:media_entry filter-by)
+        ds (:tx request)
         authenticated-entity (:authenticated-entity request)
         query-res (I> identity-with-logging
-                      (base-query props-by)
-                      (set-order query-params)
-                      (filter-by-collection-id query-params)
+                      (base-query props-by))
+
+        query-res (I>
+                      ;(-> (set-order query-params ds))
+                    (set-order query-res query-params ds)
+
+                      (filter-by-collection-id query-params ds)
                       (permissions/filter-by-query-params query-params
-                                                          authenticated-entity)
-                      (advanced-filter/filter-by filter-by)
-                      (pagination/add-offset-for-honeysql query-params))
+                                                          authenticated-entity ds)
+                      (advanced-filter/filter-by filter-by ds)
+                      (pagination/add-offset-for-honeysql query-params ds))
         query-res (-> query-res sql-format)]
 
 ;    (info "build-query"
@@ -275,23 +280,23 @@
                              :arc_created_at :created_at
                              :arc_updated_at :updated_at}))))
 
-(defn- get-files4me-list [melist auth-entity]
-  (let [auth-list (remove nil? (map #(when (true? (media-entry-perms/downloadable-by-auth-entity? % auth-entity))
-                                       (media-files/query-media-file-by-media-entry-id (:id %))) melist))]
+(defn- get-files4me-list [melist auth-entity ds]
+  (let [auth-list (remove nil? (map #(when (true? (media-entry-perms/downloadable-by-auth-entity? % auth-entity ds))
+                                       (media-files/query-media-file-by-media-entry-id (:id %) ds)) melist))]
     ;(info "get-files4me-list: \n" auth-list)
     auth-list))
 
-(defn get-preview-list [melist auth-entity]
-  (let [auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity))
+(defn get-preview-list [melist auth-entity ds]
+  (let [auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity ds))
                           (sd/query-eq-find-all :previews :media_file_id
-                                                (:id (media-files/query-media-file-by-media-entry-id (:id %))))) melist)]
+                                                (:id (media-files/query-media-file-by-media-entry-id (:id %)ds)) ds)) melist)]
     ;(info "get-preview-list" auth-list)
     auth-list))
 
-(defn get-md4me-list [melist auth-entity]
+(defn get-md4me-list [melist auth-entity ds]
   (let [user-id (:id auth-entity)
-        auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity))
-                          (meta-data.index/get-media-entry-meta-data (:id %) user-id)) melist)]
+        auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity ds))
+                          (meta-data.index/get-media-entry-meta-data (:id %) user-id ds)) melist)]
     auth-list))
 
 (defn build-result [collection-id full-data data]
@@ -305,15 +310,15 @@
 (defn build-result-related-data
   "Builds all the query result related data into the response:
   files, previews, meta-data for entries and a collection"
-  [collection-id auth-entity full-data data]
+  [collection-id auth-entity full-data data ds]
   (let [me-list (get-me-list true data)
         result-me-list (get-me-list full-data data)
         user-id (:id auth-entity)
         ; TODO compute only on demand
-        files (get-files4me-list me-list auth-entity)
-        previews (get-preview-list me-list auth-entity)
-        me-md (get-md4me-list me-list auth-entity)
-        col-md (meta-data.index/get-collection-meta-data collection-id user-id)
+        files (get-files4me-list me-list auth-entity ds)
+        previews (get-preview-list me-list auth-entity ds)
+        me-md (get-md4me-list me-list auth-entity ds)
+        col-md (meta-data.index/get-collection-meta-data collection-id user-id ds)
         result (merge
                 {:media_entries result-me-list
                  ; TODO add only on demand
@@ -340,7 +345,8 @@
   (catcher/with-logging {}
     (let [auth-entity (-> request :authenticated-entity)
           data (query-index-resources request)
-          result (build-result-related-data collection-id auth-entity full-data data)]
+          ds (:tx request)
+          result (build-result-related-data collection-id auth-entity full-data data ds)]
       (sd/response_ok result)))
      ;(catch Exception e (sd/response_exception e)))
   )
