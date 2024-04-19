@@ -15,7 +15,7 @@
                                             :media_type :media_entry_id
                                             :filename :content_type])
                    {:previews (map #(select-keys % [:id :thumbnail :used_as_ui_preview])
-                                   (previews/get-index media-file))})})))
+                                   (previews/get-index media-file (:tx request)))})})))
 
 (defn- media-file-path [media-file]
   (let [id (:guid media-file)

@@ -59,9 +59,9 @@
                      "MetaDatum::TextDate" (:string meta-datum)
                      (map #(select-keys % [:id])
                           ((case meta-datum-type
-                             "MetaDatum::Keywords" keywords/get-index
-                             "MetaDatum::People" get-people-index
-                             "MetaDatum::Roles" find-meta-data-roles)
+                             "MetaDatum::Keywords" (-> keywords/get-index ds)
+                             "MetaDatum::People" (-> get-people-index ds)
+                             "MetaDatum::Roles" (-> find-meta-data-roles ds))
                            meta-datum ds))))}
          (->> (select-keys meta-datum [:media_entry_id :collection_id])
               (filter (fn [[k v]] v))

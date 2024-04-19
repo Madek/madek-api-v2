@@ -37,7 +37,7 @@
                           (sql/values [data])
                           (sql/returning :*)
                           sql-format)
-            ins-res (jdbc/execute-one! (get-ds) sql-query)]
+            ins-res (jdbc/execute-one! (:tx req) sql-query)]
 
         (info "handle_create-usage_term: " "\ndata:\n" data "\nresult:\n" ins-res)
 
@@ -57,7 +57,7 @@
                           (sql/where [:= :id id])
                           (sql/returning :*)
                           sql-format)
-            upd-result (jdbc/execute-one! (get-ds) sql-query)]
+            upd-result (jdbc/execute-one! (:tx req) sql-query)]
 
         (info "handle_update-usage_terms: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
@@ -74,7 +74,7 @@
             sql-query (-> (sql/delete-from :usage_terms)
                           (sql/where [:= :id id])
                           sql-format)
-            delresult (jdbc/execute-one! (get-ds) sql-query)]
+            delresult (jdbc/execute-one! (:tx req) sql-query)]
 
         (if (= 1 (::jdbc/update-count delresult))
           (sd/response_ok olddata)

@@ -10,7 +10,7 @@
 (defn db-keywords-get-one [id ds]
   (sd/query-eq-find-one :keywords :id id ds))
 
-(defn db-keywords-query [query]
+(defn db-keywords-query [query ds]
   (let [dbq (->
              (sql/select :*)
              (sql/from :keywords)
@@ -22,7 +22,7 @@
              (pagination/add-offset-for-honeysql query)
              sql-format)]
     ; (info "db-keywords-query" dbq)
-    (jdbc/execute! (get-ds) dbq)))
+    (jdbc/execute! ds dbq)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -93,13 +93,15 @@
 
 (defn handle_usr-query-keywords [request]
   (let [rq (-> request :parameters :query)
-        db-result (kw/db-keywords-query rq)
+        ds (:tx request)
+        db-result (kw/db-keywords-query rq ds)
         result (map user-export-keyword db-result)]
     (sd/response_ok {:keywords result})))
 
 (defn handle_adm-query-keywords [request]
   (let [rq (-> request :parameters :query)
-        db-result (kw/db-keywords-query rq)
+        ds (:tx request)
+        db-result (kw/db-keywords-query rq ds)
         result (map adm-export-keyword db-result)]
     (sd/response_ok {:keywords result})))
 
