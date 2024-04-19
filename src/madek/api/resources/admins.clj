@@ -16,7 +16,7 @@
   (let [qd (if (true? (-> req :parameters :query :full_data))
              :admins.*
              :admins.id)
-        db-result (sd/query-find-all :admins qd)]
+        db-result (sd/query-find-all :admins qd (:tx req))]
     (sd/response_ok {:admins db-result})))
 
 (defn handle_get-admin

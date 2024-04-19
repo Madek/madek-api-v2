@@ -26,12 +26,12 @@
       ;  [:in :vocabularies.id vocabulary-ids]])))
 
 (defn- base-query
-  [user-id scope]
+  [user-id scope ds]
   (-> (sql/select :meta_keys.*)
       (sql/from :meta_keys)
       (sql/join :vocabularies
                 [:= :meta_keys.vocabulary_id :vocabularies.id])
-      (sql/where (where-clause user-id scope))))
+      (sql/where (where-clause user-id scope ds))))
 
 (defn get-pagination-params [request]
   (let [qparams (-> request :parameters :query)
@@ -43,9 +43,10 @@
 (defn- build-query [request]
   (let [qparams (-> request :parameters :query)
         pagination-params (get-pagination-params request)
+        ds (:tx request)
         scope (or (:scope qparams) "view")
         user-id (-> request :authenticated-entity :id)]
-    (-> (base-query user-id scope)
+    (-> (base-query user-id scope ds)
         (sd/build-query-param qparams :vocabulary_id)
         (sd/build-query-param-like qparams :id :meta_keys.id)
         (sd/build-query-param qparams :meta_datum_object_type)

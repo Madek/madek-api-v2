@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
@@ -18,7 +17,7 @@
 
 (defn handle_get-arc [request]
   (let [query (arc-query request)
-        db-result (jdbc/execute! (get-ds) query)]
+        db-result (jdbc/execute! (:tx request) query)]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
@@ -32,7 +31,7 @@
 
 (defn handle_arc-by-parent-and-child [request]
   (let [query (arc-query-by-parent-and-child request)
-        db-result (jdbc/execute! (get-ds) query)]
+        db-result (jdbc/execute! (:tx request) query)]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
@@ -45,9 +44,9 @@
       (pagination/add-offset-for-honeysql query-params)
       sql-format))
 
-(defn handle_query-arcs [request]
-  (let [query (arcs-query (-> request :parameters :query))
-        db-result (jdbc/execute! (get-ds) query)]
+(defn handle_query-arcs [req]
+  (let [query (arcs-query (-> req :parameters :query))
+        db-result (jdbc/execute! (:tx req) query)]
     (sd/response_ok {:collection-collection-arcs db-result})))
 
 (defn handle_create-col-col-arc [req]
@@ -60,7 +59,7 @@
             sql-map {:insert-into :collection_collection_arcs
                      :values [ins-data]}
             sql (-> sql-map sql-format)]
-        (if-let [ins-res (next.jdbc/execute! (get-ds) [sql ins-data])]
+        (if-let [ins-res (next.jdbc/execute! (:tx req) [sql ins-data])]
           (sd/response_ok ins-res)
           (sd/response_failed "Could not create collection-collection-arc" 406))))
     (catch Exception e (sd/response_exception e))))
@@ -76,14 +75,14 @@
                       (sql/where [:= :parent_id parent-id
                                   := :child_id child-id])
                       sql-format)
-
-            result (next.jdbc/execute! (get-ds) query)]
+            ds (:tx req)
+            result (next.jdbc/execute! ds query)]
 
         (if (= 1 (first result))
           (sd/response_ok (sd/query-eq-find-one
-                           :collection_collection_arcs
-                           :parent_id parent-id
-                           :child_id child-id))
+                            :collection_collection_arcs
+                            :parent_id parent-id
+                            :child_id child-id ds))
           (sd/response_failed "Could not update collection collection arc." 406))))
     (catch Exception e (sd/response_exception e))))
 
@@ -92,17 +91,20 @@
     (catcher/with-logging {}
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
+            ds (:tx req)
             ;; TODO: fetch old data by delete-query
             olddata (sd/query-eq-find-one
-                     :collection_collection_arcs
-                     :parent_id parent-id
-                     :child_id child-id)
+                      :collection_collection_arcs
+                      :parent_id parent-id
+                      :child_id child-id
+                      ds)
+            ds (:tx req)
             query (-> (sql/delete :collection_collection_arcs)
                       (sql/where [:= :parent_id parent-id
                                   := :child_id child-id])
                       sql-format)
 
-            delresult (next.jdbc/execute! (get-ds) query)]
+            delresult (next.jdbc/execute! ds query)]
 
         (if (= 1 (first delresult))
           (sd/response_ok olddata)
@@ -152,7 +154,7 @@
                            (s/optional-key :parent_id) s/Uuid
                            (s/optional-key :page) s/Int
                            (s/optional-key :count) s/Int}}
-      :responses {200 {:body s/Any}} ; TODO response coercion
+      :responses {200 {:body s/Any}}                        ; TODO response coercion
       }}]
    ; TODO rename param to collection_id
    ; TODO add permission checks
@@ -164,7 +166,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}}
       :responses {200 {:body s/Any}
-                  404 {:body s/Any}} ; TODO response coercion
+                  404 {:body s/Any}}                        ; TODO response coercion
       }}]])
 ; TODO rename param use middleware for permissions
 (def collection-routes
@@ -202,7 +204,7 @@
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}}
       :responses {200 {:body s/Any}
-                  404 {:body s/Any}} ; TODO response coercion
+                  404 {:body s/Any}}                        ; TODO response coercion
       }
 
      ; TODO col col arc update tests

@@ -61,13 +61,14 @@
 
         db-result (sd/query-eq-find-all :confidential_links
                                         :resource_id mr-id
-                                        :resource_type mr-type)]
+                                        :resource_type mr-type
+                    (:tx req))]
     (sd/response_ok db-result)))
 
 (defn handle_get-conf-link
   [req]
   (let [id (-> req :parameters :path :id)]
-    (if-let [db-result (sd/query-eq-find-one :confidential_links :id id)]
+    (if-let [db-result (sd/query-eq-find-one :confidential_links :id id (:tx req))]
       (sd/response_ok db-result)
       (sd/response_not_found "No such confidential link"))))
 
@@ -87,7 +88,7 @@
 
         (sd/logwrite req (str "handle_update-conf-link:" "\nupdate data: " upd-data "\nresult: " upd-result))
         (if (= 1 (first upd-result))
-          (sd/response_ok (sd/query-eq-find-one :confidential_links :id id))
+          (sd/response_ok (sd/query-eq-find-one :confidential_links :id id (:tx req)))
           (sd/response_failed (str "Failed update confidential link: " id) 406))))
 
     (catch Exception ex (sd/response_exception ex))))
@@ -97,7 +98,7 @@
   (try
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)]
-        (if-let [del-data (sd/query-eq-find-one :confidential_links :id id)]
+        (if-let [del-data (sd/query-eq-find-one :confidential_links :id id (:tx req))]
           (let [query (-> (sql/delete-from :confidential_links)
                           (sql/where [:= :id id])
                           sql-format)

@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -37,7 +36,7 @@
 
                      (pagination/add-offset-for-honeysql req-query)
                      sql-format)
-        db-result (jdbc/execute! (get-ds) db-query)
+        db-result (jdbc/execute! (:tx req) db-query)
         tf (map context_key_transform_ml db-result)]
     (sd/response_ok tf)))
 
@@ -53,7 +52,7 @@
                      (sd/build-query-param req-query :meta_key_id)
                      (sd/build-query-param req-query :is_required)
                      sql-format)
-        db-result (jdbc/execute! (get-ds) db-query)
+        db-result (jdbc/execute! (:tx req) db-query)
         tf (map context_key_transform_ml db-result)]
 
     ;(info "handle_usr-list-context_keys" "\ndb-query\n" db-query)
@@ -81,7 +80,7 @@
                     (sql/values [(cast-to-hstore data)])
                     (sql/returning :*)
                     sql-format)
-            ins-res (jdbc/execute-one! (get-ds) sql)]
+            ins-res (jdbc/execute-one! (:tx req) sql)]
 
         (if-let [result ins-res]
           (sd/response_ok (context_key_transform_ml result))
@@ -95,16 +94,17 @@
       (let [data (-> req :parameters :body)
             id (to-uuid (-> req :parameters :path :id))
             dwid (assoc data :id id)
+            ds (:tx req)
             query (-> (sql/update :context_keys)
                       (sql/set (cast-to-hstore dwid))
                       (sql/where [:= :id id])
                       sql-format)
-            upd-result (jdbc/execute-one! (get-ds) query)]
+            upd-result (jdbc/execute-one! ds query)]
 
         (sd/logwrite req (str "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result))
 
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (context_key_transform_ml (sd/query-eq-find-one :context_keys :id id)))
+          (sd/response_ok (context_key_transform_ml (sd/query-eq-find-one :context_keys :id id ds)))
           (sd/response_failed "Could not update context_key." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -117,7 +117,7 @@
             sql (-> (sql/delete-from :context_keys)
                     (sql/where [:= :id id])
                     sql-format)
-            del-result (jdbc/execute-one! (get-ds) sql)]
+            del-result (jdbc/execute-one! (:tx req) sql)]
 
         (sd/logwrite req (str "handle_delete-context_key: " id " result: " del-result))
         (if (= 1 (::jdbc/update-count del-result))

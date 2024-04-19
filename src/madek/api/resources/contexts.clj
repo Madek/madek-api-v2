@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore t]]
@@ -22,7 +21,7 @@
   (let [db-query (-> (sql/select :*)
                      (sql/from :contexts)
                      sql-format)
-        db-result (jdbc/execute! (get-ds) db-query)
+        db-result (jdbc/execute! (:tx req) db-query)
         result (map context_transform_ml db-result)]
     ;(info "handle_adm-list-context" "\nquery\n" db-query "\nresult\n" result)
     (sd/response_ok result)))
@@ -32,7 +31,7 @@
   (let [db-query (-> (sql/select :id :labels :descriptions)
                      (sql/from :contexts)
                      sql-format)
-        db-result (jdbc/execute! (get-ds) db-query)
+        db-result (jdbc/execute! (:tx req) db-query)
         result (map context_transform_ml db-result)]
     ;(info "handle_usr-list-context" "\nquery\n" db-query "\nresult\n" result)
     (sd/response_ok result)))
@@ -58,7 +57,7 @@
                     (sql/values [(cast-to-hstore data)])
                     (sql/returning :*)
                     sql-format)
-            res (jdbc/execute-one! (get-ds) sql)]
+            res (jdbc/execute-one! (:tx req) sql)]
 
         (if res
           ; TODO clean result
@@ -78,7 +77,7 @@
                     (sql/where [:= :id id])
                     (sql/returning :*)
                     sql-format)
-            upd-result (jdbc/execute-one! (get-ds) fir)]
+            upd-result (jdbc/execute-one! (:tx req) fir)]
 
         (if upd-result
           (sd/response_ok (context_transform_ml upd-result))
@@ -95,7 +94,7 @@
                           (sql/where [:= :id id])
                           (sql/returning :*)
                           sql-format)
-            del-result (jdbc/execute-one! (get-ds) sql-query)]
+            del-result (jdbc/execute-one! (:tx req) sql-query)]
 
         (if del-result
           (sd/response_ok (context_transform_ml del-result))
