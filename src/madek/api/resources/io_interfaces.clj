@@ -18,7 +18,8 @@
   [req]
   (let [full_data (true? (-> req :parameters :query :full_data))
         qd (if (true? full_data) :* :io_interfaces.id)
-        db-result (sd/query-find-all :io_interfaces qd)]
+        ds (:tx req)
+        db-result (sd/query-find-all :io_interfaces qd ds)]
 
     ;(info "handle_list-io_interface" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
@@ -53,6 +54,7 @@
       (let [data (-> req :parameters :body)
             id (-> req :parameters :path :id)
             dwid (assoc data :id id)
+            ds (:tx req)
             sql-query (-> (sql/update :io_interfaces)
                           (sql/set dwid)
                           (sql/where [:= :id id])
@@ -62,7 +64,7 @@
         (info "handle_update-io_interfaces: " "id: " id "\nnew-data:\n" dwid "\nresult: " upd-result)
 
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (sd/query-eq-find-one :io_interfaces :id id))
+          (sd/response_ok (sd/query-eq-find-one :io_interfaces :id id ds))
           (sd/response_failed "Could not update io_interface." 406))))
     (catch Exception ex (sd/response_exception ex))))
 

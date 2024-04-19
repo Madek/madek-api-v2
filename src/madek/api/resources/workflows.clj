@@ -15,7 +15,8 @@
   (let [qd (if (true? (-> req :parameters :query :full_data))
              :workflows.*
              :workflows.id)
-        db-result (sd/query-find-all :workflows qd)]
+        ds (:tx req)
+        db-result (sd/query-find-all :workflows qd ds)]
     ;(info "handle_list-workflows" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -54,6 +55,7 @@
     (catcher/with-logging {}
       (let [data (-> req :parameters :body)
             id (-> req :parameters :path :id)
+            ds (:tx req)
             dwid (assoc data :id id)
             upd-query (sd/sql-update-clause "id" (str id))
             sql-query (-> (sql/update :workflows)
@@ -65,7 +67,7 @@
         (info "handle_update-workflow: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (sd/query-eq-find-one :workflows :id id))
+          (sd/response_ok (sd/query-eq-find-one :workflows :id id ds))
           (sd/response_failed "Could not update workflow." 406))))
     (catch Exception e (sd/response_exception e))))
 

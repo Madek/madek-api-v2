@@ -2,7 +2,6 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
-            [madek.api.db.core :refer [get-ds]]
             [madek.api.resources.shared :as sd]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -23,14 +22,14 @@
 (defn handle_list-custom-urls
   [req]
   (let [db-query (build-query (-> req :parameters :query))
-        db-result (jdbc/execute! (get-ds) db-query)]
+        db-result (jdbc/execute! (:tx req) db-query)]
     (info "handle_list-custom-urls" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_get-custom-url
   [req]
   (let [id (-> req :parameters :path :id)]
-    (if-let [result (sd/query-eq-find-one :custom_urls :id id)]
+    (if-let [result (sd/query-eq-find-one :custom_urls :id id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for id: " id)))))
 
@@ -45,7 +44,7 @@
           "\ntype: " mr-type
           "\nmr-id: " mr-id
           "\ncol-name: " col-name)
-    (if-let [result (sd/query-eq-find-one :custom_urls col-name mr-id)]
+    (if-let [result (sd/query-eq-find-one :custom_urls col-name mr-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for " mr-type " with id: " mr-id)))))
 
@@ -64,7 +63,7 @@
             sql (-> (sql/insert-into :custom_urls)
                     (sql/values [dwid])
                     sql-format)
-            ins-res (jdbc/execute! (get-ds) sql)]
+            ins-res (jdbc/execute! (:tx req) sql)]
 
         (sd/logwrite req (str "handle_create-custom-urls"
                               "\nmr-type: " mr-type
@@ -91,11 +90,12 @@
             dwid (if (= mr-type "MediaEntry")
                    (assoc data :media_entry_id mr-id :updator_id u-id)
                    (assoc data :collection_id mr-id :updator_id u-id))
+            ds (:tx req)
             sql (-> (sql/update :custom_urls)
                     (sql/set dwid)
                     (sql/where [:= col-name mr-id])
                     sql-format)
-            upd-result (jdbc/execute! (get-ds) sql)]
+            upd-result (jdbc/execute! ds sql)]
 
         (sd/logwrite req (str "handle_update-custom-urls"
                               "\nmr-type: " mr-type
@@ -104,7 +104,7 @@
                               "\nresult:\n" upd-result))
 
         (if (= 1 (first upd-result))
-          (sd/response_ok (sd/query-eq-find-one :custom_urls col-name mr-id))
+          (sd/response_ok (sd/query-eq-find-one :custom_urls col-name mr-id ds))
           (sd/response_failed "Could not update custom_url." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -120,12 +120,14 @@
             mr-id (-> mr :id str)
             col-name (if (= mr-type "MediaEntry")
                        :media_entry_id
-                       :collection_id)]
-        (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id)]
+                       :collection_id)
+            ds (:tx req)
+            ]
+        (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id ds)]
           (let [sql (-> (sql/delete-from :custom_urls)
                         (sql/where [:= col-name mr-id])
                         sql-format)
-                del-result (jdbc/execute! (get-ds) sql)]
+                del-result (jdbc/execute! ds sql)]
 
             (sd/logwrite req (str "handle_delete-custom-urls"
                                   "\nmr-type: " mr-type

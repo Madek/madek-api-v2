@@ -3,9 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -15,7 +13,7 @@
   [req]
   (let [full-data (= "true" (get (-> req :query-params) "full-data"))
         qd (if (true? full-data) :* :delegations.id)
-        db-result (sd/query-find-all :delegations qd)]
+        db-result (sd/query-find-all :delegations qd (:tx req))]
     ;(info "handle_list-delegation" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -30,7 +28,7 @@
   [req]
   (let [data (-> req :parameters :body)
         sql-query (-> (sql/insert-into :delegations) (sql/values [data]) sql-format)
-        ins-res (jdbc/execute! (get-ds) sql-query)]
+        ins-res (jdbc/execute! (:tx req) sql-query)]
     (if ins-res
       ; TODO clean result
       (sd/response_ok (first ins-res))
@@ -43,6 +41,7 @@
         dwid (assoc data :id id)
         old-data (-> req :delegation)
         upd-query (sd/sql-update-clause "id" (str id))
+        ds (:tx req)
         sql-query (-> (sql/update :delegations)
                       (sql/set dwid)
                       (sql/where [:= :id id])
@@ -52,8 +51,8 @@
           "\nold-data\n" old-data
           "\nupd-query\n" upd-query)
 
-    (if-let [ins-res (first (jdbc/execute! (get-ds) sql-query))]
-      (let [new-data (sd/query-eq-find-one :delegations :id id)]
+    (if-let [ins-res (first (jdbc/execute! ds sql-query))]
+      (let [new-data (sd/query-eq-find-one :delegations :id id ds)]
         (info "handle_update-delegations:" "\nnew-data\n" new-data)
         (sd/response_ok new-data))
       (sd/response_failed "Could not update delegation." 406))))
@@ -62,17 +61,27 @@
   [req]
   (try
     (catcher/with-logging {}
-      (if-let [_ (sd/query-eq-find-one :delegation :id (-> req :delegation :id))]
+
+      (let [
+            ds (:tx req)
+            ]
+
+
+      (if-let [_ (sd/query-eq-find-one :delegation :id (-> req :delegation :id) ds)]
         (let [delegation (-> req :delegation)
               id (-> req :delegation :id)
               sql-query (-> (sql/delete-from :delegations)
                             (sql/where [:= :id id])
                             (sql/returning :*)
                             sql-format)]
-          (if (jdbc/execute-one! (get-ds) sql-query)
+          (if (jdbc/execute-one! ds sql-query)
             (sd/response_ok delegation)
             (sd/response_failed "Could not delete delegation." 406)))
-        (sd/response_not_found "No such delegation found.")))
+        (sd/response_not_found "No such delegation found."))
+
+        )
+
+      )
 
     (catch Exception ex (sd/parsed_response_exception ex))))
 

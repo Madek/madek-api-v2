@@ -128,6 +128,7 @@
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)
             data (-> req :parameters :body)
+            ds (:tx req )
             sql-query (-> (sql/update :keywords)
                           (sql/set (convert-map data))
                           (sql/where [:= :id id])
@@ -136,7 +137,7 @@
 
         (if (= 1 (:next.jdbc/update-count upd-res))
           ;(sd/response_ok (adm-export-keyword (kw/db-keywords-get-one id)))
-          (-> id kw/db-keywords-get-one
+          (-> id (kw/db-keywords-get-one ds)
               adm-export-keyword
               sd/response_ok)
           (sd/response_failed "Could not update keyword." 406))))

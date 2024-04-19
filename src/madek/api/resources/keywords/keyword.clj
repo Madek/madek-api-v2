@@ -7,8 +7,8 @@
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]))
 
-(defn db-keywords-get-one [id]
-  (sd/query-eq-find-one :keywords :id id))
+(defn db-keywords-get-one [id ds]
+  (sd/query-eq-find-one :keywords :id id ds))
 
 (defn db-keywords-query [query]
   (let [dbq (->

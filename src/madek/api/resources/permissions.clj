@@ -140,11 +140,12 @@
             perm-name (keyword (-> req :parameters :path :perm_name))
             perm-val (-> req :parameters :path :perm_val)
             mr (-> req :media-resource)
+            ds (:tx req)
             mr-type (mr-table-type mr)]
-        (if-let [old-perm (mr-permissions/query-get-user-permission mr mr-type user-id)]
-          (let [upd-result (mr-permissions/update-user-permissions mr mr-type user-id perm-name perm-val)]
+        (if-let [old-perm (mr-permissions/query-get-user-permission mr mr-type user-id ds)]
+          (let [upd-result (mr-permissions/update-user-permissions mr mr-type user-id perm-name perm-val ds)]
             (if (= 1 (::jdbc/update-count upd-result))
-              (sd/response_ok (mr-permissions/query-get-user-permission mr mr-type user-id))
+              (sd/response_ok (mr-permissions/query-get-user-permission mr mr-type user-id ds))
               (sd/response_failed (str "Could not update permissions" upd-result) 400)))
           (sd/response_not_found "No such resource user permission."))))
     (catch Exception ex (sd/response_exception ex))))
@@ -155,9 +156,10 @@
       (let [group-id (-> req :parameters :path :group_id)
             mr (-> req :media-resource)
             mrt (mr-table-type mr)
+            ds (:tx req)
             data (-> req :parameters :body)]
 
-        (if-let [insresult (mr-permissions/create-group-permissions mr mrt group-id data)]
+        (if-let [insresult (mr-permissions/create-group-permissions mr mrt group-id data ds)]
           (sd/response_ok insresult)
           (sd/response_failed "Could not create resource group permissions." 422))))
     (catch Exception ex (sd/response_exception ex))))
@@ -167,9 +169,10 @@
     (catcher/with-logging {}
       (let [group-id (-> req :parameters :path :group_id)
             mr (-> req :media-resource)
+            ds (:tx req)
             mrt (mr-table-type mr)]
-        (if-let [group-perm (mr-permissions/query-get-group-permission mr mrt group-id)]
-          (let [delok (mr-permissions/delete-group-permissions mr mrt group-id)]
+        (if-let [group-perm (mr-permissions/query-get-group-permission mr mrt group-id ds)]
+          (let [delok (mr-permissions/delete-group-permissions mr mrt group-id ds)]
             (if (true? delok)
               (sd/response_ok group-perm)
               (sd/response_failed "Could not delete resource group permission." 422)))
@@ -180,18 +183,20 @@
 (defn- handle_list-group-perms
   [req]
   (let [mr (-> req :media-resource)
+        ds (:tx req)
         mr-type (case (:type mr)
                   "MediaEntry" "media_entry"
                   "Collection" "collection")
-        data (mr-permissions/query-list-group-permissions mr mr-type)]
+        data (mr-permissions/query-list-group-permissions mr mr-type ds)]
     (sd/response_ok data)))
 
 (defn- handle_get-group-perms
   [req]
   (let [group-id (-> req :parameters :path :group_id)
         mr (-> req :media-resource)
+        ds (:tx req)
         mr-type (mr-table-type mr)]
-    (if-let [data (mr-permissions/query-get-group-permission mr mr-type group-id)]
+    (if-let [data (mr-permissions/query-get-group-permission mr mr-type group-id ds)]
       (sd/response_ok data)
       (sd/response_not_found "No such resource group permission."))))
 
@@ -202,12 +207,13 @@
       (let [group-id (-> req :parameters :path :group_id)
             perm-name (keyword (-> req :parameters :path :perm_name))
             perm-val (-> req :parameters :path :perm_val)
+            ds (:tx req)
             mr (-> req :media-resource)
             mr-type (mr-table-type mr)]
-        (if-let [old-data (mr-permissions/query-get-group-permission mr mr-type group-id)]
-          (let [upd-result (mr-permissions/update-group-permissions mr mr-type group-id perm-name perm-val)]
+        (if-let [old-data (mr-permissions/query-get-group-permission mr mr-type group-id ds)]
+          (let [upd-result (mr-permissions/update-group-permissions mr mr-type group-id perm-name perm-val ds)]
             (if (= 1 (::jdbc/update-count upd-result))
-              (sd/response_ok (mr-permissions/query-get-group-permission mr mr-type group-id))
+              (sd/response_ok (mr-permissions/query-get-group-permission mr mr-type group-id ds))
               (sd/response_failed (str "Could not update permissions" upd-result) 400)))
           (sd/response_not_found "No such resource group permissions."))))
     (catch Exception ex (sd/response_exception ex))))
@@ -216,14 +222,15 @@
   [req]
   (let [p-type (-> req :parameters :path :type)
         mr (-> req :media-resource)
+        ds (:tx req)
         mr-type (case (:type mr)
                   "MediaEntry" "media_entry"
                   "Collection" "collection")
         data (case p-type
                "entity" (get-entity-perms mr)
                ;"api-client" (mr-permissions/query-list-api-client-permissions mr mr-type)
-               "user" (mr-permissions/query-list-user-permissions mr mr-type)
-               "group" (mr-permissions/query-list-group-permissions mr mr-type))]
+               "user" (mr-permissions/query-list-user-permissions mr mr-type ds)
+               "group" (mr-permissions/query-list-group-permissions mr mr-type ds))]
     (sd/response_ok data)))
 
 (defn- handle_list-perms
@@ -231,11 +238,12 @@
   (let [mr (-> req :media-resource)
         mr-type (mr-table-type mr)
         e-data (get-entity-perms mr)
+        ds (:tx req)
         ; responsible user
         ; TODO delegations
         ;a-data (mr-permissions/query-list-api-client-permissions mr mr-type)
-        u-data (mr-permissions/query-list-user-permissions mr mr-type)
-        g-data (mr-permissions/query-list-group-permissions mr mr-type)]
+        u-data (mr-permissions/query-list-user-permissions mr mr-type ds)
+        g-data (mr-permissions/query-list-group-permissions mr mr-type ds)]
     (sd/response_ok {;:api-clients a-data
                      :media-resource e-data
                      :users u-data

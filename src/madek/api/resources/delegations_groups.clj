@@ -2,9 +2,7 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -26,7 +24,7 @@
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 group_id (sql/where [:= :group_id group_id]))
-        db-result (jdbc/execute! (get-ds) (sql-format query))]
+        db-result (jdbc/execute! (:tx req) (sql-format query))]
     (info "handle_list-delegations_group" "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -34,7 +32,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         group-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all :delegations_groups :group_id group-id)
+        db-result (sd/query-eq-find-all :delegations_groups :group_id group-id (:tx req))
         id-set (map :delegation_id db-result)]
     (info "handle_list-delegations_group" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:delegation_ids id-set})
@@ -58,7 +56,7 @@
       ; already has delegations_group
       (sd/response_ok delegations_group)
       ; create delegations_group entry
-      (if-let [ins_res (first (jdbc/execute! (get-ds) sql-query))]
+      (if-let [ins_res (first (jdbc/execute! (:tx req) sql-query))]
         ; TODO clean result
         (sd/response_ok ins_res)
         (sd/response_failed "Could not create delegations_group." 406)))))
@@ -72,7 +70,7 @@
                       (sql/where [:= :group_id group-id] [:= :delegation_id delegation-id])
                       (sql/returning :*)
                       sql-format)
-        result (jdbc/execute-one! (get-ds) sql-query)]
+        result (jdbc/execute-one! (:tx req) sql-query)]
     (if result
       (sd/response_ok delegations_group)
       (error "Failed delete delegations_group "

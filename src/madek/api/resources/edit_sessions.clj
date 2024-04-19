@@ -4,11 +4,9 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -29,7 +27,7 @@
 (defn handle_adm_list-edit-sessions
   [req]
   (let [db-query (build-query (-> req :parameters :query))
-        db-result (jdbc/execute! (get-ds) db-query)]
+        db-result (jdbc/execute! (:tx req) db-query)]
     ;(info "handle_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -39,14 +37,14 @@
         user-id (-> req :authenticated-entity :id)
         usr-query (assoc req-query :user_id user-id)
         db-query (build-query usr-query)
-        db-result (jdbc/execute! (get-ds) db-query)]
+        db-result (jdbc/execute! (:tx req) db-query)]
     ;(info "handle_usr_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_adm_get-edit-session
   [req]
   (let [id (-> req :parameters :path :id)]
-    (if-let [result (sd/query-eq-find-one :edit_sessions :id id)]
+    (if-let [result (sd/query-eq-find-one :edit_sessions :id id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for id: " id)))))
 
@@ -54,7 +52,7 @@
   [req]
   (let [id (-> req :parameters :path :id)
         u-id (-> req :authenticated-entity :id)]
-    (if-let [result (sd/query-eq-find-one :edit_sessions :id id :user_id u-id)]
+    (if-let [result (sd/query-eq-find-one :edit_sessions :id id :user_id u-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for id: " id)))))
 
@@ -65,7 +63,7 @@
         mr-id (-> mr :id str)
         col-key (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
     ;(info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
-    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id)]
+    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))))
 
@@ -74,10 +72,11 @@
   (let [u-id (-> req :authenticated-entity :id)
         mr (-> req :media-resource)
         mr-type (-> mr :type)
+        ds (:tx req)
         mr-id (-> mr :id str)
         col-key (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
     ;(info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
-    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id :user_id u-id)]
+    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id :user_id u-id ds)]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))))
 
@@ -94,7 +93,7 @@
                    (assoc data :media_entry_id mr-id)
                    (assoc data :collection_id mr-id))
             sql-query (-> (sql/insert-into :edit_sessions) (sql/values [dwid]) sql-format)
-            ins-result (jdbc/execute-one! (get-ds) sql-query)]
+            ins-result (jdbc/execute-one! (:tx req) sql-query)]
 
         (sd/logwrite req (str "handle_create-edit-session:" "\nnew-data: " dwid))
 
@@ -108,12 +107,12 @@
   (try
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)]
-        (if-let [del-data (sd/query-eq-find-one :edit_sessions :id id)]
+        (if-let [del-data (sd/query-eq-find-one :edit_sessions :id id (:tx req))]
           (let [sql-query (-> (sql/delete-from :edit_sessions)
                               (sql/where [:= :id id])
                               (sql/returning :*)
                               sql-format)
-                del-result (jdbc/execute-one! (get-ds) sql-query)]
+                del-result (jdbc/execute-one! (:tx req) sql-query)]
 
             (sd/logwrite req (str "handle_adm_delete-edit-sessions:" "\ndelete data: " del-data "\nresult: " del-result))
 

@@ -2,7 +2,6 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
@@ -25,7 +24,7 @@
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 user_id (sql/where [:= :user_id user_id]))
-        db-result (jdbc/execute! (get-ds) (sql-format query))]
+        db-result (jdbc/execute! (:tx req) (sql-format query))]
 
 ;(->> db-result (map :id) set)
     (info "handle_list-delegations_user" "\nresult\n" db-result)
@@ -35,7 +34,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         user-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all :delegations_users :user_id user-id)
+        db-result (sd/query-eq-find-all :delegations_users :user_id user-id (:tx req))
         id-set (map :delegation_id db-result)]
     (info "handle_list-delegations_user" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:delegation_ids id-set})
@@ -58,7 +57,7 @@
                       (sql/values [data])
                       (sql/returning :*)
                       sql-format)
-        ins-res (jdbc/execute-one! (get-ds) sql-query)]
+        ins-res (jdbc/execute-one! (:tx req) sql-query)]
     (if ins-res
       (sd/response_ok ins-res)
       (sd/response_failed "Could not create delegations_user." 406))))
@@ -72,7 +71,7 @@
                       (sql/where [:= :user_id user-id] [:= :delegation_id delegation-id])
                       (sql/returning :*)
                       sql-format)
-        res (jdbc/execute-one! (get-ds) sql-query)]
+        res (jdbc/execute-one! (:tx req) sql-query)]
     (if res
       (sd/response_ok delegations_user)
       (error "Failed delete delegations_user "
