@@ -15,11 +15,11 @@
 (defn delete-user
   "Delete a user by its id and returns true if delete was succesfull
   and false otherwise."
-  [id tx]
+  [id ds]
   (-> (sql/delete-from :users)
       (sql/where [:= :users.id (uuid/as-uuid id)])
       (sql-format :inline false)
-      (->> (jdbc/execute-one! tx))
+      (->> (jdbc/execute-one! ds))
       :next.jdbc/update-count
       (= 1)))
 

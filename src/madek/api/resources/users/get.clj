@@ -4,7 +4,6 @@
    [madek.api.resources.shared :as sd]
    [madek.api.resources.users.common :refer [wrap-find-user]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [t]]
    [madek.api.utils.validation :refer [vector-or-hashmap-validation]]
    [reitit.coercion.schema]
    [schema.core :as s]))

@@ -20,13 +20,13 @@
 
 (defn handler
   "Get an index of the users. Query parameters are pending to be implemented."
-  [{params :params tx :tx :as req}]
+  [{params :params ds :tx :as req}]
   (let [query (-> common/base-query
                   (pagination/sql-offset-and-limit params)
                   (handle-email-clause params)
                   (sql-format :inline false))
         res (->> query
-                 (jdbc/execute! tx)
+                 (jdbc/execute! ds)
                  (assoc {} :users))
         res (sd/transform_ml_map res)]
     (sd/response_ok res)))
