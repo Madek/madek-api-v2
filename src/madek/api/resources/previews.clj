@@ -13,7 +13,7 @@
   ([request handler]
    (when-let [preview-id (-> request :parameters :path :preview_id)]
      (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id)
-     (when-let [preview (first (sd/query-eq-find-all :previews :id preview-id))]
+     (when-let [preview (first (sd/query-eq-find-all :previews :id preview-id (:tx request)))]
        (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
        (handler (assoc request :preview preview))))))
 
@@ -22,7 +22,7 @@
   (let [media-file (-> req :media-file)
         id (:id media-file)
         size (or (-> req :parameters :query :size) "small")]
-    (if-let [preview (sd/query-eq-find-one :previews :media_file_id id :thumbnail size)]
+    (if-let [preview (sd/query-eq-find-one :previews :media_file_id id :thumbnail size (:tx req))]
       (sd/response_ok preview)
       (sd/response_not_found "No such preview file"))
     ;(info "handle_get-preview" "\nid\n" id "\nmf\n" media-file "\npreviews\n" preview)
@@ -30,7 +30,7 @@
 (defn add-preview-for-media-file [handler request]
   (let [media-file (-> request :media-file)
         id (:id media-file)
-        previews (sd/query-eq-find-all :previews :media_file_id id)
+        previews (sd/query-eq-find-all :previews :media_file_id id (:tx request))
         pfirst (first previews)]
     (handler (assoc request :preview pfirst))))
 

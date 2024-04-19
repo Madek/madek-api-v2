@@ -2,7 +2,6 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :refer [get-ds]]
    [next.jdbc :as jdbc]))
 
 (defn- get-first-or-30-percent [list]
@@ -10,21 +9,21 @@
     (nth list (min (Math/ceil (* (/ (count list) 10.0) 3)) (- (count list) 1)))
     (first list)))
 
-(defn- detect-ui-preview-id [sqlmap media-type]
+(defn- detect-ui-preview-id [sqlmap media-type ds]
   (if (= media-type "video")
     (let [query (-> sqlmap
                     (sql/where [:= :media_type "image"]
                                [:= :thumbnail "large"])
                     (sql/order-by [:previews.filename :asc] [:previews.created_at :desc])
                     sql-format)]
-      (let [previews (jdbc/execute! (get-ds) query)]
+      (let [previews (jdbc/execute! ds query)]
         (:id (get-first-or-30-percent previews))))
     nil))
 
 (defn- add-preview-pointer-to [previews detected-id]
   (map #(if (= (:id %) detected-id) (assoc % :used_as_ui_preview true) %) previews))
 
-(defn get-index [media-file]
+(defn get-index [media-file ds]
   (let [sqlmap (-> (sql/select :previews.*)
                    (sql/from :previews)
                    (sql/where [:= :previews.media_file_id (:id media-file)])
@@ -32,7 +31,7 @@
                    sql-format)]
     (let [detected-id (detect-ui-preview-id sqlmap (:media_type media-file))]
       (add-preview-pointer-to
-       (jdbc/execute! (get-ds) sqlmap)
+       (jdbc/execute! ds sqlmap)
        detected-id))))
 
 ;### Debug ####################################################################

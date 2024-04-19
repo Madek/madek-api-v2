@@ -5,20 +5,20 @@
    [logbug.catcher :as catcher]
    [madek.api.constants]
    [madek.api.data-streaming :as data-streaming]
-   [madek.api.db.core :refer [get-ds]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
 
-(defn db-get-preview [id]
+(defn db-get-preview [id ds]
   (let [query (-> (sql/select :*)
                   (sql/from :previews)
                   (sql/where [:= :previews.id id])
                   sql-format)]
-    (jdbc/execute-one! (get-ds) query)))
+    (jdbc/execute-one! ds query)))
 
 (defn get-preview [request]
   (let [id (-> request :parameters :path :preview_id)
-        result (db-get-preview id)]
+        ds (:tx request)
+        result (db-get-preview id ds)]
     (info "get-preview" "\nid\n" id "\nresult\n" result)
     {:body result}))
 
