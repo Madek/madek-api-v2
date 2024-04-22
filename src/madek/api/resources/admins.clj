@@ -53,7 +53,7 @@
                   (sql/where [:= :id admin-id])
                   (sql/returning :*)
                   sql-format)
-          del-result (jdbc/execute-one! (:tx req                                         ) sql)]
+          del-result (jdbc/execute-one! (:tx req) sql)]
       (if del-result
         (sd/response_ok del-result)
         (sd/response_failed "Could not delete admin." 406)))))

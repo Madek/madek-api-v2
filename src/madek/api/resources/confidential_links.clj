@@ -61,7 +61,7 @@
         db-result (sd/query-eq-find-all :confidential_links
                                         :resource_id mr-id
                                         :resource_type mr-type
-                    (:tx req))]
+                                        (:tx req))]
     (sd/response_ok db-result)))
 
 (defn handle_get-conf-link

@@ -22,8 +22,7 @@
                     (sql/from :groups_users)
                     (sql/where [:= :groups_users.user_id (to-uuid user-id)])
                     sql-format)
-          p (println ">o> 5ds=" ds)
-          ]
+          p (println ">o> 5ds=" ds)]
       (map :group_id (execute-query query ds)))))
 
 (defn- user-permissions-query
@@ -52,10 +51,9 @@
     (map :vocabulary_id (execute-query query ds))))
 
 (defn- group-permissions-query
-  ([user-id ds] (
-                 (println ">o> 5ds.b=" ds)
+  ([user-id ds] ((println ">o> 5ds.b=" ds)
 
-                  group-permissions-query user-id "view" ds))
+                 group-permissions-query user-id "view" ds))
   ([user-id acc-type ds]
    ; acc-type: "view" or "use"
 
@@ -80,8 +78,8 @@
 
    (if-not (str/blank? (str user-id))
      (concat
-      (pluck-vocabulary-ids (user-permissions-query user-id acc-type  )ds)
-      (pluck-vocabulary-ids (group-permissions-query user-id acc-type ds )ds ))
+      (pluck-vocabulary-ids (user-permissions-query user-id acc-type) ds)
+      (pluck-vocabulary-ids (group-permissions-query user-id acc-type ds) ds))
 
      '())))
 
@@ -104,13 +102,13 @@
                      :vocabulary_user_permissions
                      :vocabulary_id id
                      :user_id uid
-                      ds)]
+                     ds)]
       (sd/response_ok result)
       (sd/response_not_found "No such vocabulary user permission."))))
 
 (defn handle_create-vocab-user-perms [req]
 
-  (println ">o> handle_create-vocab-user-perms" )
+  (println ">o> handle_create-vocab-user-perms")
 
   (try
     (catcher/with-logging {}
@@ -154,8 +152,7 @@
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
             uid (to-uuid (-> req :parameters :path :user_id))
-            ds (:tx req)
-            ]
+            ds (:tx req)]
         (if-let [old-data (sd/query-eq-find-one
                            :vocabulary_user_permissions
                            :vocabulary_id vid
@@ -186,8 +183,7 @@
     (if-let [result (sd/query-eq-find-one
                      :vocabulary_group_permissions
                      :vocabulary_id id
-                     :group_id gid ds)
-             ]
+                     :group_id gid ds)]
       (sd/response_ok result)
       (sd/response_not_found "No such vocabulary group permission."))))
 
@@ -197,7 +193,7 @@
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
             data (-> req :parameters :body)
-            tx (:tx req )
+            tx (:tx req)
             ins-data (assoc data
                             :vocabulary_id vid
                             :group_id gid)
@@ -216,9 +212,8 @@
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
-            ds (:tx req)
+            ds (:tx req)]
 
-            ]
         (if-let [old-data (sd/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
@@ -241,8 +236,7 @@
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
-            ds (:tx req )
-            ]
+            ds (:tx req)]
         (if-let [old-data (sd/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid

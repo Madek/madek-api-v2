@@ -21,7 +21,7 @@
      ;:users.id :users.email :users.institutional_id :users.login
      ;:users.created_at :users.updated_at
      ;:users.person_id
-     )))
+               )))
 
 (defn sql-merge-user-where-id
   ([id] (sql-merge-user-where-id {} id))
@@ -43,12 +43,12 @@
 
 (defn find-user [some-id tx]
   (->> some-id find-user-sql
-    (jdbc/execute-one! tx)))
+       (jdbc/execute-one! tx)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn group-user-query [group-id user-id]
-  (->                                                       ;(users/sql-select)
+  (-> ;(users/sql-select)
    (sql/select {} :users.id :users.institutional_id :users.email :users.person_id)
    (sql/from :users)
    (sql/join :groups_users [:= :users.id :groups_users.user_id])
@@ -59,7 +59,7 @@
 
 (defn find-group-user [group-id user-id tx]
   (->> (group-user-query group-id user-id)
-    (jdbc/execute-one! tx)))
+       (jdbc/execute-one! tx)))
 
 (defn get-group-user [group-id user-id tx]
   (if-let [user (find-group-user group-id user-id tx)]
@@ -83,7 +83,7 @@
   (println ">o> 1 (:tx request)=" (:tx request))
   (println ">o> 2 (:tx request)=" (get request :tx))
   (jdbc/execute! (:tx request)
-    (group-users-query group-id request)))
+                 (group-users-query group-id request)))
 
 (defn get-group-users [group-id request]
   (sd/response_ok {:users (group-users group-id request)}))
@@ -100,10 +100,10 @@
       (if-not (and group user)
         (sd/response_not_found "No such user or group.")
         (do (jdbc/execute! ds
-              (-> (sql/insert-into :groups_users)
-                  (sql/values [{:group_id (:id group)
-                                :user_id (:id user)}])
-                  sql-format))
+                           (-> (sql/insert-into :groups_users)
+                               (sql/values [{:group_id (:id group)
+                                             :user_id (:id user)}])
+                               sql-format))
             (sd/response_ok {:users (group-users group-id req)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -113,9 +113,9 @@
     (if-let [user (find-group-user group-id user-id (:tx req))]
       (if-let [group (groups/find-group group-id ds)]
         (let [delok (jdbc/execute! (:tx req)
-                      (-> (sql/delete-from :groups_users)
-                          (sql/where [:= :group_id (:id group)] [:= :user_id (:id user)])
-                          sql-format))]
+                                   (-> (sql/delete-from :groups_users)
+                                       (sql/where [:= :group_id (:id group)] [:= :user_id (:id user)])
+                                       sql-format))]
           (sd/response_ok {:users (group-users group-id req)}))
         (sd/response_not_found "No such group"))
       (sd/response_not_found "No such group or user."))))
@@ -132,12 +132,12 @@
 (defn target-group-users-query [users]
   (-> (sql/select :id)
       (sql/from :users)
-      (sql/where                                            ;[:or
-        [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]
+      (sql/where ;[:or
+       [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]
         ;[:in :users.institutional_id (->> users (map #(-> % :institutional_id str)) (filter identity))]
         ;[:in :users.email (->> users (map :email) (filter identity))]
         ;]
-        )
+       )
       sql-format))
 
 (defn target-group-users-ids [tx users]
@@ -173,16 +173,16 @@
       ;(info "update-group-users" "\nins-q\n" ins-query)
       (when (first del-users)
         (jdbc/execute!
-          tx
-          del-query))
+         tx
+         del-query))
       (when (first ins-users)
         (jdbc/execute!
-          tx
-          ins-query))
+         tx
+         ins-query))
 
       (sd/response_ok {:users (jdbc/execute! tx
-                                (group-users-query group-id nil)
-                                jdbc/unqualified-snake-kebab-opts)}))))
+                                             (group-users-query group-id nil)
+                                             jdbc/unqualified-snake-kebab-opts)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -230,8 +230,7 @@
 (defn handle_delete-group-user [req]
   (let [group-id (-> req :parameters :path :group-id)
         user-id (-> req :parameters :path :user-id)
-        tx (:tx req)
-        ]
+        tx (:tx req)]
     (info "handle_delete-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
     (remove-user group-id user-id req)))
 
@@ -242,8 +241,7 @@
 (defn handle_update-group-users [req]
   (let [id (-> req :parameters :path :group-id)
         data (-> req :parameters :body)
-        tx (:tx req)
-        ]
+        tx (:tx req)]
     (info "handle_update-group-users" "\nid\n" id "\ndata\n" data)
     (update-group-users id data tx)))
 
@@ -253,8 +251,7 @@
         converted (convert-groupid-userid group-id user-id)
         group-id (-> converted :group-id)
         user-id (-> converted :user-id)
-        tx (:tx req)
-        ]
+        tx (:tx req)]
     (add-user group-id user-id req)))
 
 ;### Debug ####################################################################

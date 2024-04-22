@@ -121,8 +121,7 @@
             col-name (if (= mr-type "MediaEntry")
                        :media_entry_id
                        :collection_id)
-            ds (:tx req)
-            ]
+            ds (:tx req)]
         (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id ds)]
           (let [sql (-> (sql/delete-from :custom_urls)
                         (sql/where [:= col-name mr-id])

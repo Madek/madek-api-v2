@@ -68,8 +68,7 @@
   (try
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)
-            ds (:tx req)
-            ]
+            ds (:tx req)]
         (if-let [old-data (sd/query-eq-find-one :vocabularies :id id ds)]
           (let [sql-query (-> (sql/delete-from :vocabularies)
                               (sql/where [:= :id id])

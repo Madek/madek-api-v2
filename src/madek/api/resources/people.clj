@@ -80,7 +80,6 @@
      (pagination/add-offset-for-honeysql query-params)
      sql-format)))
 
-
 (defn handle_query-people
   [request]
   (let [query-params (-> request :parameters :query)
@@ -204,8 +203,7 @@
   (try
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)
-            ds (:tx req)
-            ]
+            ds (:tx req)]
         (if-let [old-data (db-person-get id ds)]
           (let [sql-query (-> (sql/delete-from :people)
                               (sql/where (jdbc-id-where-clause id))
@@ -217,7 +215,6 @@
               (sd/response_failed "Could not delete person." 406)))
           (sd/response_failed "No such person data." 404))))
     (catch Exception ex (sd/response_exception ex))))
-
 
 ;(ns leihs.my.back.html
 ;    (:refer-clojure :exclude [keyword str])
@@ -236,10 +233,9 @@
 
 (comment
 
-  (let [
-        tx (db/get-ds-next)
+  (let [tx (db/get-ds-next)
         request {:route-params {:user-id #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"}
-                 :tx           tx}
+                 :tx tx}
         user-id #uuid "37bb3d3d-3a61-4f98-863e-c549568317f0"
         query (sql-format {:select :*
                            :from [:users]
@@ -254,11 +250,7 @@
 
         p (println "\nquery" query)
         ;p (println "\nquery2" query2)
-        ]
-
-       )
-  )
-
+        ]))
 (defn handle_patch-person
   [req]
   (try

@@ -129,7 +129,7 @@
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)
             data (-> req :parameters :body)
-            ds (:tx req )
+            ds (:tx req)
             sql-query (-> (sql/update :keywords)
                           (sql/set (convert-map data))
                           (sql/where [:= :id id])

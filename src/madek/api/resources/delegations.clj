@@ -62,26 +62,19 @@
   (try
     (catcher/with-logging {}
 
-      (let [
-            ds (:tx req)
-            ]
+      (let [ds (:tx req)]
 
-
-      (if-let [_ (sd/query-eq-find-one :delegation :id (-> req :delegation :id) ds)]
-        (let [delegation (-> req :delegation)
-              id (-> req :delegation :id)
-              sql-query (-> (sql/delete-from :delegations)
-                            (sql/where [:= :id id])
-                            (sql/returning :*)
-                            sql-format)]
-          (if (jdbc/execute-one! ds sql-query)
-            (sd/response_ok delegation)
-            (sd/response_failed "Could not delete delegation." 406)))
-        (sd/response_not_found "No such delegation found."))
-
-        )
-
-      )
+        (if-let [_ (sd/query-eq-find-one :delegation :id (-> req :delegation :id) ds)]
+          (let [delegation (-> req :delegation)
+                id (-> req :delegation :id)
+                sql-query (-> (sql/delete-from :delegations)
+                              (sql/where [:= :id id])
+                              (sql/returning :*)
+                              sql-format)]
+            (if (jdbc/execute-one! ds sql-query)
+              (sd/response_ok delegation)
+              (sd/response_failed "Could not delete delegation." 406)))
+          (sd/response_not_found "No such delegation found."))))
 
     (catch Exception ex (sd/parsed_response_exception ex))))
 

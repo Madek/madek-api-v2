@@ -12,8 +12,8 @@
 
 (defn txid [tx]
   (->> ["SELECT txid() AS txid"]
-    (jdbc-query tx)
-    first :txid))
+       (jdbc-query tx)
+       first :txid))
 
 (defn persist-request [txid request]
   "Persist the request; does not use the main transation to avoid rollback"

@@ -10,9 +10,9 @@
   (let [media-entry-id (get-in request [:media-file :media_entry_id])
         ds (:tx request)
         media-entry (-> (jdbc/execute-one! (:tx request) (-> (sql/select :*)
-                                                        (sql/from :media_entries)
-                                                        (sql/where [:= :id media-entry-id])
-                                                        sql-format)))]
+                                                             (sql/from :media_entries)
+                                                             (sql/where [:= :id media-entry-id])
+                                                             sql-format)))]
     (info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
     (if (get media-entry scope)
       (handler request)

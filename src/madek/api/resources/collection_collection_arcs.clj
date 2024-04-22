@@ -80,9 +80,9 @@
 
         (if (= 1 (first result))
           (sd/response_ok (sd/query-eq-find-one
-                            :collection_collection_arcs
-                            :parent_id parent-id
-                            :child_id child-id ds))
+                           :collection_collection_arcs
+                           :parent_id parent-id
+                           :child_id child-id ds))
           (sd/response_failed "Could not update collection collection arc." 406))))
     (catch Exception e (sd/response_exception e))))
 
@@ -94,10 +94,10 @@
             ds (:tx req)
             ;; TODO: fetch old data by delete-query
             olddata (sd/query-eq-find-one
-                      :collection_collection_arcs
-                      :parent_id parent-id
-                      :child_id child-id
-                      ds)
+                     :collection_collection_arcs
+                     :parent_id parent-id
+                     :child_id child-id
+                     ds)
             ds (:tx req)
             query (-> (sql/delete :collection_collection_arcs)
                       (sql/where [:= :parent_id parent-id
@@ -154,7 +154,7 @@
                            (s/optional-key :parent_id) s/Uuid
                            (s/optional-key :page) s/Int
                            (s/optional-key :count) s/Int}}
-      :responses {200 {:body s/Any}}                        ; TODO response coercion
+      :responses {200 {:body s/Any}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id
    ; TODO add permission checks
@@ -166,7 +166,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}}
       :responses {200 {:body s/Any}
-                  404 {:body s/Any}}                        ; TODO response coercion
+                  404 {:body s/Any}} ; TODO response coercion
       }}]])
 ; TODO rename param use middleware for permissions
 (def collection-routes
@@ -204,7 +204,7 @@
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}}
       :responses {200 {:body s/Any}
-                  404 {:body s/Any}}                        ; TODO response coercion
+                  404 {:body s/Any}} ; TODO response coercion
       }
 
      ; TODO col col arc update tests

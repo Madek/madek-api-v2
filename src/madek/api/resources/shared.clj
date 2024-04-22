@@ -423,7 +423,7 @@
 (defn- query-media-resource-for-meta-datum [meta-datum ds]
   (or (when-let [id (:media_entry_id meta-datum)]
         (get-media-resource {:parameters {:path {:media_entry_id id}}}
-                            :media_entry_id "media_entries" "MediaEntry" ds ))
+                            :media_entry_id "media_entries" "MediaEntry" ds))
       (when-let [id (:collection_id meta-datum)]
         (get-media-resource {:parameters {:path {:collection_id id}}}
                             :collection_id "collections" "Collection" ds))
@@ -451,8 +451,7 @@
 
   (println ">o> authorize-request-for-media-resource")
 
-
-  ;(
+;(
   ;(info "auth-request-for-mr"
   ;              "\nscope: " scope
   ;              "\nauth entity:\n" (-> request :authenticated-entity)

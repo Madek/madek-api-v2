@@ -26,9 +26,9 @@
 
 (defn- get-user-by-login-or-email-address [login-or-email ds]
   (->> (jdbc/execute! ds (-> (sql/select :*)
-                                   (sql/from :users)
-                                   (sql/where [:or [:= :login login-or-email] [:= :email login-or-email]])
-                                   sql-format))
+                             (sql/from :users)
+                             (sql/where [:or [:= :login login-or-email] [:= :email login-or-email]])
+                             sql-format))
        (map #(assoc % :type "User"))
        (map #(clojure.set/rename-keys % {:email :email_address}))
        first))
@@ -39,9 +39,9 @@
 
 (defn- get-auth-systems-user [userId ds]
   (jdbc/execute-one! ds (-> (sql/select :*)
-                                  (sql/from :auth_systems_users)
-                                  (sql/where [:= :user_id userId])
-                                  sql-format)))
+                            (sql/from :auth_systems_users)
+                            (sql/where [:= :user_id userId])
+                            sql-format)))
 
 (defn base64-decode [^String encoded]
   (String. (.decode (Base64/getDecoder) encoded)))
@@ -58,32 +58,25 @@
 
 (defn user-password-authentication [login-or-email password handler request]
 
-     (let [
-              ds (:tx request)
-              ]
+  (let [ds (:tx request)]
 
-
-  (if-let [entity (get-entity-by-login-or-email login-or-email ds)]
-    (if-let [asuser (get-auth-systems-user (:id entity) ds)]
-      (if-not (checkpw password (:data asuser))
+    (if-let [entity (get-entity-by-login-or-email login-or-email ds)]
+      (if-let [asuser (get-auth-systems-user (:id entity) ds)]
+        (if-not (checkpw password (:data asuser))
       ;(if-not (checkpw password (:password_digest entity)); if there is an entity the password must match
-        {:status 401 :body (str "Password mismatch for "
-                                {:login-or-email-address login-or-email})}
+          {:status 401 :body (str "Password mismatch for "
+                                  {:login-or-email-address login-or-email})}
 
-        (handler (assoc request
-                        :authenticated-entity entity
+          (handler (assoc request
+                          :authenticated-entity entity
                         ; TODO move into ae
-                        :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) ds)
-                        :authentication-method "Basic Authentication")))
+                          :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) ds)
+                          :authentication-method "Basic Authentication")))
 
-      {:status 401 :body (str "Only password auth users supported for basic auth.")})
+        {:status 401 :body (str "Only password auth users supported for basic auth.")})
 
-    {:status 401 :body (str "Neither User nor ApiClient exists for "
-                            {:login-or-email-address login-or-email})})
-
-       )
-
-  )
+      {:status 401 :body (str "Neither User nor ApiClient exists for "
+                              {:login-or-email-address login-or-email})})))
 
 (defn authenticate [request handler]
   "Authenticate with the following rules:

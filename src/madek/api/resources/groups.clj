@@ -135,9 +135,9 @@
           data_wid (assoc params :id (or (:id params) (clj-uuid/v4)))
           data_wtype (assoc data_wid :type (or (:type data_wid) "Group"))
           resultdb (->> (jdbc/execute-one! (:tx req) (-> (sql/insert-into :groups)
-                                                        (sql/values [data_wtype])
-                                                        (sql/returning :*)
-                                                        sql-format)))
+                                                         (sql/values [data_wtype])
+                                                         (sql/returning :*)
+                                                         sql-format)))
           result (dissoc resultdb :previous_id :searchable)]
       (info (apply str ["handler_create-group: \ndata:" data_wtype "\nresult-db: " resultdb "\nresult: " result]))
       {:status 201 :body result})
@@ -347,8 +347,7 @@
                                           ;:swagger {:produces "application/json"}
                                           ;:content-type "application/json"
                                           :handler group-users/handle_delete-group-user
-                                          :middleware [
-                                                       ;db/wrap-tx
+                                          :middleware [;db/wrap-tx
                                                        wrap-authorize-admin!]
                                           :coercion reitit.coercion.schema/coercion
                                           :parameters {:path {:group-id s/Uuid :user-id s/Uuid}}

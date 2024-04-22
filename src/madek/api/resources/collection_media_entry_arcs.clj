@@ -89,7 +89,7 @@
                            :collection_media_entry_arcs
                            :collection_id col-id
                            :media_entry_id me-id
-                            ds))
+                           ds))
           (sd/response_failed "Could not update collection entry arc." 422))))
     (catch Exception ex (sd/response_exception ex))))
 

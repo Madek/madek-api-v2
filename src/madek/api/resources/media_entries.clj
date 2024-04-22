@@ -52,7 +52,7 @@
 
 (defn- get-context-keys-4-context [contextId ds]
   (map :meta_key_id
-       (sd/query-eq-find-all :context_keys :context_id (to-uuid contextId)ds)))
+       (sd/query-eq-find-all :context_keys :context_id (to-uuid contextId) ds)))
 
 (defn- check-has-meta-data-for-context-key [meId mkId ds]
   (let [md (sd/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId ds)

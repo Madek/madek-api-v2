@@ -15,7 +15,7 @@
   [req]
   (let [full-data (true? (-> req :parameters :query :full_data))
         qd (if (true? full-data) :static_pages.* :static_pages.id)
-        ds (:tx req )
+        ds (:tx req)
         db-result (sd/query-find-all :static_pages qd ds)]
     (sd/response_ok db-result)))
 

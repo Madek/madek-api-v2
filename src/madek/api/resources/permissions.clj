@@ -257,9 +257,8 @@
         p (println ">o> handle_list-perms3")
 
         g-data (mr-permissions/query-list-group-permissions mr mr-type ds)
-        p (println ">o> handle_list-perms4")
+        p (println ">o> handle_list-perms4")]
 
-        ]
     (sd/response_ok {;:api-clients a-data
                      :media-resource e-data
                      :users u-data

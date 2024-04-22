@@ -54,7 +54,7 @@
       (let [collection (:media-resource req)
             col-id (:id collection)
             data (-> req :parameters :body)
-              ds (:tx req)
+            ds (:tx req)
             query (-> (sql/update :collections)
                       (sql/set (convert-map-if-exist data))
                       (sql/where [:= :id col-id])
@@ -74,7 +74,7 @@
   (try
     (catcher/with-logging {}
       (let [collection (:media-resource req)
-              ds (:tx req)
+            ds (:tx req)
             col-id (:id collection)
             query (-> (sql/delete-from :collections)
                       (sql/where [:= :id col-id])

@@ -334,8 +334,7 @@
   [req]
   (let [mr (-> req :media-resource)
         meta-key-id (-> req :parameters :path :meta_key_id)
-        ds (:tx req)
-        ]
+        ds (:tx req)]
 
     (if-let [md (db-get-meta-data mr meta-key-id MD_TYPE_KEYWORDS ds)]
       (let [md-id (-> md :id)
@@ -458,8 +457,7 @@
   [req]
   (let [mr (-> req :media-resource)
         meta-key-id (-> req :parameters :path :meta_key_id)
-        ds (:tx req)
-        ]
+        ds (:tx req)]
 
     (if-let [md (db-get-meta-data mr meta-key-id MD_TYPE_PEOPLE ds)]
       (let [md-id (-> md :id)
@@ -563,8 +561,7 @@
             role-id (-> req :parameters :path :role_id)
             person-id (-> req :parameters :path :person_id)
             position (-> req :parameters :path :position)
-            ds (:tx req)
-            ]
+            ds (:tx req)]
 
         (if-let [result (create_md_and_role mr meta-key-id role-id person-id position user-id ds)]
           (handle_create-roles-success req (:id mr) role-id person-id result)
@@ -582,16 +579,15 @@
   (let [mr (-> req :media-resource)
         meta-key-id (-> req :parameters :path :meta_key_id)
 
-        ds (:tx req)
-        ]
+        ds (:tx req)]
 
     (if-let [md (db-get-meta-data mr meta-key-id MD_TYPE_ROLES ds)]
       (let [md-id (-> md :id)
             mdr (db-get-meta-data-roles md-id ds)
             mdr-rids (map (-> :role_id) mdr)
             mdr-pids (map (-> :person_id) mdr)
-            roles (map #(sd/query-eq-find-one :roles :id % ds) mdr-rids )
-            people (map #(sd/query-eq-find-one :people :id % ds) mdr-pids )
+            roles (map #(sd/query-eq-find-one :roles :id % ds) mdr-rids)
+            people (map #(sd/query-eq-find-one :people :id % ds) mdr-pids)
             result {:meta_data md
 
                     MD_KEY_ROLES_IDS mdr-rids
@@ -697,19 +693,13 @@
 (defn handle_get-mr-meta-data-with-related [request]
   ;(info "get-index" "\nmedia-resource\n" (:media-resource request))
 
-     (let [
-              ds (:tx request)
-              ]
+  (let [ds (:tx request)]
 
     (when-let [media-resource (:media-resource request)]
-    (when-let [meta-data (meta-data.index/get-meta-data request media-resource ds)]
-      (let [extra (map #(add-meta-data-extra % ds) meta-data)
-            data extra]
-        (sd/response_ok data))))
-
-       )
-
-  )
+      (when-let [meta-data (meta-data.index/get-meta-data request media-resource ds)]
+        (let [extra (map #(add-meta-data-extra % ds) meta-data)
+              data extra]
+          (sd/response_ok data))))))
 
 (defn wrap-add-keyword [handler]
   (fn [request] (sd/req-find-data
@@ -772,7 +762,7 @@
           user-id (-> req :authenticated-entity :id str)
           ds (:tx req)
           user-vocab-query (meta-data.index/md-vocab-where-clause user-id ds)
-ds (:tx req)
+          ds (:tx req)
           vocab-clause (-> (sql/select :*)
                            (sql/from :vocabularies)
                            (sql/where [:= :id (:vocabulary_id meta-key)])
