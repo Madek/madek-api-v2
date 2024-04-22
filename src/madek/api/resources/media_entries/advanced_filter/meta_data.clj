@@ -260,35 +260,24 @@
                                  (assoc :select-distinct (get query :select))
                                  (dissoc :select)))
 
-;; FIXME
+;; broken???
 (defn sql-filter-by [sqlmap meta-data-specs ds]
+  (println ">o> sql-filter-by.sqlmap=" sqlmap)
+  (println ">o> sql-filter-by.meta-data-specs=" meta-data-specs)
 
-   (println ">o> sql-filter-by.sqlmap=" sqlmap )
-   (println ">o> sql-filter-by.meta-data-specs=" meta-data-specs )
-   (println ">o> sql-filter-by.ds=" ds )
-
-  (let [partition-res (partition 2
-                        (interleave meta-data-specs
-                          (iterate inc 1)))
-
-        p (println ">o> res0=" partition-res)
-        res (extend-sqlmap-according-to-meta-datum-spec sqlmap partition-res
-              ds)
-
-
-        p (println ">o> res1=" res)
-        p (println ">o> fake res2=" (-> (reduce res
-                                          modified-query)
-                                        sqlmap))
-
-        ]
-
-    (if-not (empty? meta-data-specs)
-      (-> (reduce res
-            modified-query)
-          sqlmap))
-    )
-)
+  (if-not (empty? meta-data-specs)
+    (let [partition-res (partition 2
+                          (interleave meta-data-specs
+                            (iterate inc 1)))
+          p (println ">o> res0=" partition-res)
+          reduce-res (reduce (fn [acc val] (extend-sqlmap-according-to-meta-datum-spec acc val ds)) sqlmap partition-res)
+          p (println ">o> res2=" reduce-res)
+          ]
+      (-> reduce-res
+          modified-query)
+      )
+    sqlmap
+    ))
 
   ;### Debug ####################################################################
   ;(debug/debug-ns *ns*)
