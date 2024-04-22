@@ -76,12 +76,20 @@
                      "MetaDatum::JSON" (json/generate-string (:json meta-datum) {:escape-non-ascii false})
                      "MetaDatum::Text" (:string meta-datum)
                      "MetaDatum::TextDate" (:string meta-datum)
+                     ;(map #(select-keys % [:id])
+                     ;     (apply (case meta-datum-type
+                     ;              "MetaDatum::Keywords" keywords/get-index
+                     ;              "MetaDatum::People" get-people-index
+                     ;              "MetaDatum::Roles" find-meta-data-roles)
+                     ;            meta-datum ds))))}
+
                      (map #(select-keys % [:id])
-                          (apply (case meta-datum-type
-                                   "MetaDatum::Keywords" keywords/get-index
-                                   "MetaDatum::People" get-people-index
-                                   "MetaDatum::Roles" find-meta-data-roles)
-                                 meta-datum ds))))}
+                          ((case meta-datum-type
+                             "MetaDatum::Keywords" keywords/get-index
+                             "MetaDatum::People" get-people-index
+                             "MetaDatum::Roles" find-meta-data-roles)
+                           meta-datum ds))))}
+
          (->> (select-keys meta-datum [:media_entry_id :collection_id])
               (filter (fn [[k v]] v))
               (into {}))))
