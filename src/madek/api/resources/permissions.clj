@@ -95,6 +95,7 @@
       (sd/response_not_found "No such resource user permission."))))
 
 (defn handle_create-user-perms [req]
+  (println ">o> ring-wrap-authorization-edit-permissions")
   (try
     (catcher/with-logging {}
       (let [user-id (-> req :parameters :path :user_id)
@@ -102,6 +103,10 @@
             mrt (mr-table-type mr)
             ds (:tx req)
             data (-> req :parameters :body)
+
+            p (println ">o> mr=" mr)
+            p (println ">o> data=" data)
+
             result (mr-permissions/create-user-permissions mr mrt user-id data ds)]
 
         (if (nil? result)
@@ -235,6 +240,9 @@
 
 (defn- handle_list-perms
   [req]
+
+  (println ">o> handle_list-perms1")
+
   (let [mr (-> req :media-resource)
         mr-type (mr-table-type mr)
         e-data (get-entity-perms mr)
@@ -242,8 +250,16 @@
         ; responsible user
         ; TODO delegations
         ;a-data (mr-permissions/query-list-api-client-permissions mr mr-type)
+
+        p (println ">o> handle_list-perms2")
+
         u-data (mr-permissions/query-list-user-permissions mr mr-type ds)
-        g-data (mr-permissions/query-list-group-permissions mr mr-type ds)]
+        p (println ">o> handle_list-perms3")
+
+        g-data (mr-permissions/query-list-group-permissions mr mr-type ds)
+        p (println ">o> handle_list-perms4")
+
+        ]
     (sd/response_ok {;:api-clients a-data
                      :media-resource e-data
                      :users u-data

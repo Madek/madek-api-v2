@@ -367,10 +367,13 @@
   "First checks for collection_id, then for media_entry_id.
    If creating collection-media-entry-arc, the collection permission is checked."
   ([params ds]
+   (println ">o> get-media-resource1")
    (or (get-media-resource params :collection_id "collections" "Collection" ds)
        (get-media-resource params :media_entry_id "media_entries" "MediaEntry" ds)))
 
   ([params id-key table-name type ds]
+
+   (println ">o> get-media-resource2")
 
    (println ">o> 1tx=" (:tx params) " id=" id-key " table=" table-name " type=" type)
    (println ">o> 2tx=" params)
@@ -391,6 +394,9 @@
               {:statuc 406, :body {:message (.getMessage e)}})))))
 
 (defn- ring-add-media-resource [request handler ds] ;;here
+
+  (println ">o> ring-add-media-resource")
+
   (if-let [media-resource (get-media-resource request ds)]
     (let [request-with-media-resource (assoc request :media-resource media-resource)]
       ;(info "ring-add-media-resource" "\nmedia-resource\n" media-resource)
@@ -442,6 +448,10 @@
   (-> resource :get_metadata_and_previews boolean))
 
 (defn- authorize-request-for-media-resource [request handler scope]
+
+  (println ">o> authorize-request-for-media-resource")
+
+
   ;(
   ;(info "auth-request-for-mr"
   ;              "\nscope: " scope
@@ -497,6 +507,7 @@
 
 (defn ring-wrap-add-media-resource [handler]
   (fn [request]
+    (println ">o> ring-wrap-add-media-resource")
     (ring-add-media-resource request handler (:tx request))))
 
 (defn ring-wrap-add-meta-datum-with-media-resource [handler]
@@ -517,6 +528,7 @@
 
 (defn ring-wrap-authorization-edit-permissions [handler]
   (fn [request]
+    (println ">o> ring-wrap-authorization-edit-permissions")
     (authorize-request-for-media-resource request handler :edit-perm)))
 
 (defn ring-wrap-parse-json-query-parameters [handler]

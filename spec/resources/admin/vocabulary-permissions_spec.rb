@@ -85,7 +85,9 @@ context 'vocabulary permission' do
                 }.to_json
                 req.headers['Content-Type'] = 'application/json'
               end
-              
+
+              # binding.pry
+
               data = json_vocabulary_resource(vocabulary.id, true).body
   
               expect(data).to have_key 'id'

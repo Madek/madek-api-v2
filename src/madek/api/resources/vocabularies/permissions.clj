@@ -109,6 +109,9 @@
       (sd/response_not_found "No such vocabulary user permission."))))
 
 (defn handle_create-vocab-user-perms [req]
+
+  (println ">o> handle_create-vocab-user-perms" )
+
   (try
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
@@ -120,6 +123,7 @@
                             :user_id uid)
             query (-> (sql/insert-into :vocabulary_user_permissions)
                       (sql/values [ins-data])
+                      (sql/returning :*)
                       sql-format)
             ins-result (jdbc/execute! ds query)]
         (if-let [result (first ins-result)]
