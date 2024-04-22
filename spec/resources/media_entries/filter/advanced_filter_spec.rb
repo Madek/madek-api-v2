@@ -9,7 +9,12 @@ describe 'advanced filtering of media entries' do
 
   def get_media_entries(filter = nil)
     #media_entries_relation.get(filter).data['media-entries']
-    plain_faraday_json_client.get("/api/media-entries", filter).body['media_entries']
+    ab=plain_faraday_json_client.get("/api/media-entries", filter)
+    res=ab.body['media_entries']
+
+    puts ">> ab: #{ab.status}"
+
+    res
   end
 
   context 'applying a combined filter' do
@@ -30,6 +35,9 @@ describe 'advanced filtering of media entries' do
 
       fetched_media_entries = \
         get_media_entries('filter_by' => filter.deep_stringify_keys.to_json)
+
+      puts ">> fetched_media_entries: #{fetched_media_entries}"
+
       expect(fetched_media_entries.size).to be == 1
       expect(fetched_media_entries.first['id']).to be == media_entry.id
     end
