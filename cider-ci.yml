@@ -40,6 +40,19 @@ jobs:
                     set -euo pipefail
                     cd ${API_V2_DIR}
                     ./bin/cljfmt check
+            standardrb-lint:
+              scripts:
+                test:
+                  body: |
+                    #!/usr/bin/env bash
+                    set -euo pipefail
+                    cd ${API_V2_DIR}
+                    standardrb
+                    status=$?
+                    if [ $status -eq 1 ]; then
+                      exit 1
+                    fi
+
         include:
           - path: cider-ci/context-components/lint/rspec-lint.yml
             submodule: [datalayer]

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 shared_context :bunch_of_media_entries do
   let :users_count do
@@ -18,10 +18,10 @@ shared_context :bunch_of_media_entries do
   let :media_entries do
     (1..media_entries_count).map do
       FactoryBot.create :media_entry,
-                         responsible_user: users[rand(users_count)],
-                         is_published: (rand <= 0.9),
-                         get_metadata_and_previews: true, #(rand <= 0.8),
-                         get_full_size: true # (rand <= 0.3)
+        responsible_user: users[rand(users_count)],
+        is_published: (rand <= 0.9),
+        get_metadata_and_previews: true, # (rand <= 0.8),
+        get_full_size: true # (rand <= 0.3)
     end
   end
 
@@ -35,46 +35,44 @@ shared_context :bunch_of_media_entries do
     end
     coll
   end
-
 end
 
-shared_examples 'ordering by created_at' do |direction = nil|
+shared_examples "ordering by created_at" do |direction = nil|
   before do
     expect(media_entries.size).to eq(30)
     media_entries.map do |me|
-      
     end
   end
 
   def media_entries_created_at(order = nil)
     # to_datetime.strftime('%Q').to_i => int with ms precision
-    client.get('/api/media-entries', {'order' => order})
-      .body.with_indifferent_access['media_entries']
-      .map { |me| MediaEntry.unscoped.find(me['id']) }
-      .map { |me| me.created_at.to_datetime.strftime('%Q').to_i }
+    client.get("/api/media-entries", {"order" => order})
+      .body.with_indifferent_access["media_entries"]
+      .map { |me| MediaEntry.unscoped.find(me["id"]) }
+      .map { |me| me.created_at.to_datetime.strftime("%Q").to_i }
   end
 
-  if [nil, 'asc'].include?(direction)
-    specify 'ascending order' do
-      media_entries_created_at('asc').each_cons(2) do |ca_pair|
+  if [nil, "asc"].include?(direction)
+    specify "ascending order" do
+      media_entries_created_at("asc").each_cons(2) do |ca_pair|
         expect(ca_pair.first < ca_pair.second).to be true
       end
     end
   end
 
-  if [nil, 'desc'].include?(direction)
-    specify 'descending order' do
-      media_entries_created_at('desc').each_cons(2) do |ca_pair|
+  if [nil, "desc"].include?(direction)
+    specify "descending order" do
+      media_entries_created_at("desc").each_cons(2) do |ca_pair|
         expect(ca_pair.first > ca_pair.second).to be true
       end
     end
   end
 end
 
-shared_examples 'ordering by madek_core:title' do |direction = nil|
+shared_examples "ordering by madek_core:title" do |direction = nil|
   let(:meta_key_title) do
     with_disabled_triggers do
-      MetaKey.find_by(id: 'madek_core:title') || FactoryBot.create(:meta_key_core_title)
+      MetaKey.find_by(id: "madek_core:title") || FactoryBot.create(:meta_key_core_title)
     end
   end
 
@@ -86,53 +84,50 @@ shared_examples 'ordering by madek_core:title' do |direction = nil|
   end
 
   def titles(direction = nil)
-    raise ArgumentError unless [nil, 'asc', 'desc'].include?(direction)
+    raise ArgumentError unless [nil, "asc", "desc"].include?(direction)
 
     order = direction ? "title_#{direction}" : direction
     resource(order)
-      .body.with_indifferent_access['media_entries']
-      .map { |me| MediaEntry.unscoped.find(me['id']) }
+      .body.with_indifferent_access["media_entries"]
+      .map { |me| MediaEntry.unscoped.find(me["id"]) }
       .map(&:title)
   end
 
-  if [nil, 'asc'].include?(direction)
-    specify 'ascending order' do
-      titles('asc').each_cons(2) do |pair|
+  if [nil, "asc"].include?(direction)
+    specify "ascending order" do
+      titles("asc").each_cons(2) do |pair|
         puts pair.inspect unless pair.first < pair.last
         expect(pair.first < pair.last).to be true
       end
     end
   end
 
-  if [nil, 'desc'].include?(direction)
-    specify 'descending order' do
-      titles('desc').each_cons(2) do |pair|
+  if [nil, "desc"].include?(direction)
+    specify "descending order" do
+      titles("desc").each_cons(2) do |pair|
         expect(pair.first > pair.last).to be true
       end
     end
   end
 end
 
-shared_examples 'ordering by last_change' do
+shared_examples "ordering by last_change" do
   before do
     expect(media_entries.size).to eq(30)
     media_entries.map do |me|
-      
     end
   end
 
-  
   def edit_session_updated_ats
-    resource('last_change')
-      .body.with_indifferent_access['media_entries']
-      .map { |me| MediaEntry.unscoped.find(me['id']) }
-      .map { |me| me.edit_session_updated_at.to_datetime.strftime('%Q').to_i }
+    resource("last_change")
+      .body.with_indifferent_access["media_entries"]
+      .map { |me| MediaEntry.unscoped.find(me["id"]) }
+      .map { |me| me.edit_session_updated_at.to_datetime.strftime("%Q").to_i }
   end
 
-  specify 'ascending order' do
+  specify "ascending order" do
     edit_session_updated_ats.each_cons(2) do |pair|
       expect(pair.first < pair.last).to be true
     end
   end
 end
-

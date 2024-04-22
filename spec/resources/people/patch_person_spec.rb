@@ -1,49 +1,43 @@
-require 'spec_helper'
+require "spec_helper"
 
-context 'people' do
-
+context "people" do
   before :each do
     @person = FactoryBot.create :person
   end
 
-  context 'admin user' do
+  context "admin user" do
     include_context :json_client_for_authenticated_admin_user do
-
-      describe 'patching/updating' do
-        it 'works' do
+      describe "patching/updating" do
+        it "works" do
           expect(
             client.patch("/api/admin/people/#{CGI.escape(@person.id)}") do |req|
               req.body = {last_name: "new name"}.to_json
-              req.headers['Content-Type'] = 'application/json'
+              req.headers["Content-Type"] = "application/json"
             end.status
-          ).to be== 200
+          ).to be == 200
         end
 
-        it 'works when we do no changes' do
+        it "works when we do no changes" do
           expect(
             client.patch("/api/admin/people/#{CGI.escape(@person.id)}") do |req|
               req.body = {last_name: @person.last_name}.to_json
-              req.headers['Content-Type'] = 'application/json'
+              req.headers["Content-Type"] = "application/json"
             end.status
-          ).to be== 200
+          ).to be == 200
         end
 
-        context 'patch result' do
+        context "patch result" do
           let :patch_result do
             client.patch("/api/admin/people/#{CGI.escape(@person.id)}") do |req|
               req.body = {last_name: "new name"}.to_json
-              req.headers['Content-Type'] = 'application/json'
+              req.headers["Content-Type"] = "application/json"
             end
           end
-          it 'contains the update' do
-            expect(patch_result.body['last_name']).to be== 'new name'
+          it "contains the update" do
+            expect(patch_result.body["last_name"]).to be == "new name"
           end
-
         end
-
       end
-
-
     end
   end
 end

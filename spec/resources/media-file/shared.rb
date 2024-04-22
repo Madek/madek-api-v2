@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 shared_context :auth_media_file_resource_via_json do
   let :client do

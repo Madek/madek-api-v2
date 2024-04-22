@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "spec_helper"
 
-describe 'The root resource' do
-  #describe 'the json_roa_client' do
+describe "The root resource" do
+  # describe 'the json_roa_client' do
   #  it 'requesting succeeds' do
   #    expect { json_roa_client.get }.not_to raise_exception
   #  end
@@ -41,5 +41,5 @@ describe 'The root resource' do
   #      end
   #    end
   #  end
-  #end
+  # end
 end

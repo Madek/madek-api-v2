@@ -1,60 +1,57 @@
-require 'spec_helper'
+require "spec_helper"
 
-context 'groups' do
-
+context "groups" do
   before :each do
     @group = FactoryBot.create :group
     @user = FactoryBot.create :user
     @group.users << @user
   end
 
-  context 'non admin user' do
+  context "non admin user" do
     include_context :json_client_for_authenticated_user do
-      it 'is forbidden to retrieve any group' do
+      it "is forbidden to retrieve any group" do
         expect(
           client.get("/api/admin/groups/", {id: @group.id}).status
-        ).to be==403
+        ).to be == 403
       end
     end
   end
 
-  context 'admin user' do
+  context "admin user" do
     include_context :json_client_for_authenticated_admin_user do
-
-      context 'retrieving a standard group' do
+      context "retrieving a standard group" do
         let :get_group_result do
           client.get("/api/admin/groups/#{@group.id}")
         end
 
-        it 'works' do
-          expect(get_group_result.status).to be==200
+        it "works" do
+          expect(get_group_result.status).to be == 200
         end
 
-        it 'has the proper data, sans :searchable and :previous_id' do
+        it "has the proper data, sans :searchable and :previous_id" do
           expect(get_group_result.body.with_indifferent_access.except(
-            :created_at, :updated_at)).to be== \
+            :created_at, :updated_at
+          )).to be ==
             @group.attributes.with_indifferent_access.except(
-              :searchable, :previous_id, :created_at, :updated_at)
+              :searchable, :previous_id, :created_at, :updated_at
+            )
         end
       end
 
-      context 'an institutional group (with naughty institutional_id)' do
+      context "an institutional group (with naughty institutional_id)" do
         before :each do
           @inst_group = FactoryBot.create :institutional_group,
-            institutional_id: '?this#id/needs/to/be/url&encoded'
+            institutional_id: "?this#id/needs/to/be/url&encoded"
         end
-        it 'can be retrieved by the institutional_id' do
+        it "can be retrieved by the institutional_id" do
           expect(
             client.get("/api/admin/groups/#{CGI.escape(@inst_group.institutional_id)}").status
-          ).to be== 200
+          ).to be == 200
           expect(
             client.get("/api/admin/groups/#{CGI.escape(@inst_group.institutional_id)}").body["id"]
-          ).to be== @inst_group["id"]
+          ).to be == @inst_group["id"]
         end
       end
-
     end
   end
 end
-
-

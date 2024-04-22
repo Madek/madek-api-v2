@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 shared_context :media_entry_resource_via_plain_json do
   let :response do
@@ -13,7 +13,6 @@ shared_context :auth_media_entry_resource_via_plain_json do
 end
 
 shared_context :check_media_entry_resource_via_any do |ctx|
-  
   context :via_plain_json do
     include_context :media_entry_resource_via_plain_json
     include_context ctx

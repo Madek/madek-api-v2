@@ -1,5 +1,4 @@
-require 'spec_helper'
-
+require "spec_helper"
 
 shared_context :collection_resource_via_json do
   let :response do
@@ -7,12 +6,11 @@ shared_context :collection_resource_via_json do
   end
 end
 
-
 shared_context :auth_collection_resource_via_json do
   let :client do
     basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
   end
-  
+
   let :response do
     client.get("/api/collection/#{CGI.escape(@collection.id)}")
   end

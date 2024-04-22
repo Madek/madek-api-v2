@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "spec_helper"
 
-#describe '/management/status' do
+# describe '/management/status' do
 #    let :url do
 #        "/api/management/status"
 #    end
@@ -29,12 +29,10 @@ require 'spec_helper'
 #        it 'responds with 200' do
 #            expect(response.status).to be == 200
 #        end
-#    end 
-#end
+#    end
+# end
 
-
-
-#describe '/management/shutdown' do
+# describe '/management/shutdown' do
 #    let :url do
 #        "/api/management/shutdown"
 #    end
@@ -64,15 +62,15 @@ require 'spec_helper'
 #        it 'responds with 405' do
 #            expect(response.status).to be == 405
 #        end
-#    end 
+#    end
 
-    # do not include shutdown test if not running it manually
-    #context 'with correct authentication' do
-    #    let :response do
-    #        basic_auth_plain_faraday_json_client("u1login","secret").post(url)
-    #    end
-    #    it 'responds with 200' do
-    #        expect(response.status).to be == 204
-    #    end
-    #end 
-#end
+# do not include shutdown test if not running it manually
+# context 'with correct authentication' do
+#    let :response do
+#        basic_auth_plain_faraday_json_client("u1login","secret").post(url)
+#    end
+#    it 'responds with 200' do
+#        expect(response.status).to be == 204
+#    end
+# end
+# end
