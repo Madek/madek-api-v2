@@ -49,9 +49,6 @@
                   sql-format)]
     (jdbc/execute-one! ds query)))
 
-
-
-
 ;; ok
 ;(defn- prepare-meta-datum [meta-datum]
 ;  (merge (select-keys meta-datum [:id :meta_key_id :type])
@@ -71,25 +68,23 @@
 ;      (filter (fn [[k v]] v))
 ;      (into {}))))
 
-
-
 ;; broken??
 (defn- prepare-meta-datum [meta-datum ds]
   (merge (select-keys meta-datum [:id :meta_key_id :type])
-    {:value (let [meta-datum-type (:type meta-datum)]
-              (case meta-datum-type
-                "MetaDatum::JSON" (json/generate-string (:json meta-datum) {:escape-non-ascii false})
-                "MetaDatum::Text" (:string meta-datum)
-                "MetaDatum::TextDate" (:string meta-datum)
-                (map #(select-keys % [:id])
-                  (apply (case meta-datum-type
-                    "MetaDatum::Keywords" keywords/get-index
-                    "MetaDatum::People" get-people-index
-                    "MetaDatum::Roles" find-meta-data-roles)
-                   meta-datum ds))))}
-    (->> (select-keys meta-datum [:media_entry_id :collection_id])
-      (filter (fn [[k v]] v))
-      (into {}))))
+         {:value (let [meta-datum-type (:type meta-datum)]
+                   (case meta-datum-type
+                     "MetaDatum::JSON" (json/generate-string (:json meta-datum) {:escape-non-ascii false})
+                     "MetaDatum::Text" (:string meta-datum)
+                     "MetaDatum::TextDate" (:string meta-datum)
+                     (map #(select-keys % [:id])
+                          (apply (case meta-datum-type
+                                   "MetaDatum::Keywords" keywords/get-index
+                                   "MetaDatum::People" get-people-index
+                                   "MetaDatum::Roles" find-meta-data-roles)
+                                 meta-datum ds))))}
+         (->> (select-keys meta-datum [:media_entry_id :collection_id])
+              (filter (fn [[k v]] v))
+              (into {}))))
 
 (defn- prepare-meta-datum-role
   [id ds]
