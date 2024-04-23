@@ -1,9 +1,9 @@
 require "spec_helper"
 
+C = 110
+
 describe "updating group-users" do
   before :each do
-    C = 110
-
     @group = FactoryBot.create :institutional_group
 
     @current_group_users = C.times.map do

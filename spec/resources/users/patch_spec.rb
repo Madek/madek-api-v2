@@ -27,8 +27,8 @@ context "users" do
         end
 
         context "patch result" do
-          let :new_last_name do Faker::Name.last_name end
-          let :new_first_name do Faker::Name.first_name end
+          let(:new_last_name) { Faker::Name.last_name }
+          let(:new_first_name) { Faker::Name.first_name }
           let :patch_result do
             client.patch("/api/admin/users/#{CGI.escape(@user.id)}") do |req|
               req.body = {

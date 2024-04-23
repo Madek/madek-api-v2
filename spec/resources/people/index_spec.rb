@@ -61,7 +61,7 @@ context "people" do
           expect(result.body["people"].count).to be == 77
           # all of those are of type Person
           expect(
-            result.body["people"].filter { |p| p["subtype"] == "Person" }.count
+            result.body["people"].count { |p| p["subtype"] == "Person" }
           ).to be == 77
         end
       end

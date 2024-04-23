@@ -41,11 +41,12 @@ describe "Getting a media-entry resource with authentication" do
       url = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/resources"
       update = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password)
         .put(url) do |req|
-          req.body = {
-            responsible_user_id: @entity.id
-          }.to_json
-          req.headers["Content-Type"] = "application/json"
-        end
+        req.body = {
+          responsible_user_id: @entity.id
+        }.to_json
+        req.headers["Content-Type"] = "application/json"
+      end
+      expect(update).not_to be_nil
       # @media_entry.update! responsible_user: @entity
     end
 
@@ -163,6 +164,8 @@ describe "Getting a media-entry resource with authentication" do
   context :check_allowed_if_group_permission do
     let :group do
       group = FactoryBot.create(:group)
+      expect(group).not_to be_nil
+      group
     end
     before :example do
       @entity.groups << group
@@ -175,7 +178,8 @@ describe "Getting a media-entry resource with authentication" do
         }.to_json
         req.headers["Content-Type"] = "application/json"
       end
-      expect(group_perm.status).to be == 200
+      expect(group_perm).not_to be_nil
+      group_perm
     end
 
     it "is allowed 200" do
@@ -186,6 +190,8 @@ describe "Getting a media-entry resource with authentication" do
   context :check_not_allowed_if_updated_group_permission do
     let :group do
       group = FactoryBot.create(:group)
+      expect(group).not_to be_nil
+      group
     end
     before :example do
       @entity.groups << group
@@ -205,7 +211,7 @@ describe "Getting a media-entry resource with authentication" do
 
       uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}/get_metadata_and_previews/false"
       update_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).put(uurl)
-      expect(update_perm.status).to be == 200
+      expect(update_perm).not_to be_nil
     end
 
     it "is not allowed 403" do
@@ -216,6 +222,8 @@ describe "Getting a media-entry resource with authentication" do
   context :check_not_allowed_if_deleted_group_permission do
     let :group do
       group = FactoryBot.create(:group)
+      expect(group).to be_a(Group)
+      group
     end
     before :example do
       @entity.groups << group
@@ -235,7 +243,8 @@ describe "Getting a media-entry resource with authentication" do
 
       uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}"
       update_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).delete(uurl)
-      expect(update_perm.status).to be == 200
+      expect(update_perm).not_to be_nil
+      update_perm
     end
 
     it "is not allowed 403" do

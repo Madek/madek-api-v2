@@ -78,6 +78,7 @@ describe "index" do
           vgp = Permissions::VocabularyGroupPermission.create!(group_id: group.id,
             view: false,
             vocabulary: vocabulary)
+          expect(vgp).not_to be nil
 
           data = meta_keys_resource.body["meta-keys"].map { |mk| mk["id"] }
           expect(data).not_to include meta_key.id

@@ -18,6 +18,9 @@ describe "MediaFile Resource" do
       media_entry = FactoryBot.create :media_entry,
         get_full_size: true,
         get_metadata_and_previews: true
+
+      expect(media_entry).to be_a(MediaEntry)
+      media_entry
     end
 
     let :media_file do
