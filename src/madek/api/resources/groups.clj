@@ -4,6 +4,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
+            [madek.api.db.core :refer [get-ds]]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -34,7 +35,7 @@
 (defn get-group [id-or-institutional-group-id tx]
   (if-let [group (groups/find-group id-or-institutional-group-id tx)]
     {:body (dissoc group :previous_id :searchable)}
-    {:status 404 :body "No such group found"})) ; TODO: toAsk 204 No Content
+    {:status 404 :body "No such group found"}))             ; TODO: toAsk 204 No Content
 
 ;### delete group ##############################################################
 
@@ -47,7 +48,7 @@
         update-count (get res :next.jdbc/update-count)]
 
     (if (= 1 update-count)
-      {:status 204 :content-type "application/json"} ;TODO / FIXME: response should support octet-stream as well?
+      {:status 204 :content-type "application/json"}        ;TODO / FIXME: response should support octet-stream as well?
       {:status 404})))
 
 ;### patch group ##############################################################
@@ -118,7 +119,7 @@
 (def schema_export-group
   {:id s/Uuid
    (s/optional-key :name) s/Str
-   (s/optional-key :type) s/Str ; TODO enum
+   (s/optional-key :type) s/Str                             ; TODO enum
    (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
    (s/optional-key :created_at) s/Any
    (s/optional-key :updated_at) s/Any
@@ -162,6 +163,106 @@
     ;(info "handle_update-group" "\nid\n" id "\nbody\n" body)
     (patch-group {:params {:group-id id} :body body} tx)))
 
+
+
+
+
+
+
+(defn fetch-table-metadata [table-name]
+  (jdbc/execute! (get-ds)
+    ["SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name= ?"
+     table-name]
+    {:result-set-fn :hash-map}))
+
+
+(require '[schema.core :as schema])
+
+(def type-mapping {"varchar" schema/Str
+                   "int4" schema/Int
+                   "boolean" schema/Bool
+                   "uuid" schema/Uuid
+                   "text" schema/Str
+                   "character varying" schema/Str
+                   "timestamp with time zone" schema/Any
+                   })
+
+;(defn postgres-to-schema [metadata]
+;  (into {}
+;    (map (fn [{:keys [column_name data_type is_nullable]}]
+;           (do
+;             (println ">o> postgres-to-schema=" column_name data_type is_nullable)
+;             {column_name (if (= is_nullable "YES")
+;                              (do
+;                                (println ">o> 1data_type=" data_type (type-mapping data_type)
+;                                (schema/maybe (type-mapping data_type))))
+;                              (do
+;                                (println ">o> 2data_type=" data_type (type-mapping data_type))
+;                                (type-mapping data_type))
+;                              )})
+;      metadata))))
+
+(defn postgres-to-schema [metadata]
+  (into {}
+    (map (fn [{:keys [column_name data_type is_nullable]}]
+           {
+            (s/optional-key (keyword column_name)) (if (= is_nullable "YES")
+
+                          ;(schema/maybe (type-mapping data_type))
+                          ;(type-mapping data_type)
+
+                          (do
+                            ;(println ">o> 1data_type, column_name=" column_name "|" data_type "|" (type-mapping data_type))
+                            ;(println ">o> column_name=" column_name (class column_name))
+                            (println ">o> column_name=" data_type (class data_type))
+                              ;(schema/maybe (type-mapping data_type))))
+                             ;((s/optional-key (keyword column_name)) (schema/maybe (type-mapping data_type)))  )
+                             (schema/maybe (type-mapping data_type)))
+
+                          (do
+                            ;(println ">o> 2data_type, column_name=" column_name "|" data_type "|" (type-mapping data_type))
+                            ;(println ">o> column_name=" column_name (class column_name))
+                            (println ">o> column_name=" data_type (class data_type))
+                            ;((s/optional-key (keyword column_name)) (type-mapping data_type) )          )
+                            (type-mapping data_type)           )
+
+                          )
+
+            }
+
+           )
+      metadata)))
+
+(comment
+
+  (let [
+        res1 (fetch-table-metadata "groups")
+        p (println ">o> 1res=" res1)
+
+
+        ;(s/optional-key :full_data) s/Bool
+        ;(s/optional-key :page) s/Int
+        ;(s/optional-key :count) s/Int}
+
+   res2 [{:column_name "full_data", :data_type "boolean", :is_nullable "NO"}
+        {:column_name "page", :data_type "int4", :is_nullable "NO"}
+        {:column_name "count", :data_type "int4", :is_nullable "NO"}]
+
+
+        res (merge res1 res2)
+
+        res (postgres-to-schema res)
+        p (println ">o> 2res=" res)
+
+        ]
+
+    )
+  )
+
+
+
+
+
 (def schema_query-groups
   {(s/optional-key :id) s/Uuid
    (s/optional-key :name) s/Str
@@ -173,9 +274,12 @@
    (s/optional-key :institution) s/Str
    (s/optional-key :created_by_user_id) s/Uuid
    (s/optional-key :searchable) s/Str
+
    (s/optional-key :full_data) s/Bool
    (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int})
+   (s/optional-key :count) s/Int}
+
+  )
 
 (def user-routes
   [["/groups"
@@ -273,8 +377,8 @@
                   :coercion reitit.coercion.schema/coercion
                   :parameters {:path {:id s/Uuid}
                                :body schema_update-group}
-                  :responses {200 {:body s/Any} ;groups/schema_export-group}
-                              404 {:body s/Any}}}}] ; TODO error handling
+                  :responses {200 {:body s/Any}             ;groups/schema_export-group}
+                              404 {:body s/Any}}}}]         ; TODO error handling
 
    ; groups-users/ring-routes
    ["/:group-id/users/" {:get {:summary "Get group users by id"
