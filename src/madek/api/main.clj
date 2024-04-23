@@ -49,6 +49,8 @@
 ;; run ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn run [options]
+   (println ">o> INIT DB!!!!!!!!!!!!!!!!!!!!!")
+
   (catcher/snatch
    {:level :fatal
     :throwable Throwable
@@ -77,20 +79,26 @@
 (defonce args* (atom nil))
 
 (defn main []
+  (println ">o> 1main!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   (logging/init)
   (info "main")
   (let [args @args*]
-    (let [args @args*
+    (let [
+          p (println ">o> args!!!!!!!!!!!!!!!!!!!!!")
+          args @args*
           {:keys [options arguments errors summary]}
           (cli/parse-opts args cli-options :in-order true)
           options (merge (sorted-map) options)]
       (info "options" options)
+
+      (println ">o> before  (exit/init options)!!!!!!!!!!!!!!!!!!!!!")
       (exit/init options)
       (cond
         (:help options) (helpnexit summary args options)
         :else (run options)))))
 
 (defn -main [& args]
+  (println ">o> 2main!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   ;(logbug.thrown/reset-ns-filter-regex #".*madek.*")
   (reset! args* args)
   (main))

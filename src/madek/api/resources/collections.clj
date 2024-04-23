@@ -4,9 +4,9 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
+   [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared :as sd]
-   [madek.api.db.core :refer [get-ds]]
    [madek.api.utils.helper :refer [convert-map-if-exist f t]]
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
@@ -157,16 +157,6 @@
    (s/optional-key :me_edit_permission) s/Bool
    (s/optional-key :me_edit_metadata_and_relations) s/Bool})
 
-
-
-
-
-
-
-
-
-
-
 (def schema_collection-export
   {:id s/Uuid
    (s/optional-key :get_metadata_and_previews) s/Bool
@@ -190,16 +180,6 @@
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
-
-
-
-
-
-
-
-
-
-
 
 (def ring-routes
   ["/"

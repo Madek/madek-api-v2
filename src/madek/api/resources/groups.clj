@@ -1,15 +1,15 @@
 (ns madek.api.resources.groups
-  (:require [clj-uuid]
+  (:require [cheshire.core :as json]
+            [clj-uuid]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
+            [madek.api.db.core :refer [get-ds]]
             [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
-            [madek.api.db.core :refer [get-ds]]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared :as sd]
-            [cheshire.core :as json]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-            [madek.api.utils.helper :refer [convert-groupid f mslurp t]]
+            [madek.api.utils.helper :refer [convert-groupid f mslurp]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -36,7 +36,7 @@
 (defn get-group [id-or-institutional-group-id tx]
   (if-let [group (groups/find-group id-or-institutional-group-id tx)]
     {:body (dissoc group :previous_id :searchable)}
-    {:status 404 :body "No such group found"}))             ; TODO: toAsk 204 No Content
+    {:status 404 :body "No such group found"})) ; TODO: toAsk 204 No Content
 
 ;### delete group ##############################################################
 
@@ -49,7 +49,7 @@
         update-count (get res :next.jdbc/update-count)]
 
     (if (= 1 update-count)
-      {:status 204 :content-type "application/json"}        ;TODO / FIXME: response should support octet-stream as well?
+      {:status 204 :content-type "application/json"} ;TODO / FIXME: response should support octet-stream as well?
       {:status 404})))
 
 ;### patch group ##############################################################
@@ -120,7 +120,7 @@
 (def schema_export-group
   {:id s/Uuid
    (s/optional-key :name) s/Str
-   (s/optional-key :type) s/Str                             ; TODO enum
+   (s/optional-key :type) s/Str ; TODO enum
    (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
    (s/optional-key :created_at) s/Any
    (s/optional-key :updated_at) s/Any
@@ -164,54 +164,41 @@
     ;(info "handle_update-group" "\nid\n" id "\nbody\n" body)
     (patch-group {:params {:group-id id} :body body} tx)))
 
-
-
-
-
-
-
 (defn pr [str]
-   (println ">oo> HELPER / " str)
-    str
-  )
+  (println ">oo> HELPER / " str)
+  str)
 
 (defn fetch-table-metadata [table-name]
-  (let [
-        ds (get-ds)                                         ;;broken
+  (let [ds (get-ds) ;;FIXME: broken
+
         ;;; TODO: FIXME: use get-ds
         ds {:dbtype "postgresql"
-                      :dbname "madek_test"
-                      :user "madek_sql"
-                      :port 5415
-                      :password "madek_sql"}
+            :dbname "madek_test"
+            :user "madek_sql"
+            :port 5415
+            :password "madek_sql"}
 
         p (println ">o> ds=" ds)
-        p (println ">o> table-name=" table-name)
-        ]
+        p (println ">o> table-name=" table-name)]
     ;(if ds
 
-      (try  (pr(jdbc/execute! ds
-                 ["SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name= ?"
-                  table-name]
-                 {:result-set-fn :hash-map}
-                 ))
-            (catch Exception e
-              (println ">o> ERROR: fetch-table-metadata" (.getMessage e))
-              (throw (Exception. "Unable to establish a database connection"))
-              )
+    (try (pr (jdbc/execute! ds
+                            ["SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name= ?"
+                             table-name]
+                            {:result-set-fn :hash-map}))
+         (catch Exception e
+           (println ">o> ERROR: fetch-table-metadata" (.getMessage e))
+           (throw (Exception. "Unable to establish a database connection")))
 
-      ;(let [res (jdbc/execute! ds
-      ;           ["SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name= ?"
-      ;            table-name]
-      ;           {:result-set-fn :hash-map})
-      ;      p (println ">o> res=" res)
-      ;      ]
-      ;  res)
-      ;(throw (Exception. "Unable to establish a database connection"))
-
-            )))
-
-
+;(let [res (jdbc/execute! ds
+         ;           ["SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name= ?"
+         ;            table-name]
+         ;           {:result-set-fn :hash-map})
+         ;      p (println ">o> res=" res)
+         ;      ]
+         ;  res)
+         ;(throw (Exception. "Unable to establish a database connection"))
+         )))
 (require '[schema.core :as schema])
 
 (def type-mapping {"varchar" schema/Str
@@ -220,8 +207,7 @@
                    "uuid" schema/Uuid
                    "text" schema/Str
                    "character varying" schema/Str
-                   "timestamp with time zone" schema/Any
-                   })
+                   "timestamp with time zone" schema/Any})
 
 ;(defn postgres-to-schema [metadata]
 ;  (into {}
@@ -287,13 +273,12 @@
 ;             )
 ;           metadata))))
 
-
 (defn ensure-required-attr [entries]
   (map (fn [entry]
          (if (contains? entry :required)
            entry
            (assoc entry :required false)))
-    entries))
+       entries))
 
 (defn ensure-required-attr [entries]
   ;(map (fn [entry]
@@ -302,96 +287,82 @@
   ;         entry))
   ;  entries)
   ;
-     (let [
-              entries   (map (fn [entry]
-                               (if (and (map? entry) (not (contains? entry :required)))
-                                 (assoc entry :required false)
-                                 entry))
-                          entries)
+  (let [entries (map (fn [entry]
+                       (if (and (map? entry) (not (contains? entry :required)))
+                         (assoc entry :required false)
+                         entry))
+                     entries)
 
-           entries   (map (fn [entry]
-                               (if (and (map? entry) (not (contains? entry :is_nullable)))
-                                 (assoc entry :is_nullable "NO")
-                                 entry))
-                          entries)
-              ]entries)
-
-  )
+        entries (map (fn [entry]
+                       (if (and (map? entry) (not (contains? entry :is_nullable)))
+                         (assoc entry :is_nullable "NO")
+                         entry))
+                     entries)] entries))
 
 (defn postgres-to-schema [metadata]
   (into {}
-    (map (fn [{:keys [column_name data_type is_nullable required]}]
-           (println ">o> =>" column_name data_type is_nullable required)
-           (if (true? required)
-             {(s/required-key (keyword column_name)) (type-mapping data_type)}
-             {(s/optional-key (keyword column_name)) (if (= is_nullable "YES")
-                                                       (schema/maybe (type-mapping data_type))
-                                                       (type-mapping data_type))}
-             )
-           )
-      metadata)))
+        (map (fn [{:keys [column_name data_type is_nullable required]}]
+               (println ">o> =>" column_name data_type is_nullable required)
+               (if (true? required)
+                 {(s/required-key (keyword column_name)) (type-mapping data_type)}
+                 {(s/optional-key (keyword column_name)) (if (= is_nullable "YES")
+                                                           (schema/maybe (type-mapping data_type))
+                                                           (type-mapping data_type))}))
 
-  (comment
-
-    (let [
-          res (fetch-table-metadata "groups")
-          p (println ">o> 1res=" res)
-
-
-          ;;(s/optional-key :full_data) s/Bool
-          ;;(s/optional-key :page) s/Int
-          ;;(s/optional-key :count) s/Int}
-          ;
-          ;;res2 [{:required_attr "full_data", :data_type "boolean", :is_nullable "NO"}
-          ;;      {:required_attr "page", :data_type "int4", :is_nullable "NO"}
-          ;;      {:required_attr "count", :data_type "int4", :is_nullable "NO"}]
-          ;
-          ;
-          ;;res2 [{:required_attr "full_data", :data_type "boolean"}
-          ;;      {:required_attr "page", :data_type "int4"}
-          ;;      {:required_attr "count", :data_type "int4"}]
-          ;
-          ;res2 [{:column_name "full_data", :data_type "boolean" :required true}
-          ;      {:column_name "page", :data_type "int4" :required true}
-          ;      {:column_name "count", :data_type "int4" :required true}]
-          ;res (concat res res2)
-          ;;p (println ">o> 2res=" res)
-          ;
-          ;
-          ;res (ensure-required-attr res)
-          ;p (println ">o> 2ares=" res)
-          ;
-          ;res (postgres-to-schema res)
-          ;p (println ">o> 3res=" res)
-
-          ]
-res
-      )
-    )
-
+             metadata)))
 
 (comment
-  (let [
-        res
-          {(s/optional-key :id) s/Uuid
-           (s/optional-key :name) s/Str
-           (s/optional-key :type) s/Str
-           (s/optional-key :created_at) s/Any
-           (s/optional-key :updated_at) s/Any
-           (s/optional-key :institutional_id) s/Str
-           (s/optional-key :institutional_name) s/Str
-           (s/optional-key :institution) s/Str
-           (s/optional-key :created_by_user_id) s/Uuid
-           (s/optional-key :searchable) s/Str
 
-           (s/optional-key :full_data) s/Bool
-           (s/optional-key :page) s/Int
-           (s/optional-key :count) s/Int}
+  (let [res (fetch-table-metadata "groups")
+        p (println ">o> 1res=" res)
+
+;;(s/optional-key :full_data) s/Bool
+        ;;(s/optional-key :page) s/Int
+        ;;(s/optional-key :count) s/Int}
+        ;
+        ;;res2 [{:required_attr "full_data", :data_type "boolean", :is_nullable "NO"}
+        ;;      {:required_attr "page", :data_type "int4", :is_nullable "NO"}
+        ;;      {:required_attr "count", :data_type "int4", :is_nullable "NO"}]
+        ;
+        ;
+        ;;res2 [{:required_attr "full_data", :data_type "boolean"}
+        ;;      {:required_attr "page", :data_type "int4"}
+        ;;      {:required_attr "count", :data_type "int4"}]
+        ;
+        ;res2 [{:column_name "full_data", :data_type "boolean" :required true}
+        ;      {:column_name "page", :data_type "int4" :required true}
+        ;      {:column_name "count", :data_type "int4" :required true}]
+        ;res (concat res res2)
+        ;;p (println ">o> 2res=" res)
+        ;
+        ;
+        ;res (ensure-required-attr res)
+        ;p (println ">o> 2ares=" res)
+        ;
+        ;res (postgres-to-schema res)
+        ;p (println ">o> 3res=" res)
         ]
-    res
-    )
+    res))
 
-  ;{#schema.core.OptionalKey{:k :institutional_name} java.lang.String,
+(comment
+  (let [res
+        {(s/optional-key :id) s/Uuid
+         (s/optional-key :name) s/Str
+         (s/optional-key :type) s/Str
+         (s/optional-key :created_at) s/Any
+         (s/optional-key :updated_at) s/Any
+         (s/optional-key :institutional_id) s/Str
+         (s/optional-key :institutional_name) s/Str
+         (s/optional-key :institution) s/Str
+         (s/optional-key :created_by_user_id) s/Uuid
+         (s/optional-key :searchable) s/Str
+
+         (s/optional-key :full_data) s/Bool
+         (s/optional-key :page) s/Int
+         (s/optional-key :count) s/Int}]
+    res)
+
+;{#schema.core.OptionalKey{:k :institutional_name} java.lang.String,
   ; #schema.core.OptionalKey{:k :created_at} Any,
   ; #schema.core.OptionalKey{:k :full_data} java.lang.Boolean,
   ; #schema.core.OptionalKey{:k :institutional_id} java.lang.String,
@@ -404,264 +375,237 @@ res
   ; #schema.core.OptionalKey{:k :page} Int,
   ; #schema.core.OptionalKey{:k :institution} java.lang.String,
   ; #schema.core.OptionalKey{:k :count} Int}
-
   )
-
-
 (defn normalize-map [namespaced-map]
   (into {} (map (fn [[k v]] [(keyword (name k)) v]) namespaced-map)))
 
 (defn convert-to-json [data]
   (json/encode (map normalize-map data)))
 
-
-
-
-  (def schema_raw_pagination [{:required_attr "full_data", :data_type "boolean"}
-                              {:required_attr "page", :data_type "int4"}
-                              {:required_attr "count", :data_type "int4"}])
-
+(def schema_raw_pagination [{:required_attr "full_data", :data_type "boolean"}
+                            {:required_attr "page", :data_type "int4"}
+                            {:required_attr "count", :data_type "int4"}])
 
 (defn normalize-map [namespaced-map]
   (into {} (map (fn [[k v]] [(keyword (name k)) v]) namespaced-map)))
 
-
 (defn prepare-schema [table-name]
-     (let [
+  (let [res (fetch-table-metadata "groups")
+        p (println ">o> 1res=" res)
 
-           res (fetch-table-metadata "groups")
-           p (println ">o> 1res=" res)
+        res (map normalize-map res)
+        p (println ">o> 2res=" res)
 
-           res (map normalize-map res)
-           p (println ">o> 2res=" res)
+        res (concat res schema_raw_pagination)
+        p (println ">o> 3res=" res)
 
+        res (ensure-required-attr res)
+        p (println ">o> 4res=" res)
 
-           ;; broken
-           ;res (convert-to-json res)
-           ;p (println ">o> 2res=" res)
+        res (postgres-to-schema res)
+        p (println ">o> 5res=" res)] res))
 
+;; dynamic schema
+(def schema_query_groups (prepare-schema "groups"))
 
+;;; static schema
+;;(def schema_query_groups
+;(defn test-me []
+;  {(s/optional-key :id) s/Uuid
+;   (s/optional-key :name) s/Str
+;   (s/optional-key :type) s/Str
+;   (s/optional-key :created_at) s/Any
+;   (s/optional-key :updated_at) s/Any
+;   (s/optional-key :institutional_id) s/Str
+;   (s/optional-key :institutional_name) s/Str
+;   (s/optional-key :institution) s/Str
+;   (s/optional-key :created_by_user_id) s/Uuid
+;   (s/optional-key :searchable) s/Str
+;
+;   (s/optional-key :full_data) s/Bool
+;   (s/optional-key :page) s/Int
+;   (s/optional-key :count) s/Int}
+;  )
 
+;(def schema_query_groups (test-me))                       ;;ok
 
-           ;res (concat res schema_raw_pagination)
-           ;p (println ">o> 3res=" res)
+(def user-routes
+  [["/groups"
+    {:swagger {:tags ["groups"]}}
+    ["/" {:get {:summary "Get all group ids"
+                :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
+                :handler index
+                ;:middleware [wrap-authorize-admin!]
+                :swagger {:produces "application/json"}
+                :content-type "application/json"
+                :parameters {:query schema_query_groups}
+                ;:accept "application/json"
+                :coercion reitit.coercion.schema/coercion
+                :responses {200 {:body {:groups [schema_export-group]}}}}}]
+    ["/:id" {:get {:summary "Get group by id"
+                   :description "Get group by id. Returns 404, if no such group exists."
+                   :swagger {:produces "application/json"}
+                   :content-type "application/json"
+                   :handler handle_get-group
+                   :middleware [wrap-authorize-admin!]
+                   :coercion reitit.coercion.schema/coercion
+                   :parameters {:path {:id s/Uuid}}
+                   :responses {200 {:body schema_export-group}
+                               404 {:body s/Any}}}}]]])
 
+(def ring-routes
+  ["/groups"
+   {:swagger {:tags ["admin/groups"] :security [{"auth" []}]}}
+   ["/" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
+               :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
+               :handler index
+               :middleware [wrap-authorize-admin!]
+               :swagger {:produces "application/json"}
+               :parameters {:query schema_query_groups}
+               :content-type "application/json"
+               :coercion reitit.coercion.schema/coercion
+               :responses {200 {:body {:groups [schema_export-group]}}}}
 
+         :post {:summary (f "Create a group" "groups::person_id-not-exists")
+                :description "Create a group."
+                :handler handle_create-group
+                :middleware [wrap-authorize-admin!]
+                :swagger {:produces "application/json" :consumes "application/json"}
+                :content-type "application/json"
+                :accept "application/json"
+                :coercion reitit.coercion.schema/coercion
+                :parameters {:body schema_import-group}
+                :responses {201 {:body schema_export-group}
+                            404 {:description "Not Found."
+                                 :schema s/Str
+                                 :examples {"application/json" {:message "User entry not found"}}}
 
-           res (ensure-required-attr res)
-           p (println ">o> 4res=" res)
+                            409 {:description "Conflict."
+                                 :schema s/Str
+                                 :examples {"application/json" {:message "Entry already exists"}}}
+                            500 {:body s/Any}}}}]
 
-           res (postgres-to-schema res)
-           p (println ">o> 5res=" res)
-
-
-              ]res)
-
-  )
-
-  ;; dynamic schema
-  ;(def schema_query_groups (postgres-to-schema(ensure-required-attr (concat (convert-to-json (fetch-table-metadata "groups")) schema_raw_pagination))))
-  (def schema_query_groups (prepare-schema "groups"))
-
-
-  ;;; static schema
-  ;;(def schema_query_groups
-  ;(defn test-me []
-  ;  {(s/optional-key :id) s/Uuid
-  ;   (s/optional-key :name) s/Str
-  ;   (s/optional-key :type) s/Str
-  ;   (s/optional-key :created_at) s/Any
-  ;   (s/optional-key :updated_at) s/Any
-  ;   (s/optional-key :institutional_id) s/Str
-  ;   (s/optional-key :institutional_name) s/Str
-  ;   (s/optional-key :institution) s/Str
-  ;   (s/optional-key :created_by_user_id) s/Uuid
-  ;   (s/optional-key :searchable) s/Str
-  ;
-  ;   (s/optional-key :full_data) s/Bool
-  ;   (s/optional-key :page) s/Int
-  ;   (s/optional-key :count) s/Int}
-  ;  )
-
-  ;(def schema_query_groups (test-me))                       ;;ok
-
-  (def user-routes
-    [["/groups"
-      {:swagger {:tags ["groups"]}}
-      ["/" {:get {:summary "Get all group ids"
-                  :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
-                  :handler index
-                  ;:middleware [wrap-authorize-admin!]
+   ["/:id" {:get {:summary "Get group by id OR institutional-id"
+                  :description "CAUTION: Get group by id OR institutional-id. Returns 404, if no such group exists."
                   :swagger {:produces "application/json"}
                   :content-type "application/json"
-                  :parameters {:query schema_query_groups}
-                  ;:accept "application/json"
+                  :accept "application/json"
+                  :handler handle_get-group
+                  :middleware [wrap-authorize-admin!]
                   :coercion reitit.coercion.schema/coercion
-                  :responses {200 {:body {:groups [schema_export-group]}}}}}]
-      ["/:id" {:get {:summary "Get group by id"
-                     :description "Get group by id. Returns 404, if no such group exists."
-                     :swagger {:produces "application/json"}
-                     :content-type "application/json"
-                     :handler handle_get-group
+
+                  ;:parameters {:path {:id s/Uuid}}
+                  :parameters {:path {:id s/Any}}
+                  ;; can be uuid (group-id) or string (institutional-id)
+                  ;; http://localhost:3104/api/admin/groups/%3Fthis%23id%2Fneeds%2Fto%2Fbe%2Furl%26encoded>,
+
+                  :responses {200 {:body schema_export-group}
+                              404 {:description "Not Found."
+                                   :schema s/Str
+                                   :examples {"application/json" {:message "No such group found"}}}}}
+            :delete {:summary "Deletes a group by id"
+                     :description "Delete a group by id"
+                     :handler handle_delete-group
                      :middleware [wrap-authorize-admin!]
                      :coercion reitit.coercion.schema/coercion
                      :parameters {:path {:id s/Uuid}}
-                     :responses {200 {:body schema_export-group}
-                                 404 {:body s/Any}}}}]]])
-
-  (def ring-routes
-    ["/groups"
-     {:swagger {:tags ["admin/groups"] :security [{"auth" []}]}}
-     ["/" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
-                 :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
-                 :handler index
-                 :middleware [wrap-authorize-admin!]
-                 :swagger {:produces "application/json"}
-                 :parameters {:query schema_query_groups}
-                 :content-type "application/json"
-                 :coercion reitit.coercion.schema/coercion
-                 :responses {200 {:body {:groups [schema_export-group]}}}}
-
-           :post {:summary (f "Create a group" "groups::person_id-not-exists")
-                  :description "Create a group."
-                  :handler handle_create-group
-                  :middleware [wrap-authorize-admin!]
-                  :swagger {:produces "application/json" :consumes "application/json"}
+                     :responses {403 {:body s/Any}
+                                 ;; TODO: response of type octet-stream not yet supported?
+                                 204 {:description "No Content. The resource was deleted successfully."
+                                      :schema nil
+                                      :examples {"application/json" nil}}}}
+            :put {:summary "Get group by id"
+                  :swagger {:produces "application/json"}
                   :content-type "application/json"
                   :accept "application/json"
+                  :handler handle_update-group
+                  ;:description "Get group by id. Returns 404, if no such group exists."
+                  :description (mslurp "./md/admin-groups-put.md")
+                  :middleware [wrap-authorize-admin!]
                   :coercion reitit.coercion.schema/coercion
-                  :parameters {:body schema_import-group}
-                  :responses {201 {:body schema_export-group}
-                              404 {:description "Not Found."
-                                   :schema s/Str
-                                   :examples {"application/json" {:message "User entry not found"}}}
+                  :parameters {:path {:id s/Uuid}
+                               :body schema_update-group}
+                  :responses {200 {:body s/Any} ;groups/schema_export-group}
+                              404 {:body s/Any}}}}] ; TODO error handling
 
-                              409 {:description "Conflict."
-                                   :schema s/Str
-                                   :examples {"application/json" {:message "Entry already exists"}}}
-                              500 {:body s/Any}}}}]
+   ; groups-users/ring-routes
+   ["/:group-id/users/" {:get {:summary "Get group users by id"
+                               :description "Get group users by id. (zero-based paging)"
+                               :swagger {:produces "application/json"}
+                               :content-type "application/json"
 
-     ["/:id" {:get {:summary "Get group by id OR institutional-id"
-                    :description "CAUTION: Get group by id OR institutional-id. Returns 404, if no such group exists."
-                    :swagger {:produces "application/json"}
-                    :content-type "application/json"
-                    :accept "application/json"
-                    :handler handle_get-group
-                    :middleware [wrap-authorize-admin!]
-                    :coercion reitit.coercion.schema/coercion
+                               :handler group-users/handle_get-group-users
+                               :middleware [wrap-authorize-admin!]
+                               :coercion reitit.coercion.schema/coercion
+                               :parameters {:path {:group-id s/Uuid}
+                                            :query {(s/optional-key :page) s/Int
+                                                    (s/optional-key :count) s/Int}}
+                               :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                :schema {:body {:users [group-users/schema_export-group-user-simple]}}}}}
 
-                    ;:parameters {:path {:id s/Uuid}}
-                    :parameters {:path {:id s/Any}}
-                    ;; can be uuid (group-id) or string (institutional-id)
-                    ;; http://localhost:3104/api/admin/groups/%3Fthis%23id%2Fneeds%2Fto%2Fbe%2Furl%26encoded>,
+                         ; TODO works with tests, but not with the swagger ui
+                         ; TODO: broken test / duplicate key issue
+                         :put {:summary "Update group users by group-id and list of users."
+                               :description "Update group users by group-id and list of users."
+                               :swagger {:consumes "application/json" :produces "application/json"}
+                               :content-type "application/json"
+                               :accept "application/json"
+                               :handler group-users/handle_update-group-users
+                               :coercion reitit.coercion.schema/coercion
+                               :parameters {:path {:group-id s/Uuid}
+                                            :body group-users/schema_update-group-user-list}
 
-                    :responses {200 {:body schema_export-group}
-                                404 {:description "Not Found."
-                                     :schema s/Str
-                                     :examples {"application/json" {:message "No such group found"}}}}}
-              :delete {:summary "Deletes a group by id"
-                       :description "Delete a group by id"
-                       :handler handle_delete-group
-                       :middleware [wrap-authorize-admin!]
-                       :coercion reitit.coercion.schema/coercion
-                       :parameters {:path {:id s/Uuid}}
-                       :responses {403 {:body s/Any}
-                                   ;; TODO: response of type octet-stream not yet supported?
-                                   204 {:description "No Content. The resource was deleted successfully."
-                                        :schema nil
-                                        :examples {"application/json" nil}}}}
-              :put {:summary "Get group by id"
-                    :swagger {:produces "application/json"}
-                    :content-type "application/json"
-                    :accept "application/json"
-                    :handler handle_update-group
-                    ;:description "Get group by id. Returns 404, if no such group exists."
-                    :description (mslurp "./md/admin-groups-put.md")
-                    :middleware [wrap-authorize-admin!]
-                    :coercion reitit.coercion.schema/coercion
-                    :parameters {:path {:id s/Uuid}
-                                 :body schema_update-group}
-                    :responses {200 {:body s/Any}           ;groups/schema_export-group}
-                                404 {:body s/Any}}}}]       ; TODO error handling
+                               :responses {200 {:body s/Any} ;groups/schema_export-group}
+                                           404 {:body s/Str}}}}]
 
-     ; groups-users/ring-routes
-     ["/:group-id/users/" {:get {:summary "Get group users by id"
-                                 :description "Get group users by id. (zero-based paging)"
-                                 :swagger {:produces "application/json"}
-                                 :content-type "application/json"
-
-                                 :handler group-users/handle_get-group-users
-                                 :middleware [wrap-authorize-admin!]
-                                 :coercion reitit.coercion.schema/coercion
-                                 :parameters {:path {:group-id s/Uuid}
-                                              :query {(s/optional-key :page) s/Int
-                                                      (s/optional-key :count) s/Int}}
-                                 :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                  :schema {:body {:users [group-users/schema_export-group-user-simple]}}}}}
-
-                           ; TODO works with tests, but not with the swagger ui
-                           ; TODO: broken test / duplicate key issue
-                           :put {:summary "Update group users by group-id and list of users."
-                                 :description "Update group users by group-id and list of users."
-                                 :swagger {:consumes "application/json" :produces "application/json"}
-                                 :content-type "application/json"
-                                 :accept "application/json"
-                                 :handler group-users/handle_update-group-users
-                                 :coercion reitit.coercion.schema/coercion
-                                 :parameters {:path {:group-id s/Uuid}
-                                              :body group-users/schema_update-group-user-list}
-
-                                 :responses {200 {:body s/Any} ;groups/schema_export-group}
-                                             404 {:body s/Str}}}}]
-
-     ["/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
-                                         :description "gid= uuid/institutional_id\n
+   ["/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
+                                       :description "gid= uuid/institutional_id\n
                                        user_id= uuid|email\n
                                        Get group user by group-id and user-id."
-                                         :swagger {:produces "application/json"}
-                                         :content-type "application/json"
-                                         :handler group-users/handle_get-group-user
-                                         :middleware [wrap-authorize-admin!]
-                                         :coercion reitit.coercion.schema/coercion
+                                       :swagger {:produces "application/json"}
+                                       :content-type "application/json"
+                                       :handler group-users/handle_get-group-user
+                                       :middleware [wrap-authorize-admin!]
+                                       :coercion reitit.coercion.schema/coercion
 
-                                         ;:parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
-                                         :parameters {:path {:group-id s/Str :user-id s/Str}}
+                                       ;:parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
+                                       :parameters {:path {:group-id s/Str :user-id s/Str}}
 
-                                         :responses {200 {:body group-users/schema_export-group-user-simple}
-                                                     404 {:description "Creation failed."
-                                                          :schema s/Str
-                                                          :examples {"application/json" {:message "No such group or user."}}}}}
+                                       :responses {200 {:body group-users/schema_export-group-user-simple}
+                                                   404 {:description "Creation failed."
+                                                        :schema s/Str
+                                                        :examples {"application/json" {:message "No such group or user."}}}}}
 
-                                   ; TODO error handling
-                                   :put {:summary "Get group user by group-id and user-id"
-                                         :description "Get group user by group-id and user-id."
-                                         :swagger {:produces "application/json"}
-                                         :content-type "application/json"
-                                         :handler group-users/handle_add-group-user
-                                         :middleware [wrap-authorize-admin!]
-                                         :coercion reitit.coercion.schema/coercion
+                                 ; TODO error handling
+                                 :put {:summary "Get group user by group-id and user-id"
+                                       :description "Get group user by group-id and user-id."
+                                       :swagger {:produces "application/json"}
+                                       :content-type "application/json"
+                                       :handler group-users/handle_add-group-user
+                                       :middleware [wrap-authorize-admin!]
+                                       :coercion reitit.coercion.schema/coercion
 
-                                         ;; TODO: FIX: group-id and user-id are not uuids
-                                         :parameters {:path {:group-id s/Str :user-id s/Str}}
-                                         ;:parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
+                                       ;; TODO: FIX: group-id and user-id are not uuids
+                                       :parameters {:path {:group-id s/Str :user-id s/Str}}
+                                       ;:parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
 
-                                         :responses {200 {:body {:users [group-users/schema_export-group-user-simple]}}
-                                                     404 {:description "Creation failed."
-                                                          :schema s/Str
-                                                          :examples {"application/json" {:message "No such group or user."}}}}} ; TODO error handling
-                                   :delete {:summary "Deletes a group-user by group-id and user-id"
-                                            :description "Delete a group-user by group-id and user-id."
-                                            ;:swagger {:produces "application/json"}
-                                            ;:content-type "application/json"
-                                            :handler group-users/handle_delete-group-user
-                                            :middleware [wrap-authorize-admin!]
-                                            :coercion reitit.coercion.schema/coercion
-                                            :parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
-                                            :responses {200 {:body {:users [group-users/schema_export-group-user-simple]}}
-                                                        404 {:description "Not Found."
-                                                             :schema s/Str
-                                                             :examples {"application/json" {:message "No such group or user."}}}
-                                                        406 {:body s/Str}}}}] ; TODO error handling
-     ])
-  ;### Debug ####################################################################
-  ;(debug/debug-ns *ns*)
+                                       :responses {200 {:body {:users [group-users/schema_export-group-user-simple]}}
+                                                   404 {:description "Creation failed."
+                                                        :schema s/Str
+                                                        :examples {"application/json" {:message "No such group or user."}}}}} ; TODO error handling
+                                 :delete {:summary "Deletes a group-user by group-id and user-id"
+                                          :description "Delete a group-user by group-id and user-id."
+                                          ;:swagger {:produces "application/json"}
+                                          ;:content-type "application/json"
+                                          :handler group-users/handle_delete-group-user
+                                          :middleware [wrap-authorize-admin!]
+                                          :coercion reitit.coercion.schema/coercion
+                                          :parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
+                                          :responses {200 {:body {:users [group-users/schema_export-group-user-simple]}}
+                                                      404 {:description "Not Found."
+                                                           :schema s/Str
+                                                           :examples {"application/json" {:message "No such group or user."}}}
+                                                      406 {:body s/Str}}}}] ; TODO error handling
+   ])
+;### Debug ####################################################################
+;(debug/debug-ns *ns*)
