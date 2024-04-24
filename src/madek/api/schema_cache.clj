@@ -104,7 +104,7 @@
   (println ">o> enum-data=" enum-data)
 
   (apply s/enum (mapv #(:enumlabel %) enum-data)))
-  ;(apply s/enum (mapv #(:pg_enum/enumlabel %) enum-data)))
+;(apply s/enum (mapv #(:pg_enum/enumlabel %) enum-data)))
 
 
 (defn create-enum-spec [table-name]
@@ -116,7 +116,7 @@
         res (convert-to-enum-spec res)
         p (println ">o> 2ares=" res)
 
-        ]res)
+        ] res)
 
   ;(convert-to-enum-spec (fetch-enum table-name))
   )
@@ -271,6 +271,9 @@
     data))
 
 (defn create-schema
+  ([table-name additional-schema-list-raw] "Prepare schema for a table."
+   (create-schema table-name additional-schema-list-raw [] []))
+
   ([table-name additional-schema-list-raw blacklist-key-names update-schema-list-raw] "Prepare schema for a table."
    (let [res (fetch-table-metadata table-name)
          p (println ">o> 1res=" res)
@@ -313,21 +316,29 @@
 
 
         ;; create schema for groups
-        ;blacklist-key-names [:created_at :updated_at]
-        blacklist-key-names ["created_at" "updated_at"]
-        ;blacklist-key-names ["created_at" "updated_at" "page" "count"]
-
+        ;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
         additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
+        res (set-schema :test (create-schema "groups" additional-schema-list-raw))
+        p (println ">o> ----------------------------------------")
+        p (println ">o> res=" res)
 
 
-        update-schema-list-raw [{:column_name "full_data", :data_type "varchar" :is_nullable "NO" :required false}]
-        ;update-schema-list-raw [{:column_name "full_data", :data_type "varchar" :is_nullable "NO" :required true}]
-
-        p (println ">o> additional-schema-list-raw=" additional-schema-list-raw)
-
-        res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
-
-        ;p (println ">o> keys:" (keys res))
+        ;;; example
+        ;;blacklist-key-names [:created_at :updated_at]
+        ;blacklist-key-names ["created_at" "updated_at"]
+        ;;blacklist-key-names ["created_at" "updated_at" "page" "count"]
+        ;
+        ;additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
+        ;
+        ;
+        ;update-schema-list-raw [{:column_name "full_data", :data_type "varchar" :is_nullable "NO" :required false}]
+        ;;update-schema-list-raw [{:column_name "full_data", :data_type "varchar" :is_nullable "NO" :required true}]
+        ;
+        ;p (println ">o> additional-schema-list-raw=" additional-schema-list-raw)
+        ;
+        ;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
+        ;
+        ;;p (println ">o> keys:" (keys res))
 
         ] res)
 
@@ -360,11 +371,6 @@
 
 (comment
   (let [
-
-
-
-
-
 
         res (init-schema-by-db)
 
