@@ -8,7 +8,7 @@
    [madek.api.json-protocol]
    [madek.api.resources]
 
-   [madek.api.schema_cache :refer [get-value set-value init-schema-by-db]]
+   [madek.api.schema_cache :refer [get-schema set-schema init-schema-by-db]]
 
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.utils.cli :refer [long-opt-for-key]]
@@ -267,7 +267,7 @@
 
   (println ">o> prepare schema cache!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-(set-value :meins
+(set-schema :meins
     {(s/optional-key :id) s/Uuid
      (s/optional-key :name) s/Str
      (s/optional-key :type) s/Str

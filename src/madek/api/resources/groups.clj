@@ -10,7 +10,7 @@
             ;[madek.api.web :refer [get-value]]
             ;[madek.api.web :as web]
 
-            [madek.api.schema_cache :refer [get-value set-value]]
+            [madek.api.schema_cache :refer [get-schema set-schema]]
 
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared :as sd]
@@ -101,7 +101,7 @@
 
 (defn index [req]
 
-  (println ">o> groups.index ???????? " (get-value :test))
+  (println ">o> groups.index ???????? " (get-schema :test))
 
   (let [result (jdbc/execute! (:tx req) (build-index-query req))]
     (sd/response_ok {:groups result})))
@@ -173,277 +173,20 @@
     ;(info "handle_update-group" "\nid\n" id "\nbody\n" body)
     (patch-group {:params {:group-id id} :body body} tx)))
 
-(defn pr [str]
-  (println ">oo> HELPER / " str)
-  str)
-
-(defn fetch-table-metadata [table-name]
-  (let [ds (get-ds) ;;FIXME: broken
-
-        ;;; TODO: FIXME: use get-ds
-        ds {:dbtype "postgresql"
-            :dbname "madek_test"
-            :user "madek_sql"
-            :port 5415
-            :password "madek_sql"}
-
-        p (println ">o> ds=" ds)
-        p (println ">o> table-name=" table-name)]
-    ;(if ds
-
-    (try (pr (jdbc/execute! ds
-                            ["SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name= ?"
-                             table-name]
-                            {:result-set-fn :hash-map}))
-         (catch Exception e
-           (println ">o> ERROR: fetch-table-metadata" (.getMessage e))
-           (throw (Exception. "Unable to establish a database connection")))
-
-;(let [res (jdbc/execute! ds
-         ;           ["SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name= ?"
-         ;            table-name]
-         ;           {:result-set-fn :hash-map})
-         ;      p (println ">o> res=" res)
-         ;      ]
-         ;  res)
-         ;(throw (Exception. "Unable to establish a database connection"))
-         )))
-
-
-(require '[schema.core :as schema])
-
-(def type-mapping {"varchar" schema/Str
-                   "int4" schema/Int
-                   "boolean" schema/Bool
-                   "uuid" schema/Uuid
-                   "text" schema/Str
-                   "character varying" schema/Str
-                   "timestamp with time zone" schema/Any})
-
-;(defn postgres-to-schema [metadata]
-;  (into {}
-;    (map (fn [{:keys [column_name data_type is_nullable]}]
-;           (do
-;             (println ">o> postgres-to-schema=" column_name data_type is_nullable)
-;             {column_name (if (= is_nullable "YES")
-;                              (do
-;                                (println ">o> 1data_type=" data_type (type-mapping data_type)
-;                                (schema/maybe (type-mapping data_type))))
-;                              (do
-;                                (println ">o> 2data_type=" data_type (type-mapping data_type))
-;                                (type-mapping data_type))
-;                              )})
-;      metadata))))
-
-;(defn postgres-to-schema [metadata]
-;
-;  (into {}
-;    (map (fn [{:keys [required_attr column_name data_type is_nullable]}]
-;           (cond
-;             (not (nil? column_name)) (do
-;                                        (println ">o> column_name=" column_name "|" data_type "|" is_nullable)
-;
-;                                        {
-;                                         (s/optional-key (keyword column_name)) (if (= is_nullable "YES")
-;
-;                                                                                  ;(schema/maybe (type-mapping data_type))
-;                                                                                  ;(type-mapping data_type)
-;
-;                                                                                  (do
-;                                                                                    ;(println ">o> 1data_type, column_name=" column_name "|" data_type "|" (type-mapping data_type))
-;                                                                                    ;(println ">o> column_name=" column_name (class column_name))
-;                                                                                    (println ">o> column_name=" data_type (class data_type))
-;                                                                                    ;(schema/maybe (type-mapping data_type))))
-;                                                                                    ;((s/optional-key (keyword column_name)) (schema/maybe (type-mapping data_type)))  )
-;                                                                                    (schema/maybe (type-mapping data_type)))
-;
-;                                                                                  (do
-;                                                                                    ;(println ">o> 2data_type, column_name=" column_name "|" data_type "|" (type-mapping data_type))
-;                                                                                    ;(println ">o> column_name=" column_name (class column_name))
-;                                                                                    (println ">o> column_name=" data_type (class data_type))
-;                                                                                    ;((s/optional-key (keyword column_name)) (type-mapping data_type) )          )
-;                                                                                    (type-mapping data_type))
-;
-;                                                                                  )
-;
-;                                         }
-;                                        )
-;             (not (nil? required_attr)) (do
-;                                          (println ">o> required_attr=" required_attr "|" data_type)
-;                                          {
-;                                           (s/required-key (keyword required_attr)) (type-mapping data_type)
-;                                           }
-;
-;                                          )
-;
-;             :else (do
-;                     (println ">o> ERROR: wrong configuration? column_name=" column_name data_type)
-;                     {}
-;                     )
-;
-;             )
-;           metadata))))
-
-(defn ensure-required-attr [entries]
-  (map (fn [entry]
-         (if (contains? entry :required)
-           entry
-           (assoc entry :required false)))
-       entries))
-
-(defn ensure-required-attr [entries]
-  ;(map (fn [entry]
-  ;       (if (and (map? entry) (not (contains? entry :required)))
-  ;         (assoc entry :required false)
-  ;         entry))
-  ;  entries)
-  ;
-  (let [entries (map (fn [entry]
-                       (if (and (map? entry) (not (contains? entry :required)))
-                         (assoc entry :required false)
-                         entry))
-                     entries)
-
-        entries (map (fn [entry]
-                       (if (and (map? entry) (not (contains? entry :is_nullable)))
-                         (assoc entry :is_nullable "NO")
-                         entry))
-                     entries)] entries))
-
-(defn postgres-to-schema [metadata]
-  (into {}
-        (map (fn [{:keys [column_name data_type is_nullable required]}]
-               (println ">o> =>" column_name data_type is_nullable required)
-               (if (true? required)
-                 {(s/required-key (keyword column_name)) (type-mapping data_type)}
-                 {(s/optional-key (keyword column_name)) (if (= is_nullable "YES")
-                                                           (schema/maybe (type-mapping data_type))
-                                                           (type-mapping data_type))}))
-
-             metadata)))
-
-(comment
-
-  (let [res (fetch-table-metadata "groups")
-        p (println ">o> 1res=" res)
-
-;;(s/optional-key :full_data) s/Bool
-        ;;(s/optional-key :page) s/Int
-        ;;(s/optional-key :count) s/Int}
-        ;
-        ;;res2 [{:required_attr "full_data", :data_type "boolean", :is_nullable "NO"}
-        ;;      {:required_attr "page", :data_type "int4", :is_nullable "NO"}
-        ;;      {:required_attr "count", :data_type "int4", :is_nullable "NO"}]
-        ;
-        ;
-        ;;res2 [{:required_attr "full_data", :data_type "boolean"}
-        ;;      {:required_attr "page", :data_type "int4"}
-        ;;      {:required_attr "count", :data_type "int4"}]
-        ;
-        ;res2 [{:column_name "full_data", :data_type "boolean" :required true}
-        ;      {:column_name "page", :data_type "int4" :required true}
-        ;      {:column_name "count", :data_type "int4" :required true}]
-        ;res (concat res res2)
-        ;;p (println ">o> 2res=" res)
-        ;
-        ;
-        ;res (ensure-required-attr res)
-        ;p (println ">o> 2ares=" res)
-        ;
-        ;res (postgres-to-schema res)
-        ;p (println ">o> 3res=" res)
-        ]
-    res))
-
-(comment
-  (let [res
-        {(s/optional-key :id) s/Uuid
-         (s/optional-key :name) s/Str
-         (s/optional-key :type) s/Str
-         (s/optional-key :created_at) s/Any
-         (s/optional-key :updated_at) s/Any
-         (s/optional-key :institutional_id) s/Str
-         (s/optional-key :institutional_name) s/Str
-         (s/optional-key :institution) s/Str
-         (s/optional-key :created_by_user_id) s/Uuid
-         (s/optional-key :searchable) s/Str
-
-         (s/optional-key :full_data) s/Bool
-         (s/optional-key :page) s/Int
-         (s/optional-key :count) s/Int}]
-    res)
-
-;{#schema.core.OptionalKey{:k :institutional_name} java.lang.String,
-  ; #schema.core.OptionalKey{:k :created_at} Any,
-  ; #schema.core.OptionalKey{:k :full_data} java.lang.Boolean,
-  ; #schema.core.OptionalKey{:k :institutional_id} java.lang.String,
-  ; #schema.core.OptionalKey{:k :searchable} java.lang.String,
-  ; #schema.core.OptionalKey{:k :type} java.lang.String,
-  ; #schema.core.OptionalKey{:k :name} java.lang.String,
-  ; #schema.core.OptionalKey{:k :created_by_user_id} java.util.UUID,
-  ; #schema.core.OptionalKey{:k :updated_at} Any,
-  ; #schema.core.OptionalKey{:k :id} java.util.UUID,
-  ; #schema.core.OptionalKey{:k :page} Int,
-  ; #schema.core.OptionalKey{:k :institution} java.lang.String,
-  ; #schema.core.OptionalKey{:k :count} Int}
-  )
-
-
-(def schema_raw_pagination [{:required_attr "full_data", :data_type "boolean"}
-                            {:required_attr "page", :data_type "int4"}
-                            {:required_attr "count", :data_type "int4"}])
-
-(defn normalize-map [namespaced-map]
-  (into {} (map (fn [[k v]] [(keyword (name k)) v]) namespaced-map)))
-
-(defn prepare-schema [table-name]
-  (let [res (fetch-table-metadata "groups")
-        p (println ">o> 1res=" res)
-
-        res (map normalize-map res)
-        p (println ">o> 2res=" res)
-
-        res (concat res schema_raw_pagination)
-        p (println ">o> 3res=" res)
-
-        res (ensure-required-attr res)
-        p (println ">o> 4res=" res)
-
-        res (postgres-to-schema res)
-        p (println ">o> 5res=" res)] res))
-
-;; dynamic schema
-;(def schema_query_groups (prepare-schema "groups"))
-
-;;; static schema
-;;(def schema_query_groups
-;(defn test-me []
-;  {(s/optional-key :id) s/Uuid
-;   (s/optional-key :name) s/Str
-;   (s/optional-key :type) s/Str
-;   (s/optional-key :created_at) s/Any
-;   (s/optional-key :updated_at) s/Any
-;   (s/optional-key :institutional_id) s/Str
-;   (s/optional-key :institutional_name) s/Str
-;   (s/optional-key :institution) s/Str
-;   (s/optional-key :created_by_user_id) s/Uuid
-;   (s/optional-key :searchable) s/Str
-;
-;   (s/optional-key :full_data) s/Bool
-;   (s/optional-key :page) s/Int
-;   (s/optional-key :count) s/Int}
-;  )
-
-  (defn test-me [handler]
-    (fn [req]
-      ;(authorize-admin! req handler)
-      (println ">o> test-me ?????????? " (get-value :test))
-
-      (handler req)
-      ))
-
-
-;(def schema_query_groups (test-me))                       ;;ok
+(def schema_query-groups
+  {(s/optional-key :id) s/Uuid
+   (s/optional-key :name) s/Str
+   (s/optional-key :type) s/Str
+   (s/optional-key :created_at) s/Any
+   (s/optional-key :updated_at) s/Any
+   (s/optional-key :institutional_id) s/Str
+   (s/optional-key :institutional_name) s/Str
+   (s/optional-key :institution) s/Str
+   (s/optional-key :created_by_user_id) s/Uuid
+   (s/optional-key :searchable) s/Str
+   (s/optional-key :full_data) s/Bool
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int})
 
 (def user-routes
   [["/groups"
@@ -453,13 +196,12 @@
                 :handler index
 
                 ;:middleware [wrap-authorize-admin!]
-                :middleware [test-me]
 
                 :swagger {:produces "application/json"}
                 :content-type "application/json"
 
                 ;:parameters {:query schema_query_groups}
-                :parameters {:query (get-value :meins)}
+                :parameters {:query (get-schema :meins)}
 
                 ;:accept "application/json"
                 :coercion reitit.coercion.schema/coercion
@@ -485,7 +227,7 @@
                :swagger {:produces "application/json"}
 
                ;:parameters {:query schema_query_groups}
-               :parameters {:query (get-value :meins)}
+               :parameters {:query (get-schema :meins)}
 
 
                :content-type "application/json"
