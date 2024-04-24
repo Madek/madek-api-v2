@@ -10,6 +10,9 @@
 
 
 
+       [taoensso.timbre :refer [info warn debug error spy]]
+
+
 
    ;[madek.api.utils.helper :refer [merge-query-parts to-uuids]]
 
@@ -35,10 +38,115 @@
            (-> (sql/select :column_name :data_type :is_nullable)
                (sql/from :information_schema.columns)
                (sql/where [:= :table_name table-name])
-               sql-format))
+               sql-format
+               spy
+               ))
          (catch Exception e
            (println ">o> ERROR: fetch-table-metadata" (.getMessage e))
            (throw (Exception. "Unable to establish a database connection"))))))
+
+
+
+;
+;SELECT enumlabel
+;FROM pg_enum
+;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
+;WHERE pg_type.typname = 'collection_sorting';
+
+
+
+;SELECT enumlabel
+;FROM pg_enum
+;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
+;WHERE pg_type.typname = 'collection_sorting';
+
+(defn fetch-enum [enum-name]
+  (let [ds (get-ds)
+
+        ;; TODO: FIXME: use get-ds
+        ds {:dbtype "postgresql"
+                      :dbname "madek_test"
+                      :user "madek_sql"
+                      :port 5415
+                      :password "madek_sql"}
+        ]
+    (try (jdbc/execute! ds
+
+           (-> (sql/select :enumlabel)
+               (sql/from :pg_enum)
+               (sql/join :pg_type [:= :pg_enum.enumtypid :pg_type.oid])
+               (sql/where [:= :pg_type.typname enum-name])
+               sql-format
+               spy))
+
+         ;(-> (sql/select :*)
+         ;  ;(-> (sql/select :*)
+         ;      (sql/from :pg_enum)
+         ;      ;(sql/join :pg_type [:= :pg_enum.enumtypid :pg_type.oid])
+         ;      ;(sql/where [:= :pg_type.table_name enum-name])
+         ;      sql-format
+         ;      spy))
+
+         ;(-> (sql/select :*)
+         ;  ;(-> (sql/select :*)
+         ;      (sql/from :pg_type)
+         ;      ;(sql/join :pg_type [:= :pg_enum.enumtypid :pg_type.oid])
+         ;      (sql/where [:= :pg_type.typname enum-name])
+         ;      sql-format
+         ;      spy))
+
+         (catch Exception e
+           (println ">o> ERROR: fetch-table-metadata" (.getMessage e))
+           (throw (Exception. "Unable to establish a database connection"))))))
+
+(defn create-enum-spec
+  "Creates a Spec enum definition from a sequence of maps with namespaced keys."
+  [enum-data]
+  ;(apply s/enum (mapv #(-> % :pg_enum :enumlabel) enum-data)))
+  (apply s/enum (mapv #(-> % :pg_enum/enumlabel) enum-data)))
+
+
+(defn create-enum-spec
+  "Creates a Spec enum definition from a sequence of maps with namespaced keys."
+  [enum-data]
+  (let [enum-labels (mapv #(-> % :pg_enum :enumlabel) enum-data)
+        filtered-enum-labels (remove nil? enum-labels)]
+    (apply s/enum filtered-enum-labels)))
+
+
+(defn create-enum-spec
+  "Creates a Spec enum definition from a sequence of maps with namespaced keys."
+  [enum-data]
+  (apply s/enum (mapv #(:pg_enum/enumlabel %) enum-data)))
+
+(comment
+  (let [
+        res (fetch-enum "collection_sorting")
+
+
+        p (println ">o> 1res=" res)
+
+
+        p (println ">o> 1??=" (:enumlabel (first res)))
+        p (println ">o> 2??=" (class (:enumlabel (:pg_enum (first res)))))
+        p (println ">o> 3??="   (first res))
+        p (println ">o> 3??="   (:pg_enum (first res)))
+        p (println ">o> 3??="  (:enumlabel (:pg_enum (first res))))
+        p (println ">o> 3??="  (:pg_enum/enumlabel  (first res)))
+
+        ;[#:pg_enum{:enumlabel "created_at ASC"}
+
+res (create-enum-spec res )
+
+
+        p (println ">o> 2res=" res)
+
+
+        ]
+    res
+    )
+  )
+
 
 (require '[schema.core :as schema])
 
@@ -222,6 +330,8 @@
 ;FROM pg_enum
 ;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
 ;WHERE pg_type.typname = 'collection_sorting';
+
+
 
 
 
