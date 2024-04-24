@@ -7,6 +7,9 @@
    [madek.api.http.server :as http-server]
    [madek.api.json-protocol]
    [madek.api.resources]
+
+   [madek.api.schema_cache :refer [get-value set-value init-schema-by-db]]
+
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.utils.cli :refer [long-opt-for-key]]
    [madek.api.utils.helper :refer [mslurp]]
@@ -26,6 +29,7 @@
    [ring.middleware.defaults :as ring-defaults]
    [ring.middleware.json]
    [ring.middleware.reload :refer [wrap-reload]]
+   [schema.core :as s]
    [taoensso.timbre :refer [debug error warn]]))
 
 ; changing DEBUG to true will wrap each middleware defined in this file with
@@ -260,6 +264,28 @@
     (http-server/start http-conf (middleware app-user))))
 
 (defn initialize [options]
+
+  (println ">o> prepare schema cache!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+(set-value :meins
+    {(s/optional-key :id) s/Uuid
+     (s/optional-key :name) s/Str
+     (s/optional-key :type) s/Str
+     (s/optional-key :created_at) s/Any
+     (s/optional-key :updated_at) s/Any
+     (s/optional-key :institutional_id) s/Str
+     (s/optional-key :institutional_name) s/Str
+     (s/optional-key :institution) s/Str
+     (s/optional-key :created_by_user_id) s/Uuid
+     (s/optional-key :searchable) s/Str
+
+     (s/optional-key :full_data) s/Bool
+     (s/optional-key :page) s/Int
+     (s/optional-key :count) s/Int})
+
+  (init-schema-by-db)
+
+
   (let [handler (case (http-resources-scope-key options)
                   "ALL" (middleware (wrap-reload app-all))
                   "ADMIN" (middleware app-admin)

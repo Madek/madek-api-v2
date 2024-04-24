@@ -6,6 +6,12 @@
             [madek.api.db.core :refer [get-ds]]
             [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
+
+            ;[madek.api.web :refer [get-value]]
+            ;[madek.api.web :as web]
+
+            [madek.api.schema_cache :refer [get-value set-value]]
+
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared :as sd]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -94,6 +100,9 @@
         sql-format)))
 
 (defn index [req]
+
+  (println ">o> groups.index ???????? " (get-value :test))
+
   (let [result (jdbc/execute! (:tx req) (build-index-query req))]
     (sd/response_ok {:groups result})))
 
@@ -199,6 +208,8 @@
          ;  res)
          ;(throw (Exception. "Unable to establish a database connection"))
          )))
+
+
 (require '[schema.core :as schema])
 
 (def type-mapping {"varchar" schema/Str
@@ -376,11 +387,7 @@
   ; #schema.core.OptionalKey{:k :institution} java.lang.String,
   ; #schema.core.OptionalKey{:k :count} Int}
   )
-(defn normalize-map [namespaced-map]
-  (into {} (map (fn [[k v]] [(keyword (name k)) v]) namespaced-map)))
 
-(defn convert-to-json [data]
-  (json/encode (map normalize-map data)))
 
 (def schema_raw_pagination [{:required_attr "full_data", :data_type "boolean"}
                             {:required_attr "page", :data_type "int4"}
@@ -406,7 +413,7 @@
         p (println ">o> 5res=" res)] res))
 
 ;; dynamic schema
-(def schema_query_groups (prepare-schema "groups"))
+;(def schema_query_groups (prepare-schema "groups"))
 
 ;;; static schema
 ;;(def schema_query_groups
@@ -427,6 +434,15 @@
 ;   (s/optional-key :count) s/Int}
 ;  )
 
+  (defn test-me [handler]
+    (fn [req]
+      ;(authorize-admin! req handler)
+      (println ">o> test-me ?????????? " (get-value :test))
+
+      (handler req)
+      ))
+
+
 ;(def schema_query_groups (test-me))                       ;;ok
 
 (def user-routes
@@ -435,10 +451,16 @@
     ["/" {:get {:summary "Get all group ids"
                 :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                 :handler index
+
                 ;:middleware [wrap-authorize-admin!]
+                :middleware [test-me]
+
                 :swagger {:produces "application/json"}
                 :content-type "application/json"
-                :parameters {:query schema_query_groups}
+
+                ;:parameters {:query schema_query_groups}
+                :parameters {:query (get-value :meins)}
+
                 ;:accept "application/json"
                 :coercion reitit.coercion.schema/coercion
                 :responses {200 {:body {:groups [schema_export-group]}}}}}]
@@ -461,7 +483,11 @@
                :handler index
                :middleware [wrap-authorize-admin!]
                :swagger {:produces "application/json"}
-               :parameters {:query schema_query_groups}
+
+               ;:parameters {:query schema_query_groups}
+               :parameters {:query (get-value :meins)}
+
+
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
                :responses {200 {:body {:groups [schema_export-group]}}}}

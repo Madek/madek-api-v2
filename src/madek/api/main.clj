@@ -71,6 +71,9 @@
     ;
    (nrepl/init options)
    (madek.api.constants/initialize (get-config))
+
+    ;; TODO: fetch schemas from db
+
    (madek.api.web/initialize options)
    (info 'madek.api.main "... initialized")))
 
