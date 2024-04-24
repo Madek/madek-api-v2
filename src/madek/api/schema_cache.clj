@@ -58,7 +58,7 @@
 (def schema_pagination_raw [{:column_name "page", :data_type "int4" :required true}
                             {:column_name "count", :data_type "int4" :required true}])
 
-(defn ensure-required-attr [entries] "Ensures that all entries have all required keys. (turn *-raw elements into *-entries)"
+(defn convert-raw-into-postgres-cfg [entries] "Ensures that all entries have all required keys. (turn *-raw elements into *-entries)"
   (let [entries (map (fn [entry]
                        (if (and (map? entry) (not (contains? entry :required)))
                          (assoc entry :required false)
@@ -71,7 +71,7 @@
                          entry))
                   entries)] entries))
 
-(defn postgres-to-schema [metadata]
+(defn postgres-cfg-to-schema [metadata]
   (into {}
     (map (fn [{:keys [column_name data_type is_nullable required]}]
            (println ">o> =>" column_name data_type is_nullable required)
@@ -93,43 +93,38 @@
 (defn normalize-map [namespaced-map]
   (into {} (map (fn [[k v]] [(keyword (name k)) v]) namespaced-map)))
 
-
-
-(def keys-to-remove [:city])
-
-(defn contains-any-key?
-  "Checks if any of the keys in `keys-to-remove` are present in the map `m`."
-  [m keys-to-remove]
-  (some #(contains? m %) keys-to-remove))
-
-(defn filtered-data [data keys-to-remove]
-  (remove contains-any-key? data))
-
-
-
-(defn filter-maps
-  "Filters out any maps containing any of the keys specified in `keys-to-remove`."
-  [maps keys-to-remove]
-  (println ">o> 1keys-to-remove.m=" maps)
-  (println ">o> 1keys-to-remove=" keys-to-remove)
-
-  (remove (fn [m] (
-                   (println ">o> 2keys-to-remove.fnc=" some #(contains? m %) keys-to-remove)
-
-                   some #(contains? m %) keys-to-remove)
-
-            ) maps))
-
-(defn remove-columns
-  "Removes maps with specific column_name values from a list of maps."
-  [maps column-name-to-remove values-to-remove]
-  (remove #(some (set values-to-remove) [(% column-name-to-remove)]) maps))
-
-
-(defn remove-maps-by-entry
-  "Removes maps from a list where the specified entry key has the specified value."
-  [maps entry-key target-value]
-  (remove #(= (entry-key %) target-value) maps))
+;(def keys-to-remove [:city])
+;
+;(defn contains-any-key?
+;  "Checks if any of the keys in `keys-to-remove` are present in the map `m`."
+;  [m keys-to-remove]
+;  (some #(contains? m %) keys-to-remove))
+;
+;(defn filtered-data [data keys-to-remove]
+;  (remove contains-any-key? data))
+;
+;(defn filter-maps
+;  "Filters out any maps containing any of the keys specified in `keys-to-remove`."
+;  [maps keys-to-remove]
+;  (println ">o> 1keys-to-remove.m=" maps)
+;  (println ">o> 1keys-to-remove=" keys-to-remove)
+;
+;  (remove (fn [m] (
+;                   (println ">o> 2keys-to-remove.fnc=" some #(contains? m %) keys-to-remove)
+;
+;                   some #(contains? m %) keys-to-remove)
+;
+;            ) maps))
+;
+;(defn remove-columns
+;  "Removes maps with specific column_name values from a list of maps."
+;  [maps column-name-to-remove values-to-remove]
+;  (remove #(some (set values-to-remove) [(% column-name-to-remove)]) maps))
+;
+;(defn remove-maps-by-entry
+;  "Removes maps from a list where the specified entry key has the specified value."
+;  [maps entry-key target-value]
+;  (remove #(= (entry-key %) target-value) maps))
 
 
 (defn remove-maps-by-entry-values
@@ -137,15 +132,10 @@
   [maps entry-key target-values]
   (remove #(some #{(entry-key %)} target-values) maps))
 
-
 (defn fetch-column-names
   "Extracts the values of :column_name from a list of maps."
   [maps]
   (map :column_name maps))
-
-
-
-
 
 (defn replace-elem
   "Replaces an element in the vector of maps with a new map where the key matches."
@@ -159,27 +149,7 @@
             item))
     data))
 
-
-;(defn replace-elem
-;  "Replaces an element in the vector of maps with a new map where all keys match."
-;  [data new-list-of-maps list-of-keys]
-;  (mapv (fn [item]
-;          (if-let [replacement (first (filter #(every? (fn [k] (= (k %) (k item))) list-of-keys) new-list-of-maps))]
-;            replacement
-;            item))
-;    data))
-
-
 (defn create-schema
-  ;([table-name]
-  ; (prepare-schema table-name [] [])
-  ; )
-  ;
-  ;([table-name additional-attrs]
-  ; (prepare-schema table-name additional-attrs [])
-  ; )
-
-
   ([table-name additional-schema-list-raw blacklist-key-names update-schema-list-raw] "Prepare schema for a table."
    (let [res (fetch-table-metadata table-name)
          p (println ">o> 1res=" res)
@@ -187,29 +157,20 @@
          res (map normalize-map res)
          p (println ">o> 2res=" res)
 
-         ;res (concat res schema_raw_pagination)
          res (concat res additional-schema-list-raw)
          p (println "\n\n>o> 3res=" res)
 
-         ;res (remove contains-any-key? res blacklist-key-names)
-
-         ;res (filter-maps res blacklist-key-names)
-
-         ;res (remove-maps-by-entry res :column_name "city")
-         ;res (remove-maps-by-entry-values res :column_name ["city" "name"])
          res (remove-maps-by-entry-values res :column_name blacklist-key-names)
          p (println "\n\n>o> 4res=" res)
          p (println "\n\n>o> 4res.keys=" (fetch-column-names res))
 
-
          res (replace-elem res update-schema-list-raw :column_name)
-         ;res (replace-elem res update-schema-list-raw [:column_name :])
          p (println "\n\n>o> 5res=" res)
 
-         res (ensure-required-attr res)
+         res (convert-raw-into-postgres-cfg res)
          p (println "\n\n>o> 6res=" res)
 
-         res (postgres-to-schema res)
+         res (postgres-cfg-to-schema res)
          p (println "\n>o> 7res=" res)] res)))
 
 
@@ -244,13 +205,29 @@
   )
 
 
+;SELECT enumlabel
+;FROM pg_enum
+;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
+;WHERE pg_type.typname = 'collection_default_resource_type';
+;
+;
+;
+;SELECT enumlabel
+;FROM pg_enum
+;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
+;WHERE pg_type.typname = 'collection_layout';;
+;
+;
+;SELECT enumlabel
+;FROM pg_enum
+;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
+;WHERE pg_type.typname = 'collection_sorting';
+
+
 
 (comment
   (let [
         res (init-schema-by-db)
-
-
-
 
         ;blacklist [:created_at :updated_at]
         blacklist ["created_at" "updated_at"]
