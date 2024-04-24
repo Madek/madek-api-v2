@@ -303,6 +303,16 @@
 
   (let [
 
+        ;; seems to work
+        res (create-enum-spec "collection_sorting")
+        p (println ">o> 1abres=" res)
+        res (create-enum-spec "collection_layout")
+        p (println ">o> 1abres=" res)
+        res (create-enum-spec "collection_default_resource_type")
+        p (println ">o> 1abres=" res)
+
+
+        ;; create schema for groups
         ;blacklist-key-names [:created_at :updated_at]
         blacklist-key-names ["created_at" "updated_at"]
         ;blacklist-key-names ["created_at" "updated_at" "page" "count"]
@@ -350,6 +360,12 @@
 
 (comment
   (let [
+
+
+
+
+
+
         res (init-schema-by-db)
 
         ;blacklist [:created_at :updated_at]
