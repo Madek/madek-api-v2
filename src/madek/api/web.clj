@@ -267,21 +267,21 @@
 
   (println ">o> prepare schema cache!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-(set-schema :meins
-    {(s/optional-key :id) s/Uuid
-     (s/optional-key :name) s/Str
-     (s/optional-key :type) s/Str
-     (s/optional-key :created_at) s/Any
-     (s/optional-key :updated_at) s/Any
-     (s/optional-key :institutional_id) s/Str
-     (s/optional-key :institutional_name) s/Str
-     (s/optional-key :institution) s/Str
-     (s/optional-key :created_by_user_id) s/Uuid
-     (s/optional-key :searchable) s/Str
-
-     (s/optional-key :full_data) s/Bool
-     (s/optional-key :page) s/Int
-     (s/optional-key :count) s/Int})
+;(set-schema :meins
+;    {(s/optional-key :id) s/Uuid
+;     (s/optional-key :name) s/Str
+;     (s/optional-key :type) s/Str
+;     (s/optional-key :created_at) s/Any
+;     (s/optional-key :updated_at) s/Any
+;     (s/optional-key :institutional_id) s/Str
+;     (s/optional-key :institutional_name) s/Str
+;     (s/optional-key :institution) s/Str
+;     (s/optional-key :created_by_user_id) s/Uuid
+;     (s/optional-key :searchable) s/Str
+;
+;     (s/optional-key :full_data) s/Bool
+;     (s/optional-key :page) s/Int
+;     (s/optional-key :count) s/Int})
 
   (init-schema-by-db)
 

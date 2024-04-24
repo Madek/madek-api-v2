@@ -270,16 +270,35 @@
             item))
     data))
 
+
+(defn fetch-table-meta-raw [table-name]
+
+  (let [
+        res (fetch-table-metadata table-name)
+        p (println ">o> 1res=" res)
+
+        res (map normalize-map res)
+        p (println ">o> 2res=" res)
+
+        ] res))
+
+
+
+
 (defn create-schema
   ([table-name additional-schema-list-raw] "Prepare schema for a table."
    (create-schema table-name additional-schema-list-raw [] []))
 
   ([table-name additional-schema-list-raw blacklist-key-names update-schema-list-raw] "Prepare schema for a table."
-   (let [res (fetch-table-metadata table-name)
-         p (println ">o> 1res=" res)
+   (let [
 
-         res (map normalize-map res)
-         p (println ">o> 2res=" res)
+         ;res (fetch-table-metadata table-name)
+         ;p (println ">o> 1res=" res)
+         ;
+         ;res (map normalize-map res)
+         ;p (println ">o> 2res=" res)
+
+         res (fetch-table-meta-raw table-name)
 
          res (concat res additional-schema-list-raw)
          p (println "\n\n>o> 3res=" res)
@@ -296,6 +315,33 @@
 
          res (postgres-cfg-to-schema res)
          p (println "\n>o> 7res=" res)] res)))
+
+
+(defn create-schema-by-data
+  ([table-meta-raw additional-schema-list-raw] "Prepare schema for a table."
+   (create-schema table-meta-raw additional-schema-list-raw [] []))
+
+  ([table-meta-raw additional-schema-list-raw blacklist-key-names update-schema-list-raw] "Prepare schema for a table."
+   (let [
+         res table-meta-raw
+
+         res (concat res additional-schema-list-raw)
+         p (println "\n\n>o> 3res=" res)
+
+         res (remove-maps-by-entry-values res :column_name blacklist-key-names)
+         p (println "\n\n>o> 4res=" res)
+         p (println "\n\n>o> 4res.keys=" (fetch-column-names res))
+
+         res (replace-elem res update-schema-list-raw :column_name)
+         p (println "\n\n>o> 5res=" res)
+
+         res (convert-raw-into-postgres-cfg res)
+         p (println "\n\n>o> 6res=" res)
+
+         res (postgres-cfg-to-schema res)
+         p (println "\n>o> 7res=" res)
+
+         ] res)))
 
 
 (defn init-schema-by-db []
@@ -315,10 +361,24 @@
         p (println ">o> 1abres=" res)
 
 
-        ;; create schema for groups
+        ;; create schema for groups (fetch once reuse again)
+        table-meta-raw (fetch-table-meta-raw "groups")
+
+        p (println ">o> table-meta-raw=" table-meta-raw)
+
+
         ;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
+
+
+
+        update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
+        res (set-schema :groups-schema-with-pagination (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
+
         additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
-        res (set-schema :test (create-schema "groups" additional-schema-list-raw))
+        res (set-schema :groups-schema-response (create-schema-by-data table-meta-raw additional-schema-list-raw))
+
+
+        ;res (set-schema :groups-schema-with-pagination (create-schema "groups" additional-schema-list-raw))
         p (println ">o> ----------------------------------------")
         p (println ">o> res=" res)
 
