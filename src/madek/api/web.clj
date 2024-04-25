@@ -8,8 +8,6 @@
    [madek.api.json-protocol]
    [madek.api.resources]
 
-   [madek.api.schema_cache :refer [get-schema set-schema init-schema-by-db]]
-
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.utils.cli :refer [long-opt-for-key]]
    [madek.api.utils.helper :refer [mslurp]]
@@ -283,7 +281,7 @@
 ;     (s/optional-key :page) s/Int
 ;     (s/optional-key :count) s/Int})
 
-  (init-schema-by-db)
+  ;(init-schema-by-db)
 
 
   (let [handler (case (http-resources-scope-key options)

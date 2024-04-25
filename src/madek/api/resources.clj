@@ -87,6 +87,13 @@
 
    ; TODO Frage: delegations workflows post, get, patch, delete
    ])
+
+
+(defn pr [str fnc]
+  (println ">oo> HELPER RRR / " str)
+  fnc
+  )
+
 (def admin-routes
   ; TODO use wrap admin
   ["/api/admin" ;{:middleware [
@@ -111,7 +118,9 @@
 
    full-texts/edit-routes
 
-   groups/ring-routes
+   (pr "admin-route" groups/ring-routes)
+
+
    io-interfaces/admin-routes
    ;io-mappings/admin-routes
    keywords/admin-routes
@@ -188,7 +197,7 @@
    roles/user-routes
 
    ;users/user-routes
-   groups/user-routes
+   (pr "user-route" groups/user-routes)
    usage-terms/user-routes
 
    vocabularies/user-routes

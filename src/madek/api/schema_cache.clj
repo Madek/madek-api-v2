@@ -26,13 +26,21 @@
 
 (def cache (atom {}))
 
+
+(defn pr [key fnc]
+  (println ">oo> HELPER / " key "=" fnc)
+    fnc
+  )
+
 (defn get-schema [key & [default]]
-  (get @cache key default))
+  ;(throw (Exception. "get-schema not implemented"))
+  (pr key (get @cache key default)))
 
 (defn set-schema [key value]
   (swap! cache assoc key value))
 
 (defn fetch-table-metadata [table-name]
+   (println ">o> fetch-table-metadata by DB!!!!!!!!" table-name)
   (let [ds (get-ds)]
     (try (jdbc/execute! ds
            (-> (sql/select :column_name :data_type :is_nullable)
@@ -61,6 +69,9 @@
 ;WHERE pg_type.typname = 'collection_sorting';
 
 (defn fetch-enum [enum-name]
+
+   (println ">o> fetch-enum by DB!!!!!!!!")
+
   (let [ds (get-ds)
 
         ;;; TODO: FIXME: use get-ds
@@ -319,12 +330,13 @@
 
 (defn create-schema-by-data
   ([table-meta-raw additional-schema-list-raw] "Prepare schema for a table."
-   (create-schema table-meta-raw additional-schema-list-raw [] []))
+   (create-schema-by-data table-meta-raw additional-schema-list-raw [] []))
 
   ([table-meta-raw additional-schema-list-raw blacklist-key-names update-schema-list-raw] "Prepare schema for a table."
    (let [
          res table-meta-raw
 
+         p (println ">o> debug2")
          res (concat res additional-schema-list-raw)
          p (println "\n\n>o> 3res=" res)
 
@@ -332,14 +344,18 @@
          p (println "\n\n>o> 4res=" res)
          p (println "\n\n>o> 4res.keys=" (fetch-column-names res))
 
+         p (println ">o> debug3")
          res (replace-elem res update-schema-list-raw :column_name)
          p (println "\n\n>o> 5res=" res)
 
          res (convert-raw-into-postgres-cfg res)
          p (println "\n\n>o> 6res=" res)
+         p (println ">o> debug4")
 
          res (postgres-cfg-to-schema res)
          p (println "\n>o> 7res=" res)
+
+         p (println ">o> debug5")
 
          ] res)))
 
@@ -370,11 +386,11 @@
         ;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
 
 
-
         update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
         res (set-schema :groups-schema-with-pagination (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
 
         additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
+        p (println ">o> debug1")
         res (set-schema :groups-schema-response (create-schema-by-data table-meta-raw additional-schema-list-raw))
 
 
