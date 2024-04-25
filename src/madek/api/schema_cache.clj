@@ -446,7 +446,7 @@
          p (println "\n\n>o> 4res.keys=" (fetch-column-names res))
 
          p (println ">o> debug3")
-         res (replace-elem res update-schema-list-raw :column_name)
+         res (replace-elem res update-schema-list-raw :column_name) ;;TODO: dont replace just update
          p (println "\n\n>o> 5res=" res)
 
          res (convert-raw-into-postgres-cfg res)
@@ -497,13 +497,13 @@
 
 
         ;; :groups-schema-response-put-users
-        ;; TODO: example how to extract & merge meta-data-infos (PUT "/:group-id/users/")
+        ;; example how to extract & merge meta-data-infos (PUT "/:group-id/users/")
         groups-users-meta-raw (concat (keep-maps-by-entry-values users-meta-raw ["email" "person_id"])
                                 (keep-maps-by-entry-values groups-meta-raw ["id" "institutional_id"]))
 
         res (set-schema :groups-schema-response-user-simple (create-schema-by-data groups-users-meta-raw))
 
-        ;; needed renaming of keys
+        ;; TODO: needed renaming of keys, fix handler to get rid of this workaround
         groups-users-meta-raw (update-column-value groups-users-meta-raw "person_id" "person-id")
         groups-users-meta-raw (update-column-value groups-users-meta-raw "institutional_id" "institutional-id")
 
