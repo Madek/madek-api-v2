@@ -3,6 +3,7 @@
    ;; all needed imports
    ;[leihs.core.db :as db]
 
+   [clojure.string :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
 
    [honey.sql.helpers :as sql]
@@ -22,25 +23,41 @@
    [schema.core :as s])
   )
 
-
-
-(def cache (atom {}))
-
-
 (defn pr [key fnc]
   (println ">oo> HELPER / " key "=" fnc)
-    fnc
+  fnc
   )
 
+
+(def enum-cache (atom {}))
+(def schema-cache (atom {}))
+
+(defn get-enum [key & [default]]
+
+  (println ">oo> get-enum.key=" key)
+
+  (pr key (get @enum-cache key default)))
+
+
+(defn set-enum [key value]
+  (println ">oo> set-enum.key=" key)
+  (swap! enum-cache assoc key value))
+
+
 (defn get-schema [key & [default]]
-  ;(throw (Exception. "get-schema not implemented"))
-  (pr key (get @cache key default)))
+  (pr key (get @schema-cache key default)))
 
 (defn set-schema [key value]
-  (swap! cache assoc key value))
+  (swap! schema-cache assoc key value))
+
+
+
+
+
+
 
 (defn fetch-table-metadata [table-name]
-   (println ">o> fetch-table-metadata by DB!!!!!!!!" table-name)
+  (println ">o> fetch-table-metadata by DB!!!!!!!!" table-name)
   (let [ds (get-ds)]
     (try (jdbc/execute! ds
            (-> (sql/select :column_name :data_type :is_nullable)
@@ -70,7 +87,7 @@
 
 (defn fetch-enum [enum-name]
 
-   (println ">o> fetch-enum by DB!!!!!!!!")
+  (println ">o> fetch-enum by DB!!!!!!!!")
 
   (let [ds (get-ds)
 
@@ -180,15 +197,21 @@
                    "uuid" s/Uuid
                    "text" s/Str
                    "character varying" s/Str
-                   "timestamp with time zone" s/Any})
+                   "timestamp with time zone" s/Any}
+  ;"groups.type"
+  )
 
 ;(def schema_raw_pagination [{:column_name "full_data", :data_type "boolean" :required true}
 ;                            {:column_name "page", :data_type "int4" :required true}
 ;                            {:column_name "count", :data_type "int4" :required true}])
 
-(def schema_full_data_raw [{:column_name "full_data", :data_type "boolean" :required true}])
-(def schema_pagination_raw [{:column_name "page", :data_type "int4" :required true}
-                            {:column_name "count", :data_type "int4" :required true}])
+;(def schema_full_data_raw [{:column_name "full_data", :data_type "boolean" :required true}])
+;(def schema_pagination_raw [{:column_name "page", :data_type "int4" :required true}
+;                            {:column_name "count", :data_type "int4" :required true}])
+
+(def schema_full_data_raw [{:column_name "full_data", :data_type "boolean" :required false}])
+(def schema_pagination_raw [{:column_name "page", :data_type "int4" :required false}
+                            {:column_name "count", :data_type "int4" :required false}])
 
 (defn convert-raw-into-postgres-cfg [entries] "Ensures that all entries have all required keys. (turn *-raw elements into *-entries)"
   (let [entries (map (fn [entry]
@@ -203,6 +226,14 @@
                          entry))
                   entries)] entries))
 
+
+(defn is-db-enum? [data_type]
+  (str/starts-with? data_type "enum::")
+  )
+(defn extract-db-enum-key [data_type]
+  (keyword (str/replace data_type #"enum::" ""))
+  )
+
 (defn postgres-cfg-to-schema [metadata]
   (into {}
     (map (fn [{:keys [column_name data_type is_nullable required]}]
@@ -212,10 +243,23 @@
                               (s/required-key (keyword column_name))
                               (s/optional-key (keyword column_name))
                               )
-                 valueSection (if (= is_nullable "YES")
-                                (s/maybe (type-mapping data_type))
-                                (type-mapping data_type)
-                                )
+
+                 _ (println ">o> " (if (str/starts-with? data_type "enum::") (get-enum (str/replace data_type #"enum::" ""))))
+
+                 ;valueSection (cond (str/starts-with? data_type "enum::") (get-enum (keyword (str/replace data_type #"enum::" "")))
+                 valueSection (cond (is-db-enum? data_type) (get-enum (keyword (extract-db-enum-key data_type)))
+                                    :else
+                                    (if (= is_nullable "YES")
+                                      (s/maybe (type-mapping data_type))
+                                      (type-mapping data_type)
+                                      ))
+
+
+                 ;valueSection (if (= is_nullable "YES")
+                 ;               (s/maybe (type-mapping data_type))
+                 ;               (type-mapping data_type)
+                 ;               )
+
                  ]
              {keySection valueSection}
              ))
@@ -262,7 +306,24 @@
 (defn remove-maps-by-entry-values
   "Removes maps from a list where the specified entry key matches any of the values in the provided list."
   [maps entry-key target-values]
-  (remove #(some #{(entry-key %)} target-values) maps))
+
+  (if (empty? target-values)
+    maps
+    ; else
+    (remove #(some #{(entry-key %)} target-values) maps)))
+    ;(remove #(some #{(entry-key %)} target-values) maps))
+
+
+(defn keep-maps-by-entry-values
+  "Keeps only maps from a list where the specified entry key matches any of the values in the provided list."
+  [maps entry-key target-values]
+
+  (if (empty? target-values)
+    maps
+    ; else
+    (filter #(some #{(entry-key %)} target-values) maps)))
+  ;(filter #(some #{(entry-key %)} target-values) maps))
+
 
 (defn fetch-column-names
   "Extracts the values of :column_name from a list of maps."
@@ -282,16 +343,26 @@
     data))
 
 
-(defn fetch-table-meta-raw [table-name]
+(defn fetch-table-meta-raw
 
-  (let [
-        res (fetch-table-metadata table-name)
-        p (println ">o> 1res=" res)
+  ([table-name]
+   (fetch-table-meta-raw table-name [])
+   )
 
-        res (map normalize-map res)
-        p (println ">o> 2res=" res)
+  ([table-name update-data]
+   (let [
+         res (fetch-table-metadata table-name)
+         p (println ">o> 1res=" res)
 
-        ] res))
+         res (map normalize-map res)
+         p (println ">o> 2res=" res)
+
+
+         res (replace-elem res update-data :column_name)    ;;??
+
+         ] res))
+
+  )
 
 
 
@@ -330,11 +401,15 @@
 
 (defn create-schema-by-data
   ([table-meta-raw additional-schema-list-raw] "Prepare schema for a table."
-   (create-schema-by-data table-meta-raw additional-schema-list-raw [] []))
+   (create-schema-by-data table-meta-raw additional-schema-list-raw [] [] []))
 
-  ([table-meta-raw additional-schema-list-raw blacklist-key-names update-schema-list-raw] "Prepare schema for a table."
+  ([table-meta-raw additional-schema-list-raw blacklist-key-names update-schema-list-raw whitelist-key-names] "Prepare schema for a table."
    (let [
          res table-meta-raw
+
+         ; remove all entries which are not in the whitelist by column_name
+         res (keep-maps-by-entry-values res :column_name whitelist-key-names)
+
 
          p (println ">o> debug2")
          res (concat res additional-schema-list-raw)
@@ -360,6 +435,84 @@
          ] res)))
 
 
+
+(defn create-groups-schema []
+
+  (let [
+
+        ;; create schema for groups (fetch once reuse again)
+        table-meta-raw (fetch-table-meta-raw "groups" [{:column_name "type" :data_type "enum::groups.type" :is_nullable "NO"}])
+        _ (set-schema :groups-schema-raw table-meta-raw)
+
+        p (println ">o> table-meta-raw=" table-meta-raw)
+
+
+        ;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
+
+
+        ;; groups.type is not of type enum therefore hardcoded
+        ;_ (set-schema :groups.type [{:column_name "type", :data_type "character varying", :is_nullable "NO"}])
+        ;_ (set-schema :groups.type {:column_name "type", :data_type "character varying", :is_nullable "NO"})
+
+
+        ;; :groups-schema-with-pagination
+        additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
+        p (println ">o> debug1")
+        res (set-schema :groups-schema-with-pagination (create-schema-by-data table-meta-raw additional-schema-list-raw))
+
+        ;; :groups-schema-response
+        update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
+        res (set-schema :groups-schema-response (create-schema-by-data table-meta-raw [] [] update-schema-list-raw []))
+
+        ;; :groups-schema-response-put
+        ;update-schema-list-raw [{:column_name "type", :data_type "uuid" :is_nullable "NO" :required true}]
+        whitelist-keys [:name :type :institution :institutional_id :institutional_name :created_by_user_id]
+
+        whitelist-key-names ["name" "type" "institution" "institutional_id" "institutional_name" "created_by_user_id"]
+        ;whitelist-key-names ["name" "type" "institution"]
+        ;res (keep-maps-by-entry-values res :column_name whitelist-key-names)
+
+
+        ;res (set-schema :groups-schema-response-put (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
+        res (set-schema :groups-schema-response-put (create-schema-by-data table-meta-raw [] [] [] whitelist-keys))
+        ])
+  )
+
+
+(comment
+  (let [
+        ;res (create-groups-schema)
+        ;;res (get-schema :groups-schema-response)
+        ;res (get-schema :groups-schema-raw)
+        ;;res (get-schema :groups-schema-with-pagination)
+        ;res (get-schema :groups-schema-with-pagination)
+        ;res (get-enum :groups.type)
+        ;res (get-schema :groups-schema-response-put)
+
+
+        table-meta-raw (get-schema :groups-schema-raw)
+        res table-meta-raw
+
+        p (println ">o> table-meta-raw=" table-meta-raw)
+
+        whitelist-key-names ["name" "type" "institution" "institutional_id" "institutional_name" "created_by_user_id"]
+        ;whitelist-key-names ["name" "type" "institution"]
+        res (keep-maps-by-entry-values res :column_name whitelist-key-names)
+
+
+
+
+        ;p (println ">o> whitelist-keys=" whitelist-keys)
+        ;
+        ;;res (set-schema :groups-schema-response-put (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
+        ;res (set-schema :groups-schema-response-put (create-schema-by-data table-meta-raw [] [] [] whitelist-keys))
+
+        ]
+    res)
+  )
+
+
+
 (defn init-schema-by-db []
 
   (println ">o> before db-fetch")
@@ -377,21 +530,28 @@
         p (println ">o> 1abres=" res)
 
 
-        ;; create schema for groups (fetch once reuse again)
-        table-meta-raw (fetch-table-meta-raw "groups")
+        ;; TODO: revise db-ddl to use enum
+        res (s/enum "AuthenticationGroup" "InstitutionalGroup" "Group")
+        _ (set-enum :groups.type res)
 
-        p (println ">o> table-meta-raw=" table-meta-raw)
+        ;;; create schema for groups (fetch once reuse again)
+        ;table-meta-raw (fetch-table-meta-raw "groups")
+        ;
+        ;p (println ">o> table-meta-raw=" table-meta-raw)
+        ;
+        ;
+        ;;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
+        ;
+        ;
+        ;update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
+        ;res (set-schema :groups-schema-with-pagination (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
+        ;
+        ;additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
+        ;p (println ">o> debug1")
+        ;res (set-schema :groups-schema-response (create-schema-by-data table-meta-raw additional-schema-list-raw))
 
 
-        ;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
-
-
-        update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
-        res (set-schema :groups-schema-with-pagination (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
-
-        additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
-        p (println ">o> debug1")
-        res (set-schema :groups-schema-response (create-schema-by-data table-meta-raw additional-schema-list-raw))
+        _ (create-groups-schema)
 
 
         ;res (set-schema :groups-schema-with-pagination (create-schema "groups" additional-schema-list-raw))
