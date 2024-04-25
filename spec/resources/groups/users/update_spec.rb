@@ -29,11 +29,14 @@ describe "updating group-users" do
       let :response do
         client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/") do |req|
           req.body = {users: @update_data}.to_json
+          puts ">>> req.body: #{req.body}"
           req.headers["Content-Type"] = "application/json"
         end
       end
 
       it "works and sets the group users to exactly those given with the request" do
+
+        binding.pry
         expect(response.status).to be == 200
         expect(
           Set.new(@group.users.reload.map(&:id))

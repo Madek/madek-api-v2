@@ -197,7 +197,10 @@
                    "uuid" s/Uuid
                    "text" s/Str
                    "character varying" s/Str
-                   "timestamp with time zone" s/Any}
+                   "timestamp with time zone" s/Any
+                   ;; helper
+                   "str" s/Str
+                   }
   ;"groups.type"
   )
 
@@ -305,24 +308,44 @@
 
 (defn remove-maps-by-entry-values
   "Removes maps from a list where the specified entry key matches any of the values in the provided list."
-  [maps entry-key target-values]
 
-  (if (empty? target-values)
-    maps
-    ; else
-    (remove #(some #{(entry-key %)} target-values) maps)))
-    ;(remove #(some #{(entry-key %)} target-values) maps))
+  ([maps target-values]
+   (remove-maps-by-entry-values maps :column_name target-values)
+   )
+
+
+  ([maps entry-key target-values]
+
+   (if (empty? target-values)
+     maps
+     ; else
+     (remove #(some #{(entry-key %)} target-values) maps)))
+
+  )
+;(remove #(some #{(entry-key %)} target-values) maps))
 
 
 (defn keep-maps-by-entry-values
   "Keeps only maps from a list where the specified entry key matches any of the values in the provided list."
-  [maps entry-key target-values]
 
-  (if (empty? target-values)
-    maps
-    ; else
-    (filter #(some #{(entry-key %)} target-values) maps)))
-  ;(filter #(some #{(entry-key %)} target-values) maps))
+
+  ([maps target-values]
+   (keep-maps-by-entry-values maps :column_name target-values)
+   )
+
+
+  ([maps entry-key target-values]
+
+   (if (empty? target-values)
+     maps
+     ; else
+     (filter #(some #{(entry-key %)} target-values) maps)))
+
+  )
+
+
+
+;(filter #(some #{(entry-key %)} target-values) maps))
 
 
 (defn fetch-column-names
@@ -400,6 +423,9 @@
 
 
 (defn create-schema-by-data
+  ([table-meta-raw] "Prepare schema for a table."
+   (create-schema-by-data table-meta-raw [] [] [] []))
+
   ([table-meta-raw additional-schema-list-raw] "Prepare schema for a table."
    (create-schema-by-data table-meta-raw additional-schema-list-raw [] [] []))
 
@@ -435,16 +461,26 @@
          ] res)))
 
 
+(defn update-column-value [data column-name new-value]
+  (map (fn [row]
+         (if (= (row :column_name) column-name)
+           (assoc row :column_name new-value)
+           row))
+    data))
+
 
 (defn create-groups-schema []
 
   (let [
 
         ;; create schema for groups (fetch once reuse again)
-        table-meta-raw (fetch-table-meta-raw "groups" [{:column_name "type" :data_type "enum::groups.type" :is_nullable "NO"}])
-        _ (set-schema :groups-schema-raw table-meta-raw)
+        groups-meta-raw (fetch-table-meta-raw "groups" [{:column_name "type" :data_type "enum::groups.type" :is_nullable "NO"}])
+        _ (set-schema :groups-schema-raw groups-meta-raw)
 
-        p (println ">o> table-meta-raw=" table-meta-raw)
+        users-meta-raw (fetch-table-meta-raw "users" [])
+        _ (set-schema :users-schema-raw users-meta-raw)
+
+        p (println ">o> table-meta-raw=" groups-meta-raw)
 
 
         ;res (set-schema :test (create-schema "groups" additional-schema-list-raw blacklist-key-names update-schema-list-raw))
@@ -458,23 +494,68 @@
         ;; :groups-schema-with-pagination
         additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
         p (println ">o> debug1")
-        res (set-schema :groups-schema-with-pagination (create-schema-by-data table-meta-raw additional-schema-list-raw))
+        res (set-schema :groups-schema-with-pagination (create-schema-by-data groups-meta-raw additional-schema-list-raw))
 
         ;; :groups-schema-response
         update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
-        res (set-schema :groups-schema-response (create-schema-by-data table-meta-raw [] [] update-schema-list-raw []))
+        res (set-schema :groups-schema-response (create-schema-by-data groups-meta-raw [] [] update-schema-list-raw []))
 
         ;; :groups-schema-response-put
         ;update-schema-list-raw [{:column_name "type", :data_type "uuid" :is_nullable "NO" :required true}]
         whitelist-keys [:name :type :institution :institutional_id :institutional_name :created_by_user_id]
 
+
         whitelist-key-names ["name" "type" "institution" "institutional_id" "institutional_name" "created_by_user_id"]
         ;whitelist-key-names ["name" "type" "institution"]
         ;res (keep-maps-by-entry-values res :column_name whitelist-key-names)
+        ;res (set-schema :groups-schema-response-put (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
+        res (set-schema :groups-schema-response-put (create-schema-by-data groups-meta-raw [] [] [] whitelist-key-names))
 
+
+
+
+
+        ;whitelist-key-names ["id" "type" "institutional_id" "email" "person_id"]
+        ;whitelist-key-names ["id" "type" "email" "person_id"]
+        whitelist-key-names ["id" "email"]
+
+
+        ;p (println ">o> >>>>>>>>>>>>>> 1groups-users-meta-raw=" groups-users-meta-raw)
+        groups-users-meta-raw (concat (keep-maps-by-entry-values users-meta-raw ["email" "person_id"])
+                                ;(keep-maps-by-entry-values groups-meta-raw ["id"]))
+                                (keep-maps-by-entry-values groups-meta-raw ["id" "institutional_id"]))
+
+        p (println ">o> >>>>>>>>>>>>>> 2groups-users-meta-raw=" groups-users-meta-raw)
+        groups-users-meta-raw (update-column-value groups-users-meta-raw "person_id" "person-id")
+        groups-users-meta-raw (update-column-value groups-users-meta-raw "institutional_id" "institutional-id")
+
+
+
+        p (println ">o> >>>>>>>>>>>>>> 3groups-users-meta-raw=" groups-users-meta-raw)
+
+        ;whitelist-key-names ["id" ]
+        ;update-schema-list-raw [
+        ;                        {:column_name "email", :data_type "str"}
+        ;                        {:column_name "person-id", :data_type "uuid"}
+        ;                        {:column_name "institutional-id", :data_type "str"}]
+
+        whitelist-key-names ["id"]
+        update-schema-list-raw [
+                                {:column_name "email", :data_type "str"}
+                                {:column_name "person-id", :data_type "uuid"}
+                                {:column_name "institutional-id", :data_type "str"}]
+
+
+
+        ;whitelist-key-names ["name" "type" "institution"]
+        ;res (keep-maps-by-entry-values res :column_name whitelist-key-names)
 
         ;res (set-schema :groups-schema-response-put (create-schema-by-data table-meta-raw [] [] update-schema-list-raw))
-        res (set-schema :groups-schema-response-put (create-schema-by-data table-meta-raw [] [] [] whitelist-keys))
+        ;res (set-schema :groups-schema-response-put-users (create-schema-by-data groups-meta-raw update-schema-list-raw [] [] whitelist-key-names))
+        ;res (set-schema :groups-schema-response-put-users (create-schema-by-data groups-users-meta-raw update-schema-list-raw [] [] [] ))
+        ;res (set-schema :groups-schema-response-put-users (create-schema-by-data groups-users-meta-raw [] [] [] [] ))
+        res (set-schema :groups-schema-response-put-users (create-schema-by-data groups-users-meta-raw))
+
         ])
   )
 

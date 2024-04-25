@@ -7,8 +7,8 @@
             [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
 
-            ;[madek.api.web :refer [get-value]]
-            ;[madek.api.web :as web]
+   ;[madek.api.web :refer [get-value]]
+   ;[madek.api.web :as web]
 
             [madek.api.schema_cache :refer [get-schema set-schema]]
 
@@ -42,7 +42,7 @@
 (defn get-group [id-or-institutional-group-id tx]
   (if-let [group (groups/find-group id-or-institutional-group-id tx)]
     {:body (dissoc group :previous_id :searchable)}
-    {:status 404 :body "No such group found"})) ; TODO: toAsk 204 No Content
+    {:status 404 :body "No such group found"}))             ; TODO: toAsk 204 No Content
 
 ;### delete group ##############################################################
 
@@ -55,7 +55,7 @@
         update-count (get res :next.jdbc/update-count)]
 
     (if (= 1 update-count)
-      {:status 204 :content-type "application/json"} ;TODO / FIXME: response should support octet-stream as well?
+      {:status 204 :content-type "application/json"}        ;TODO / FIXME: response should support octet-stream as well?
       {:status 404})))
 
 ;### patch group ##############################################################
@@ -129,7 +129,7 @@
 (def schema_export-group
   {:id s/Uuid
    (s/optional-key :name) s/Str
-   (s/optional-key :type) s/Str ; TODO enum
+   (s/optional-key :type) s/Str                             ; TODO enum
    (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
    (s/optional-key :created_at) s/Any
    (s/optional-key :updated_at) s/Any
@@ -303,7 +303,7 @@
                                :body schema_update-group}
                   ;:responses {200 {:body s/Any} ;groups/schema_export-group}
                   :responses {200 {:body (get-schema :groups-schema-response-put)} ;groups/schema_export-group}
-                              404 {:body s/Any}}}}] ; TODO error handling
+                              404 {:body s/Any}}}}]         ; TODO error handling
 
    ; groups-users/ring-routes
    ["/:group-id/users/" {:get {:summary "Get group users by id"
@@ -332,8 +332,19 @@
                                :parameters {:path {:group-id s/Uuid}
                                             :body group-users/schema_update-group-user-list}
 
-                               :responses {200 {:body s/Any} ;groups/schema_export-group}
-                               ;:responses {200 {:body (get-schema :groups-schema-response)} ;groups/schema_export-group}
+
+                               ;[{"id"=>"001c41d1-fa33-43b9-a9e2-c4edf88e54cc", "institutional-id"=>"20aab881-c5c9-4d34-971a-5d4988e2714a", "email"=>"charley_939e10b8@schimmel.org", "person-id"=>"937e0ae9-46a4-457c-a992-e5d861023a40"},
+
+
+                               ;:responses {200 {:body s/Any} ;;works
+                               ;:responses {200 {:body {:users[
+                               ;                        {(s/optional-key :id) s/Uuid
+                               ;                         (s/optional-key :institutional-id) s/Str
+                               ;                         (s/optional-key :email) s/Str
+                               ;                         (s/optional-key :person-id) s/Uuid
+                               ;                         }]}} ;;works
+
+                                           :responses {200 {:body {:users [(get-schema :groups-schema-response-put-users)]}} ;groups/schema_export-group}
                                            404 {:body s/Str}}}}]
 
    ["/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"

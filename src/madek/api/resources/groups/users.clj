@@ -9,8 +9,10 @@
    [madek.api.utils.helper :refer [convert-groupid-userid]]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
+
+
    [schema.core :as s]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [info spy]]))
 
 ;;; temporary users stuff ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -76,7 +78,9 @@
       (sql/order-by [:users.id :asc])
       (groups/sql-merge-where-id group-id)
       (pagination/add-offset-for-honeysql (-> request :parameters :query))
-      sql-format))
+      sql-format
+      spy
+      ))
 
 (defn group-users [group-id request]
   (jdbc/execute! (:tx request)
