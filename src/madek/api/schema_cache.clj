@@ -470,10 +470,7 @@
 
 
 (defn create-groups-schema []
-
   (let [
-        ;; create schema for groups (fetch once reuse again)
-
         ;; :groups-schema-raw
         groups-meta-raw (fetch-table-meta-raw "groups" [{:column_name "type" :data_type "enum::groups.type" :is_nullable "NO"}])
         _ (set-schema :groups-schema-raw groups-meta-raw)
@@ -508,53 +505,28 @@
         groups-users-meta-raw (update-column-value groups-users-meta-raw "institutional_id" "institutional-id")
 
         res (set-schema :groups-schema-response-put-users (create-schema-by-data groups-users-meta-raw)) ;; TODO: name of keys
-
-        ])
-  )
+        ]))
 
 
 (defn create-users-schema []
-
   (let [
-        ;; create schema for groups (fetch once reuse again)
-
-        ;;; :groups-schema-raw
-        ;groups-meta-raw (fetch-table-meta-raw "groups" [{:column_name "type" :data_type "enum::groups.type" :is_nullable "NO"}])
-        ;_ (set-schema :groups-schema-raw groups-meta-raw)
-
         ;; :users-schema-raw
         users-meta-raw (fetch-table-meta-raw "users" [])
         _ (set-schema :users-schema-raw users-meta-raw)
 
-        ;;; :groups-schema-with-pagination
-        ;additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
-        ;p (println ">o> debug1")
-        ;res (set-schema :groups-schema-with-pagination (create-schema-by-data groups-meta-raw additional-schema-list-raw))
-        ;
-        ;;; :groups-schema-response
-        ;update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
-        ;res (set-schema :groups-schema-response (create-schema-by-data groups-meta-raw [] [] update-schema-list-raw []))
-
         ;; :groups-schema-response-put
         whitelist-key-names ["id" "institutional_id" "email"]
-        res (set-schema :users-schema-payload (create-schema-by-data users-meta-raw [] [] [] whitelist-key-names))
+        _ (set-schema :users-schema-payload (create-schema-by-data users-meta-raw [] [] [] whitelist-key-names))
+        ]))
 
+(defn create-admins-schema []
+  (let [
+        ;; :users-schema-raw
+        admins-meta-raw (fetch-table-meta-raw "admins" [])
+        _ (set-schema :admins-schema-raw admins-meta-raw)
 
-        ;;; :groups-schema-response-put-users
-        ;;; example how to extract & merge meta-data-infos (PUT "/:group-id/users/")
-        ;groups-users-meta-raw (concat (keep-maps-by-entry-values users-meta-raw ["email" "person_id"])
-        ;                        (keep-maps-by-entry-values groups-meta-raw ["id" "institutional_id"]))
-        ;
-        ;res (set-schema :groups-schema-response-user-simple (create-schema-by-data groups-users-meta-raw))
-        ;
-        ;;; TODO: needed renaming of keys, fix handler to get rid of this workaround
-        ;groups-users-meta-raw (update-column-value groups-users-meta-raw "person_id" "person-id")
-        ;groups-users-meta-raw (update-column-value groups-users-meta-raw "institutional_id" "institutional-id")
-        ;
-        ;res (set-schema :groups-schema-response-put-users (create-schema-by-data groups-users-meta-raw)) ;; TODO: name of keys
-
-        ])
-  )
+        _ (set-schema :admins-schema (create-schema-by-data admins-meta-raw))
+        ]))
 
 
 (comment
@@ -607,6 +579,7 @@
 
         _ (create-groups-schema)
         _ (create-users-schema)
+        _ (create-admins-schema)
 
         ])
 
