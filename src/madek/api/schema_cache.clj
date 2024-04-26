@@ -546,6 +546,21 @@
         ]))
 
 
+(defn create-collections-schema []
+  (let [
+        ;; :workflows-schema-raw
+        collections-meta-raw (fetch-table-meta-raw "collections" [])
+        p (println ">o> workflows-meta-raw=" collections-meta-raw)
+        _ (set-schema :collections-schema-raw collections-meta-raw)
+
+
+        _ (set-schema :collections-schema (create-schema-by-data collections-meta-raw))
+
+        ;whitelist-key-names ["name" "is_active" "configuration"]
+        ;_ (set-schema :workflows-schema-min (create-schema-by-data collections-meta-raw [] [] [] whitelist-key-names))
+        ]))
+
+
 (comment
   (let [
         ;res (create-groups-schema)
@@ -598,6 +613,7 @@
         _ (create-users-schema)
         _ (create-admins-schema)
         _ (create-workflows-schema)
+        _ (create-collections-schema)
 
         ]) )
 

@@ -7,6 +7,9 @@
    [madek.api.db.core :refer [get-ds]]
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared :as sd]
+
+   [madek.api.schema_cache :refer [get-schema]]
+
    [madek.api.utils.helper :refer [convert-map-if-exist f t]]
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
@@ -191,7 +194,7 @@
       :swagger {:produces ["application/json" "application/octet-stream"]}
       :parameters {:query schema_collection-query}
       :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body {:collections [schema_collection-export]}}}}}]
+      :responses {200 {:body {:collections [(get-schema ::collections-schema)]}}}}}]
 
    ["collection"
     {:post
@@ -206,7 +209,7 @@
       :parameters {:body schema_collection-import}
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body schema_collection-export}
+      :responses {200 {:body (get-schema ::collections-schema)}
                   406 {:body s/Any}}}}]
 
    ["collection/:collection_id"
@@ -218,7 +221,7 @@
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body schema_collection-export}
+           :responses {200 {:body (get-schema ::collections-schema)}
                        404 {:body s/Any}
                        422 {:body s/Any}}}
 
@@ -231,7 +234,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}
                         :body schema_collection-update}
-           :responses {;200 {:body schema_collection-export} ;; TODO: fixme
+           :responses {;200 {:body (get-schema ::collections-schema)} ;; TODO: fixme
                        200 {:body s/Any}
                        404 {:body s/Any}
                        422 {:body s/Any}}}
@@ -246,7 +249,7 @@
                         :consumes "application/json"}
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid}}
-              :responses {200 {:body schema_collection-export}
+              :responses {200 {:body (get-schema ::collections-schema)}
                           404 {:body s/Any}
                           422 {:body s/Any}}}}]])
 

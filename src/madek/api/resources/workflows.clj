@@ -92,23 +92,6 @@
                                     :workflows :id
                                     :workflow true))))
 
-(def schema_create_workflow
-  {;:id is db assigned or optional
-   :name s/Str
-   ;:creator_id s/Uuid
-   (s/optional-key :is_active) s/Bool
-   ; TODO docu is json
-   (s/optional-key :configuration) s/Any})
-
-(def schema_update_workflow
-  {;:id s/Uuid
-   (s/optional-key :name) s/Str
-   (s/optional-key :is_active) s/Bool
-   ; TODO docu is json
-   (s/optional-key :configuration) s/Any})
-
-
-
 ; TODO response coercion
 ; TODO docu
 ; TODO tests
