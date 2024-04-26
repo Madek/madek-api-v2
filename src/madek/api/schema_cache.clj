@@ -264,19 +264,7 @@
                                     (do
                                       (error ">o> ERROR: no valid type-mapping found for: >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.\"")
                                       (println ">o> ERROR: no valid type-mapping found for: >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.")
-                                      s/Any)
-                                    ;(if (= is_nullable "YES")
-                                    ;  (s/maybe (type-mapping data_type))
-                                    ;  (type-mapping data_type)
-                                    ;  )
-                                    )
-
-
-                 ;valueSection (if (= is_nullable "YES")
-                 ;               (s/maybe (type-mapping data_type))
-                 ;               (type-mapping data_type)
-                 ;               )
-
+                                      s/Any) )
                  ]
              {keySection valueSection}
              ))
@@ -553,8 +541,8 @@
 
         _ (set-schema :workflows-schema (create-schema-by-data workflows-meta-raw))
 
-        ;whitelist-key-names ["name" "is_active" "configuration"]
-        ;_ (set-schema :workflows-schema-min (create-schema-by-data workflows-meta-raw [] [] [] whitelist-key-names))
+        whitelist-key-names ["name" "is_active" "configuration"]
+        _ (set-schema :workflows-schema-min (create-schema-by-data workflows-meta-raw [] [] [] whitelist-key-names))
         ]))
 
 
@@ -611,33 +599,7 @@
         _ (create-admins-schema)
         _ (create-workflows-schema)
 
-        ])
-
-  ;(println ">o> after db-fetch")
-
-  )
-
-
-;SELECT enumlabel
-;FROM pg_enum
-;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
-;WHERE pg_type.typname = 'collection_default_resource_type';
-;
-;
-;
-;SELECT enumlabel
-;FROM pg_enum
-;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
-;WHERE pg_type.typname = 'collection_layout';;
-;
-;
-;SELECT enumlabel
-;FROM pg_enum
-;JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
-;WHERE pg_type.typname = 'collection_sorting';
-
-
-
+        ]) )
 
 
 (comment

@@ -107,16 +107,7 @@
    ; TODO docu is json
    (s/optional-key :configuration) s/Any})
 
-; TODO Inst coercion
-(def schema_export_workflow
-  {:id s/Uuid
-   (s/optional-key :name) s/Str
-   (s/optional-key :is_active) s/Bool
-   ; TODO docu is json
-   (s/optional-key :configuration) s/Any
-   (s/optional-key :creator_id) s/Uuid
-   (s/optional-key :created_at) s/Any ; TODO as Inst
-   (s/optional-key :updated_at) s/Any})
+
 
 ; TODO response coercion
 ; TODO docu
@@ -130,7 +121,7 @@
             :handler handle_create-workflow
             :middleware [authorization/wrap-authorized-user]
             :coercion reitit.coercion.schema/coercion
-            :parameters {:body schema_create_workflow}
+            :parameters {:body (get-schema :workflows-schema-min)}
             :responses {200 {:body (get-schema :workflows-schema)}
                         406 {:body s/Any}}}
 
@@ -140,7 +131,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {;(s/optional-key :name) s/Str ; TODO query by name
                                 (s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_workflow]}
+           :responses {200 {:body [(get-schema :workflows-schema)]}
                        406 {:body s/Any}}}}]
 
    ["/:id"
@@ -159,7 +150,7 @@
                         (wwrap-find-workflow :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
-                        :body schema_update_workflow}
+                        :body (get-schema :workflows-schema-min)} ;;with optional name
            :responses {200 {:body (get-schema :workflows-schema)}
                        404 {:body s/Any}
                        406 {:body s/Any}}}
