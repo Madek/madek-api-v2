@@ -546,6 +546,15 @@
         ]))
 
 
+(def schema_sorting_types
+  (s/enum "created_at ASC"
+    "created_at DESC"
+    "title ASC"
+    "title DESC"
+    "last_change"
+    "manual ASC"
+    "manual DESC"))
+
 (defn create-collections-schema []
   (let [
         ;; :workflows-schema-raw
@@ -556,8 +565,33 @@
 
         _ (set-schema :collections-schema (create-schema-by-data collections-meta-raw))
 
-        ;whitelist-key-names ["name" "is_active" "configuration"]
-        ;_ (set-schema :workflows-schema-min (create-schema-by-data collections-meta-raw [] [] [] whitelist-key-names))
+
+
+
+
+
+
+        ;; :collections-schema-get
+        whitelist-key-names ["collection_id" "creator_id" "responsible_user_id" "clipboard_user_id" "workflow_id" "responsible_delegation_id"
+                             "public_get_metadata_and_previews"
+                             ;"me_get_metadata_and_previews" "me_edit_permission" "me_edit_metadata_and_relations"
+                             ]
+
+        additional-order [
+                          {:column_name "order", :data_type "enum::collection_sorting" }
+                          {:column_name "me_get_metadata_and_previews", :data_type "boolean" }
+                          {:column_name "me_edit_permission", :data_type "boolean" }
+                          {:column_name "me_edit_metadata_and_relations", :data_type "boolean" }
+
+                          ]
+        additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw additional-order)
+
+        collections-meta-raw (update-column-value collections-meta-raw "id" "collection_id")
+        collections-meta-raw (update-column-value collections-meta-raw "get_metadata_and_previews" "public_get_metadata_and_previews")
+
+        _ (set-schema :collections-schema-get (create-schema-by-data collections-meta-raw additional-schema-list-raw [] [] whitelist-key-names))
+
+
         ]))
 
 

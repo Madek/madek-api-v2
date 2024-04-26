@@ -192,7 +192,8 @@
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
       :swagger {:produces ["application/json" "application/octet-stream"]}
-      :parameters {:query schema_collection-query}
+      ;:parameters {:query schema_collection-query}
+      :parameters {:query (get-schema :collections-schema-get)}
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [(get-schema ::collections-schema)]}}}}}]
 
