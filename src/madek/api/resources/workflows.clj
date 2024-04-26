@@ -5,6 +5,7 @@
             [madek.api.authorization :as authorization]
             [madek.api.resources.shared :as sd]
             [next.jdbc :as jdbc]
+            [madek.api.schema_cache :refer [get-schema]]
             [reitit.coercion.schema]
             [schema.core :as s]
             [taoensso.timbre :refer [info]]))
@@ -130,7 +131,7 @@
             :middleware [authorization/wrap-authorized-user]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_create_workflow}
-            :responses {200 {:body schema_export_workflow}
+            :responses {200 {:body (get-schema :workflows-schema)}
                         406 {:body s/Any}}}
 
      :get {:summary (sd/sum_adm "List workflows.")
@@ -149,7 +150,7 @@
                         (wwrap-find-workflow :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_workflow}
+           :responses {200 {:body (get-schema :workflows-schema)}
                        404 {:body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update workflow with id.")
@@ -159,7 +160,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update_workflow}
-           :responses {200 {:body schema_export_workflow}
+           :responses {200 {:body (get-schema :workflows-schema)}
                        404 {:body s/Any}
                        406 {:body s/Any}}}
 
@@ -169,6 +170,6 @@
               :middleware [authorization/wrap-authorized-user
                            (wwrap-find-workflow :id)]
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export_workflow}
+              :responses {200 {:body (get-schema :workflows-schema)}
                           404 {:body s/Any}}}}]])
 

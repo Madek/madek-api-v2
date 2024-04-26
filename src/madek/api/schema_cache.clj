@@ -196,6 +196,7 @@
                    "boolean" s/Bool
                    "uuid" s/Uuid
                    "text" s/Str
+                   "jsonb" s/Any
                    "character varying" s/Str
                    "timestamp with time zone" s/Any
                    ;; helper
@@ -240,22 +241,35 @@
 (defn postgres-cfg-to-schema [metadata]
   (into {}
     (map (fn [{:keys [column_name data_type is_nullable required]}]
-           (println ">o> =>" column_name data_type is_nullable required)
+           (println ">o> postgres-cfg-to-schema =>" column_name data_type is_nullable required)
 
            (let [keySection (if (true? required)
                               (s/required-key (keyword column_name))
                               (s/optional-key (keyword column_name))
                               )
 
-                 _ (println ">o> " (if (str/starts-with? data_type "enum::") (get-enum (str/replace data_type #"enum::" ""))))
+                 ;_ (println ">o> isEnum=" data_type "| bool?=" (if (str/starts-with? data_type "enum::") (get-enum (str/replace data_type #"enum::" ""))))
+
+                 _ (println ">o> type/type-mapping=" data_type "|" (type-mapping data_type))
+                 type-mapping-res (type-mapping data_type)
 
                  ;valueSection (cond (str/starts-with? data_type "enum::") (get-enum (keyword (str/replace data_type #"enum::" "")))
                  valueSection (cond (is-db-enum? data_type) (get-enum (keyword (extract-db-enum-key data_type)))
+                                    (not (nil? type-mapping-res)) (if (= is_nullable "YES")
+                                                                    (s/maybe (type-mapping data_type))
+                                                                    (type-mapping data_type)
+                                                                    )
+
                                     :else
-                                    (if (= is_nullable "YES")
-                                      (s/maybe (type-mapping data_type))
-                                      (type-mapping data_type)
-                                      ))
+                                    (do
+                                      (error ">o> ERROR: no valid type-mapping found for: >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.\"")
+                                      (println ">o> ERROR: no valid type-mapping found for: >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.")
+                                      s/Any)
+                                    ;(if (= is_nullable "YES")
+                                    ;  (s/maybe (type-mapping data_type))
+                                    ;  (type-mapping data_type)
+                                    ;  )
+                                    )
 
 
                  ;valueSection (if (= is_nullable "YES")
@@ -529,6 +543,21 @@
         ]))
 
 
+(defn create-workflows-schema []
+  (let [
+        ;; :workflows-schema-raw
+        workflows-meta-raw (fetch-table-meta-raw "workflows" [])
+        p (println ">o> workflows-meta-raw=" workflows-meta-raw)
+        _ (set-schema :workflows-schema-raw workflows-meta-raw)
+
+
+        _ (set-schema :workflows-schema (create-schema-by-data workflows-meta-raw))
+
+        ;whitelist-key-names ["name" "is_active" "configuration"]
+        ;_ (set-schema :workflows-schema-min (create-schema-by-data workflows-meta-raw [] [] [] whitelist-key-names))
+        ]))
+
+
 (comment
   (let [
         ;res (create-groups-schema)
@@ -580,6 +609,7 @@
         _ (create-groups-schema)
         _ (create-users-schema)
         _ (create-admins-schema)
+        _ (create-workflows-schema)
 
         ])
 
