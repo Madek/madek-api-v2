@@ -202,7 +202,33 @@
                    ;; helper
                    "str" s/Str
                    }
-  ;"groups.type"
+  )
+
+;te_pr (println ">o> 11??=" (get-enum :collections_sorting))
+;te_pr (println ">o> 11??=" (get-enum :collections_layout))
+;;te_pr (println ">o> 11??=" (get-enum :collections_default_resource_type))
+
+(defn type-mapping-enums [key]
+
+  (let [
+p (println ">o> !!1 type-mapping-enums.key=" key)
+        enum-map (map {"collections.default_resource_type" (get-enum :collections_default_resource_type)
+             "collections.layout" (get-enum :collections_layout)
+             "collections.sorting" (get-enum :collections_sorting)
+
+             })
+
+        res     (if (contains? enum-map key)
+                  (get enum-map key)
+                  nil)
+
+        p (println ">o> !!1 res=" res)
+
+        ]
+
+res
+    )
+
   )
 
 ;(def schema_raw_pagination [{:column_name "full_data", :data_type "boolean" :required true}
@@ -238,10 +264,10 @@
   (keyword (str/replace data_type #"enum::" ""))
   )
 
-(defn postgres-cfg-to-schema [metadata]
+(defn postgres-cfg-to-schema [table-name metadata]
   (into {}
     (map (fn [{:keys [column_name data_type is_nullable required]}]
-           (println ">o> postgres-cfg-to-schema =>" column_name data_type is_nullable required)
+           (println ">o> postgres-cfg-to-schema =>" table-name column_name data_type is_nullable required)
 
            (let [keySection (if (true? required)
                               (s/required-key (keyword column_name))
@@ -252,6 +278,13 @@
 
                  _ (println ">o> type/type-mapping=" data_type "|" (type-mapping data_type))
                  type-mapping-res (type-mapping data_type)
+                 type-mapping-enums-res (type-mapping-enums (str table-name "." column_name))
+
+                 ;; TODO: bug, mapping cant be found
+
+                 p (println ">o> ?? type-mapping-res=" type-mapping-res)
+                 p (println ">o> ?? type-mapping-enums=" type-mapping-enums-res)
+                 p (println ">o> ?? type-mapping-enums.key=" (str table-name "." column_name))
 
                  ;valueSection (cond (str/starts-with? data_type "enum::") (get-enum (keyword (str/replace data_type #"enum::" "")))
                  valueSection (cond (is-db-enum? data_type) (get-enum (keyword (extract-db-enum-key data_type)))
@@ -260,11 +293,15 @@
                                                                     (type-mapping data_type)
                                                                     )
 
+                                    (not (nil? type-mapping-enums-res)) (if (= is_nullable "YES")
+                                                                          (s/maybe (type-mapping-enums-res))
+                                                                          (type-mapping-enums-res))
+
                                     :else
                                     (do
-                                      (error ">o> ERROR: no valid type-mapping found for: >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.\"")
-                                      (println ">o> ERROR: no valid type-mapping found for: >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.")
-                                      s/Any) )
+                                      ;(error ">o> ERROR: no valid type-mapping found for column= >" column_name "< data_type= >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.\"")
+                                      (println ">o> ERROR: no valid type-mapping found for:\n\tcolumn: >" column_name "< \n\ttable-name= >" table-name "<\n\tdata_type= >" data_type "<\n add definition to schema_cache.type-mapping\nDefault <s/Any> used.")
+                                      s/Any))
                  ]
              {keySection valueSection}
              ))
@@ -360,8 +397,6 @@
   [data new-list-of-maps key]
   (mapv (fn [item]
           (println ">o> item=" item)
-          (println ">o> item=" item)
-
           (if-let [replacement (first (filter #(= (key %) (key item)) new-list-of-maps))]
             replacement
             item))
@@ -420,18 +455,18 @@
          res (convert-raw-into-postgres-cfg res)
          p (println "\n\n>o> 6res=" res)
 
-         res (postgres-cfg-to-schema res)
+         res (postgres-cfg-to-schema table-name res)
          p (println "\n>o> 7res=" res)] res)))
 
 
 (defn create-schema-by-data
-  ([table-meta-raw] "Prepare schema for a table."
-   (create-schema-by-data table-meta-raw [] [] [] []))
+  ([table-name table-meta-raw] "Prepare schema for a table."
+   (create-schema-by-data table-name table-meta-raw [] [] [] []))
 
-  ([table-meta-raw additional-schema-list-raw] "Prepare schema for a table."
-   (create-schema-by-data table-meta-raw additional-schema-list-raw [] [] []))
+  ([table-name table-meta-raw additional-schema-list-raw] "Prepare schema for a table."
+   (create-schema-by-data table-name table-meta-raw additional-schema-list-raw [] [] []))
 
-  ([table-meta-raw additional-schema-list-raw blacklist-key-names update-schema-list-raw whitelist-key-names] "Prepare schema for a table."
+  ([table-name table-meta-raw additional-schema-list-raw blacklist-key-names update-schema-list-raw whitelist-key-names] "Prepare schema for a table."
    (let [
          res table-meta-raw
 
@@ -455,7 +490,7 @@
          p (println "\n\n>o> 6res=" res)
          p (println ">o> debug4")
 
-         res (postgres-cfg-to-schema res)
+         res (postgres-cfg-to-schema table-name res)
          p (println "\n>o> 7res=" res)
 
          p (println ">o> debug5")
@@ -488,11 +523,11 @@
 
         ;; :groups-schema-response
         update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
-        res (set-schema :groups-schema-response (create-schema-by-data groups-meta-raw [] [] update-schema-list-raw []))
+        res (set-schema :groups-schema-response (create-schema-by-data "groups" groups-meta-raw [] [] update-schema-list-raw []))
 
         ;; :groups-schema-response-put
         whitelist-key-names ["name" "type" "institution" "institutional_id" "institutional_name" "created_by_user_id"]
-        res (set-schema :groups-schema-response-put (create-schema-by-data groups-meta-raw [] [] [] whitelist-key-names))
+        res (set-schema :groups-schema-response-put (create-schema-by-data "groups" groups-meta-raw [] [] [] whitelist-key-names))
 
 
         ;; :groups-schema-response-put-users
@@ -500,13 +535,13 @@
         groups-users-meta-raw (concat (keep-maps-by-entry-values users-meta-raw ["email" "person_id"])
                                 (keep-maps-by-entry-values groups-meta-raw ["id" "institutional_id"]))
 
-        res (set-schema :groups-schema-response-user-simple (create-schema-by-data groups-users-meta-raw))
+        res (set-schema :groups-schema-response-user-simple (create-schema-by-data "groups" groups-users-meta-raw))
 
         ;; TODO: needed renaming of keys, fix handler to get rid of this workaround
         groups-users-meta-raw (update-column-value groups-users-meta-raw "person_id" "person-id")
         groups-users-meta-raw (update-column-value groups-users-meta-raw "institutional_id" "institutional-id")
 
-        res (set-schema :groups-schema-response-put-users (create-schema-by-data groups-users-meta-raw)) ;; TODO: name of keys
+        res (set-schema :groups-schema-response-put-users (create-schema-by-data "groups" groups-users-meta-raw)) ;; TODO: name of keys
         ]))
 
 
@@ -518,7 +553,7 @@
 
         ;; :groups-schema-response-put
         whitelist-key-names ["id" "institutional_id" "email"]
-        _ (set-schema :users-schema-payload (create-schema-by-data users-meta-raw [] [] [] whitelist-key-names))
+        _ (set-schema :users-schema-payload (create-schema-by-data "users" users-meta-raw [] [] [] whitelist-key-names))
         ]))
 
 (defn create-admins-schema []
@@ -527,7 +562,7 @@
         admins-meta-raw (fetch-table-meta-raw "admins" [])
         _ (set-schema :admins-schema-raw admins-meta-raw)
 
-        _ (set-schema :admins-schema (create-schema-by-data admins-meta-raw))
+        _ (set-schema :admins-schema (create-schema-by-data "admins" admins-meta-raw))
         ]))
 
 
@@ -539,10 +574,10 @@
         _ (set-schema :workflows-schema-raw workflows-meta-raw)
 
 
-        _ (set-schema :workflows-schema (create-schema-by-data workflows-meta-raw))
+        _ (set-schema :workflows-schema (create-schema-by-data "workflows" workflows-meta-raw))
 
         whitelist-key-names ["name" "is_active" "configuration"]
-        _ (set-schema :workflows-schema-min (create-schema-by-data workflows-meta-raw [] [] [] whitelist-key-names))
+        _ (set-schema :workflows-schema-min (create-schema-by-data "workflows" workflows-meta-raw [] [] [] whitelist-key-names))
         ]))
 
 
@@ -563,7 +598,7 @@
         _ (set-schema :collections-schema-raw collections-meta-raw)
 
 
-        _ (set-schema :collections-schema (create-schema-by-data collections-meta-raw))
+        _ (set-schema :collections-schema (create-schema-by-data "collections" collections-meta-raw))
 
 
 
@@ -573,24 +608,41 @@
 
         ;; :collections-schema-get
         whitelist-key-names ["collection_id" "creator_id" "responsible_user_id" "clipboard_user_id" "workflow_id" "responsible_delegation_id"
-                             "public_get_metadata_and_previews"
-                             ;"me_get_metadata_and_previews" "me_edit_permission" "me_edit_metadata_and_relations"
-                             ]
+                             "public_get_metadata_and_previews"]
 
         additional-order [
-                          {:column_name "order", :data_type "enum::collection_sorting" }
-                          {:column_name "me_get_metadata_and_previews", :data_type "boolean" }
-                          {:column_name "me_edit_permission", :data_type "boolean" }
-                          {:column_name "me_edit_metadata_and_relations", :data_type "boolean" }
-
+                          {:column_name "order", :data_type "enum::collection_sorting"}
+                          {:column_name "me_get_metadata_and_previews", :data_type "boolean"}
+                          {:column_name "me_edit_permission", :data_type "boolean"}
+                          {:column_name "me_edit_metadata_and_relations", :data_type "boolean"}
                           ]
         additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw additional-order)
 
-        collections-meta-raw (update-column-value collections-meta-raw "id" "collection_id")
-        collections-meta-raw (update-column-value collections-meta-raw "get_metadata_and_previews" "public_get_metadata_and_previews")
+        collections-meta (update-column-value collections-meta-raw "id" "collection_id")
+        collections-meta (update-column-value collections-meta "get_metadata_and_previews" "public_get_metadata_and_previews")
 
-        _ (set-schema :collections-schema-get (create-schema-by-data collections-meta-raw additional-schema-list-raw [] [] whitelist-key-names))
+        _ (set-schema :collections-schema-get (create-schema-by-data "collections" collections-meta additional-schema-list-raw [] [] whitelist-key-names))
 
+
+
+        ;; :collections-schema-put
+        whitelist-key-names ["layout" "is_master" "sorting" "default_context_id" "workflow_id" "default_resource_type"
+                             ]
+
+        additional-order [
+                          {:column_name "order", :data_type "enum::collection_sorting"}
+                          {:column_name "me_get_metadata_and_previews", :data_type "boolean"}
+                          {:column_name "me_edit_permission", :data_type "boolean"}
+                          {:column_name "me_edit_metadata_and_relations", :data_type "boolean"}
+                          ]
+        additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw additional-order)
+        ;collections-meta-raw (update-column-value collections-meta-raw "id" "collection_id")
+        ;collections-meta-raw (update-column-value collections-meta-raw "get_metadata_and_previews" "public_get_metadata_and_previews")
+
+        _ (set-schema :collections-schema-put (create-schema-by-data "collections" collections-meta-raw [] [] [] whitelist-key-names))
+
+
+        p (println ">o> ???????? :collections-schema-get=" (get-schema :collections-schema-put))
 
         ]))
 
@@ -636,10 +688,16 @@
   ;(prepare-schema "groups")
 
   (let [
+
         ;; init enums
-        _ (set-enum :collection_sorting (create-enum-spec "collection_sorting"))
-        _ (set-enum :collection_layout (create-enum-spec "collection_layout"))
-        _ (set-enum :collection_default_resource_type (create-enum-spec "collection_default_resource_type"))
+        _ (set-enum :collections_sorting (create-enum-spec "collection_sorting"))
+        _ (set-enum :collections_layout (create-enum-spec "collection_layout"))
+        _ (set-enum :collections_default_resource_type (create-enum-spec "collection_default_resource_type"))
+
+        te_pr (println ">o> 11??=" (get-enum :collections_sorting))
+        te_pr (println ">o> 11??=" (get-enum :collections_layout))
+        te_pr (println ">o> 11??=" (get-enum :collections_default_resource_type))
+
         ;; TODO: revise db-ddl to use enum
         _ (set-enum :groups.type (s/enum "AuthenticationGroup" "InstitutionalGroup" "Group"))
 
@@ -649,7 +707,7 @@
         _ (create-workflows-schema)
         _ (create-collections-schema)
 
-        ]) )
+        ]))
 
 
 (comment
