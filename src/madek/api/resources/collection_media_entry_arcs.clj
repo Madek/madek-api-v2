@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared :as sd]
+   [madek.api.schema_cache :refer [get-schema]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -115,38 +116,42 @@
                  :collection_id :media_entry_id
                  :col-me-arc true)))
 
-(def schema_collection-media-entry-arc-export
-  {:id s/Uuid
-   :collection_id s/Uuid
-   :media_entry_id s/Uuid
 
-   :highlight s/Bool
-   :cover (s/maybe s/Bool)
-   :order (s/maybe s/Num)
-   :position (s/maybe s/Int)
+;(def schema_collection-media-entry-arc-export
+;  {:id s/Uuid
+;   :collection_id s/Uuid
+;   :media_entry_id s/Uuid
+;
+;   :highlight s/Bool
+;   :cover (s/maybe s/Bool)
+;   :order (s/maybe s/Num)
+;   :position (s/maybe s/Int)
+;
+;   :created_at s/Any
+;   :updated_at s/Any})
+;
+;(def schema_collection-media-entry-arc-update
+;  {;(s/optional-key :id) s/Uuid
+;   ;(s/optional-key :collection_id) s/Uuid
+;   ;(s/optional-key :media_entry_id) s/Uuid
+;   (s/optional-key :highlight) s/Bool
+;   (s/optional-key :cover) s/Bool
+;   (s/optional-key :order) s/Num
+;   (s/optional-key :position) s/Int
+;   ;(s/optional-key :created_at) s/Any
+;   ;(s/optional-key :updated_at) s/Any
+;   })
+;(def schema_collection-media-entry-arc-create
+;  {;(s/optional-key :id) s/Uuid
+;   ;(s/optional-key :collection_id) s/Uuid
+;   ;(s/optional-key :media_entry_id) s/Uuid
+;   (s/optional-key :highlight) s/Bool
+;   (s/optional-key :cover) s/Bool
+;   (s/optional-key :order) s/Num
+;   (s/optional-key :position) s/Int})
 
-   :created_at s/Any
-   :updated_at s/Any})
 
-(def schema_collection-media-entry-arc-update
-  {;(s/optional-key :id) s/Uuid
-   ;(s/optional-key :collection_id) s/Uuid
-   ;(s/optional-key :media_entry_id) s/Uuid
-   (s/optional-key :highlight) s/Bool
-   (s/optional-key :cover) s/Bool
-   (s/optional-key :order) s/Num
-   (s/optional-key :position) s/Int
-   ;(s/optional-key :created_at) s/Any
-   ;(s/optional-key :updated_at) s/Any
-   })
-(def schema_collection-media-entry-arc-create
-  {;(s/optional-key :id) s/Uuid
-   ;(s/optional-key :collection_id) s/Uuid
-   ;(s/optional-key :media_entry_id) s/Uuid
-   (s/optional-key :highlight) s/Bool
-   (s/optional-key :cover) s/Bool
-   (s/optional-key :order) s/Num
-   (s/optional-key :position) s/Int})
+
 
 (def ring-routes
   ["/collection-media-entry-arcs"
@@ -180,7 +185,10 @@
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}}}]
+
+      ;:responses {200 {:body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}}}]
+      :responses {200 {:body {:collection-media-entry-arcs [(get-schema :collections-schema-media-entry-arcs-get)]}}}}}]
+
    ["/media-entry-arc/:media_entry_id"
     {:post
      {:summary (sd/sum_usr "Create collection media-entry arc")
@@ -195,7 +203,8 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid
                           :media_entry_id s/Uuid}
-                   :body schema_collection-media-entry-arc-create}
+                   ;:body schema_collection-media-entry-arc-create}
+                   :body (get-schema :collections-schema-media-entry-arcs-modify)}
       :responses {200 {:body s/Any}
                   404 {:body s/Any}
                   406 {:body s/Any}
@@ -213,7 +222,8 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid
                           :media_entry_id s/Uuid}
-                   :body schema_collection-media-entry-arc-update}
+                   ;:body schema_collection-media-entry-arc-update}
+                   :body (get-schema :collections-schema-media-entry-arcs-modify)}
       :responses {200 {:body s/Any}
                   404 {:body s/Any}
                   406 {:body s/Any}}}

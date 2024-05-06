@@ -93,96 +93,6 @@
     (catch Exception ex
       (sd/response_failed (str "Could not delete collection: " (ex-message ex)) 500))))
 
-;; TODO :layout and :sorting are special types
-;(def schema_layout_types
-;  (s/enum "grid" "list" "miniature" "tiles"))
-;
-;(def schema_sorting_types
-;  (s/enum "created_at ASC"
-;          "created_at DESC"
-;          "title ASC"
-;          "title DESC"
-;          "last_change"
-;          "manual ASC"
-;          "manual DESC"))
-;
-;(def schema_default_resource_type
-;  (s/enum "collections" "entries" "all"))
-;
-;(def schema_collection-import
-;  {;(s/optional-key :id) s/Uuid
-;   (s/optional-key :get_metadata_and_previews) s/Bool
-;
-;   (s/optional-key :layout) schema_layout_types
-;   (s/optional-key :is_master) s/Bool
-;   (s/optional-key :sorting) schema_sorting_types
-;   (s/optional-key :default_context_id) (s/maybe s/Str) ;;caution
-;   ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-;
-;   ;; TODO: only one (:responsible_user_id OR :responsible_delegation_id) should be set (uuid & null check)
-;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
-;
-;   (s/optional-key :default_resource_type) schema_default_resource_type})
-;
-;(def schema_collection-update
-;  {(s/optional-key :layout) schema_layout_types
-;   (s/optional-key :is_master) s/Bool
-;   (s/optional-key :sorting) schema_sorting_types
-;   (s/optional-key :default_context_id) (s/maybe s/Str)
-;
-;   ;(s/optional-key :get_metadata_and_previews) s/Bool
-;   ;(s/optional-key :responsible_user_id) s/Uuid
-;
-;   ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-;   ;(s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
-;
-;   (s/optional-key :default_resource_type) schema_default_resource_type})
-;
-;(def schema_collection-query
-;  {(s/optional-key :page) s/Int
-;   (s/optional-key :count) s/Int
-;   (s/optional-key :full_data) s/Bool
-;   (s/optional-key :collection_id) s/Uuid
-;   (s/optional-key :order) s/Str
-;
-;   (s/optional-key :creator_id) s/Uuid
-;   (s/optional-key :responsible_user_id) s/Uuid
-;
-;   (s/optional-key :clipboard_user_id) s/Uuid
-;   (s/optional-key :workflow_id) s/Uuid
-;   (s/optional-key :responsible_delegation_id) s/Uuid
-;
-;   (s/optional-key :public_get_metadata_and_previews) s/Bool
-;   (s/optional-key :me_get_metadata_and_previews) s/Bool
-;   (s/optional-key :me_edit_permission) s/Bool
-;   (s/optional-key :me_edit_metadata_and_relations) s/Bool})
-;
-;(def schema_collection-export
-;  {:id s/Uuid
-;   (s/optional-key :get_metadata_and_previews) s/Bool
-;
-;   (s/optional-key :layout) schema_layout_types
-;   (s/optional-key :is_master) s/Bool
-;   (s/optional-key :sorting) schema_sorting_types
-;
-;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :creator_id) s/Uuid
-;
-;   (s/optional-key :default_context_id) (s/maybe s/Str)
-;
-;   (s/optional-key :created_at) s/Any
-;   (s/optional-key :updated_at) s/Any
-;   (s/optional-key :meta_data_updated_at) s/Any
-;   (s/optional-key :edit_session_updated_at) s/Any
-;
-;   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
-;
-;   (s/optional-key :default_resource_type) schema_default_resource_type})
 
 (def ring-routes
   ["/"
@@ -192,7 +102,6 @@
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
       :swagger {:produces ["application/json" "application/octet-stream"]}
-      ;:parameters {:query schema_collection-query}
       :parameters {:query (get-schema :collections-schema-get)}
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [(get-schema :collections-schema)]}}}}}]
@@ -207,7 +116,6 @@
       :handler handle_create-collection
       :swagger {:produces "application/json"
                 :consumes "application/json"}
-      ;:parameters {:body schema_collection-import}
       :parameters {:body (get-schema :collections-schema-post)}
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
@@ -235,11 +143,9 @@
                      :consumes "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}
-                        ;:body schema_collection-update}
                         :body (get-schema :collections-schema-put)}
            :responses {
-                       200 {:body (get-schema :collections-schema-put)} ;; TODO: fixme
-                       ;200 {:body s/Any}
+                       200 {:body (get-schema :collections-schema-put)}
                        404 {:body s/Any}
                        422 {:body s/Any}}}
 

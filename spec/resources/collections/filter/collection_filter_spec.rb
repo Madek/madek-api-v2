@@ -2,7 +2,6 @@ require "spec_helper"
 
 describe "filtering collections" do
   def get_collections(filter = nil)
-    binding.pry
     client.get("/api/collections", filter).body.with_indifferent_access["collections"]
   end
 
