@@ -471,38 +471,6 @@
 
 
 
-(defn create-schema
-  ([table-name additional-schema-list-raw] "Prepare schema for a table."
-   (create-schema table-name additional-schema-list-raw [] []))
-
-  ([table-name additional-schema-list-raw blacklist-key-names update-schema-list-raw] "Prepare schema for a table."
-   (let [
-
-         ;res (fetch-table-metadata table-name)
-         ;p (println ">o> 1res=" res)
-         ;
-         ;res (map normalize-map res)
-         ;p (println ">o> 2res=" res)
-
-         res (fetch-table-meta-raw table-name)
-
-         res (concat res additional-schema-list-raw)
-         p (println "\n\n>o> 3res=" res)
-
-         res (remove-maps-by-entry-values res :column_name blacklist-key-names)
-         p (println "\n\n>o> 4res=" res)
-         p (println "\n\n>o> 4res.keys=" (fetch-column-names res))
-
-         res (replace-elem res update-schema-list-raw :column_name)
-         p (println "\n\n>o> 5res=" res)
-
-         res (convert-raw-into-postgres-cfg res)
-         p (println "\n\n>o> 6res=" res)
-
-         res (postgres-cfg-to-schema table-name res)
-         p (println "\n>o> 7res=" res)] res)))
-
-
 (defn create-schema-by-data
   ([table-name table-meta-raw] "Prepare schema for a table."
          (println ">o> table-name3=" table-name)
@@ -645,12 +613,7 @@
         collections-meta-raw (fetch-table-meta-raw "collections" [])
         p (println ">o> workflows-meta-raw=" collections-meta-raw)
         _ (set-schema :collections-schema-raw collections-meta-raw)
-
-
         _ (set-schema :collections-schema (create-schema-by-data "collections" collections-meta-raw))
-
-
-
 
 
 
@@ -692,6 +655,29 @@
 
 
         p (println ">o> ???????? :collections-schema-get=" (get-schema :collections-schema-put))
+
+
+
+
+        ;; :collections-schema-post
+        whitelist-key-names ["layout" "is_master" "sorting" "default_context_id" "workflow_id" "default_resource_type"
+                             "responsible_user_id" "responsible_delegation_id" "get_metadata_and_previews"
+                             ]
+
+        additional-order [
+                          {:column_name "order", :data_type "enum::collections_sorting"}
+                          {:column_name "me_get_metadata_and_previews", :data_type "boolean"}
+                          {:column_name "me_edit_permission", :data_type "boolean"}
+                          {:column_name "me_edit_metadata_and_relations", :data_type "boolean"}
+                          ]
+        ;additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw additional-order)
+        ;collections-meta-raw (update-column-value collections-meta-raw "id" "collection_id")
+        ;collections-meta-raw (update-column-value collections-meta-raw "get_metadata_and_previews" "public_get_metadata_and_previews")
+
+        _ (set-schema :collections-schema-post (create-schema-by-data "collections" collections-meta-raw [] [] [] whitelist-key-names))
+
+
+        p (println ">o> ???????? :collections-schema-get=" (get-schema :collections-schema-post))
 
         ]))
 
@@ -776,7 +762,7 @@
 
         p (println ">o> additional-attr=" additional-attr)
 
-        res (set-schema :test (create-schema "groups" additional-attr blacklist update-elem-list))
+        ;res (set-schema :test (create-schema "groups" additional-attr blacklist update-elem-list))
 
         ;p (println ">o> keys:" (keys res))
 
