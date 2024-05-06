@@ -195,7 +195,7 @@
       ;:parameters {:query schema_collection-query}
       :parameters {:query (get-schema :collections-schema-get)}
       :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body {:collections [(get-schema ::collections-schema)]}}}}}]
+      :responses {200 {:body {:collections [(get-schema :collections-schema)]}}}}}]
 
    ["collection"
     {:post
@@ -210,7 +210,7 @@
       :parameters {:body schema_collection-import}
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body (get-schema ::collections-schema)}
+      :responses {200 {:body (get-schema :collections-schema)}
                   406 {:body s/Any}}}}]
 
    ["collection/:collection_id"
@@ -222,7 +222,7 @@
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body (get-schema ::collections-schema)}
+           :responses {200 {:body (get-schema :collections-schema)}
                        404 {:body s/Any}
                        422 {:body s/Any}}}
 
@@ -235,7 +235,8 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}
                         :body schema_collection-update}
-           :responses {;200 {:body (get-schema ::collections-schema)} ;; TODO: fixme
+           :responses {
+                       ;200 {:body (get-schema :collections-schema)} ;; TODO: fixme
                        200 {:body s/Any}
                        404 {:body s/Any}
                        422 {:body s/Any}}}
@@ -250,7 +251,7 @@
                         :consumes "application/json"}
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid}}
-              :responses {200 {:body (get-schema ::collections-schema)}
+              :responses {200 {:body (get-schema :collections-schema)}
                           404 {:body s/Any}
                           422 {:body s/Any}}}}]])
 

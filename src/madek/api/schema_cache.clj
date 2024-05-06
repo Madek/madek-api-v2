@@ -34,9 +34,18 @@
 
 (defn get-enum [key & [default]]
 
-  (println ">oo> get-enum.key=" key)
+  (let [
+        val (get @enum-cache key default)
+        p (println ">o> key=" key)
+        p (println ">o> val=" val)
+        p (println ">o> default=" default)
 
-  (pr key (get @enum-cache key default)))
+        ] val)
+
+  ;(println ">oo> get-enum.key=" key)
+
+  ;(pr key (get @enum-cache key default))
+  )
 
 
 (defn set-enum [key value]
@@ -45,7 +54,20 @@
 
 
 (defn get-schema [key & [default]]
-  (pr key (get @schema-cache key default)))
+
+  (let [
+        val (get @schema-cache key default)
+        val2 (get @schema-cache (name key) default)
+        p (println ">o>s key=" key)
+        p (println ">o>s val=" val)
+        p (println ">o>s val2=" val2)
+        p (println ">o>s default=" default)
+
+        ] val)
+
+  ;(pr key (get @schema-cache key default))
+
+  )
 
 (defn set-schema [key value]
   (swap! schema-cache assoc key value))
@@ -211,22 +233,27 @@
 (defn type-mapping-enums [key]
 
   (let [
-p (println ">o> !!1 type-mapping-enums.key=" key)
-        enum-map (map {"collections.default_resource_type" (get-enum :collections_default_resource_type)
-             "collections.layout" (get-enum :collections_layout)
-             "collections.sorting" (get-enum :collections_sorting)
+        p (println ">o> !!1 type-mapping-enums.key=" key)
+        enum-map {"collections.default_resource_type" (get-enum :collections_default_resource_type)
+                       "collections.layout" (get-enum :collections_layout)
+                       "collections.sorting" (get-enum :collections_sorting)
 
-             })
+                       }
 
-        res     (if (contains? enum-map key)
-                  (get enum-map key)
-                  nil)
+        p (println ">o> akey=" key)
+        ;p (println ">o> akeys=" (keys enum-map))
+
+        res (get enum-map key nil)
+
+        ;res (if (contains? enum-map key)
+        ;      (get enum-map key)
+        ;      nil)
 
         p (println ">o> !!1 res=" res)
 
         ]
 
-res
+    res
     )
 
   )
@@ -278,12 +305,19 @@ res
 
                  _ (println ">o> type/type-mapping=" data_type "|" (type-mapping data_type))
                  type-mapping-res (type-mapping data_type)
-                 type-mapping-enums-res (type-mapping-enums (str table-name "." column_name))
+
+
+                 type-mapping-key (str table-name "." column_name)
+                 p (println ">o> type-mapping-key=" type-mapping-key)
+
+
+                 type-mapping-enums-res (type-mapping-enums type-mapping-key)
 
                  ;; TODO: bug, mapping cant be found
 
                  p (println ">o> ?? type-mapping-res=" type-mapping-res)
                  p (println ">o> ?? type-mapping-enums=" type-mapping-enums-res)
+                 p (println ">o> ?? is_nullable=YES ??" (= is_nullable "YES"))
                  p (println ">o> ?? type-mapping-enums.key=" (str table-name "." column_name))
 
                  ;valueSection (cond (str/starts-with? data_type "enum::") (get-enum (keyword (str/replace data_type #"enum::" "")))
@@ -293,15 +327,25 @@ res
                                                                     (type-mapping data_type)
                                                                     )
 
+                                    ;(not (nil? type-mapping-enums-res)) (if (= is_nullable "YES")
+                                    ;                                      (s/maybe (type-mapping-enums-res))
+                                    ;                                      (type-mapping-enums-res))
+
                                     (not (nil? type-mapping-enums-res)) (if (= is_nullable "YES")
-                                                                          (s/maybe (type-mapping-enums-res))
-                                                                          (type-mapping-enums-res))
+                                                                          (s/maybe type-mapping-enums-res)
+                                                                          type-mapping-enums-res)
+
+                                    ;(not (nil? type-mapping-enums-res)) (s/Any)
 
                                     :else
                                     (do
                                       ;(error ">o> ERROR: no valid type-mapping found for column= >" column_name "< data_type= >" data_type "<, add definition to schema_cache.type-mapping\nDefault <s/Any> used.\"")
                                       (println ">o> ERROR: no valid type-mapping found for:\n\tcolumn: >" column_name "< \n\ttable-name= >" table-name "<\n\tdata_type= >" data_type "<\n add definition to schema_cache.type-mapping\nDefault <s/Any> used.")
                                       s/Any))
+
+
+                 p (println ">o> !! postgres-cfg-to-schema.result=" {keySection valueSection})
+
                  ]
              {keySection valueSection}
              ))
@@ -461,13 +505,18 @@ res
 
 (defn create-schema-by-data
   ([table-name table-meta-raw] "Prepare schema for a table."
+         (println ">o> table-name3=" table-name)
+         ;(println ">o> table-name3.raw=" table-meta-raw)
    (create-schema-by-data table-name table-meta-raw [] [] [] []))
 
   ([table-name table-meta-raw additional-schema-list-raw] "Prepare schema for a table."
+         (println ">o> table-name2=" table-name)
    (create-schema-by-data table-name table-meta-raw additional-schema-list-raw [] [] []))
 
   ([table-name table-meta-raw additional-schema-list-raw blacklist-key-names update-schema-list-raw whitelist-key-names] "Prepare schema for a table."
+         (println ">o> table-name1=" table-name)
    (let [
+
          res table-meta-raw
 
          ; remove all entries which are not in the whitelist by column_name
@@ -519,7 +568,7 @@ res
         ;; :groups-schema-with-pagination
         additional-schema-list-raw (concat schema_pagination_raw schema_full_data_raw)
         p (println ">o> debug1")
-        res (set-schema :groups-schema-with-pagination (create-schema-by-data groups-meta-raw additional-schema-list-raw))
+        res (set-schema :groups-schema-with-pagination (create-schema-by-data "groups" groups-meta-raw additional-schema-list-raw))
 
         ;; :groups-schema-response
         update-schema-list-raw [{:column_name "id", :data_type "uuid" :is_nullable "NO" :required true}]
@@ -611,7 +660,7 @@ res
                              "public_get_metadata_and_previews"]
 
         additional-order [
-                          {:column_name "order", :data_type "enum::collection_sorting"}
+                          {:column_name "order", :data_type "enum::collections_sorting"}
                           {:column_name "me_get_metadata_and_previews", :data_type "boolean"}
                           {:column_name "me_edit_permission", :data_type "boolean"}
                           {:column_name "me_edit_metadata_and_relations", :data_type "boolean"}
@@ -630,7 +679,7 @@ res
                              ]
 
         additional-order [
-                          {:column_name "order", :data_type "enum::collection_sorting"}
+                          {:column_name "order", :data_type "enum::collections_sorting"}
                           {:column_name "me_get_metadata_and_previews", :data_type "boolean"}
                           {:column_name "me_edit_permission", :data_type "boolean"}
                           {:column_name "me_edit_metadata_and_relations", :data_type "boolean"}
@@ -694,11 +743,11 @@ res
         _ (set-enum :collections_layout (create-enum-spec "collection_layout"))
         _ (set-enum :collections_default_resource_type (create-enum-spec "collection_default_resource_type"))
 
-        te_pr (println ">o> 11??=" (get-enum :collections_sorting))
-        te_pr (println ">o> 11??=" (get-enum :collections_layout))
-        te_pr (println ">o> 11??=" (get-enum :collections_default_resource_type))
+        te_pr (println ">o> 11??=" :collections_sorting (get-enum :collections_sorting))
+        te_pr (println ">o> 11??=" :collections_layout (get-enum :collections_layout))
+        te_pr (println ">o> 11??=" :collections_default_resource_type (get-enum :collections_default_resource_type))
 
-        ;; TODO: revise db-ddl to use enum
+        ;;; TODO: revise db-ddl to use enum
         _ (set-enum :groups.type (s/enum "AuthenticationGroup" "InstitutionalGroup" "Group"))
 
         _ (create-groups-schema)
