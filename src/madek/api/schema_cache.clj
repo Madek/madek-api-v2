@@ -710,11 +710,10 @@
         _ (set-schema :app-settings-schema-raw collections-meta-raw)
         _ (set-schema :app-settings-schema (create-schema-by-data db-table collections-meta-raw))
 
-        p (println ">o> >>> create-app-settings-schema >>> " (get-schema :app-settings-schema))
-
-
         _ (set-schema :app-settings-schema-all (create-schema-by-data db-table collections-meta-raw [] [] [] []))
-        _ (set-schema :app-settings-schema-min (create-schema-by-data db-table collections-meta-raw [] [] [] ["created_at" "id" "updated_at" "users_active_until_ui_default"]))
+        _ (set-schema :app-settings-schema-min (create-schema-by-data db-table collections-meta-raw [] ["created_at" "id" "updated_at" "users_active_until_ui_default"] [] [] ))
+
+        p (println ">o> >>> create-app-settings-schema >>> " (get-schema :app-settings-schema-min))
         ]))
 
 
