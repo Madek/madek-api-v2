@@ -230,13 +230,30 @@
 ;te_pr (println ">o> 11??=" (get-enum :collections_layout))
 ;;te_pr (println ">o> 11??=" (get-enum :collections_default_resource_type))
 
-(defn type-mapping-enums [key]
+(defn type-mapping-enums [key] "Maps a <table>.<key> to a Spec type."
 
   (let [
+        schema-de-en {(s/optional-key :de) (s/maybe s/Str)
+                        (s/optional-key :en) (s/maybe s/Str)}
+
+
         p (println ">o> !!1 type-mapping-enums.key=" key)
         enum-map {"collections.default_resource_type" (get-enum :collections_default_resource_type)
                   "collections.layout" (get-enum :collections_layout)
                   "collections.sorting" (get-enum :collections_sorting)
+
+
+                  "app_settings.about_pages" schema-de-en
+                  "app_settings.brand_texts" schema-de-en
+                  "app_settings.catalog_subtitles" schema-de-en
+                  "app_settings.catalog_titles" schema-de-en
+                  "app_settings.featured_set_subtitles" schema-de-en
+                  "app_settings.featured_set_titles" schema-de-en
+                  "app_settings.provenance_notices" schema-de-en
+                  "app_settings.site_titles" schema-de-en
+                  "app_settings.support_urls" schema-de-en
+                  "app_settings.welcome_texts" schema-de-en
+                  "app_settings.welcome_titles" schema-de-en
 
                   }
 
@@ -327,15 +344,9 @@
                                                                     (type-mapping data_type)
                                                                     )
 
-                                    ;(not (nil? type-mapping-enums-res)) (if (= is_nullable "YES")
-                                    ;                                      (s/maybe (type-mapping-enums-res))
-                                    ;                                      (type-mapping-enums-res))
-
                                     (not (nil? type-mapping-enums-res)) (if (= is_nullable "YES")
                                                                           (s/maybe type-mapping-enums-res)
                                                                           type-mapping-enums-res)
-
-                                    ;(not (nil? type-mapping-enums-res)) (s/Any)
 
                                     :else
                                     (do
@@ -689,6 +700,23 @@
         _ (set-schema :collections-schema-collection-arcs-min (create-schema-by-data db-table collections-meta-raw [] [] [] ["highlight" "order" "position"]))
         ]))
 
+(defn create-app-settings-schema []
+  (let [
+        db-table "app_settings"
+
+        ;; :workflows-schema-raw
+        collections-meta-raw (fetch-table-meta-raw db-table [])
+        p (println ">o> collection_collection_arcs=" collections-meta-raw)
+        _ (set-schema :app-settings-schema-raw collections-meta-raw)
+        _ (set-schema :app-settings-schema (create-schema-by-data db-table collections-meta-raw))
+
+        p (println ">o> >>> create-app-settings-schema >>> " (get-schema :app-settings-schema))
+
+
+        _ (set-schema :app-settings-schema-all (create-schema-by-data db-table collections-meta-raw [] [] [] []))
+        _ (set-schema :app-settings-schema-min (create-schema-by-data db-table collections-meta-raw [] [] [] ["created_at" "id" "updated_at" "users_active_until_ui_default"]))
+        ]))
+
 
 (comment
   (let [
@@ -737,6 +765,9 @@
         _ (set-enum :collections_layout (create-enum-spec "collection_layout"))
         _ (set-enum :collections_default_resource_type (create-enum-spec "collection_default_resource_type"))
 
+
+
+
         te_pr (println ">o> 11??=" :collections_sorting (get-enum :collections_sorting))
         te_pr (println ">o> 11??=" :collections_layout (get-enum :collections_layout))
         te_pr (println ">o> 11??=" :collections_default_resource_type (get-enum :collections_default_resource_type))
@@ -751,6 +782,7 @@
         _ (create-collections-schema)
         _ (create-collection-media-entry-schema)
         _ (create-collection-collection-arcs-schema)
+        _ (create-app-settings-schema)
 
         ]))
 
