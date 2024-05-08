@@ -168,7 +168,8 @@
                          sd/ring-wrap-authorization-edit-permissions]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Uuid}
-                         :body schema_import_conf_link}
+                         ;:body schema_import_conf_link}
+                         :body (get-schema :confidential-links-schema-min)}
             ;:responses {200 {:body schema_export_conf_link}
             :responses {200 {:body (get-schema :confidential-links-schema-all)}
                         406 {:body s/Any}}}
@@ -203,7 +204,8 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid
                                :id s/Uuid}
-                        :body schema_update_conf_link}
+                        ;:body schema_update_conf_link}
+                        :body (get-schema :confidential-links-schema-min)}
            ;:responses {200 {:body schema_export_conf_link}
            :responses {200 {:body (get-schema :confidential-links-schema-all)}
                        404 {:body s/Any}
@@ -231,7 +233,8 @@
                          sd/ring-wrap-authorization-edit-permissions]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Uuid}
-                         :body schema_import_conf_link}
+                         ;:body schema_import_conf_link}
+                         :body (get-schema :confidential-links-schema-min)}
             ;:responses {200 {:body schema_export_conf_link}
             :responses {200 {:body (get-schema :confidential-links-schema-all)}
                         406 {:body s/Any}}}
@@ -265,7 +268,8 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid
                                :id s/Uuid}
-                        :body schema_update_conf_link}
+                        ;:body schema_update_conf_link}
+                        :body (get-schema :confidential-links-schema-min)}
            :responses {200 {:body (get-schema :confidential-links-schema-all)}
            ;:responses {200 {:body schema_export_conf_link}
                        404 {:body s/Any}
