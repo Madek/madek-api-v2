@@ -716,6 +716,22 @@
         p (println ">o> >>> create-app-settings-schema >>> " (get-schema :app-settings-schema-min))
         ]))
 
+(defn create-confidential-links-schema []
+  (let [
+        db-table "confidential_links"
+
+        ;; :workflows-schema-raw
+        confidential-links-raw (fetch-table-meta-raw db-table [])
+        p (println ">o> confidential_links=" confidential-links-raw)
+        _ (set-schema :confidential-links-schema-raw confidential-links-raw)
+        _ (set-schema :confidential-links-schema (create-schema-by-data db-table confidential-links-raw))
+
+        _ (set-schema :confidential-links-schema-all (create-schema-by-data db-table confidential-links-raw [] [] [] []))
+        _ (set-schema :confidential-links-schema-min (create-schema-by-data db-table confidential-links-raw [] [] [] ["revoked" "description" "expires_at"]  ))
+
+        p (println ">o> >>> create-app-settings-schema >>> " (get-schema :app-settings-schema-min))
+        ]))
+
 
 (comment
   (let [
@@ -782,6 +798,7 @@
         _ (create-collection-media-entry-schema)
         _ (create-collection-collection-arcs-schema)
         _ (create-app-settings-schema)
+        _ (create-confidential-links-schema)
 
         ]))
 
