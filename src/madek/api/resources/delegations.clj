@@ -2,8 +2,8 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [logbug.catcher :as catcher]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -13,7 +13,7 @@
   [req]
   (let [full-data (= "true" (get (-> req :query-params) "full-data"))
         qd (if (true? full-data) :* :delegations.id)
-        db-result (sd/query-find-all :delegations qd (:tx req))]
+        db-result (dbh/query-find-all :delegations qd (:tx req))]
     ;(info "handle_list-delegation" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -40,7 +40,7 @@
         id (-> req :parameters :path :id)
         dwid (assoc data :id id)
         old-data (-> req :delegation)
-        upd-query (sd/sql-update-clause "id" (str id))
+        upd-query (dbh/sql-update-clause "id" (str id))
         tx (:tx req)
         sql-query (-> (sql/update :delegations)
                       (sql/set dwid)
@@ -52,7 +52,7 @@
           "\nupd-query\n" upd-query)
 
     (if-let [ins-res (first (jdbc/execute! tx sql-query))]
-      (let [new-data (sd/query-eq-find-one :delegations :id id tx)]
+      (let [new-data (dbh/query-eq-find-one :delegations :id id tx)]
         (info "handle_update-delegations:" "\nnew-data\n" new-data)
         (sd/response_ok new-data))
       (sd/response_failed "Could not update delegation." 406))))
@@ -66,7 +66,7 @@
                       (sql/returning :*)
                       sql-format)]
     (try
-      (if (sd/query-eq-find-one :delegation :id id tx)
+      (if (dbh/query-eq-find-one :delegation :id id tx)
         (if (jdbc/execute-one! tx sql-query)
           (sd/response_ok delegation)
           (sd/response_failed "Could not delete delegation." 406))
@@ -132,7 +132,7 @@
                                    :type "boolean"}]}
            :responses {200 {:body [schema_get_delegations]}}}}]
 
-; edit delegation
+   ; edit delegation
    ["/:id"
     {:get {:summary (sd/sum_adm "Get delegations by id.")
            :handler handle_get-delegation

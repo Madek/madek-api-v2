@@ -2,11 +2,11 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.common :refer [find-user-by-uid wrap-find-user]]
    [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [f t]]
+   [madek.api.utils.helper]
    [madek.api.utils.helper :refer [mslurp]]
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]

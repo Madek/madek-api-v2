@@ -1,10 +1,10 @@
 (ns madek.api.resources.users.get
   (:require
    [clojure.data.json :as json]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.common :refer [wrap-find-user]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.validation :refer [vector-or-hashmap-validation]]
+   [madek.api.utils.validation :as v]
    [reitit.coercion.schema]
    [schema.core :as s]))
 
@@ -41,7 +41,7 @@
    :person_id s/Uuid
 
    ;:settings (s/with-fn-validation valid-json? s/Str) ;; Validate settings as JSON ;; broken
-   (s/optional-key :settings) vector-or-hashmap-validation
+   (s/optional-key :settings) v/vector-or-hashmap-validation
 
    :updated_at s/Any})
 

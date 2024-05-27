@@ -3,11 +3,10 @@
    [clj-uuid :as uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.common :refer [wrap-find-user]]
    [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))

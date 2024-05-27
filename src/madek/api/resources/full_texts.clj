@@ -3,9 +3,10 @@
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.core :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-            [madek.api.utils.helper :refer [t]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -20,8 +21,8 @@
                      (sql/select :media_resource_id))
         db-query (-> base-query
                      (sql/from :full_texts)
-                     (sd/build-query-param query-params :media_resource_id)
-                     (sd/build-query-param-like query-params :text)
+                     (dbh/build-query-param query-params :media_resource_id)
+                     (dbh/build-query-param-like query-params :text)
                      (pagination/add-offset-for-honeysql query-params)
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)]
@@ -177,8 +178,8 @@
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}}
-            :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-metadata
+            :middleware [jqh/ring-wrap-add-media-resource
+                         jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]}
 
       :post {:summary (sd/sum_usr "Create full_text for collection")
@@ -188,23 +189,23 @@
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:collection_id s/Str}
                           :body {:text s/Str}}
-             :middleware [sd/ring-wrap-add-media-resource
-                          sd/ring-wrap-authorization-edit-metadata]}
+             :middleware [jqh/ring-wrap-add-media-resource
+                          jqh/ring-wrap-authorization-edit-metadata]}
 
       :put {:summary (sd/sum_usr "Update full_text for collection.")
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}
                          :body {:text s/Str}}
-            :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-metadata
+            :middleware [jqh/ring-wrap-add-media-resource
+                         jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
                :coercion reitit.coercion.schema/coercion
                :parameters {:path {:collection_id s/Str}}
-               :middleware [sd/ring-wrap-add-media-resource
-                            sd/ring-wrap-authorization-edit-metadata
+               :middleware [jqh/ring-wrap-add-media-resource
+                            jqh/ring-wrap-authorization-edit-metadata
                             (wrap-find-full_text :collection_id true)]
                :handler handle_delete-full_texts}}]]])
 
@@ -217,8 +218,8 @@
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str}}
-            :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-view
+            :middleware [jqh/ring-wrap-add-media-resource
+                         jqh/ring-wrap-authorization-view
                          (wrap-find-full_text :media_entry_id true)]}
 
       :post {:summary (sd/sum_usr "Create full_text for collection")
@@ -228,22 +229,22 @@
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:media_entry_id s/Str}
                           :body {:text s/Str}}
-             :middleware [sd/ring-wrap-add-media-resource
-                          sd/ring-wrap-authorization-edit-metadata]}
+             :middleware [jqh/ring-wrap-add-media-resource
+                          jqh/ring-wrap-authorization-edit-metadata]}
 
       :put {:summary (sd/sum_usr "Update full_text for collection.")
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str}
                          :body {:text s/Str}}
-            :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-metadata
+            :middleware [jqh/ring-wrap-add-media-resource
+                         jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :media_entry_id true)]
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
                :coercion reitit.coercion.schema/coercion
                :parameters {:path {:media_entry_id s/Str}}
-               :middleware [sd/ring-wrap-add-media-resource
-                            sd/ring-wrap-authorization-edit-metadata
+               :middleware [jqh/ring-wrap-add-media-resource
+                            jqh/ring-wrap-authorization-edit-metadata
                             (wrap-find-full_text :media_entry_id true)]
                :handler handle_delete-full_texts}}]]])

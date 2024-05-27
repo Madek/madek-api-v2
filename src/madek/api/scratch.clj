@@ -9,4 +9,3 @@
 ;(cheshire.core/parse-string "902adaaa")
 ;(cheshire.core/parse-string "[0xabad1dea]")
 ;(clojure.data.json/read-str "[0xabad1dea]")
-

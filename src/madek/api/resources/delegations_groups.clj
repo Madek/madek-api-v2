@@ -2,7 +2,8 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -32,7 +33,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         group-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all :delegations_groups :group_id group-id (:tx req))
+        db-result (dbh/query-eq-find-all :delegations_groups :group_id group-id (:tx req))
         id-set (map :delegation_id db-result)]
     (info "handle_list-delegations_group" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:delegation_ids id-set})

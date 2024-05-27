@@ -4,8 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :refer [add-offset-for-honeysql]]
-   [madek.api.resources.shared]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
@@ -20,10 +19,10 @@
       [:or
        [:= perm-kw true]
        [:in :vocabularies.id vocabulary-ids]])))
-      ;[:= :vocabularies.enabled_for_public_view true]
-      ;[:or
-      ;  [:= :vocabularies.enabled_for_public_view true]
-      ;  [:in :vocabularies.id vocabulary-ids]])))
+;[:= :vocabularies.enabled_for_public_view true]
+;[:or
+;  [:= :vocabularies.enabled_for_public_view true]
+;  [:in :vocabularies.id vocabulary-ids]])))
 
 (defn- base-query
   [user-id scope tx]
@@ -47,11 +46,11 @@
         scope (or (:scope qparams) "view")
         user-id (-> request :authenticated-entity :id)]
     (-> (base-query user-id scope tx)
-        (sd/build-query-param qparams :vocabulary_id)
-        (sd/build-query-param-like qparams :id :meta_keys.id)
-        (sd/build-query-param qparams :meta_datum_object_type)
-        (sd/build-query-param qparams :is_enabled_for_collections)
-        (sd/build-query-param qparams :is_enabled_for_media_entries)
+        (dbh/build-query-param qparams :vocabulary_id)
+        (dbh/build-query-param-like qparams :id :meta_keys.id)
+        (dbh/build-query-param qparams :meta_datum_object_type)
+        (dbh/build-query-param qparams :is_enabled_for_collections)
+        (dbh/build-query-param qparams :is_enabled_for_media_entries)
         (sql/order-by :meta_keys.id)
         (add-offset-for-honeysql pagination-params)
         sql-format)))

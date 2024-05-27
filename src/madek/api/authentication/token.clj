@@ -3,7 +3,7 @@
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [next.jdbc :as jdbc]
    [pandect.algo.sha256 :as algo.sha256])
   (:import

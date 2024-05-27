@@ -38,4 +38,3 @@
 
 ;(macroexpand-1 '(defdeamon "blah" 10 (info "looping ...")))
 ;(macroexpand-1 '(define "blah"  10 (info "looping ...")))
-

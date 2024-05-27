@@ -9,7 +9,9 @@
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.core :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -52,10 +54,10 @@
 
 (defn- get-context-keys-4-context [contextId tx]
   (map :meta_key_id
-       (sd/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
+       (dbh/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
 
 (defn- check-has-meta-data-for-context-key [meId mkId tx]
-  (let [md (sd/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId tx)
+  (let [md (dbh/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId tx)
         hasMD (not (nil? md))
         result {(keyword mkId) hasMD}]
     result))
@@ -66,7 +68,7 @@
    In that case, the is_publishable of the entry is set to true."
   (let [eid (-> req :parameters :path :media_entry_id)
         tx (:tx req)
-        validationContexts (-> (sd/query-find-all :app_settings :contexts_for_entry_validation tx)
+        validationContexts (-> (dbh/query-find-all :app_settings :contexts_for_entry_validation tx)
                                first
                                :contexts_for_entry_validation)
         contextKeys (first (map get-context-keys-4-context validationContexts))
@@ -96,7 +98,7 @@
               "\n dresult: \n" dresult)
 
         (if (= 1 (::jdbc/update-count dresult))
-          (sd/response_ok (sd/query-eq-find-one :media_entries :id eid tx))
+          (sd/response_ok (dbh/query-eq-find-one :media_entries :id eid tx))
           (sd/response_failed "Could not update publish on media_entry." 406)))
 
       (sd/response_failed {:is_publishable publishable
@@ -138,19 +140,19 @@
     (io/copy (io/file temp-path) (io/file store-location))
     (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)})))
 
-    ; We dont do add meta-data or collection.
-    ; This is done via front-end.
-    ;(me_add-default-license new-mer)
-    ;(me_exract-and-store-metadata new-mer)
-    ;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
-    ;(if-let [collection (sd/query-eq-find-one "collections" "id" collection-id)]
-    ;  (if-let [add-col-res (collection-media-entry-arcs/create-col-me-arc collection-id (:id media-entry) {} tx)]
-    ;    (info "handle_uploaded_file_resp_ok: added to collection: " collection-id "\nresult\n" add-col-res)
-    ;    (error "Failed: handle_uploaded_file_resp_ok: add to collection: " collection-id))
-    ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file :collection_id collection-id)})
-    ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)}))
+; We dont do add meta-data or collection.
+; This is done via front-end.
+;(me_add-default-license new-mer)
+;(me_exract-and-store-metadata new-mer)
+;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
+;(if-let [collection (dbh/query-eq-find-one "collections" "id" collection-id)]
+;  (if-let [add-col-res (collection-media-entry-arcs/create-col-me-arc collection-id (:id media-entry) {} tx)]
+;    (info "handle_uploaded_file_resp_ok: added to collection: " collection-id "\nresult\n" add-col-res)
+;    (error "Failed: handle_uploaded_file_resp_ok: add to collection: " collection-id))
+;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file :collection_id collection-id)})
+;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)}))
 
-  ;))
+;))
 
 (defn create-media_entry
   "Only for testing. Does not trigger media convert. So previews are missing."
@@ -354,7 +356,7 @@
       :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry
-      :middleware [sd/ring-wrap-parse-json-query-parameters]
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
       :responses {200 {:body s/Any}
@@ -365,7 +367,7 @@
       :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry-related-data
-      :middleware [sd/ring-wrap-parse-json-query-parameters]
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
       :responses {200 {:body schema_query_media_entries_related_result}}}}]])
@@ -395,8 +397,8 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
 
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-view]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
            :responses {200 {:body s/Any}
@@ -408,8 +410,8 @@
               :swagger {:produces "application/json"}
               :content-type "application/json"
 
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
+              :middleware [jqh/ring-wrap-add-media-resource
+                           jqh/ring-wrap-authorization-edit-permissions]
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:media_entry_id s/Uuid}}}}]
 
@@ -419,8 +421,8 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
 
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
            :responses {200 {:body schema_export_media_entry}

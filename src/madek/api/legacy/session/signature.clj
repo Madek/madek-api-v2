@@ -34,5 +34,3 @@
 (defn validate! [signature secret message]
   (when-not (valid? signature secret message)
     (throw (IllegalStateException. "Signature validation failed!"))))
-
-

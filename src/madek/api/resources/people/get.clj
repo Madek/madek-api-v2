@@ -2,8 +2,7 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [madek.api.resources.people.common :refer [person-query]]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [t]]
+   [madek.api.resources.shared.core :as sd]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]

@@ -5,9 +5,10 @@
             [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
             [madek.api.resources.groups.users :as group-users]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.core :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-            [madek.api.utils.helper :refer [convert-groupid f mslurp t]]
+            [madek.api.utils.helper :refer [convert-groupid f mslurp]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -80,14 +81,14 @@
           (sql/select :id))
         (sql/from :groups)
         (sql/order-by [:id :asc])
-        (sd/build-query-param query-params :id)
-        (sd/build-query-param query-params :institutional_id)
-        (sd/build-query-param query-params :type)
-        (sd/build-query-param query-params :created_by_user_id)
-        (sd/build-query-param-like query-params :name)
-        (sd/build-query-param-like query-params :institutional_name)
-        (sd/build-query-param-like query-params :institution)
-        (sd/build-query-param-like query-params :searchable)
+        (dbh/build-query-param query-params :id)
+        (dbh/build-query-param query-params :institutional_id)
+        (dbh/build-query-param query-params :type)
+        (dbh/build-query-param query-params :created_by_user_id)
+        (dbh/build-query-param-like query-params :name)
+        (dbh/build-query-param-like query-params :institutional_name)
+        (dbh/build-query-param-like query-params :institution)
+        (dbh/build-query-param-like query-params :searchable)
         (pagination/add-offset-for-honeysql query-params)
         sql-format)))
 

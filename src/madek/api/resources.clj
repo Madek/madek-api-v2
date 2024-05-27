@@ -30,7 +30,7 @@
    [madek.api.resources.permissions :as permissions]
    [madek.api.resources.previews :as previews]
    [madek.api.resources.roles :as roles]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.static-pages :as static-pages]
    [madek.api.resources.usage-terms :as usage-terms]
    [madek.api.resources.users.main :as users]

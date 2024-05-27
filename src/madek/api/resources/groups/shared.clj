@@ -26,4 +26,3 @@
 
 (defn find-group [id tx]
   (jdbc/execute-one! tx (find-group-sql id)))
-

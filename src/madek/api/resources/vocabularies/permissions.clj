@@ -4,7 +4,8 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -74,19 +75,19 @@
 (defn handle_list-vocab-user-perms [req]
   (let [id (-> req :path-params :id)
         tx (:tx req)
-        result (sd/query-eq-find-all
+        result (dbh/query-eq-find-all
                 :vocabulary_user_permissions
                 :vocabulary_id id tx)]
     (sd/response_ok result
-     ;{:vocabulary_id id
-     ; :vocabulary_user_permissions result}
+      ;{:vocabulary_id id
+      ; :vocabulary_user_permissions result}
                     )))
 
 (defn handle_get-vocab-user-perms [req]
   (let [id (-> req :parameters :path :id)
         tx (:tx req)
         uid (-> req :parameters :path :user_id)]
-    (if-let [result (sd/query-eq-find-one
+    (if-let [result (dbh/query-eq-find-one
                      :vocabulary_user_permissions
                      :vocabulary_id id
                      :user_id uid
@@ -138,11 +139,11 @@
       (let [vid (-> req :parameters :path :id)
             uid (to-uuid (-> req :parameters :path :user_id))
             tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one
+        (if-let [old-data (dbh/query-eq-find-one
                            :vocabulary_user_permissions
                            :vocabulary_id vid
                            :user_id uid tx)]
-          (let [del-clause (sd/sql-update-clause "vocabulary_id" vid "user_id" uid)
+          (let [del-clause (dbh/sql-update-clause "vocabulary_id" vid "user_id" uid)
                 query (-> (sql/delete-from :vocabulary_user_permissions)
                           (sql/where [:= :vocabulary_id vid] [:= :user_id uid])
                           sql-format)
@@ -156,7 +157,7 @@
 (defn handle_list-vocab-group-perms [req]
   (let [id (-> req :path-params :id)
         tx (:tx req)
-        result (sd/query-eq-find-all
+        result (dbh/query-eq-find-all
                 :vocabulary_group_permissions
                 :vocabulary_id id tx)]
     (sd/response_ok result)))
@@ -165,7 +166,7 @@
   (let [id (-> req :parameters :path :id)
         tx (:tx req)
         gid (-> req :parameters :path :group_id)]
-    (if-let [result (sd/query-eq-find-one
+    (if-let [result (dbh/query-eq-find-one
                      :vocabulary_group_permissions
                      :vocabulary_id id
                      :group_id gid tx)]
@@ -198,7 +199,7 @@
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
             tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one
+        (if-let [old-data (dbh/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
                            :group_id gid tx)]
@@ -221,7 +222,7 @@
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
             tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one
+        (if-let [old-data (dbh/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
                            :group_id gid tx)]
@@ -239,13 +240,13 @@
 (defn handle_list-vocab-perms [req]
   (let [id (-> req :parameters :path :id)
         tx (:tx req)
-        resource-perms (sd/query-eq-find-one :vocabularies :id id tx)]
+        resource-perms (dbh/query-eq-find-one :vocabularies :id id tx)]
 
     ;; Early exit if resource-perms is nil
     (if (nil? resource-perms)
       (sd/response_failed "No such vocabulary." 404)
-      (let [user-perms (sd/query-eq-find-all :vocabulary_user_permissions :vocabulary_id id tx)
-            group-perms (sd/query-eq-find-all :vocabulary_group_permissions :vocabulary_id id tx)
+      (let [user-perms (dbh/query-eq-find-all :vocabulary_user_permissions :vocabulary_id id tx)
+            group-perms (dbh/query-eq-find-all :vocabulary_group_permissions :vocabulary_id id tx)
             result {:vocabulary (select-keys resource-perms [:id :enabled_for_public_view :enabled_for_public_use])
                     :users user-perms
                     :groups group-perms}]

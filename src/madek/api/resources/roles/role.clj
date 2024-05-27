@@ -4,7 +4,8 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
@@ -101,7 +102,7 @@
 
         (if upd-result
           (sd/response_ok (transform-ml-role
-                           (sd/query-eq-find-one :roles :id id tx)))
+                           (dbh/query-eq-find-one :roles :id id tx)))
           (sd/response_failed "Could not update role." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -111,7 +112,7 @@
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)
             tx (:tx req)]
-        (if-let [role (sd/query-eq-find-one :roles :id id tx)]
+        (if-let [role (dbh/query-eq-find-one :roles :id id tx)]
           (let [delete-stmt (-> (sql/delete-from :roles)
                                 (sql/where [:= :id id])
                                 (sql/returning :*)

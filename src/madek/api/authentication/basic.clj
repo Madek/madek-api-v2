@@ -7,7 +7,7 @@
    [honey.sql.helpers :as sql]
    [inflections.core :refer :all]
    [madek.api.authentication.token :as token-authentication]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [debug warn]])
   (:import

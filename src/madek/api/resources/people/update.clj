@@ -6,7 +6,7 @@
    [madek.api.resources.people.common :refer [find-person-by-uid]]
    [madek.api.resources.people.create :as create]
    [madek.api.resources.people.get :as get-person]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]
@@ -55,4 +55,3 @@
                409 {:description "Conflict."
                     :schema s/Str
                     :examples {"application/json" {:message "Update of person failed"}}}}})
-

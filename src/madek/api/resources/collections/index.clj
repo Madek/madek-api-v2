@@ -5,7 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [next.jdbc :as jdbc]))
 
 ;### collection_id ############################################################
@@ -38,8 +38,8 @@
         full_data (= true (:full_data query-params))
         sql-query (-> (base-query full_data)
                       (set-order query-params)
-                      (sd/build-query-param query-params :creator_id)
-                      (sd/build-query-param query-params :responsible_user_id)
+                      (dbh/build-query-param query-params :creator_id)
+                      (dbh/build-query-param query-params :responsible_user_id)
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params
                                                           authenticated-entity)

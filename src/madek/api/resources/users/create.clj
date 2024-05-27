@@ -2,12 +2,11 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [convert-map-if-exist]]
-   [madek.api.utils.helper :refer [convert-map-if-exist f t]]
    [madek.api.utils.helper :refer [mslurp]]
-   [madek.api.utils.validation :refer [email-validation vector-or-hashmap-validation]]
+   [madek.api.utils.validation :as v]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -34,7 +33,7 @@
 (def schema
   {:person_id s/Uuid
    (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid)
-   (s/optional-key :email) email-validation
+   (s/optional-key :email) v/email-validation
    (s/optional-key :first_name) s/Str
    (s/optional-key :institution) s/Str
    (s/optional-key :institutional_id) s/Str
@@ -43,7 +42,7 @@
    (s/optional-key :notes) (s/maybe s/Str)
 
    ;(s/optional-key :settings) json-and-json-str-validation
-   (s/optional-key :settings) vector-or-hashmap-validation})
+   (s/optional-key :settings) v/vector-or-hashmap-validation})
 
 ;; post /users
 (def route

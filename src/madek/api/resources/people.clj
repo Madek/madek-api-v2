@@ -2,12 +2,9 @@
   (:require [clj-uuid]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
-            [madek.api.resources.shared :as sd]
-            [next.jdbc :as jdbc]
-            [reitit.coercion.schema]
-            [schema.core :as s]))
+            [madek.api.resources.shared.db_helper :as dbh]
+            [reitit.coercion.schema]))
 
 ; TODO clean code
 ;(defn transform_export [person]
@@ -71,13 +68,13 @@
   (let [full-data (-> query-params :full_data)]
     (->
      (sql-base-query full-data)
-     (sd/build-query-param-like query-params :searchable)
-     (sd/build-query-param-like query-params :description)
-     (sd/build-query-param-like query-params :institutional_id)
-     (sd/build-query-param-like query-params :pseudonym)
-     (sd/build-query-param-like query-params :first_name)
-     (sd/build-query-param-like query-params :last_name)
-     (sd/build-query-param query-params :subtype)
+     (dbh/build-query-param-like query-params :searchable)
+     (dbh/build-query-param-like query-params :description)
+     (dbh/build-query-param-like query-params :institutional_id)
+     (dbh/build-query-param-like query-params :pseudonym)
+     (dbh/build-query-param-like query-params :first_name)
+     (dbh/build-query-param-like query-params :last_name)
+     (dbh/build-query-param query-params :subtype)
      (pagination/add-offset-for-honeysql query-params)
      sql-format)))
 

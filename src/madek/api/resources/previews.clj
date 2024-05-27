@@ -3,7 +3,9 @@
    [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.previews.preview :as preview]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -13,7 +15,7 @@
   ([request handler]
    (when-let [preview-id (-> request :parameters :path :preview_id)]
      (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id)
-     (when-let [preview (first (sd/query-eq-find-all :previews :id preview-id (:tx request)))]
+     (when-let [preview (first (dbh/query-eq-find-all :previews :id preview-id (:tx request)))]
        (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
        (handler (assoc request :preview preview))))))
 
@@ -22,7 +24,7 @@
   (let [media-file (-> req :media-file)
         id (:id media-file)
         size (or (-> req :parameters :query :size) "small")]
-    (if-let [preview (sd/query-eq-find-one :previews :media_file_id id :thumbnail size (:tx req))]
+    (if-let [preview (dbh/query-eq-find-one :previews :media_file_id id :thumbnail size (:tx req))]
       (sd/response_ok preview)
       (sd/response_not_found "No such preview file"))
     ;(info "handle_get-preview" "\nid\n" id "\nmf\n" media-file "\npreviews\n" preview)
@@ -30,14 +32,14 @@
 (defn add-preview-for-media-file [handler request]
   (let [media-file (-> request :media-file)
         id (:id media-file)
-        previews (sd/query-eq-find-all :previews :media_file_id id (:tx request))
+        previews (dbh/query-eq-find-all :previews :media_file_id id (:tx request))
         pfirst (first previews)]
     (handler (assoc request :preview pfirst))))
 
 (defn wrap-add-preview-for-media-file [handler]
   (fn [request] (add-preview-for-media-file handler request)))
 
-(defn- ring-add-media-resource-preview [request handler]
+(defn ring-add-media-resource-preview [request handler]
   (if-let [media-resource (get-media-entry-for-preview request)]
     (let [mmr (assoc media-resource :type "MediaEntry" :table-name "media_entries")
           request-with-media-resource (assoc request :media-resource mmr)]
@@ -73,7 +75,7 @@
            :handler preview/get-preview
            :middleware [ring-wrap-find-and-add-preview
                         ring-wrap-add-media-resource-preview
-                        sd/ring-wrap-authorization-view]
+                        jqh/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:preview_id s/Uuid}}}}]
 
@@ -82,7 +84,7 @@
            :handler preview/get-preview-file-data-stream
            :middleware [ring-wrap-find-and-add-preview
                         ring-wrap-add-media-resource-preview
-                        sd/ring-wrap-authorization-view]
+                        jqh/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:preview_id s/Uuid}}}}]])
 

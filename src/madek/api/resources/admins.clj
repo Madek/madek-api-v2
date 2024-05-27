@@ -3,9 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -15,7 +15,7 @@
   (let [qd (if (true? (-> req :parameters :query :full_data))
              :admins.*
              :admins.id)
-        db-result (sd/query-find-all :admins qd (:tx req))]
+        db-result (dbh/query-find-all :admins qd (:tx req))]
     (sd/response_ok {:admins db-result})))
 
 (defn handle_get-admin

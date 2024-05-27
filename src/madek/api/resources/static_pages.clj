@@ -3,9 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [cast-to-hstore]]
-   [madek.api.utils.helper :refer [cast-to-hstore t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -16,7 +16,7 @@
   (let [full-data (true? (-> req :parameters :query :full_data))
         qd (if (true? full-data) :static_pages.* :static_pages.id)
         tx (:tx req)
-        db-result (sd/query-find-all :static_pages qd tx)]
+        db-result (dbh/query-find-all :static_pages qd tx)]
     (sd/response_ok db-result)))
 
 (defn handle_get-static_page

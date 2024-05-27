@@ -4,9 +4,10 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [cast-to-hstore t to-uuid]]
+   [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -25,14 +26,14 @@
         db-query (-> (sql/select :*)
                      (sql/from :context_keys)
 
-                     (sd/build-query-param req-query :id)
-                     (sd/build-query-param req-query :context_id)
-                     (sd/build-query-param req-query :meta_key_id)
-                     (sd/build-query-param req-query :is_required)
+                     (dbh/build-query-param req-query :id)
+                     (dbh/build-query-param req-query :context_id)
+                     (dbh/build-query-param req-query :meta_key_id)
+                     (dbh/build-query-param req-query :is_required)
 
-                     (sd/build-query-created-or-updated-after req-query :changed_after)
-                     (sd/build-query-ts-after req-query :created_after "created_at")
-                     (sd/build-query-ts-after req-query :updated_after "updated_at")
+                     (dbh/build-query-created-or-updated-after req-query :changed_after)
+                     (dbh/build-query-ts-after req-query :created_after "created_at")
+                     (dbh/build-query-ts-after req-query :updated_after "updated_at")
 
                      (pagination/add-offset-for-honeysql req-query)
                      sql-format)
@@ -47,10 +48,10 @@
                                  :is_required :position :length_min :length_max
                                  :labels :hints :descriptions :documentation_urls)
                      (sql/from :context_keys)
-                     (sd/build-query-param req-query :id)
-                     (sd/build-query-param req-query :context_id)
-                     (sd/build-query-param req-query :meta_key_id)
-                     (sd/build-query-param req-query :is_required)
+                     (dbh/build-query-param req-query :id)
+                     (dbh/build-query-param req-query :context_id)
+                     (dbh/build-query-param req-query :meta_key_id)
+                     (dbh/build-query-param req-query :is_required)
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
         tf (map context_key_transform_ml db-result)]
@@ -104,7 +105,7 @@
         (sd/logwrite req (str "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result))
 
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (context_key_transform_ml (sd/query-eq-find-one :context_keys :id id tx)))
+          (sd/response_ok (context_key_transform_ml (dbh/query-eq-find-one :context_keys :id id tx)))
           (sd/response_failed "Could not update context_key." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -213,7 +214,7 @@
       :responses {200 {:body schema_export_context_key_admin}
                   406 {:body s/Any}}}
 
-    ; context_key list / query
+     ; context_key list / query
      :get
      {:summary (sd/sum_adm "Query context_keys.")
       :handler handle_adm-list-context_keys

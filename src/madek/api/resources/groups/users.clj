@@ -5,7 +5,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
    [madek.api.resources.groups.shared :as groups]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [convert-groupid-userid]]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]

@@ -5,7 +5,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :refer [add-offset-for-honeysql]]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
 
@@ -43,7 +43,7 @@
         qparams (-> request :query-params)
         query (base-query user-id qparams request tx)]
 
-;(info "query-index-resources: " query)
+    ;(info "query-index-resources: " query)
     (jdbc/execute! tx query)))
 
 (defn transform_ml [vocab]

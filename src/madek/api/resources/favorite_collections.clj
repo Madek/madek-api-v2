@@ -3,9 +3,10 @@
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.authorization :as authorization]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.core :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-            [madek.api.utils.helper :refer [f t]]
+            [madek.api.utils.helper :refer [f]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -20,13 +21,13 @@
   (let [col-sel (if (true? (-> req :parameters :query :full_data))
                   :*
                   :user_id)
-        db-result (sd/query-find-all :favorite_collections col-sel (:tx req))]
+        db-result (dbh/query-find-all :favorite_collections col-sel (:tx req))]
     (sd/response_ok db-result)))
 
 (defn handle_list-favorite_collection-by-user
   [req]
   (let [user-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all :favorite_collections :user_id user-id (:tx req))
+        db-result (dbh/query-eq-find-all :favorite_collections :user_id user-id (:tx req))
         id-set (map :collection_id db-result)]
     ;(info "handle_list-favorite_collection-by-user" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:collection_ids id-set})))

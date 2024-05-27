@@ -2,7 +2,9 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.core :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -14,9 +16,9 @@
                   (sql/select :id, :media_entry_id, :collection_id))]
     (-> col-sel
         (sql/from :custom_urls)
-        (sd/build-query-param-like query-params :id)
-        (sd/build-query-param query-params :collection_id)
-        (sd/build-query-param query-params :media_entry_id)
+        (dbh/build-query-param-like query-params :id)
+        (dbh/build-query-param query-params :collection_id)
+        (dbh/build-query-param query-params :media_entry_id)
         sql-format)))
 
 (defn handle_list-custom-urls
@@ -29,7 +31,7 @@
 (defn handle_get-custom-url
   [req]
   (let [id (-> req :parameters :path :id)]
-    (if-let [result (sd/query-eq-find-one :custom_urls :id id (:tx req))]
+    (if-let [result (dbh/query-eq-find-one :custom_urls :id id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for id: " id)))))
 
@@ -44,7 +46,7 @@
           "\ntype: " mr-type
           "\nmr-id: " mr-id
           "\ncol-name: " col-name)
-    (if-let [result (sd/query-eq-find-one :custom_urls col-name mr-id (:tx req))]
+    (if-let [result (dbh/query-eq-find-one :custom_urls col-name mr-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for " mr-type " with id: " mr-id)))))
 
@@ -104,7 +106,7 @@
                               "\nresult:\n" upd-result))
 
         (if (= 1 (first upd-result))
-          (sd/response_ok (sd/query-eq-find-one :custom_urls col-name mr-id tx))
+          (sd/response_ok (dbh/query-eq-find-one :custom_urls col-name mr-id tx))
           (sd/response_failed "Could not update custom_url." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -122,7 +124,7 @@
                        :media_entry_id
                        :collection_id)
             tx (:tx req)]
-        (if-let [del-data (sd/query-eq-find-one :custom_urls col-name mr-id tx)]
+        (if-let [del-data (dbh/query-eq-find-one :custom_urls col-name mr-id tx)]
           (let [sql (-> (sql/delete-from :custom_urls)
                         (sql/where [:= col-name mr-id])
                         sql-format)
@@ -182,8 +184,8 @@
    {:swagger {:tags ["api/media-entry"]}}
    {:get {:summary "Get custom_url for media entry."
           :handler handle_get-custom-urls
-          :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization-view]
+          :middleware [jqh/ring-wrap-add-media-resource
+                       jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}}
           :responses {200 {:body schema_export_custom_url}
@@ -191,8 +193,8 @@
     ; TODO db schema allows multiple entries for multiple users
     :post {:summary (sd/sum_usr "Create custom_url for media entry.")
            :handler handle_create-custom-urls
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :body schema_create_custom_url}
@@ -201,8 +203,8 @@
 
     :put {:summary (sd/sum_usr "Update custom_url for media entry.")
           :handler handle_update-custom-urls
-          :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization-edit-metadata]
+          :middleware [jqh/ring-wrap-add-media-resource
+                       jqh/ring-wrap-authorization-edit-metadata]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}
                        :body schema_update_custom_url}
@@ -211,8 +213,8 @@
 
     :delete {:summary (sd/sum_todo "Delete custom_url for media entry.")
              :handler handle_delete-custom-urls
-             :middleware [sd/ring-wrap-add-media-resource
-                          sd/ring-wrap-authorization-edit-metadata]
+             :middleware [jqh/ring-wrap-add-media-resource
+                          jqh/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:media_entry_id s/Str}}
              :responses {200 {:body schema_export_custom_url}
@@ -223,15 +225,15 @@
    {:swagger {:tags ["api/collection"]}}
    {:get {:summary "Get custom_url for collection."
           :handler handle_get-custom-urls
-          :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization-view]
+          :middleware [jqh/ring-wrap-add-media-resource
+                       jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Str}}}
 
     :post {:summary (sd/sum_usr "Create custom_url for collection.")
            :handler handle_create-custom-urls
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str}
                         :body schema_create_custom_url}
@@ -240,8 +242,8 @@
 
     :put {:summary (sd/sum_usr "Update custom_url for collection.")
           :handler handle_update-custom-urls
-          :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization-edit-metadata]
+          :middleware [jqh/ring-wrap-add-media-resource
+                       jqh/ring-wrap-authorization-edit-metadata]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Str}
                        :body schema_update_custom_url}
@@ -250,8 +252,8 @@
 
     :delete {:summary (sd/sum_todo "Delete custom_url for collection.")
              :handler handle_delete-custom-urls
-             :middleware [sd/ring-wrap-add-media-resource
-                          sd/ring-wrap-authorization-edit-metadata]
+             :middleware [jqh/ring-wrap-add-media-resource
+                          jqh/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:collection_id s/Str}}
              :responses {200 {:body schema_export_custom_url}

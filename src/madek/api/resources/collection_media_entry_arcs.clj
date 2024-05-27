@@ -4,7 +4,9 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -27,8 +29,8 @@
 (defn arcs-query [query-params]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
-      (sd/build-query-param query-params :collection_id)
-      (sd/build-query-param query-params :media_entry_id)
+      (dbh/build-query-param query-params :collection_id)
+      (dbh/build-query-param query-params :media_entry_id)
       (pagination/add-offset-for-honeysql query-params)
       sql-format))
 
@@ -82,7 +84,7 @@
                     sql-format)
             result (jdbc/execute! (:tx req) sql)]
         (if (= 1 (first result))
-          (sd/response_ok (sd/query-eq-find-one
+          (sd/response_ok (dbh/query-eq-find-one
                            :collection_media_entry_arcs
                            :collection_id col-id
                            :media_entry_id me-id
@@ -175,8 +177,8 @@
     {:get
      {:summary "Get collection media-entry arcs."
       :handler arcs
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
+      :middleware [jqh/ring-wrap-add-media-resource
+                   jqh/ring-wrap-authorization-view]
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid}}
@@ -185,10 +187,10 @@
     {:post
      {:summary (sd/sum_usr "Create collection media-entry arc")
       :handler handle_create-col-me-arc
-       ; TODO check: if collection edit md and relations is allowed checked
-       ; not the media entry edit md
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-metadata]
+      ; TODO check: if collection edit md and relations is allowed checked
+      ; not the media entry edit md
+      :middleware [jqh/ring-wrap-add-media-resource
+                   jqh/ring-wrap-authorization-edit-metadata]
       :swagger {:produces "application/json" :consumes "application/json"}
       :accept "application/json"
       :content-type "application/json"
@@ -205,8 +207,8 @@
      {:summary (sd/sum_usr "Update collection media-entry arc")
       :handler handle_update-col-me-arc
       :middleware [wrap-add-col-me-arc
-                   sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-metadata]
+                   jqh/ring-wrap-add-media-resource
+                   jqh/ring-wrap-authorization-edit-metadata]
       :swagger {:produces "application/json" :consumes "application/json"}
       :accept "application/json"
       :content-type "application/json"
@@ -222,8 +224,8 @@
      {:summary (sd/sum_usr "Delete collection media-entry arc")
       :handler handle_delete-col-me-arc
       :middleware [wrap-add-col-me-arc
-                   sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-metadata]
+                   jqh/ring-wrap-add-media-resource
+                   jqh/ring-wrap-authorization-edit-metadata]
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid

@@ -4,7 +4,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.keywords.index :as keywords]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
    [ring.util.response :as ring-response]
@@ -54,7 +54,7 @@
          {:value (let [meta-datum-type (:type meta-datum)]
                    (case meta-datum-type
                      "MetaDatum::JSON" (json/generate-string (:json meta-datum) {:escape-non-ascii false})
-                     ; TODO meta-data json value transport Q as string
+                ; TODO meta-data json value transport Q as string
                      "MetaDatum::Text" (:string meta-datum)
                      "MetaDatum::TextDate" (:string meta-datum)
                      (map #(select-keys % [:id])

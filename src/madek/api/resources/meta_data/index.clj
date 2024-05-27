@@ -3,7 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.constants :as constants]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
 
@@ -52,7 +54,7 @@
 ; TODO test with json
 ; TODO add query param meta-keys as json list of strings
 (defn filter-meta-data-by-meta-key-ids [query request]
-  (if-let [meta-keys (-> request :parameters :query :meta_keys sd/try-as-json)]
+  (if-let [meta-keys (-> request :parameters :query :meta_keys jqh/try-as-json)]
     (do
       (when-not (seq? meta-keys)
         String (throw (ex-info (str "The value of the meta-keys parameter"
@@ -63,7 +65,7 @@
 
 (defn build-query [request base-query]
   (let [query (-> base-query
-                  (sd/build-query-ts-after (-> request :parameters :query) :updated_after "meta_data.meta_data_updated_at")
+                  (dbh/build-query-ts-after (-> request :parameters :query) :updated_after "meta_data.meta_data_updated_at")
                   (filter-meta-data-by-meta-key-ids request)
                   sql-format)]
     ;(info "MD:build-query:\n " query)

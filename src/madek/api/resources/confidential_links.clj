@@ -4,7 +4,9 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.core :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -37,7 +39,7 @@
             data (-> req :parameters :body)
             token (create-conf-link-token)
             ins-data (-> data
-                         (sd/try-instant-on-presence :expires_at)
+                         (dbh/try-instant-on-presence :expires_at)
                          (assoc
                           :user_id u-id
                           :resource_type mr-type
@@ -58,16 +60,16 @@
         mr-id (-> mr :id)
         mr-type (-> mr :type)
 
-        db-result (sd/query-eq-find-all :confidential_links
-                                        :resource_id mr-id
-                                        :resource_type mr-type
-                                        (:tx req))]
+        db-result (dbh/query-eq-find-all :confidential_links
+                                         :resource_id mr-id
+                                         :resource_type mr-type
+                                         (:tx req))]
     (sd/response_ok db-result)))
 
 (defn handle_get-conf-link
   [req]
   (let [id (-> req :parameters :path :id)]
-    (if-let [db-result (sd/query-eq-find-one :confidential_links :id id (:tx req))]
+    (if-let [db-result (dbh/query-eq-find-one :confidential_links :id id (:tx req))]
       (sd/response_ok db-result)
       (sd/response_not_found "No such confidential link"))))
 
@@ -77,7 +79,7 @@
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)
             data (-> req :parameters :body)
-            upd-data (sd/try-instant-on-presence data :expires_at)
+            upd-data (dbh/try-instant-on-presence data :expires_at)
             query (-> (sql/update :confidential_links)
                       (sql/set upd-data)
                       (sql/where [:= :id id])
@@ -87,7 +89,7 @@
 
         (sd/logwrite req (str "handle_update-conf-link:" "\nupdate data: " upd-data "\nresult: " upd-result))
         (if (= 1 (first upd-result))
-          (sd/response_ok (sd/query-eq-find-one :confidential_links :id id (:tx req)))
+          (sd/response_ok (dbh/query-eq-find-one :confidential_links :id id (:tx req)))
           (sd/response_failed (str "Failed update confidential link: " id) 406))))
 
     (catch Exception ex (sd/response_exception ex))))
@@ -97,7 +99,7 @@
   (try
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)]
-        (if-let [del-data (sd/query-eq-find-one :confidential_links :id id (:tx req))]
+        (if-let [del-data (dbh/query-eq-find-one :confidential_links :id id (:tx req))]
           (let [query (-> (sql/delete-from :confidential_links)
                           (sql/where [:= :id id])
                           sql-format)
@@ -160,8 +162,8 @@
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link
-            :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-permissions]
+            :middleware [jqh/ring-wrap-add-media-resource
+                         jqh/ring-wrap-authorization-edit-permissions]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Uuid}
                          :body schema_import_conf_link}
@@ -170,8 +172,8 @@
 
      :get {:summary (sd/sum_adm "List workflows.")
            :handler handle_list-conf-links
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}
                         :query {(s/optional-key :full_data) s/Bool}}
@@ -181,8 +183,8 @@
    ["/conf-link/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
            :handler handle_get-conf-link
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid
                                :id s/Uuid}}
@@ -191,8 +193,8 @@
 
      :put {:summary (sd/sum_adm "Update confidential link with id.")
            :handler handle_update-conf-link
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid
                                :id s/Uuid}
@@ -204,8 +206,8 @@
      :delete {:summary (sd/sum_adm "Delete confidential link by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-conf-link
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
+              :middleware [jqh/ring-wrap-add-media-resource
+                           jqh/ring-wrap-authorization-edit-permissions]
               :parameters {:path {:media_entry_id s/Uuid
                                   :id s/Uuid}}
               :responses {200 {:body schema_export_conf_link}
@@ -218,8 +220,8 @@
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link
-            :middleware [sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-permissions]
+            :middleware [jqh/ring-wrap-add-media-resource
+                         jqh/ring-wrap-authorization-edit-permissions]
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Uuid}
                          :body schema_import_conf_link}
@@ -228,8 +230,8 @@
 
      :get {:summary (sd/sum_adm "List workflows.")
            :handler handle_list-conf-links
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
            :responses {200 {:body [schema_export_conf_link]}
@@ -238,8 +240,8 @@
    ["/conf-link/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
            :handler handle_get-conf-link
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid
                                :id s/Uuid}}
@@ -248,8 +250,8 @@
 
      :put {:summary (sd/sum_adm "Update confidential link with id.")
            :handler handle_update-conf-link
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid
                                :id s/Uuid}
@@ -261,8 +263,8 @@
      :delete {:summary (sd/sum_adm "Delete confidential link by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-conf-link
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
+              :middleware [jqh/ring-wrap-add-media-resource
+                           jqh/ring-wrap-authorization-edit-permissions]
               :parameters {:path {:collection_id s/Uuid
                                   :id s/Uuid}}
               :responses {200 {:body schema_export_conf_link}

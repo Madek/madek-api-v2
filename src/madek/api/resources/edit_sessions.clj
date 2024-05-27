@@ -5,7 +5,9 @@
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -17,10 +19,10 @@
                   (sql/select :id))]
     (-> col-sel
         (sql/from :edit_sessions)
-        (sd/build-query-param query-params :id)
-        (sd/build-query-param query-params :user_id)
-        (sd/build-query-param query-params :collection_id)
-        (sd/build-query-param query-params :media_entry_id)
+        (dbh/build-query-param query-params :id)
+        (dbh/build-query-param query-params :user_id)
+        (dbh/build-query-param query-params :collection_id)
+        (dbh/build-query-param query-params :media_entry_id)
         (pagination/add-offset-for-honeysql query-params)
         sql-format)))
 
@@ -44,7 +46,7 @@
 (defn handle_adm_get-edit-session
   [req]
   (let [id (-> req :parameters :path :id)]
-    (if-let [result (sd/query-eq-find-one :edit_sessions :id id (:tx req))]
+    (if-let [result (dbh/query-eq-find-one :edit_sessions :id id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for id: " id)))))
 
@@ -52,7 +54,7 @@
   [req]
   (let [id (-> req :parameters :path :id)
         u-id (-> req :authenticated-entity :id)]
-    (if-let [result (sd/query-eq-find-one :edit_sessions :id id :user_id u-id (:tx req))]
+    (if-let [result (dbh/query-eq-find-one :edit_sessions :id id :user_id u-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for id: " id)))))
 
@@ -63,7 +65,7 @@
         mr-id (-> mr :id str)
         col-key (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
     ;(info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
-    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id (:tx req))]
+    (if-let [result (dbh/query-eq-find-all :edit_sessions col-key mr-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))))
 
@@ -76,7 +78,7 @@
         mr-id (-> mr :id str)
         col-key (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
     ;(info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
-    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id :user_id u-id tx)]
+    (if-let [result (dbh/query-eq-find-all :edit_sessions col-key mr-id :user_id u-id tx)]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))))
 
@@ -107,7 +109,7 @@
   (try
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)]
-        (if-let [del-data (sd/query-eq-find-one :edit_sessions :id id (:tx req))]
+        (if-let [del-data (dbh/query-eq-find-one :edit_sessions :id id (:tx req))]
           (let [sql-query (-> (sql/delete-from :edit_sessions)
                               (sql/where [:= :id id])
                               (sql/returning :*)
@@ -192,8 +194,8 @@
    {:swagger {:tags ["api/media-entry"]}}
    {:get {:summary (sd/sum_usr_pub "Get edit_session list for media entry.")
           :handler handle_get-edit-sessions
-          :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization-view]
+          :middleware [jqh/ring-wrap-add-media-resource
+                       jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Uuid}}
           :responses {200 {:body [schema_export_edit_session]}
@@ -201,8 +203,8 @@
     :post {:summary (sd/sum_usr "Create edit session for media entry and authed user.")
            :handler handle_create-edit-session
            :middleware [;authorization/wrap-authorized-user
-                        sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
            :responses {200 {:body schema_export_edit_session}
@@ -213,8 +215,8 @@
    {:swagger {:tags ["api/collection"]}}
    {:get {:summary (sd/sum_usr_pub "Get edit_session list for collection.")
           :handler handle_get-edit-sessions
-          :middleware [sd/ring-wrap-add-media-resource
-                       sd/ring-wrap-authorization-view]
+          :middleware [jqh/ring-wrap-add-media-resource
+                       jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Uuid}}
           :responses {200 {:body [schema_export_edit_session]}
@@ -223,8 +225,8 @@
     :post {:summary (sd/sum_usr "Create edit session for collection and authed user.")
            :handler handle_create-edit-session
            :middleware [;authorization/wrap-authorized-user
-                        sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+                        jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
            :responses {200 {:body schema_export_edit_session}

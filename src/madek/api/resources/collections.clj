@@ -5,8 +5,9 @@
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
    [madek.api.resources.collections.index :refer [get-index]]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [convert-map-if-exist f t]]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.utils.helper :refer [convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -211,8 +212,8 @@
    ["collection/:collection_id"
     {:get {:summary (sd/sum_usr_pub "Get collection for id.")
            :handler handle_get-collection
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-view]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-view]
 
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
@@ -223,8 +224,8 @@
 
      :put {:summary (sd/sum_usr "Update collection for id.")
            :handler handle_update-collection
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :swagger {:produces "application/json"
                      :consumes "application/json"}
            :coercion reitit.coercion.schema/coercion
@@ -239,8 +240,8 @@
      ; TODO check owner or responsible
      :delete {:summary (sd/sum_usr "Delete collection for id.")
               :handler handle_delete-collection
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
+              :middleware [jqh/ring-wrap-add-media-resource
+                           jqh/ring-wrap-authorization-edit-permissions]
               :swagger {:produces "application/json"
                         :consumes "application/json"}
               :coercion reitit.coercion.schema/coercion

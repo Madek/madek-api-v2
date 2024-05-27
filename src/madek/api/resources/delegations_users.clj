@@ -2,8 +2,8 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [t]]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -26,7 +26,7 @@
                 user_id (sql/where [:= :user_id user_id]))
         db-result (jdbc/execute! (:tx req) (sql-format query))]
 
-;(->> db-result (map :id) set)
+    ;(->> db-result (map :id) set)
     (info "handle_list-delegations_user" "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -34,7 +34,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         user-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all :delegations_users :user_id user-id (:tx req))
+        db-result (dbh/query-eq-find-all :delegations_users :user_id user-id (:tx req))
         id-set (map :delegation_id db-result)]
     (info "handle_list-delegations_user" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:delegation_ids id-set})

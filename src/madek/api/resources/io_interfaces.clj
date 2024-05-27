@@ -3,7 +3,8 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -17,7 +18,7 @@
   (let [full_data (true? (-> req :parameters :query :full_data))
         qd (if (true? full_data) :* :io_interfaces.id)
         tx (:tx req)
-        db-result (sd/query-find-all :io_interfaces qd tx)]
+        db-result (dbh/query-find-all :io_interfaces qd tx)]
 
     ;(info "handle_list-io_interface" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
@@ -62,7 +63,7 @@
         (info "handle_update-io_interfaces: " "id: " id "\nnew-data:\n" dwid "\nresult: " upd-result)
 
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (sd/query-eq-find-one :io_interfaces :id id tx))
+          (sd/response_ok (dbh/query-eq-find-one :io_interfaces :id id tx))
           (sd/response_failed "Could not update io_interface." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
