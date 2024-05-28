@@ -1017,6 +1017,7 @@
                                               :meta_key_id s/Str}}
                           :responses {200 {:body s/Any}}})
 
+;; collection
 (def meta_key_id.people {:summary "Get meta-data people for media-entries meta-key."
                          :handler handle_get-meta-data-people
                          :middleware [;wrap-me-add-meta-data

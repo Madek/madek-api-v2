@@ -945,15 +945,7 @@
                :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/people"
-     {:get {:summary "Get meta-data people for collection meta-key."
-            :handler handle_get-meta-data-people
-            :middleware [;wrap-me-add-meta-data
-                         sd/ring-wrap-add-media-resource
-                         sd/ring-wrap-authorization-edit-metadata]
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:collection_id s/Uuid
-                                :meta_key_id s/Str}}
-            :responses {200 {:body s/Any}}}}]
+     {:get get/meta_key_id.people2}]
 
     ["/:meta_key_id/people/:person_id"
      {:post {:summary "Create meta-data people for media-entry"
