@@ -5,6 +5,8 @@
    [madek.api.resources.media-resources.permissions :as mr-permissions]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
+   [madek.api.resources.permissions.get :as get]
+
    [reitit.coercion.schema]
    [schema.core :as s]))
 
@@ -399,16 +401,7 @@
   ["/media-entry/:media_entry_id/perms"
    {:swagger {:tags ["media-entry/perms"]}}
    ["/"
-    {:get
-     {:summary (sd/sum_usr_pub "List media-entry permissions.")
-      :swagger {:produces "application/json"}
-      :content-type "application/json"
-      :handler handle_list-perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export_media-entry-permissions-all)}}}}]
+    {:get get/media-entry.media_entry_id.perms     }]
 
    ; TODO patch for entity perms
    ; get_metadata_and_previews
@@ -418,16 +411,8 @@
    ; TODO beware to let not update perm fields in media-entry or collection patch/update
 
    ["/resources"
-    {:get
-     {:summary "Query media-entry permissions."
-      :swagger {:produces "application/json"}
-      :content-type "application/json"
-      :handler handle_get_entity_perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}
+    {:get get/media-entry.media_entry_id.perms.resources
+
 
      :put
      {:summary "Update media-entry entity permissions"
@@ -439,6 +424,11 @@
       :parameters {:path {:media_entry_id s/Uuid}
                    :body (get-schema :media_entries.schema_update-media-entry-perms)}
       :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}}]
+
+
+
+
+
 
    ["/resource/:perm_name/:perm_val"
     {:put {:summary "Update media-entry entity permissions"
@@ -453,29 +443,28 @@
                                :perm_val s/Bool}}
            :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}}]
 
+
+
+
+
+
+
+
+
+
    ["/users"
-    {:get
-     {:summary "Query media-entry user permissions."
-      :swagger {:produces "application/json"}
-      :content-type "application/json"
-      :handler handle_list-user-perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body [(get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)]}}}}]
+    {:get get/media-entry.media_entry_id.perms.users     }]
+
+
+
+
+
+
+
+
 
    ["/user/:user_id"
-    {:get {:summary "Get media-entry user permissions."
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-           :handler handle_get-user-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid
-                               :user_id s/Uuid}}
-           :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}
+    {:get get/media-entry.media_entry_id.perms.user
 
      :post {:summary "Create media-entry user permissions."
             :swagger {:produces "application/json"}
@@ -500,6 +489,17 @@
                                   :user_id s/Uuid}}
               :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}}]
 
+
+
+
+
+
+
+
+
+
+
+
    ["/user/:user_id/:perm_name/:perm_val"
     {:put {:summary "Update media-entry user permissions"
            :description (str "Valid perm_name values are" valid_permission_names)
@@ -516,29 +516,37 @@
                                :perm_val s/Bool}}
            :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}}]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    ["/groups"
-    {:get
-     {:summary "Query media-entry group permissions."
-      :swagger {:produces "application/json"}
-      :content-type "application/json"
-      :handler handle_list-group-perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body [(get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)]}}}}]
+    {:get get/media-entry.media_entry_id.perms.groups
+     }]
+
+
+
+
+
+
+
+
+
+
+
 
    ["/group/:group_id"
-    {:get {:summary "Get media-entry group permissions."
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-           :handler handle_get-group-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid
-                               :group_id s/Uuid}}
-           :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}
+    {:get get/media-entry.media_entry_id.perms.group.group_id
 
      :post {:summary "Create media-entry group permissions."
             :swagger {:produces "application/json"}
@@ -563,6 +571,19 @@
                                   :group_id s/Uuid}}
               :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}}]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
    ["/group/:group_id/:perm_name/:perm_val"
     {:put {:summary "Update media-entry group permissions"
            :description (str "Valid perm_name values are" valid_permission_names)
@@ -578,32 +599,37 @@
                                :perm_val s/Bool}}
            :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}}]])
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (def collection-routes
   ["/collection/:collection_id/perms"
    {:swagger {:tags ["collection/perms"]}}
    ["/"
-    {:get
-     {:summary "Query collection permissions."
-      :swagger {:produces "application/json"}
-      :content-type "application/json"
-      :handler handle_list-perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body (get-schema :collection_permissions-all.schema_export-collection-permissions-all)}}}}]
+    {:get get/collection.collection_id.perms     }]
+
+
+
+
+
+
 
    ["/resources"
-    {:get
-     {:summary "Query collection permissions."
-      :swagger {:produces "application/json"}
-      :content-type "application/json"
-      :handler handle_get_entity_perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}
+    {:get get/collection.collection_id.perms.resources
+
 
      :put
      {:summary "Update collection entity permissions"
@@ -615,6 +641,15 @@
       :parameters {:path {:collection_id s/Uuid}
                    :body (get-schema :collections-perms.schema_update-collection-perms)}
       :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}}]
+
+
+
+
+
+
+
+
+
 
    ["/resource/:perm_name/:perm_val"
     {:put
@@ -629,28 +664,26 @@
                           :perm_val s/Bool}}
       :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}}]
 
+
+
+
+
+
+
+
    ["/users"
-    {:get {:summary "Query collection permissions."
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-           :handler handle_list-user-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-view]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body [(get-schema :collection_user_permissions.schema_export-collection-user-permission)]}}}}]
+    {:get get/collection.collection_id.perms.users}]
+
+
+
+
+
+
+
+
 
    ["/user/:user_id"
-    {:get {:summary "Get collection user permissions."
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-           :handler handle_get-user-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-view]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Uuid
-                               :user_id s/Uuid}}
-           :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}
+    {:get get/collection.collection_id.perms.user.user_id
 
      :post {:summary "Create collection user permissions."
             :swagger {:produces "application/json"}
@@ -675,6 +708,13 @@
                                   :user_id s/Uuid}}
               :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}}]
 
+
+
+
+
+
+
+
    ["/user/:user_id/:perm_name/:perm_val"
     {:put {:summary "Update collection user permissions"
            :handler handle_update-user-perms
@@ -690,28 +730,17 @@
            :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}}]
 
    ["/groups"
-    {:get
-     {:summary "Query collection permissions."
-      :swagger {:produces "application/json"}
-      :content-type "application/json"
-      :handler handle_list-group-perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body [(get-schema :collection_group_permissions.schema_export-collection-group-permission)]}}}}]
+    {:get get/collection.collection_id.perms.groups     }]
+
+
+
+
+
+
+
 
    ["/group/:group_id"
-    {:get {:summary "Get collection group permissions."
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-           :handler handle_get-group-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Uuid
-                               :group_id s/Uuid}}
-           :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}
+    {:get get/collection.collection_id.perms.group.group_id
 
      :post {:summary "Create collection group permissions."
             :swagger {:produces "application/json"}
@@ -735,6 +764,17 @@
               :parameters {:path {:collection_id s/Uuid
                                   :group_id s/Uuid}}
               :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}}]
+
+
+
+
+
+
+
+
+
+
+
 
    ["/group/:group_id/:perm_name/:perm_val"
     {:put {:summary "Update collection group permissions"
