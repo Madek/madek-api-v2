@@ -5,7 +5,6 @@
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
-            [madek.api.db.dynamic_schema.common :refer [get-schema]]
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
             [madek.api.resources.shared :as sd]
@@ -773,5 +772,17 @@
         (sd/response_not_found "Invalid meta-key, or no vocabulary access.")
         (handler req)))))
 
-;### Debug ####################################################################
-;(debug/debug-ns *ns*)
+(def schema_export_meta-datum
+  {:id s/Uuid
+   :meta_key_id s/Str
+   :type s/Str
+   :value (s/->Either [[{:id s/Uuid}] s/Str])
+   (s/optional-key :media_entry_id) s/Uuid
+   (s/optional-key :collection_id) s/Uuid})
+
+(def schema_export_mdrole
+  {:id s/Uuid
+   :meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :role_id (s/maybe s/Uuid)
+   :position s/Int})

@@ -5,7 +5,6 @@
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
-            [madek.api.db.dynamic_schema.common :refer [get-schema]]
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
             [madek.api.resources.shared :as sd]
@@ -773,5 +772,87 @@
         (sd/response_not_found "Invalid meta-key, or no vocabulary access.")
         (handler req)))))
 
-;### Debug ####################################################################
-;(debug/debug-ns *ns*)
+(def schema_export_meta-datum
+  {:id s/Uuid
+   :meta_key_id s/Str
+   :type s/Str
+   :value (s/->Either [[{:id s/Uuid}] s/Str])
+   (s/optional-key :media_entry_id) s/Uuid
+   (s/optional-key :collection_id) s/Uuid})
+
+
+(def schema_export_mdrole
+  {:id s/Uuid
+   :meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :role_id (s/maybe s/Uuid)
+   :position s/Int})
+
+
+
+(def meta_key_id.json {:summary "Update meta-data json for media-entry"
+                       :handler handle_update-meta-data-json
+                       :middleware [sd/ring-wrap-add-media-resource
+                                    sd/ring-wrap-authorization-edit-metadata]
+                       :coercion reitit.coercion.schema/coercion
+                       :parameters {:path {:media_entry_id s/Uuid
+                                           :meta_key_id s/Str}
+                                    :body {:json s/Any}}
+                       :responses {200 {:body s/Any}}} )
+
+
+(def meta_key_id.text-date {:summary "Update meta-data text-date for media-entry"
+                            :handler handle_update-meta-data-text-date
+                            :middleware [sd/ring-wrap-add-media-resource
+                                         sd/ring-wrap-authorization-edit-metadata]
+                            :coercion reitit.coercion.schema/coercion
+                            :parameters {:path {:media_entry_id s/Uuid
+                                                :meta_key_id s/Str}
+                                         :body {:string s/Str}}
+                            :responses {200 {:body s/Any}}} )
+
+
+(def meta_key_id.text {:summary "Update meta-data text for media-entry"
+                            :handler handle_update-meta-data-text
+                            :middleware [sd/ring-wrap-add-media-resource
+                                         sd/ring-wrap-authorization-edit-metadata]
+                            :coercion reitit.coercion.schema/coercion
+                            :parameters {:path {:media_entry_id s/Uuid
+                                                :meta_key_id s/Str}
+                                         :body {:string s/Str}}
+                            :responses {200 {:body s/Any}}} )
+
+
+(def meta_key_id.json {:summary "Update meta-data json for collection."
+                       :handler handle_update-meta-data-json
+                       :middleware [sd/ring-wrap-add-media-resource
+                                    sd/ring-wrap-authorization-edit-metadata]
+                       :coercion reitit.coercion.schema/coercion
+                       :parameters {:path {:collection_id s/Uuid
+                                           :meta_key_id s/Str}
+                                    :body {:json s/Any}}
+                       :responses {200 {:body s/Any}}} )
+
+(def text.meta_key_id.text-date {:summary "Update meta-data text-date for collection."
+                                 :handler handle_update-meta-data-text-date
+                                 :middleware [sd/ring-wrap-add-media-resource
+                                              sd/ring-wrap-authorization-edit-metadata]
+                                 :coercion reitit.coercion.schema/coercion
+                                 :parameters {:path {:collection_id s/Uuid
+                                                     :meta_key_id s/Str}
+                                              :body {:string s/Str}}
+                                 :responses {200 {:body s/Any}}} )
+
+
+(def meta_key_id.text {:summary "Update meta-data text for collection."
+                                 :handler handle_update-meta-data-text
+                                 :middleware [sd/ring-wrap-add-media-resource
+                                              sd/ring-wrap-authorization-edit-metadata]
+                                 :accept "application/json"
+                                 :content-type "application/json"
+                                 :swagger {:produces "application/json" :consumes "application/json"}
+                                 :coercion reitit.coercion.schema/coercion
+                                 :parameters {:path {:collection_id s/Uuid
+                                                     :meta_key_id s/Str}
+                                              :body {:string s/Str}}
+                                 :responses {200 {:body s/Any}}} )
