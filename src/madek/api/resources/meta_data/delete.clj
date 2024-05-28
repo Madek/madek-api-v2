@@ -4,6 +4,14 @@
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
+
+
+            [madek.api.resources.meta_data.common :refer :all]
+
+            ;[madek.api.resources.meta_data.common :refer [db-get-meta-data-keywords wrap-add-role
+            ;                                              wrap-col-add-meta-data wrap-add-person db-get-meta-data-roles wrap-me-add-meta-data]]
+
+
             [madek.api.resources.shared :as sd]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
@@ -12,75 +20,75 @@
             [schema.core :as s]
             [taoensso.timbre :refer [info]]))
 
-(defn- col-key-for-mr-type [mr]
-  (let [mr-type (-> mr :type)]
-    (if (= mr-type "Collection")
-      :collection_id
-      :media_entry_id)))
-
-(defn- assoc-media-resource-typed-id [mr ins-data]
-  (assoc ins-data
-         (col-key-for-mr-type mr)
-         (-> mr :id)))
-
-(defn- sql-cls-upd-meta-data [stmt mr mk-id]
-  (let [colomn (col-key-for-mr-type mr)
-        md-sql (-> stmt
-                   (sql/where [:and
-                               [:= :meta_key_id mk-id]
-                               [:= colomn (to-uuid (-> mr :id) colomn)]]))]
-    md-sql))
-
-(defn fabric-meta-data
-  [mr meta-key-id md-type user-id]
-  (let [data {:meta_key_id meta-key-id
-              :type md-type
-              :created_by_id (to-uuid user-id)}]
-    (assoc-media-resource-typed-id mr data)))
-
-(defn db-get-meta-data
-  ([mr mk-id md-type db]
-   (let [mr-id (str (-> mr :id))
-         mr-key (col-key-for-mr-type mr)
-         db-query (-> (sql/select :*)
-                      (sql/from :meta_data)
-                      (sql/where [:and
-                                  [:= :meta_key_id mk-id]
-                                  [:= mr-key (to-uuid mr-id mr-key)]])
-                      sql-format)
-         db-result (jdbc/execute-one! db db-query builder-fn-options-default)
-         db-type (:type db-result)]
-
-     (if (or (= nil md-type) (= md-type db-type))
-       db-result
-       nil))))
-
-(defn- db-create-meta-data
-  ([db meta-data]
-   (info "db-create-meta-data: " meta-data)
-   (let [sql-query (-> (sql/insert-into :meta_data)
-                       (sql/values [(convert-map-if-exist meta-data)])
-                       (sql/returning :*)
-                       sql-format)
-         result (jdbc/execute-one! db sql-query builder-fn-options-default)]
-     (if result
-       result
-       nil)))
-
-  ([db mr meta-key-id md-type user-id]
-   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
-   (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
-
-  ([db mr meta-key-id md-type user-id meta-data]
-   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
-   (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
-     ;(info "db-create-meta-data: "
-     ;              "MK-ID: " meta-key-id
-     ;              "Type:" md-type
-     ;              "User: " user-id
-     ;              "MD: " meta-data
-     ;              "MD-new: " md)
-     (db-create-meta-data db md))))
+;(defn- col-key-for-mr-type [mr]
+;  (let [mr-type (-> mr :type)]
+;    (if (= mr-type "Collection")
+;      :collection_id
+;      :media_entry_id)))
+;
+;(defn- assoc-media-resource-typed-id [mr ins-data]
+;  (assoc ins-data
+;         (col-key-for-mr-type mr)
+;         (-> mr :id)))
+;
+;(defn- sql-cls-upd-meta-data [stmt mr mk-id]
+;  (let [colomn (col-key-for-mr-type mr)
+;        md-sql (-> stmt
+;                   (sql/where [:and
+;                               [:= :meta_key_id mk-id]
+;                               [:= colomn (to-uuid (-> mr :id) colomn)]]))]
+;    md-sql))
+;
+;(defn fabric-meta-data
+;  [mr meta-key-id md-type user-id]
+;  (let [data {:meta_key_id meta-key-id
+;              :type md-type
+;              :created_by_id (to-uuid user-id)}]
+;    (assoc-media-resource-typed-id mr data)))
+;
+;(defn db-get-meta-data
+;  ([mr mk-id md-type db]
+;   (let [mr-id (str (-> mr :id))
+;         mr-key (col-key-for-mr-type mr)
+;         db-query (-> (sql/select :*)
+;                      (sql/from :meta_data)
+;                      (sql/where [:and
+;                                  [:= :meta_key_id mk-id]
+;                                  [:= mr-key (to-uuid mr-id mr-key)]])
+;                      sql-format)
+;         db-result (jdbc/execute-one! db db-query builder-fn-options-default)
+;         db-type (:type db-result)]
+;
+;     (if (or (= nil md-type) (= md-type db-type))
+;       db-result
+;       nil))))
+;
+;(defn- db-create-meta-data
+;  ([db meta-data]
+;   (info "db-create-meta-data: " meta-data)
+;   (let [sql-query (-> (sql/insert-into :meta_data)
+;                       (sql/values [(convert-map-if-exist meta-data)])
+;                       (sql/returning :*)
+;                       sql-format)
+;         result (jdbc/execute-one! db sql-query builder-fn-options-default)]
+;     (if result
+;       result
+;       nil)))
+;
+;  ([db mr meta-key-id md-type user-id]
+;   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
+;   (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
+;
+;  ([db mr meta-key-id md-type user-id meta-data]
+;   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
+;   (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
+;     ;(info "db-create-meta-data: "
+;     ;              "MK-ID: " meta-key-id
+;     ;              "Type:" md-type
+;     ;              "User: " user-id
+;     ;              "MD: " meta-data
+;     ;              "MD-new: " md)
+;     (db-create-meta-data db md))))
 
 (defn- handle-delete-meta-data [req]
   (let [mr (-> req :media-resource)
@@ -108,18 +116,18 @@
       "\nresult\n" result)
     result))
 
-(def MD_TYPE_KEYWORDS "MetaDatum::Keywords")
-(def MD_KEY_KWS :keywords)
-(def MD_KEY_KW_DATA :md_keywords)
-(def MD_KEY_KW_IDS :keywords_ids)
-(def MD_TYPE_PEOPLE "MetaDatum::People")
-(def MD_KEY_PEOPLE :people)
-(def MD_KEY_PEOPLE_DATA :md_people)
-(def MD_KEY_PEOPLE_IDS :people_ids)
-(def MD_TYPE_ROLES "MetaDatum::Roles")
-(def MD_KEY_ROLES :roles)
-(def MD_KEY_ROLES_DATA :md_roles)
-(def MD_KEY_ROLES_IDS :roles_ids)
+;(def MD_TYPE_KEYWORDS "MetaDatum::Keywords")
+;(def MD_KEY_KWS :keywords)
+;(def MD_KEY_KW_DATA :md_keywords)
+;(def MD_KEY_KW_IDS :keywords_ids)
+;(def MD_TYPE_PEOPLE "MetaDatum::People")
+;(def MD_KEY_PEOPLE :people)
+;(def MD_KEY_PEOPLE_DATA :md_people)
+;(def MD_KEY_PEOPLE_IDS :people_ids)
+;(def MD_TYPE_ROLES "MetaDatum::Roles")
+;(def MD_KEY_ROLES :roles)
+;(def MD_KEY_ROLES_DATA :md_roles)
+;(def MD_KEY_ROLES_IDS :roles_ids)
 
 
 (defn handle_delete-meta-data-keyword
@@ -150,9 +158,9 @@
 
 
 
-(defn db-get-meta-data-people
-  [md-id tx]
-  (sd/query-eq-find-all :meta_data_people :meta_datum_id md-id tx))
+;(defn db-get-meta-data-people
+;  [md-id tx]
+;  (sd/query-eq-find-all :meta_data_people :meta_datum_id md-id tx))
 
 
 (defn handle_delete-meta-data-people
@@ -221,51 +229,51 @@
 
 
 
-(defn wrap-add-keyword [handler]
-  (fn [request] (sd/req-find-data
-                  request handler
-                  :keyword_id
-                  :keywords :id
-                  :keyword
-                  true)))
-
-(defn wrap-add-person [handler]
-  (fn [request] (sd/req-find-data
-                  request handler
-                  :person_id
-                  :people :id
-                  :person
-                  true)))
-
-(defn wrap-add-role [handler]
-  (fn [request] (sd/req-find-data
-                  request handler
-                  :role_id
-                  :roles :id
-                  :role
-                  true)))
-
-(defn wrap-me-add-meta-data [handler]
-  (fn [request] (sd/req-find-data2
-                  request handler
-                  :media_entry_id
-                  :meta_key_id
-                  :meta_data
-                  :media_entry_id
-                  :meta_key_id
-                  :meta-data
-                  false)))
-
-(defn wrap-col-add-meta-data [handler]
-  (fn [request] (sd/req-find-data2
-                  request handler
-                  :collection_id
-                  :meta_key_id
-                  :meta_data
-                  :collection_id
-                  :meta_key_id
-                  :meta-data
-                  false)))
+;(defn wrap-add-keyword [handler]
+;  (fn [request] (sd/req-find-data
+;                  request handler
+;                  :keyword_id
+;                  :keywords :id
+;                  :keyword
+;                  true)))
+;
+;(defn wrap-add-person [handler]
+;  (fn [request] (sd/req-find-data
+;                  request handler
+;                  :person_id
+;                  :people :id
+;                  :person
+;                  true)))
+;
+;(defn wrap-add-role [handler]
+;  (fn [request] (sd/req-find-data
+;                  request handler
+;                  :role_id
+;                  :roles :id
+;                  :role
+;                  true)))
+;
+;(defn wrap-me-add-meta-data [handler]
+;  (fn [request] (sd/req-find-data2
+;                  request handler
+;                  :media_entry_id
+;                  :meta_key_id
+;                  :meta_data
+;                  :media_entry_id
+;                  :meta_key_id
+;                  :meta-data
+;                  false)))
+;
+;(defn wrap-col-add-meta-data [handler]
+;  (fn [request] (sd/req-find-data2
+;                  request handler
+;                  :collection_id
+;                  :meta_key_id
+;                  :meta_data
+;                  :collection_id
+;                  :meta_key_id
+;                  :meta-data
+;                  false)))
 
 
 
