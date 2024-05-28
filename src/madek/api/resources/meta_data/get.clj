@@ -972,7 +972,7 @@
                           :responses {200 {:body s/Any}}})
 
 
-(def meta_key_id.people {:summary "Get meta-data people for collection meta-key."
+(def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
                          :handler handle_get-meta-data-people
                          :middleware [;wrap-me-add-meta-data
                                       sd/ring-wrap-add-media-resource

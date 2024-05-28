@@ -805,7 +805,7 @@
                                          :responses {200 {:body s/Any}}})
 
 
-(def meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
+(def media_entry.meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
                                    :handler handle_delete-meta-data-people
                                    :middleware [wrap-add-person
                                                 sd/ring-wrap-add-media-resource
@@ -817,16 +817,7 @@
                                    :responses {200 {:body s/Any}}})
 
 
-(def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for media-entry."
-                                     :handler handle_delete-meta-data-keyword
-                                     :middleware [wrap-add-keyword
-                                                  sd/ring-wrap-add-media-resource
-                                                  sd/ring-wrap-authorization-edit-metadata]
-                                     :coercion reitit.coercion.schema/coercion
-                                     :parameters {:path {:media_entry_id s/Uuid
-                                                         :meta_key_id s/Str
-                                                         :keyword_id s/Uuid}}
-                                     :responses {200 {:body s/Any}}})
+
 
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
@@ -841,7 +832,7 @@
 
 
 
-(def meta_key_id.people.person_id {:summary "Delete meta-data people for collection."
+(def collection.meta_key_id.people.person_id {:summary "Delete meta-data people for collection."
                                    :handler handle_delete-meta-data-people
                                    :middleware [wrap-add-person
                                                 sd/ring-wrap-add-media-resource
@@ -901,7 +892,7 @@
                                    :responses {200 {:body s/Any}}})
 
 
-(def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for media-entry."
+(def meta_key_id.keyword.keyword_id2 {:summary "Delete meta-data keyword for media-entry."
                                      :handler handle_delete-meta-data-keyword
                                      :middleware [wrap-add-keyword
                                                   sd/ring-wrap-add-media-resource
@@ -925,16 +916,16 @@
 
 
 
-(def meta_key_id.people.person_id {:summary "Delete meta-data people for collection."
-                                   :handler handle_delete-meta-data-people
-                                   :middleware [wrap-add-person
-                                                sd/ring-wrap-add-media-resource
-                                                sd/ring-wrap-authorization-edit-metadata]
-                                   :coercion reitit.coercion.schema/coercion
-                                   :parameters {:path {:collection_id s/Uuid
-                                                       :meta_key_id s/Str
-                                                       :person_id s/Uuid}}
-                                   :responses {200 {:body s/Any}}})
+;(def media_entry.meta_key_id.people.person_id {:summary "Delete meta-data people for collection."
+;                                   :handler handle_delete-meta-data-people
+;                                   :middleware [wrap-add-person
+;                                                sd/ring-wrap-add-media-resource
+;                                                sd/ring-wrap-authorization-edit-metadata]
+;                                   :coercion reitit.coercion.schema/coercion
+;                                   :parameters {:path {:collection_id s/Uuid
+;                                                       :meta_key_id s/Str
+;                                                       :person_id s/Uuid}}
+;                                   :responses {200 {:body s/Any}}})
 
 
 (def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."

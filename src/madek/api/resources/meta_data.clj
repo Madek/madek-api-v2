@@ -851,7 +851,9 @@
     ["/:meta_key_id/people/:person_id"
      {:post post/collection_id.meta_key_id.people.person_id
 
-      :delete d/meta_key_id.people.person_id}]
+
+      ;; TODO???
+      :delete d/collection.meta_key_id.people.person_id}]
 
     ; TODO meta-data roles
     ["/:meta_key_id/role/:role_id"
@@ -893,7 +895,7 @@
     ["/:meta_key_id/keyword/:keyword_id"
      {:post post/meta-datum.meta_key_id.keyword.keyword_id
 
-      :delete d/meta_key_id.keyword.keyword_id}]
+      :delete d/meta_key_id.keyword.keyword_id2}]
 
     ["/:meta_key_id/people"
      {:get get/meta_key_id.people}]
@@ -901,7 +903,8 @@
     ["/:meta_key_id/people/:person_id"
      {:post post/media_entry_id.meta-datum.meta_key_id.people.person_id
 
-      :delete d/meta_key_id.people.person_id}]
+      ;; TODO: ????
+      :delete d/media_entry.meta_key_id.people.person_id}]
 
     ["/:meta_key_id/role"
      {:get get/meta_key_id.role}]
