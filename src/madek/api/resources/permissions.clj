@@ -3,9 +3,10 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-resources.permissions :as mr-permissions]
+   [madek.api.resources.permissions.get :as get]
+   [madek.api.resources.permissions.put :as put]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
-   [madek.api.resources.permissions.get :as get]
 
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -401,7 +402,7 @@
   ["/media-entry/:media_entry_id/perms"
    {:swagger {:tags ["media-entry/perms"]}}
    ["/"
-    {:get get/media-entry.media_entry_id.perms     }]
+    {:get get/media-entry.media_entry_id.perms}]
 
    ; TODO patch for entity perms
    ; get_metadata_and_previews
@@ -414,16 +415,7 @@
     {:get get/media-entry.media_entry_id.perms.resources
 
 
-     :put
-     {:summary "Update media-entry entity permissions"
-      :description (str "Valid perm_name values are" valid_permission_names)
-      :handler handle_update-ressource-perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-permissions]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:media_entry_id s/Uuid}
-                   :body (get-schema :media_entries.schema_update-media-entry-perms)}
-      :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}}]
+     :put put/me.resources}]
 
 
 
@@ -431,17 +423,7 @@
 
 
    ["/resource/:perm_name/:perm_val"
-    {:put {:summary "Update media-entry entity permissions"
-           :description (str "Valid perm_name values are" valid_permission_names)
-           :handler handle_update-resource-perm-value
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid
-                               :perm_name (s/enum "get_metadata_and_previews"
-                                                  "get_full_size")
-                               :perm_val s/Bool}}
-           :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}}]
+    {:put put/me.resource.perm_name.perm_val}]
 
 
 
@@ -453,7 +435,7 @@
 
 
    ["/users"
-    {:get get/media-entry.media_entry_id.perms.users     }]
+    {:get get/media-entry.media_entry_id.perms.users}]
 
 
 
@@ -501,20 +483,7 @@
 
 
    ["/user/:user_id/:perm_name/:perm_val"
-    {:put {:summary "Update media-entry user permissions"
-           :description (str "Valid perm_name values are" valid_permission_names)
-           :handler handle_update-user-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid
-                               :user_id s/Uuid
-                               :perm_name (s/enum "get_metadata_and_previews"
-                                                  "get_full_size"
-                                                  "edit_metadata"
-                                                  "edit_permissions")
-                               :perm_val s/Bool}}
-           :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}}]
+    {:put put/me.user.user_id.perm_name.perm_val}]
 
 
 
@@ -585,19 +554,7 @@
 
 
    ["/group/:group_id/:perm_name/:perm_val"
-    {:put {:summary "Update media-entry group permissions"
-           :description (str "Valid perm_name values are" valid_permission_names)
-           :handler handle_update-group-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid
-                               :group_id s/Uuid
-                               :perm_name (s/enum "get_metadata_and_previews"
-                                                  "get_full_size"
-                                                  "edit_metadata")
-                               :perm_val s/Bool}}
-           :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}}]])
+    {:put put/me.group.group_id.perm_name.permval}]])
 
 
 
@@ -619,7 +576,7 @@
   ["/collection/:collection_id/perms"
    {:swagger {:tags ["collection/perms"]}}
    ["/"
-    {:get get/collection.collection_id.perms     }]
+    {:get get/collection.collection_id.perms}]
 
 
 
@@ -631,16 +588,7 @@
     {:get get/collection.collection_id.perms.resources
 
 
-     :put
-     {:summary "Update collection entity permissions"
-      :description (str "Valid perm_name values are" valid_permission_names)
-      :handler handle_update-ressource-perms
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-permissions]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid}
-                   :body (get-schema :collections-perms.schema_update-collection-perms)}
-      :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}}]
+     :put put/col.resources     }]
 
 
 
@@ -652,17 +600,7 @@
 
 
    ["/resource/:perm_name/:perm_val"
-    {:put
-     {:summary "Update collection entity permissions"
-      :description (str "Valid perm_name values are" valid_permission_names)
-      :handler handle_update-resource-perm-value
-      :middleware [sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-edit-permissions]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:collection_id s/Uuid
-                          :perm_name (s/enum "get_metadata_and_previews")
-                          :perm_val s/Bool}}
-      :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}}]
+    {:put put/col.resource.perm_name.perm_val     }]
 
 
 
@@ -716,21 +654,10 @@
 
 
    ["/user/:user_id/:perm_name/:perm_val"
-    {:put {:summary "Update collection user permissions"
-           :handler handle_update-user-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Uuid
-                               :user_id s/Uuid
-                               :perm_name (s/enum "get_metadata_and_previews"
-                                                  "edit_metadata_and_relations"
-                                                  "edit_permissions")
-                               :perm_val s/Bool}}
-           :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}}]
+    {:put put/col.user.user_id.perm_name.perm_val}]
 
    ["/groups"
-    {:get get/collection.collection_id.perms.groups     }]
+    {:get get/collection.collection_id.perms.groups}]
 
 
 
@@ -777,15 +704,4 @@
 
 
    ["/group/:group_id/:perm_name/:perm_val"
-    {:put {:summary "Update collection group permissions"
-           :description (str "Valid perm_name values are" valid_permission_names)
-           :handler handle_update-group-perms
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-permissions]
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Uuid
-                               :group_id s/Uuid
-                               :perm_name (s/enum "get_metadata_and_previews"
-                                                  "edit_metadata_and_relations")
-                               :perm_val s/Bool}}
-           :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}}]])
+    {:put put/col.group.group_id.perm_name.perm_val}]])
