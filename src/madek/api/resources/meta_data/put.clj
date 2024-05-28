@@ -790,7 +790,7 @@
 
 
 
-(def meta_key_id.json {:summary "Update meta-data json for media-entry"
+(def media_entry.meta_key_id.json {:summary "Update meta-data json for media-entry"
                        :handler handle_update-meta-data-json
                        :middleware [sd/ring-wrap-add-media-resource
                                     sd/ring-wrap-authorization-edit-metadata]
@@ -812,7 +812,7 @@
                             :responses {200 {:body s/Any}}} )
 
 
-(def meta_key_id.text {:summary "Update meta-data text for media-entry"
+(def media_entry.meta_key_id.text {:summary "Update meta-data text for media-entry"
                             :handler handle_update-meta-data-text
                             :middleware [sd/ring-wrap-add-media-resource
                                          sd/ring-wrap-authorization-edit-metadata]
@@ -823,7 +823,7 @@
                             :responses {200 {:body s/Any}}} )
 
 
-(def meta_key_id.json {:summary "Update meta-data json for collection."
+(def collection.meta_key_id.json {:summary "Update meta-data json for collection."
                        :handler handle_update-meta-data-json
                        :middleware [sd/ring-wrap-add-media-resource
                                     sd/ring-wrap-authorization-edit-metadata]

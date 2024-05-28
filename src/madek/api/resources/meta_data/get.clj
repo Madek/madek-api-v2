@@ -961,7 +961,7 @@
                                            :responses {200 {:body s/Any}}})
 
 
-(def meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
+(def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
                           :handler handle_get-meta-data-keywords
                           :middleware [;wrap-me-add-meta-data
                                        sd/ring-wrap-add-media-resource
@@ -1007,7 +1007,7 @@
                                             :responses {200 {:body s/Any}}})
 
 
-(def meta_key_id.keyword {:summary "Get meta-data keywords for media-entries meta-key"
+(def media_entry.meta_key_id.keyword {:summary "Get meta-data keywords for media-entries meta-key"
                           :handler handle_get-meta-data-keywords
                           :middleware [;wrap-me-add-meta-data
                                        sd/ring-wrap-add-media-resource
