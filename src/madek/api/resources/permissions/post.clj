@@ -1,14 +1,10 @@
-(ns madek.api.resources.permissions
+(ns madek.api.resources.permissions.post
   (:require
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-resources.permissions :as mr-permissions]
-   [madek.api.resources.permissions.get :as get]
-   [madek.api.resources.permissions.put :as put]
-   [madek.api.resources.permissions.post :as post]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
-
    [reitit.coercion.schema]
    [schema.core :as s]))
 
@@ -261,408 +257,61 @@
    "edit_metadata"
    "edit_permissions"])
 
-;(def valid_permission_keys
-;  (map keyword valid_permission_names))
 
-;(def schema_update-collection-perms
-;  {(s/optional-key :get_metadata_and_previews) s/Bool
-;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-;
-;(def schema_create-collection-user-permission
-;  {:get_metadata_and_previews s/Bool
-;   :edit_metadata_and_relations s/Bool
-;   :edit_permissions s/Bool})
-;
-;(def schema_export-collection-user-permission
-;  {:id s/Uuid
-;
-;   ;; collection_user_permissions
-;   :get_metadata_and_previews s/Bool
-;   :edit_metadata_and_relations s/Bool
-;   :edit_permissions s/Bool
-;   :collection_id s/Uuid
-;
-;   :user_id s/Uuid
-;   :updator_id (s/maybe s/Uuid)
-;   :created_at s/Any
-;   :updated_at s/Any
-;   :delegation_id (s/maybe s/Uuid)
-;   }
-;  )
-;
+;; ### handler ######################################################
+
+(def me.user.user_id {:summary "Create media-entry user permissions."
+                      :swagger {:produces "application/json"}
+                      :content-type "application/json"
+                      :handler handle_create-user-perms
+                      :middleware [sd/ring-wrap-add-media-resource
+                                   sd/ring-wrap-authorization-edit-permissions]
+                      :coercion reitit.coercion.schema/coercion
+                      :parameters {:path {:media_entry_id s/Uuid
+                                          :user_id s/Uuid}
+                                   :body (get-schema :media_entry_user_permissions.schema_create-media-entry-user-permission)}
+                      :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}})
+
+
+(def me.group.group_id {:summary "Create media-entry group permissions."
+                        :swagger {:produces "application/json"}
+                        :content-type "application/json"
+                        :handler handle_create-group-perms
+                        :middleware [sd/ring-wrap-add-media-resource
+                                     sd/ring-wrap-authorization-edit-permissions]
+                        :coercion reitit.coercion.schema/coercion
+                        :parameters {:path {:media_entry_id s/Uuid
+                                            :group_id s/Uuid}
+                                     :body (get-schema :media_entry_group_permissions.schema_create-media-entry-group-permission)}
+                        :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}})
+
+
+(def col.user.user_id {:summary "Create collection user permissions."
+                       :swagger {:produces "application/json"}
+                       :content-type "application/json"
+                       :handler handle_create-user-perms
+                       :middleware [sd/ring-wrap-add-media-resource
+                                    sd/ring-wrap-authorization-edit-permissions]
+                       :coercion reitit.coercion.schema/coercion
+                       :parameters {:path {:collection_id s/Uuid
+                                           :user_id s/Uuid}
+                                    :body (get-schema :collection_user_permissions.schema_create-collection-user-permission)}
+                       :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}})
+
+
+(def col.group.group_id {:summary "Create collection group permissions."
+                         :swagger {:produces "application/json"}
+                         :content-type "application/json"
+                         :handler handle_create-group-perms
+                         :middleware [sd/ring-wrap-add-media-resource
+                                      sd/ring-wrap-authorization-edit-permissions]
+                         :coercion reitit.coercion.schema/coercion
+                         :parameters {:path {:collection_id s/Uuid
+                                             :group_id s/Uuid}
+                                      :body (get-schema :collection_group_permissions.schema_create-collection-group-permission)}
+                         :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}})
 
-;(def schema_create-collection-group-permission
-;  {:get_metadata_and_previews s/Bool
-;   :edit_metadata_and_relations s/Bool})
-;
-;(def schema_export-collection-group-permission
-;  {:id s/Uuid
-;   :updator_id (s/maybe s/Uuid)
-;   :collection_id s/Uuid
-;   :group_id s/Uuid
-;   :get_metadata_and_previews s/Bool
-;   :edit_metadata_and_relations s/Bool
-;   ;:delegation_id (s/maybe s/Uuid)
-;   :created_at s/Any
-;   :updated_at s/Any})
-;
-;
-;
-;
-;
-;
-;
-;(def schema_export-collection-perms
-;  {:id s/Uuid
-;   :creator_id s/Uuid
-;   (s/optional-key :get_metadata_and_previews) s/Bool
-;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-;
-;   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-;
-;(def schema_export_collection-permissions-all
-;  {:media-resource schema_export-collection-perms
-;   :users [(get-schema :collection_user_permissions.schema_export-collection-user-permission)]
-;   :groups [(get-schema :collection_group_permissions.schema_export-collection-group-permission)]})
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;(def schema_update-media-entry-perms
-;  {(s/optional-key :get_metadata_and_previews) s/Bool
-;   (s/optional-key :get_full_size) s/Bool
-;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-;
-;(def schema_export-media-entry-perms
-;  {:id s/Uuid
-;   :creator_id s/Uuid
-;   :is_published s/Bool
-;   (s/optional-key :get_metadata_and_previews) s/Bool
-;   (s/optional-key :get_full_size) s/Bool
-;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-;
-;(def schema_create-media-entry-user-permission
-;  {:get_metadata_and_previews s/Bool
-;   :get_full_size s/Bool
-;   :edit_metadata s/Bool
-;   :edit_permissions s/Bool})
-;
-;(def schema_export-media-entry-user-permission
-;  {:id s/Uuid
-;   :updator_id (s/maybe s/Uuid)
-;   :media_entry_id s/Uuid
-;   :user_id s/Uuid
-;   :get_metadata_and_previews s/Bool
-;   :get_full_size s/Bool
-;   :edit_metadata s/Bool
-;   :edit_permissions s/Bool
-;   :delegation_id (s/maybe s/Uuid)
-;   :created_at s/Any
-;   :updated_at s/Any})
-;
-;
-;
-;
-;
-;
-;
-;(def schema_create-media-entry-group-permission
-;  {:get_metadata_and_previews s/Bool
-;   :get_full_size s/Bool
-;   :edit_metadata s/Bool})
-;
-;(def schema_export-media-entry-group-permission
-;  {:id s/Uuid
-;   :updator_id (s/maybe s/Uuid)
-;   :media_entry_id s/Uuid
-;   :group_id s/Uuid
-;   :get_metadata_and_previews s/Bool
-;   :get_full_size s/Bool
-;   :edit_metadata s/Bool
-;   :created_at s/Any
-;   :updated_at s/Any})
-;
-;(def schema_export_media-entry-permissions-all
-;  {:media-resource schema_export-media-entry-perms
-;   :users [schema_export-media-entry-user-permission]
-;   :groups [schema_export-media-entry-group-permission]})
 
-(def media-entry-routes
-  ["/media-entry/:media_entry_id/perms"
-   {:swagger {:tags ["media-entry/perms"]}}
-   ["/"
-    {:get get/media-entry.media_entry_id.perms}]
 
-   ; TODO patch for entity perms
-   ; get_metadata_and_previews
-   ; get_full_size
-   ; responsible_user_id
-   ; responsible_delegation_id
-   ; TODO beware to let not update perm fields in media-entry or collection patch/update
 
-   ["/resources"
-    {:get get/media-entry.media_entry_id.perms.resources
 
-
-     :put put/me.resources}]
-
-
-
-
-
-
-   ["/resource/:perm_name/:perm_val"
-    {:put put/me.resource.perm_name.perm_val}]
-
-
-
-
-
-
-
-
-
-
-   ["/users"
-    {:get get/media-entry.media_entry_id.perms.users}]
-
-
-
-
-
-
-
-
-
-   ["/user/:user_id"
-    {:get get/media-entry.media_entry_id.perms.user
-
-     :post post/me.user.user_id
-
-     :delete {:summary "Delete media-entry user permissions."
-              :swagger {:produces "application/json"}
-              :content-type "application/json"
-              :handler handle_delete-user-perms
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
-              :coercion reitit.coercion.schema/coercion
-              :parameters {:path {:media_entry_id s/Uuid
-                                  :user_id s/Uuid}}
-              :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}}]
-
-
-
-
-
-
-
-
-
-
-
-
-   ["/user/:user_id/:perm_name/:perm_val"
-    {:put put/me.user.user_id.perm_name.perm_val}]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ["/groups"
-    {:get get/media-entry.media_entry_id.perms.groups
-     }]
-
-
-
-
-
-
-
-
-
-
-
-
-   ["/group/:group_id"
-    {:get get/media-entry.media_entry_id.perms.group.group_id
-
-     :post post/me.group.group_id
-
-     :delete {:summary "Delete media-entry group permissions."
-              :swagger {:produces "application/json"}
-              :content-type "application/json"
-              :handler handle_delete-group-perms
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
-              :coercion reitit.coercion.schema/coercion
-              :parameters {:path {:media_entry_id s/Uuid
-                                  :group_id s/Uuid}}
-              :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}}]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ["/group/:group_id/:perm_name/:perm_val"
-    {:put put/me.group.group_id.perm_name.permval}]])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(def collection-routes
-  ["/collection/:collection_id/perms"
-   {:swagger {:tags ["collection/perms"]}}
-   ["/"
-    {:get get/collection.collection_id.perms}]
-
-
-
-
-
-
-
-   ["/resources"
-    {:get get/collection.collection_id.perms.resources
-
-
-     :put put/col.resources     }]
-
-
-
-
-
-
-
-
-
-
-   ["/resource/:perm_name/:perm_val"
-    {:put put/col.resource.perm_name.perm_val     }]
-
-
-
-
-
-
-
-
-   ["/users"
-    {:get get/collection.collection_id.perms.users}]
-
-
-
-
-
-
-
-
-
-   ["/user/:user_id"
-    {:get get/collection.collection_id.perms.user.user_id
-
-     :post post/col.user.user_id
-
-     :delete {:summary "Delete collection user permissions."
-              :swagger {:produces "application/json"}
-              :content-type "application/json"
-              :handler handle_delete-user-perms
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
-              :coercion reitit.coercion.schema/coercion
-              :parameters {:path {:collection_id s/Uuid
-                                  :user_id s/Uuid}}
-              :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}}]
-
-
-
-
-
-
-
-
-   ["/user/:user_id/:perm_name/:perm_val"
-    {:put put/col.user.user_id.perm_name.perm_val}]
-
-   ["/groups"
-    {:get get/collection.collection_id.perms.groups}]
-
-
-
-
-
-
-
-
-   ["/group/:group_id"
-    {:get get/collection.collection_id.perms.group.group_id
-
-     :post post/col.group.group_id
-
-     :delete {:summary "Delete collection group permissions."
-              :swagger {:produces "application/json"}
-              :content-type "application/json"
-              :handler handle_delete-group-perms
-              :middleware [sd/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
-              :coercion reitit.coercion.schema/coercion
-              :parameters {:path {:collection_id s/Uuid
-                                  :group_id s/Uuid}}
-              :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}}]
-
-
-
-
-
-
-
-
-
-
-
-
-   ["/group/:group_id/:perm_name/:perm_val"
-    {:put put/col.group.group_id.perm_name.perm_val}]])
