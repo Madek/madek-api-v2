@@ -4,6 +4,10 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-resources.permissions :as mr-permissions]
    [madek.api.resources.shared :as sd]
+
+   [madek.api.resources.permissions.common :refer :all]
+
+
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -12,11 +16,11 @@
 ; TODO clipboard_user
 ; TODO logwrite
 
-(defn mr-table-type [media-resource]
-  (case (:type media-resource)
-    "MediaEntry" "media_entry"
-    "Collection" "collection"
-    :default (throw ((ex-info "Invalid media-resource type" {:status 500})))))
+;(defn mr-table-type [media-resource]
+;  (case (:type media-resource)
+;    "MediaEntry" "media_entry"
+;    "Collection" "collection"
+;    :default (throw ((ex-info "Invalid media-resource type" {:status 500})))))
 
 ;(defn get-entity-perms
 ;  ;([mr] (get-entity-perms mr (:type mr)))
@@ -72,12 +76,12 @@
     (catch Exception ex (sd/response_exception ex))))
 
 
-; TODO only for docu
-(def valid_permission_names
-  ["get_metadata_and_previews"
-   "get_full_size"
-   "edit_metadata"
-   "edit_permissions"])
+;; TODO only for docu
+;(def valid_permission_names
+;  ["get_metadata_and_previews"
+;   "get_full_size"
+;   "edit_metadata"
+;   "edit_permissions"])
 
 
 ;; ### handler ######################################################
