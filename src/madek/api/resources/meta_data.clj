@@ -819,38 +819,154 @@
 
    ["/:collection_id/meta-datum"
     ["/:meta_key_id"
-     {:get get/collection_id.meta-datum.meta_key_id
+     {:get {:summary "Get meta-data for collection and meta-key."
+            :handler handle_get-meta-key-meta-data
 
-      :delete d/collection_id.meta-datum.meta_key_id}]
+            :middleware [wrap-add-meta-key
+                         wrap-check-vocab
+                         sd/ring-wrap-add-media-resource
+                         sd/ring-wrap-authorization-view]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:collection_id s/Uuid
+                                :meta_key_id s/Str}}
+            :responses {200 {:body s/Any}}}
+
+      :delete {:summary "Delete meta-data for collection and meta-key"
+               :handler handle-delete-meta-data
+               :middleware [sd/ring-wrap-add-media-resource
+                            sd/ring-wrap-authorization-view
+                            wrap-col-add-meta-data]
+               :coercion reitit.coercion.schema/coercion
+               :parameters {:path {:collection_id s/Uuid
+                                   :meta_key_id s/Str}}
+               :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/text"
 
-     {:post post/collection_id.meta-datum:meta_key_id.text
+     {:post {:summary "Create meta-data text for collection."
+             :handler handle_create-meta-data-text
+             :middleware [sd/ring-wrap-add-media-resource
+                          sd/ring-wrap-authorization-edit-metadata]
+             :accept "application/json"
+             :content-type "application/json"
+             :swagger {:produces "application/json" :consumes "application/json"}
+             :coercion reitit.coercion.schema/coercion
+             :parameters {:path {:collection_id s/Uuid
+                                 :meta_key_id s/Str}
+                          :body {:string s/Str}}
+             :responses {200 {:body s/Any}}}
 
-      :put put/meta_key_id.text}]
+      :put {:summary "Update meta-data text for collection."
+            :handler handle_update-meta-data-text
+            :middleware [sd/ring-wrap-add-media-resource
+                         sd/ring-wrap-authorization-edit-metadata]
+            :accept "application/json"
+            :content-type "application/json"
+            :swagger {:produces "application/json" :consumes "application/json"}
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:collection_id s/Uuid
+                                :meta_key_id s/Str}
+                         :body {:string s/Str}}
+            :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/text-date"
-     {:post post/collection_id.meta-datum:meta_key_id.text-date
-      :put put/text.meta_key_id.text-date}]
+     {:post {:summary "Create meta-data json for collection."
+             :handler handle_create-meta-data-text-date
+             :middleware [sd/ring-wrap-add-media-resource
+                          sd/ring-wrap-authorization-edit-metadata]
+             :coercion reitit.coercion.schema/coercion
+             :parameters {:path {:collection_id s/Uuid
+                                 :meta_key_id s/Str}
+                          :body {:string s/Str}}
+             :responses {200 {:body s/Any}}}
+      :put {:summary "Update meta-data text-date for collection."
+            :handler handle_update-meta-data-text-date
+            :middleware [sd/ring-wrap-add-media-resource
+                         sd/ring-wrap-authorization-edit-metadata]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:collection_id s/Uuid
+                                :meta_key_id s/Str}
+                         :body {:string s/Str}}
+            :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/json"
-     {:post post/collection_id.meta_key_id.json
-      :put put/meta_key_id.json}]
+     {:post {:summary "Create meta-data json for collection."
+             :handler handle_create-meta-data-json
+             :middleware [sd/ring-wrap-add-media-resource
+                          sd/ring-wrap-authorization-edit-metadata]
+             :coercion reitit.coercion.schema/coercion
+             :parameters {:path {:collection_id s/Uuid
+                                 :meta_key_id s/Str}
+                          :body {:json s/Any}}
+             :responses {200 {:body s/Any}}}
+      :put {:summary "Update meta-data json for collection."
+            :handler handle_update-meta-data-json
+            :middleware [sd/ring-wrap-add-media-resource
+                         sd/ring-wrap-authorization-edit-metadata]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:collection_id s/Uuid
+                                :meta_key_id s/Str}
+                         :body {:json s/Any}}
+            :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/keyword"
-     {:get get/meta_key_id.keyword}]
+     {:get {:summary "Get meta-data keywords for collection meta-key"
+            :handler handle_get-meta-data-keywords
+            :middleware [;wrap-me-add-meta-data
+                         sd/ring-wrap-add-media-resource
+                         sd/ring-wrap-authorization-view]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:collection_id s/Uuid
+                                :meta_key_id s/Str}}
+            :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/keyword/:keyword_id"
-     {:post post/collection_id.meta_key_id.keyword.keyword_id
+     {:post {:summary "Create meta-data keyword for collection."
+             :handler handle_create-meta-data-keyword
+             :middleware [;wrap-me-add-meta-data
+                          wrap-add-keyword
+                          sd/ring-wrap-add-media-resource
+                          sd/ring-wrap-authorization-edit-metadata]
+             :coercion reitit.coercion.schema/coercion
+             :parameters {:path {:collection_id s/Uuid
+                                 :meta_key_id s/Str
+                                 :keyword_id s/Uuid}}
+             :responses {200 {:body s/Any}}}
 
-      :delete d/delete.meta_key_id.keyword.keyword_id}]
+      :delete {:summary "Delete meta-data keyword for collection."
+               :handler handle_delete-meta-data-keyword
+               :middleware [wrap-add-keyword
+                            sd/ring-wrap-add-media-resource
+                            sd/ring-wrap-authorization-edit-metadata]
+               :coercion reitit.coercion.schema/coercion
+               :parameters {:path {:collection_id s/Uuid
+                                   :meta_key_id s/Str
+                                   :keyword_id s/Uuid}}
+               :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/people"
-     {:get get/meta_key_id.people}]
+     {:get {:summary "Get meta-data people for collection meta-key."
+            :handler handle_get-meta-data-people
+            :middleware [;wrap-me-add-meta-data
+                         sd/ring-wrap-add-media-resource
+                         sd/ring-wrap-authorization-edit-metadata]
+            :coercion reitit.coercion.schema/coercion
+            :parameters {:path {:collection_id s/Uuid
+                                :meta_key_id s/Str}}
+            :responses {200 {:body s/Any}}}}]
 
     ["/:meta_key_id/people/:person_id"
-     {:post post/collection_id.meta_key_id.people.person_id
-
+     {:post {:summary "Create meta-data people for media-entry"
+             :handler handle_create-meta-data-people
+             :middleware [;wrap-me-add-meta-data
+                          wrap-add-person
+                          sd/ring-wrap-add-media-resource
+                          sd/ring-wrap-authorization-edit-metadata]
+             :coercion reitit.coercion.schema/coercion
+             :parameters {:path {:collection_id s/Uuid
+                                 :meta_key_id s/Str
+                                 :person_id s/Uuid}}
+             :responses {200 {:body s/Any}}}
 
       ;; TODO???
       :delete d/collection.meta_key_id.people.person_id}]
