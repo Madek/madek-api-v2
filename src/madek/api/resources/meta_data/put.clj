@@ -6,6 +6,9 @@
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.resources.shared :as sd]
+
+            [madek.api.resources.meta_data.common :refer :all]
+
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -13,16 +16,16 @@
             [schema.core :as s]
             [taoensso.timbre :refer [error info]]))
 
-(defn- col-key-for-mr-type [mr]
-  (let [mr-type (-> mr :type)]
-    (if (= mr-type "Collection")
-      :collection_id
-      :media_entry_id)))
+;(defn- col-key-for-mr-type [mr]
+;  (let [mr-type (-> mr :type)]
+;    (if (= mr-type "Collection")
+;      :collection_id
+;      :media_entry_id)))
 
-(defn- assoc-media-resource-typed-id [mr ins-data]
-  (assoc ins-data
-         (col-key-for-mr-type mr)
-         (-> mr :id)))
+;(defn- assoc-media-resource-typed-id [mr ins-data]
+;  (assoc ins-data
+;         (col-key-for-mr-type mr)
+;         (-> mr :id)))
 
 
 
@@ -36,56 +39,56 @@
                                [:= colomn (to-uuid (-> mr :id) colomn)]]))]
     md-sql))
 
-(defn- fabric-meta-data
-  [mr meta-key-id md-type user-id]
-  (let [data {:meta_key_id meta-key-id
-              :type md-type
-              :created_by_id (to-uuid user-id)}]
-    (assoc-media-resource-typed-id mr data)))
+;(defn- fabric-meta-data
+;  [mr meta-key-id md-type user-id]
+;  (let [data {:meta_key_id meta-key-id
+;              :type md-type
+;              :created_by_id (to-uuid user-id)}]
+;    (assoc-media-resource-typed-id mr data)))
 
-(defn db-get-meta-data
-  ([mr mk-id md-type db]
-   (let [mr-id (str (-> mr :id))
-         mr-key (col-key-for-mr-type mr)
-         db-query (-> (sql/select :*)
-                      (sql/from :meta_data)
-                      (sql/where [:and
-                                  [:= :meta_key_id mk-id]
-                                  [:= mr-key (to-uuid mr-id mr-key)]])
-                      sql-format)
-         db-result (jdbc/execute-one! db db-query builder-fn-options-default)
-         db-type (:type db-result)]
+;(defn db-get-meta-data
+;  ([mr mk-id md-type db]
+;   (let [mr-id (str (-> mr :id))
+;         mr-key (col-key-for-mr-type mr)
+;         db-query (-> (sql/select :*)
+;                      (sql/from :meta_data)
+;                      (sql/where [:and
+;                                  [:= :meta_key_id mk-id]
+;                                  [:= mr-key (to-uuid mr-id mr-key)]])
+;                      sql-format)
+;         db-result (jdbc/execute-one! db db-query builder-fn-options-default)
+;         db-type (:type db-result)]
+;
+;     (if (or (= nil md-type) (= md-type db-type))
+;       db-result
+;       nil))))
 
-     (if (or (= nil md-type) (= md-type db-type))
-       db-result
-       nil))))
-
-(defn- db-create-meta-data
-  ([db meta-data]
-   (info "db-create-meta-data: " meta-data)
-   (let [sql-query (-> (sql/insert-into :meta_data)
-                       (sql/values [(convert-map-if-exist meta-data)])
-                       (sql/returning :*)
-                       sql-format)
-         result (jdbc/execute-one! db sql-query builder-fn-options-default)]
-     (if result
-       result
-       nil)))
-
-  ([db mr meta-key-id md-type user-id]
-   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
-   (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
-
-  ([db mr meta-key-id md-type user-id meta-data]
-   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
-   (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
-     ;(info "db-create-meta-data: "
-     ;              "MK-ID: " meta-key-id
-     ;              "Type:" md-type
-     ;              "User: " user-id
-     ;              "MD: " meta-data
-     ;              "MD-new: " md)
-     (db-create-meta-data db md))))
+;(defn- db-create-meta-data
+;  ([db meta-data]
+;   (info "db-create-meta-data: " meta-data)
+;   (let [sql-query (-> (sql/insert-into :meta_data)
+;                       (sql/values [(convert-map-if-exist meta-data)])
+;                       (sql/returning :*)
+;                       sql-format)
+;         result (jdbc/execute-one! db sql-query builder-fn-options-default)]
+;     (if result
+;       result
+;       nil)))
+;
+;  ([db mr meta-key-id md-type user-id]
+;   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
+;   (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
+;
+;  ([db mr meta-key-id md-type user-id meta-data]
+;   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
+;   (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
+;     ;(info "db-create-meta-data: "
+;     ;              "MK-ID: " meta-key-id
+;     ;              "Type:" md-type
+;     ;              "User: " user-id
+;     ;              "MD: " meta-data
+;     ;              "MD-new: " md)
+;     (db-create-meta-data db md))))
 
 
 
@@ -165,10 +168,10 @@
 
 
 
-(def MD_TYPE_KEYWORDS "MetaDatum::Keywords")
-(def MD_KEY_KWS :keywords)
-(def MD_KEY_KW_DATA :md_keywords)
-(def MD_KEY_KW_IDS :keywords_ids)
+;(def MD_TYPE_KEYWORDS "MetaDatum::Keywords")
+;(def MD_KEY_KWS :keywords)
+;(def MD_KEY_KW_DATA :md_keywords)
+;(def MD_KEY_KW_IDS :keywords_ids)
 
 ;(defn create_md_and_keyword
 ;  [mr meta-key-id kw-id user-id tx]
@@ -210,10 +213,10 @@
 ;    ;(info "db-create-meta-data-people" "\npeople-data\n" data "\nresult\n" result)
 ;    result))
 
-(def MD_TYPE_PEOPLE "MetaDatum::People")
-(def MD_KEY_PEOPLE :people)
-(def MD_KEY_PEOPLE_DATA :md_people)
-(def MD_KEY_PEOPLE_IDS :people_ids)
+;(def MD_TYPE_PEOPLE "MetaDatum::People")
+;(def MD_KEY_PEOPLE :people)
+;(def MD_KEY_PEOPLE_DATA :md_people)
+;(def MD_KEY_PEOPLE_IDS :people_ids)
 
 ;(defn create_md_and_people
 ;  [mr meta-key-id person-id user-id tx]
