@@ -9,8 +9,7 @@
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
-            [schema.core :as s]
-            [taoensso.timbre :refer [info]]))
+            [taoensso.timbre :refer [info error]]))
 
 ;(def MD_TYPE_KEYWORDS "MetaDatum::Keywords")
 ;(def MD_KEY_KWS :keywords)
@@ -292,13 +291,6 @@
 ;
 ;
 ;
-
-
-
-
-
-
-
 ;
 ;
 ;; TODO del meta-data if md-roles is empty ? sql-trigger ?
@@ -402,13 +394,6 @@
                   false)))
 
 
-(defn wrap-add-keyword [handler]
-  (fn [request] (sd/req-find-data
-                  request handler
-                  :keyword_id
-                  :keywords :id
-                  :keyword
-                  true)))
 
 
 (defn wrap-add-meta-key [handler]
