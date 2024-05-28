@@ -786,3 +786,83 @@
    :person_id s/Uuid
    :role_id (s/maybe s/Uuid)
    :position s/Int})
+
+;; ######## handler ################################################
+
+(def meta-datum.meta_key_id.text
+  {:summary "Create meta-data text for media-entry"
+   :handler handle_create-meta-data-text
+   :middleware [sd/ring-wrap-add-media-resource
+                sd/ring-wrap-authorization-edit-metadata]
+   :coercion reitit.coercion.schema/coercion
+   :parameters {:path {:media_entry_id s/Uuid
+                       :meta_key_id s/Str}
+                :body {:string s/Str}}
+   :responses {200 {:body s/Any}}})
+
+
+(def meta-datum.meta_key_id.text-date
+  {:summary "Create meta-data text-date for media-entry"
+   :handler handle_create-meta-data-text-date
+   :middleware [sd/ring-wrap-add-media-resource
+                sd/ring-wrap-authorization-edit-metadata]
+   :coercion reitit.coercion.schema/coercion
+   :parameters {:path {:media_entry_id s/Uuid
+                       :meta_key_id s/Str}
+                :body {:string s/Str}}
+   :responses {200 {:body s/Any}}})
+
+(def meta-datum.meta_key_id.json
+  {:summary "Create meta-data json for media-entry"
+   :handler handle_create-meta-data-json
+   :middleware [sd/ring-wrap-add-media-resource
+                sd/ring-wrap-authorization-edit-metadata]
+   :coercion reitit.coercion.schema/coercion
+   :parameters {:path {:media_entry_id s/Uuid
+                       :meta_key_id s/Str}
+                :body {:json s/Any}}
+   :responses {200 {:body s/Any}}})
+
+
+(def meta-datum.meta_key_id.keyword.keyword_id
+  {:summary "Create meta-data keyword for media-entry."
+   :handler handle_create-meta-data-keyword
+   :middleware [;wrap-me-add-meta-data
+                wrap-add-keyword
+                sd/ring-wrap-add-media-resource
+                sd/ring-wrap-authorization-edit-metadata]
+   :coercion reitit.coercion.schema/coercion
+   :parameters {:path {:media_entry_id s/Uuid
+                       :meta_key_id s/Str         ;; is this meta_datum_id
+                       :keyword_id s/Uuid}}
+   :responses {200 {:body s/Any}}})
+
+(def media_entry_id.meta-datum.meta_key_id.people.person_id
+  {:summary "Create meta-data people for a media-entries meta-key."
+   :handler handle_create-meta-data-people
+   :middleware [wrap-add-person
+                sd/ring-wrap-add-media-resource
+                sd/ring-wrap-authorization-edit-metadata
+                wrap-me-add-meta-data]
+   :coercion reitit.coercion.schema/coercion
+   :parameters {:path {:media_entry_id s/Uuid
+                       :meta_key_id s/Str
+                       :person_id s/Uuid}}
+   :responses {200 {:body s/Any}}})
+
+
+(def media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position
+  {:summary "Create meta-data role for media-entry."
+   :handler handle_create-meta-data-role
+   :middleware [wrap-add-role
+                wrap-add-person
+                sd/ring-wrap-add-media-resource
+                sd/ring-wrap-authorization-edit-metadata]
+   :coercion reitit.coercion.schema/coercion
+   :parameters {:path {:media_entry_id s/Uuid
+                       :meta_key_id s/Str
+                       :role_id s/Uuid
+                       :person_id s/Uuid
+                       :position s/Int}}
+   :responses {200 {:body s/Any}}})
+
