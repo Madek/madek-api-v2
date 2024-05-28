@@ -1,111 +1,19 @@
 (ns madek.api.resources.meta_data.get
   (:require [cheshire.core]
-            [cheshire.core :as cheshire]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [logbug.catcher :as catcher]
-            [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.db.dynamic_schema.common :refer [get-schema]]
-
-            [madek.api.resources.meta_data.common :refer :all]
-            ;[madek.api.resources.meta_data.common :refer [db-get-meta-data-keywords wrap-add-role
-            ;                                              MD_TYPE_KEYWORDS MD_TYPE_PEOPLE MD_TYPE_ROLES           wrap-col-add-meta-data wrap-add-person db-get-meta-data-roles wrap-me-add-meta-data]]
-
-
 
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
+            [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared :as sd]
-            [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
-            [schema.core :as s]
-            [taoensso.timbre :refer [error info]]))
-
+            [schema.core :as s]))
 
 ;; ###meta-data-routes ##########################################################
-
-;(defn- col-key-for-mr-type [mr]
-;  (let [mr-type (-> mr :type)]
-;    (if (= mr-type "Collection")
-;      :collection_id
-;      :media_entry_id)))
-;
-;(defn- assoc-media-resource-typed-id [mr ins-data]
-;  (assoc ins-data
-;         (col-key-for-mr-type mr)
-;         (-> mr :id)))
-;
-;
-;
-;(defn fabric-meta-data
-;  [mr meta-key-id md-type user-id]
-;  (let [data {:meta_key_id meta-key-id
-;              :type md-type
-;              :created_by_id (to-uuid user-id)}]
-;    (assoc-media-resource-typed-id mr data)))
-;
-;(defn db-get-meta-data
-;  ([mr mk-id md-type db]
-;   (let [mr-id (str (-> mr :id))
-;         mr-key (col-key-for-mr-type mr)
-;         db-query (-> (sql/select :*)
-;                      (sql/from :meta_data)
-;                      (sql/where [:and
-;                                  [:= :meta_key_id mk-id]
-;                                  [:= mr-key (to-uuid mr-id mr-key)]])
-;                      sql-format)
-;         db-result (jdbc/execute-one! db db-query builder-fn-options-default)
-;         db-type (:type db-result)]
-;
-;     (if (or (= nil md-type) (= md-type db-type))
-;       db-result
-;       nil))))
-;
-;(defn- db-create-meta-data
-;  ([db meta-data]
-;   (info "db-create-meta-data: " meta-data)
-;   (let [sql-query (-> (sql/insert-into :meta_data)
-;                       (sql/values [(convert-map-if-exist meta-data)])
-;                       (sql/returning :*)
-;                       sql-format)
-;         result (jdbc/execute-one! db sql-query builder-fn-options-default)]
-;     (if result
-;       result
-;       nil)))
-;
-;  ([db mr meta-key-id md-type user-id]
-;   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id)
-;   (db-create-meta-data db (fabric-meta-data mr meta-key-id md-type user-id)))
-;
-;  ([db mr meta-key-id md-type user-id meta-data]
-;   ;(info "db-create-meta-data: " "MK-ID: " meta-key-id "Type:" md-type "User: " user-id "MD: " meta-data)
-;   (let [md (merge (fabric-meta-data mr meta-key-id md-type user-id) meta-data)]
-;     ;(info "db-create-meta-data: "
-;     ;              "MK-ID: " meta-key-id
-;     ;              "Type:" md-type
-;     ;              "User: " user-id
-;     ;              "MD: " meta-data
-;     ;              "MD-new: " md)
-;     (db-create-meta-data db md))))
-
-
-
-
-
-;
-;(defn db-get-meta-data-keywords
-;  [md-id tx]
-;  (sd/query-eq-find-all :meta_data_keywords :meta_datum_id md-id tx))
-;#_(let [query (-> (sd/build-query-base :meta_data_keywords :*)
-;                  (sql/merge-where [:= :meta_datum_id md-id])
-;                  (sql/merge-join :keywords [:= :keywords.id :meta_data_keywords.keyword_id])
-;                  (sql/order-by [:keywords.term :asc])
-;                  sql-format)]
-;    (info "db-get-meta-data-keywords:\n" query)
-;    (let [result (jdbc/query tx query)]
-;      (info "db-get-meta-data-keywords:\n" result)))
 
 ; TODO only some results
 (defn handle_get-meta-data-keywords
@@ -126,30 +34,6 @@
         (sd/response_ok result))
       (sd/response_failed "Not found" 404))))
 
-
-
-
-;(def MD_TYPE_PEOPLE "MetaDatum::People")
-;(def MD_KEY_PEOPLE :people)
-;(def MD_KEY_PEOPLE_DATA :md_people)
-;(def MD_KEY_PEOPLE_IDS :people_ids)
-;
-;(def MD_TYPE_ROLES "MetaDatum::Roles")
-;(def MD_KEY_ROLES :roles)
-;(def MD_KEY_ROLES_DATA :md_roles)
-;(def MD_KEY_ROLES_IDS :roles_ids)
-;
-;
-;(def MD_TYPE_KEYWORDS "MetaDatum::Keywords")
-;(def MD_KEY_KWS :keywords)
-;(def MD_KEY_KW_DATA :md_keywords)
-;(def MD_KEY_KW_IDS :keywords_ids)
-
-;
-;(defn db-get-meta-data-people
-;  [md-id tx]
-;  (sd/query-eq-find-all :meta_data_people :meta_datum_id md-id tx))
-
 ; TODO only some results
 (defn handle_get-meta-data-people
   [req]
@@ -169,24 +53,7 @@
         (sd/response_ok result))
       (sd/response_failed "Not found" 404))))
 
-
-
-
-
-
-
-;
-;(defn db-get-meta-data-roles [md-id tx]
-;  (sd/query-eq-find-all :meta_data_roles :meta_datum_id md-id tx))
-;
-;
-
-
-
-
-
 ;;  #### Class-Functions ######################################################
-
 
 (defn handle_get-meta-data-roles
   [req]
@@ -210,8 +77,6 @@
                     MD_KEY_PEOPLE people}]
         (sd/response_ok result))
       (sd/response_failed "Not found" 404))))
-
-
 
 (defn- add-meta-data-extra [result tx]
   (let [md-id (:id result)
@@ -238,17 +103,17 @@
 
         mde-data (case md-type
                    "MetaDatum::Keywords" (->>
-                                           mde
-                                           (map (-> :keyword_id))
-                                           (map #(sd/query-eq-find-one :keywords :id % tx)))
+                                          mde
+                                          (map (-> :keyword_id))
+                                          (map #(sd/query-eq-find-one :keywords :id % tx)))
                    "MetaDatum::People" (->>
-                                         mde
-                                         (map (-> :person_id))
-                                         (map #(sd/query-eq-find-one :people :id % tx)))
-                   "MetaDatum::Roles" (->>
                                         mde
-                                        (map (-> :role_id))
-                                        (map #(sd/query-eq-find-one :roles :id % tx)))
+                                        (map (-> :person_id))
+                                        (map #(sd/query-eq-find-one :people :id % tx)))
+                   "MetaDatum::Roles" (->>
+                                       mde
+                                       (map (-> :role_id))
+                                       (map #(sd/query-eq-find-one :roles :id % tx)))
                    "default")
         mde-result {:meta-data result
                     (keyword md-type-kw) mde
@@ -279,25 +144,8 @@
         meta-data (when media-resource (meta-data.index/get-meta-data request media-resource tx))]
     (when meta-data
       (->> meta-data
-        (map #(add-meta-data-extra % tx))
-        sd/response_ok))))
-
-;(defn wrap-add-keyword [handler]
-;  (fn [request] (sd/req-find-data
-;                  request handler
-;                  :keyword_id
-;                  :keywords :id
-;                  :keyword
-;                  true)))
-;
-;
-;(defn wrap-add-meta-key [handler]
-;  (fn [request] (sd/req-find-data
-;                  request handler
-;                  :meta_key_id
-;                  :meta-keys :id
-;                  :meta-key
-;                  true)))
+           (map #(add-meta-data-extra % tx))
+           sd/response_ok))))
 
 ; TODO meta-key makes error media_content:remark
 (defn wrap-check-vocab [handler]
@@ -323,7 +171,6 @@
         (sd/response_not_found "Invalid meta-key, or no vocabulary access.")
         (handler req)))))
 
-
 ;; Routes ####################################################################
 
 ;; ###meta-data-routes ##########################################################
@@ -340,7 +187,6 @@
                                 403 {:body s/Any}
                                 500 {:body s/Any}}})
 
-
 (def meta_datum_id.data-stream {:handler meta-datum/get-meta-datum-data-stream
                                 ; TODO json meta-data: fix response conversion error
                                 :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
@@ -349,7 +195,6 @@
                                 :description "Get meta-data data-stream."
                                 :coercion reitit.coercion.schema/coercion
                                 :parameters {:path {:meta_datum_id s/Uuid}}})
-
 
 (def media-entry.media_entry_id.meta-data {:summary "Get meta-data for media-entry."
                                            :handler meta-data.index/get-index
@@ -362,8 +207,6 @@
                                                                 (s/optional-key :meta_keys) s/Str}}
                                            :responses {200 {:body s/Any}}})
 
-
-
 (def meta-data-role.meta_data_role_id {:summary " Get meta-data role for id "
                                        :handler meta-datum/handle_get-meta-datum-role
                                        :description " Get meta-datum-role for id. returns 404, if no such meta-data role exists. "
@@ -371,7 +214,6 @@
                                        :parameters {:path {:meta_data_role_id s/Str}}
                                        :responses {200 {:body (get-schema :meta-data-role-schema.schema_export_mdrole)}
                                                    404 {:body s/Any}}})
-
 
 (def collection_id.meta-data {:summary "Get meta-data for collection."
                               :handler meta-data.index/get-index
@@ -383,9 +225,6 @@
                                            :query {(s/optional-key :updated_after) s/Inst
                                                    (s/optional-key :meta_keys) s/Str}}
                               :responses {200 {:body s/Any}}})
-
-
-
 
 (def collection_id.meta-data-related {:summary "Get meta-data for collection."
                                       :handler handle_get-mr-meta-data-with-related
@@ -410,28 +249,25 @@
                                                                :meta_key_id s/Str}}
                                            :responses {200 {:body s/Any}}})
 
-
 (def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
-                          :handler handle_get-meta-data-keywords
+                                     :handler handle_get-meta-data-keywords
+                                     :middleware [;wrap-me-add-meta-data
+                                                  sd/ring-wrap-add-media-resource
+                                                  sd/ring-wrap-authorization-view]
+                                     :coercion reitit.coercion.schema/coercion
+                                     :parameters {:path {:collection_id s/Uuid
+                                                         :meta_key_id s/Str}}
+                                     :responses {200 {:body s/Any}}})
+
+(def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
+                          :handler handle_get-meta-data-people
                           :middleware [;wrap-me-add-meta-data
                                        sd/ring-wrap-add-media-resource
-                                       sd/ring-wrap-authorization-view]
+                                       sd/ring-wrap-authorization-edit-metadata]
                           :coercion reitit.coercion.schema/coercion
                           :parameters {:path {:collection_id s/Uuid
                                               :meta_key_id s/Str}}
                           :responses {200 {:body s/Any}}})
-
-
-(def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
-                         :handler handle_get-meta-data-people
-                         :middleware [;wrap-me-add-meta-data
-                                      sd/ring-wrap-add-media-resource
-                                      sd/ring-wrap-authorization-edit-metadata]
-                         :coercion reitit.coercion.schema/coercion
-                         :parameters {:path {:collection_id s/Uuid
-                                             :meta_key_id s/Str}}
-                         :responses {200 {:body s/Any}}})
-
 
 (def media_entry_id.meta-data-related {:summary "Get meta-data for media-entry."
                                        :handler handle_get-mr-meta-data-with-related
@@ -442,8 +278,6 @@
                                                     :query {(s/optional-key :updated_after) s/Inst
                                                             (s/optional-key :meta_keys) s/Str}}
                                        :responses {200 {:body s/Any}}})
-
-
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Get meta-data for media-entry and meta-key."
                                             :handler handle_get-meta-key-meta-data
@@ -456,16 +290,15 @@
                                                                 :meta_key_id s/Str}}
                                             :responses {200 {:body s/Any}}})
 
-
 (def media_entry.meta_key_id.keyword {:summary "Get meta-data keywords for media-entries meta-key"
-                          :handler handle_get-meta-data-keywords
-                          :middleware [;wrap-me-add-meta-data
-                                       sd/ring-wrap-add-media-resource
-                                       sd/ring-wrap-authorization-view]
-                          :coercion reitit.coercion.schema/coercion
-                          :parameters {:path {:media_entry_id s/Uuid
-                                              :meta_key_id s/Str}}
-                          :responses {200 {:body s/Any}}})
+                                      :handler handle_get-meta-data-keywords
+                                      :middleware [;wrap-me-add-meta-data
+                                                   sd/ring-wrap-add-media-resource
+                                                   sd/ring-wrap-authorization-view]
+                                      :coercion reitit.coercion.schema/coercion
+                                      :parameters {:path {:media_entry_id s/Uuid
+                                                          :meta_key_id s/Str}}
+                                      :responses {200 {:body s/Any}}})
 
 ;; collection
 (def meta_key_id.people {:summary "Get meta-data people for media-entries meta-key."
@@ -486,9 +319,6 @@
                        :parameters {:path {:media_entry_id s/Uuid
                                            :meta_key_id s/Str}}
                        :responses {200 {:body s/Any}}})
-
-
-
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

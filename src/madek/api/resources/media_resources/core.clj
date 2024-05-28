@@ -18,7 +18,6 @@
   [mr-type]
   (keyword (str mr-type "_id")))
 
-
 (defn resource-permission-get-query
   ([media-resource tx]
    (case (:type media-resource)
@@ -102,7 +101,6 @@
                            (sql/where [:= :delegations_users.user_id user_id]))]}]
     (map #(:delegation_id %) (jdbc/execute! tx (sql-format query)))))
 
-
 (defn query-user-permissions
   [resource user-id perm-name mr-type tx]
   (->> (build-user-permissions-query (:id resource) user-id perm-name mr-type)
@@ -113,7 +111,6 @@
   (-> stmt
       (sql/where [:= (resource-key mr-type) mr-id]
                  [:= and-key and-id])))
-
 
 (defn query-group-permissions
   [resource user-id perm-name mr-type tx]

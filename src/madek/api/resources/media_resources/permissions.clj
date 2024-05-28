@@ -20,9 +20,6 @@
 ;  [mr-type]
 ;  (keyword (str mr-type "_id")))
 
-
-
-
 ;(defn- build-api-client-permissions-query
 ;  [media-resource-id api-client-id perm-name mr-type]
 ;  (-> (sql/select :*)
@@ -47,7 +44,7 @@
 
   ([mr-id mr-table tx]
    (-> (jdbc/execute-one! tx
-         (-> (sql/select :*) (sql/from (keyword mr-table)) (sql/where [:= :id mr-id]) (sql-format))))))
+                          (-> (sql/select :*) (sql/from (keyword mr-table)) (sql/where [:= :id mr-id]) (sql-format))))))
 
 ;(defn- build-user-permissions-query
 ;  [media-resource-id user-id perm-name mr-type]
@@ -147,8 +144,8 @@
                         sql-format)
         upd-result (jdbc/execute-one! tx update-stmt)]
     (info "update resource permissions"
-      "\ntable\n" tname
-      "\nperm-data\n" perm-data)
+          "\ntable\n" tname
+          "\nperm-data\n" perm-data)
     upd-result))
 
 ;(defn- c/query-user-permissions
@@ -159,14 +156,14 @@
 (defn query-list-user-permissions
   [resource mr-type tx]
   (->> (c/build-user-permission-list-query
-         (:id resource) mr-type)
-    (jdbc/execute! tx)))
+        (:id resource) mr-type)
+       (jdbc/execute! tx)))
 
 (defn query-get-user-permission
   [resource mr-type user-id tx]
   (jdbc/execute-one! tx
-    (c/build-user-permission-get-query
-      (:id resource) mr-type user-id)))
+                     (c/build-user-permission-get-query
+                      (:id resource) mr-type user-id)))
 
 ;(defn- c/sql-cls-resource-and
 ;  [stmt mr-type mr-id and-key and-id]
@@ -227,9 +224,9 @@
                         sql-format)
         result (jdbc/execute-one! tx update-stmt)]
     (info "update user permissions"
-      "\ntable\n" tname
-      "\nperm-data\n" perm-data
-      "\nresult:\n" result)
+          "\ntable\n" tname
+          "\nperm-data\n" perm-data
+          "\nresult:\n" result)
     result))
 
 ;(defn- c/query-group-permissions
@@ -242,14 +239,14 @@
 (defn query-get-group-permission
   [resource mr-type group-id tx]
   (jdbc/execute-one! tx
-    (c/build-group-permission-get-query
-      (:id resource) mr-type group-id)))
+                     (c/build-group-permission-get-query
+                      (:id resource) mr-type group-id)))
 
 (defn query-list-group-permissions
   [resource mr-type tx]
   (->> (c/build-group-permission-list-query
-         (:id resource) mr-type)
-    (jdbc/execute! tx)))
+        (:id resource) mr-type)
+       (jdbc/execute! tx)))
 
 (defn create-group-permissions
   [resource mr-type group-id data tx]
@@ -300,46 +297,46 @@
                         sql-format)
         result (jdbc/execute-one! tx update-stmt)]
     (info "update group permissions"
-      "\ntable\n" tname
-      "\nperm-data\n" perm-data
-      "\nresult\n" result)
+          "\ntable\n" tname
+          "\nperm-data\n" perm-data
+          "\nresult\n" result)
     result))
 
 (defn permission-by-auth-entity? [resource auth-entity perm-name mr-type tx]
   (or (perm-name resource)
-    (let [auth-entity-id (:id auth-entity)]
-      (-> (case (:type auth-entity)
-            "User" (or (= auth-entity-id (:responsible_user_id resource))
-                     (some #(= (:responsible_delegation_id resource) %) (c/delegation-ids auth-entity-id tx))
-                     (seq (c/query-user-permissions resource
-                            auth-entity-id
-                            perm-name mr-type tx))
-                     (seq (c/query-group-permissions resource
-                            auth-entity-id
-                            perm-name mr-type tx)))
+      (let [auth-entity-id (:id auth-entity)]
+        (-> (case (:type auth-entity)
+              "User" (or (= auth-entity-id (:responsible_user_id resource))
+                         (some #(= (:responsible_delegation_id resource) %) (c/delegation-ids auth-entity-id tx))
+                         (seq (c/query-user-permissions resource
+                                                        auth-entity-id
+                                                        perm-name mr-type tx))
+                         (seq (c/query-group-permissions resource
+                                                         auth-entity-id
+                                                         perm-name mr-type tx)))
             ;"ApiClient" (seq (query-api-client-permissions resource
             ;                                               auth-entity-id
             ;                                               perm-name mr-type))
-            )
-          boolean))))
+              )
+            boolean))))
 
 (defn edit-permissions-by-auth-entity? [resource auth-entity mr-type tx]
   (let [auth-entity-id (:id auth-entity)]
     (-> (case (:type auth-entity)
           "User" (or (= auth-entity-id (:responsible_user_id resource))
-                   (some #(= (:responsible_delegation_id resource) %) (c/delegation-ids auth-entity-id tx))
-                   (seq (c/query-user-permissions resource
-                          auth-entity-id
-                          :edit_permissions
-                          mr-type tx))))
+                     (some #(= (:responsible_delegation_id resource) %) (c/delegation-ids auth-entity-id tx))
+                     (seq (c/query-user-permissions resource
+                                                    auth-entity-id
+                                                    :edit_permissions
+                                                    mr-type tx))))
         boolean)))
 
 (defn viewable-by-auth-entity? [resource auth-entity mr-type tx]
   (permission-by-auth-entity? resource
-    auth-entity
-    :get_metadata_and_previews
-    mr-type
-    tx))
+                              auth-entity
+                              :get_metadata_and_previews
+                              mr-type
+                              tx))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

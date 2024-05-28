@@ -13,11 +13,11 @@
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.media-entries.permissions :as media-entry-perms]
+   [madek.api.resources.media-entries.query :refer [query-index-resources]]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.meta-data.index :as meta-data.index]
-   [madek.api.resources.shared :as sd]
 
-   [madek.api.resources.media-entries.query :refer [query-index-resources]]
+   [madek.api.resources.shared :as sd]
 
    [madek.api.utils.core :refer [keyword str]]
    [madek.api.utils.helper :refer [to-uuid]]

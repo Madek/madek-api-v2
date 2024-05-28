@@ -10,9 +10,6 @@
             [reitit.coercion.schema]
             [reitit.coercion.spec]))
 
-
-
-
 ;(def schema_export_meta-datum
 ;  {:id s/Uuid
 ;   :meta_key_id s/Str
@@ -86,8 +83,7 @@
     ["/:meta_key_id/people/:person_id"
      {:post post/collection_id.meta_key_id.people.person_id
 
-
-      ;; TODO???
+;; TODO???
       :delete d/collection.meta_key_id.people.person_id}]
 
     ; TODO meta-data roles
@@ -107,8 +103,7 @@
     ["/:meta_key_id"
      {:get get/media_entry_id.meta-datum.meta_key_id
 
-      :delete d/media_entry_id.meta-datum.meta_key_id
-      }]
+      :delete d/media_entry_id.meta-datum.meta_key_id}]
 
     ["/:meta_key_id/text"
      {:post post/meta-datum.meta_key_id.text
