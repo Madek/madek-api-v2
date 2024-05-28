@@ -7,43 +7,8 @@
    [madek.api.resources.permissions.common :refer :all]
 
    [madek.api.resources.shared :as sd]
-   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
-
-; TODO delegations ?
-; TODO clipboard_user
-; TODO logwrite
-
-;(defn mr-table-type [media-resource]
-;  (case (:type media-resource)
-;    "MediaEntry" "media_entry"
-;    "Collection" "collection"
-;    :default (throw ((ex-info "Invalid media-resource type" {:status 500})))))
-;
-;(defn get-entity-perms
-;  ([mr] (get-entity-perms mr (:type mr)))
-;  ([mr type]
-;   (case type
-;     "MediaEntry" (select-keys mr [:id
-;                                   :creator_id
-;                                   :responsible_user_id
-;                                   :is_published
-;                                   :get_metadata_and_previews
-;                                   :get_full_size
-;                                   ; TODO delegations
-;                                   ])
-;     "Collection" (select-keys mr [:id
-;                                   :creator_id
-;                                   :responsible_user_id
-;                                   :clipboard_user_id
-;                                   :workflow_id
-;                                   :get_metadata_and_previews
-;                                   ; TODO delegations
-;                                   ])
-;     :default (throw ((ex-info "Invalid media-resource type" {:status 500}))))))
-
-
 
 (defn handle_delete-user-perms [req]
   (try
@@ -61,8 +26,6 @@
           (sd/response_failed "No such user permission." 404))))
     (catch Exception ex (sd/response_exception ex))))
 
-
-
 (defn handle_delete-group-perms [req]
   (try
     (catcher/with-logging {}
@@ -79,8 +42,6 @@
 
     (catch Exception ex (sd/response_exception ex))))
 
-
-
 ;; ### handler ######################################################
 
 (def me.user.user_id {:summary "Delete media-entry user permissions."
@@ -94,7 +55,6 @@
                                           :user_id s/Uuid}}
                       :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}})
 
-
 (def me.group.group_id {:summary "Delete media-entry group permissions."
                         :swagger {:produces "application/json"}
                         :content-type "application/json"
@@ -106,7 +66,6 @@
                                             :group_id s/Uuid}}
                         :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}})
 
-
 (def col.user.user_id {:summary "Delete collection user permissions."
                        :swagger {:produces "application/json"}
                        :content-type "application/json"
@@ -117,7 +76,6 @@
                        :parameters {:path {:collection_id s/Uuid
                                            :user_id s/Uuid}}
                        :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}})
-
 
 (def col.group.group_id {:summary "Delete collection group permissions."
                          :swagger {:produces "application/json"}
