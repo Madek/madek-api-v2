@@ -3,6 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
@@ -111,34 +112,35 @@
           (sd/response_failed "Could not delete collection collection arc." 422))))
     (catch Exception e (sd/response_exception e))))
 
-(def schema_collection-collection-arc-export
-  {:id s/Uuid
-   :parent_id s/Uuid
-   :child_id s/Uuid
-   :highlight s/Bool
-   :order s/Num
-   :position s/Int
-   :created_at s/Any
-   :updated_at s/Any})
+;;; not in use
+;(def schema_collection-collection-arc-export
+;  {:id s/Uuid
+;   :parent_id s/Uuid
+;   :child_id s/Uuid
+;   :highlight s/Bool
+;   :order s/Num
+;   :position s/Int
+;   :created_at s/Any
+;   :updated_at s/Any})
 
-(def schema_collection-collection-arc-update
-  {;(s/optional-key :id) s/Uuid
-   ;(s/optional-key :parent_id) s/Uuid
-   ;(s/optional-key :child_id) s/Uuid
-   (s/optional-key :highlight) s/Bool
-   (s/optional-key :order) s/Num
-   (s/optional-key :position) s/Int
-   ;(s/optional-key :created_at) s/Any
-   ;(s/optional-key :updated_at) s/Any
-   })
-(def schema_collection-collection-arc-create
-  {;(s/optional-key :id) s/Uuid
-   ;(s/optional-key :parent_id) s/Uuid
-   ;(s/optional-key :child_id) s/Uuid
-
-   (s/optional-key :highlight) s/Bool
-   (s/optional-key :order) s/Num
-   (s/optional-key :position) s/Int})
+;(def schema_collection-collection-arc-update
+;  {;(s/optional-key :id) s/Uuid
+;   ;(s/optional-key :parent_id) s/Uuid
+;   ;(s/optional-key :child_id) s/Uuid
+;   (s/optional-key :highlight) s/Bool
+;   (s/optional-key :order) s/Num
+;   (s/optional-key :position) s/Int
+;   ;(s/optional-key :created_at) s/Any
+;   ;(s/optional-key :updated_at) s/Any
+;   })
+;(def schema_collection-collection-arc-create
+;  {;(s/optional-key :id) s/Uuid
+;   ;(s/optional-key :parent_id) s/Uuid
+;   ;(s/optional-key :child_id) s/Uuid
+;
+;   (s/optional-key :highlight) s/Bool
+;   (s/optional-key :order) s/Num
+;   (s/optional-key :position) s/Int})
 
 ; TODO add permission checks
 (def ring-routes
@@ -192,7 +194,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}
-                   :body schema_collection-collection-arc-create}
+                   :body (get-schema :collection_carcs.schema_collection-collection-arc-create)}
       :responses {200 {:body s/Any}
                   406 {:body s/Any}}}
 
@@ -216,7 +218,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}
-                   :body schema_collection-collection-arc-update}
+                   :body (get-schema :collection_carcs.schema_collection-collection-arc-update)}
       :responses {200 {:body s/Any}
                   404 {:body s/Any}
                   406 {:body s/Any}}}

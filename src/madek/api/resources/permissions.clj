@@ -1,9 +1,9 @@
 (ns madek.api.resources.permissions
   (:require
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-resources.permissions :as mr-permissions]
    [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -28,7 +28,7 @@
                                    :is_published
                                    :get_metadata_and_previews
                                    :get_full_size
-                                     ; TODO delegations
+                                   ; TODO delegations
                                    ])
      "Collection" (select-keys mr [:id
                                    :creator_id
@@ -36,7 +36,7 @@
                                    :clipboard_user_id
                                    :workflow_id
                                    :get_metadata_and_previews
-                                     ; TODO delegations
+                                   ; TODO delegations
                                    ])
      :default (throw ((ex-info "Invalid media-resource type" {:status 500}))))))
 
@@ -260,114 +260,140 @@
 ;(def valid_permission_keys
 ;  (map keyword valid_permission_names))
 
-(def schema_update-collection-perms
-  {(s/optional-key :get_metadata_and_previews) s/Bool
-   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
+;(def schema_update-collection-perms
+;  {(s/optional-key :get_metadata_and_previews) s/Bool
+;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
+;   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
+;   (s/optional-key :workflow_id) (s/maybe s/Uuid)
+;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
+;
+;(def schema_create-collection-user-permission
+;  {:get_metadata_and_previews s/Bool
+;   :edit_metadata_and_relations s/Bool
+;   :edit_permissions s/Bool})
+;
+;(def schema_export-collection-user-permission
+;  {:id s/Uuid
+;
+;   ;; collection_user_permissions
+;   :get_metadata_and_previews s/Bool
+;   :edit_metadata_and_relations s/Bool
+;   :edit_permissions s/Bool
+;   :collection_id s/Uuid
+;
+;   :user_id s/Uuid
+;   :updator_id (s/maybe s/Uuid)
+;   :created_at s/Any
+;   :updated_at s/Any
+;   :delegation_id (s/maybe s/Uuid)
+;   }
+;  )
+;
 
-(def schema_create-collection-user-permission
-  {:get_metadata_and_previews s/Bool
-   :edit_metadata_and_relations s/Bool
-   :edit_permissions s/Bool})
-
-(def schema_export-collection-user-permission
-  {:id s/Uuid
-   :updator_id (s/maybe s/Uuid)
-   :collection_id s/Uuid
-   :user_id s/Uuid
-   :get_metadata_and_previews s/Bool
-   :edit_metadata_and_relations s/Bool
-   :edit_permissions s/Bool
-   :delegation_id (s/maybe s/Uuid)
-   :created_at s/Any
-   :updated_at s/Any})
-
-(def schema_create-collection-group-permission
-  {:get_metadata_and_previews s/Bool
-   :edit_metadata_and_relations s/Bool})
-
-(def schema_export-collection-group-permission
-  {:id s/Uuid
-   :updator_id (s/maybe s/Uuid)
-   :collection_id s/Uuid
-   :group_id s/Uuid
-   :get_metadata_and_previews s/Bool
-   :edit_metadata_and_relations s/Bool
-   ;:delegation_id (s/maybe s/Uuid)
-   :created_at s/Any
-   :updated_at s/Any})
-
-(def schema_export-collection-perms
-  {:id s/Uuid
-   :creator_id s/Uuid
-   (s/optional-key :get_metadata_and_previews) s/Bool
-   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-
-   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-
-(def schema_export_collection-permissions-all
-  {:media-resource schema_export-collection-perms
-   :users [schema_export-collection-user-permission]
-   :groups [schema_export-collection-group-permission]})
-
-(def schema_update-media-entry-perms
-  {(s/optional-key :get_metadata_and_previews) s/Bool
-   (s/optional-key :get_full_size) s/Bool
-   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-
-(def schema_export-media-entry-perms
-  {:id s/Uuid
-   :creator_id s/Uuid
-   :is_published s/Bool
-   (s/optional-key :get_metadata_and_previews) s/Bool
-   (s/optional-key :get_full_size) s/Bool
-   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
-   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-
-(def schema_create-media-entry-user-permission
-  {:get_metadata_and_previews s/Bool
-   :get_full_size s/Bool
-   :edit_metadata s/Bool
-   :edit_permissions s/Bool})
-
-(def schema_export-media-entry-user-permission
-  {:id s/Uuid
-   :updator_id (s/maybe s/Uuid)
-   :media_entry_id s/Uuid
-   :user_id s/Uuid
-   :get_metadata_and_previews s/Bool
-   :get_full_size s/Bool
-   :edit_metadata s/Bool
-   :edit_permissions s/Bool
-   :delegation_id (s/maybe s/Uuid)
-   :created_at s/Any
-   :updated_at s/Any})
-
-(def schema_create-media-entry-group-permission
-  {:get_metadata_and_previews s/Bool
-   :get_full_size s/Bool
-   :edit_metadata s/Bool})
-
-(def schema_export-media-entry-group-permission
-  {:id s/Uuid
-   :updator_id (s/maybe s/Uuid)
-   :media_entry_id s/Uuid
-   :group_id s/Uuid
-   :get_metadata_and_previews s/Bool
-   :get_full_size s/Bool
-   :edit_metadata s/Bool
-   :created_at s/Any
-   :updated_at s/Any})
-
-(def schema_export_media-entry-permissions-all
-  {:media-resource schema_export-media-entry-perms
-   :users [schema_export-media-entry-user-permission]
-   :groups [schema_export-media-entry-group-permission]})
+;(def schema_create-collection-group-permission
+;  {:get_metadata_and_previews s/Bool
+;   :edit_metadata_and_relations s/Bool})
+;
+;(def schema_export-collection-group-permission
+;  {:id s/Uuid
+;   :updator_id (s/maybe s/Uuid)
+;   :collection_id s/Uuid
+;   :group_id s/Uuid
+;   :get_metadata_and_previews s/Bool
+;   :edit_metadata_and_relations s/Bool
+;   ;:delegation_id (s/maybe s/Uuid)
+;   :created_at s/Any
+;   :updated_at s/Any})
+;
+;
+;
+;
+;
+;
+;
+;(def schema_export-collection-perms
+;  {:id s/Uuid
+;   :creator_id s/Uuid
+;   (s/optional-key :get_metadata_and_previews) s/Bool
+;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
+;
+;   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
+;   (s/optional-key :workflow_id) (s/maybe s/Uuid)
+;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
+;
+;(def schema_export_collection-permissions-all
+;  {:media-resource schema_export-collection-perms
+;   :users [(get-schema :collection_user_permissions.schema_export-collection-user-permission)]
+;   :groups [(get-schema :collection_group_permissions.schema_export-collection-group-permission)]})
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;(def schema_update-media-entry-perms
+;  {(s/optional-key :get_metadata_and_previews) s/Bool
+;   (s/optional-key :get_full_size) s/Bool
+;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
+;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
+;
+;(def schema_export-media-entry-perms
+;  {:id s/Uuid
+;   :creator_id s/Uuid
+;   :is_published s/Bool
+;   (s/optional-key :get_metadata_and_previews) s/Bool
+;   (s/optional-key :get_full_size) s/Bool
+;   (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
+;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
+;
+;(def schema_create-media-entry-user-permission
+;  {:get_metadata_and_previews s/Bool
+;   :get_full_size s/Bool
+;   :edit_metadata s/Bool
+;   :edit_permissions s/Bool})
+;
+;(def schema_export-media-entry-user-permission
+;  {:id s/Uuid
+;   :updator_id (s/maybe s/Uuid)
+;   :media_entry_id s/Uuid
+;   :user_id s/Uuid
+;   :get_metadata_and_previews s/Bool
+;   :get_full_size s/Bool
+;   :edit_metadata s/Bool
+;   :edit_permissions s/Bool
+;   :delegation_id (s/maybe s/Uuid)
+;   :created_at s/Any
+;   :updated_at s/Any})
+;
+;
+;
+;
+;
+;
+;
+;(def schema_create-media-entry-group-permission
+;  {:get_metadata_and_previews s/Bool
+;   :get_full_size s/Bool
+;   :edit_metadata s/Bool})
+;
+;(def schema_export-media-entry-group-permission
+;  {:id s/Uuid
+;   :updator_id (s/maybe s/Uuid)
+;   :media_entry_id s/Uuid
+;   :group_id s/Uuid
+;   :get_metadata_and_previews s/Bool
+;   :get_full_size s/Bool
+;   :edit_metadata s/Bool
+;   :created_at s/Any
+;   :updated_at s/Any})
+;
+;(def schema_export_media-entry-permissions-all
+;  {:media-resource schema_export-media-entry-perms
+;   :users [schema_export-media-entry-user-permission]
+;   :groups [schema_export-media-entry-group-permission]})
 
 (def media-entry-routes
   ["/media-entry/:media_entry_id/perms"
@@ -382,14 +408,14 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body schema_export_media-entry-permissions-all}}}}]
+      :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export_media-entry-permissions-all)}}}}]
 
-; TODO patch for entity perms
-    ; get_metadata_and_previews
-    ; get_full_size
-    ; responsible_user_id
-    ; responsible_delegation_id
-    ; TODO beware to let not update perm fields in media-entry or collection patch/update
+   ; TODO patch for entity perms
+   ; get_metadata_and_previews
+   ; get_full_size
+   ; responsible_user_id
+   ; responsible_delegation_id
+   ; TODO beware to let not update perm fields in media-entry or collection patch/update
 
    ["/resources"
     {:get
@@ -401,7 +427,7 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body schema_export-media-entry-perms}}}
+      :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}
 
      :put
      {:summary "Update media-entry entity permissions"
@@ -411,8 +437,8 @@
                    sd/ring-wrap-authorization-edit-permissions]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Uuid}
-                   :body schema_update-media-entry-perms}
-      :responses {200 {:body schema_export-media-entry-perms}}}}]
+                   :body (get-schema :media_entries.schema_update-media-entry-perms)}
+      :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}}]
 
    ["/resource/:perm_name/:perm_val"
     {:put {:summary "Update media-entry entity permissions"
@@ -425,7 +451,7 @@
                                :perm_name (s/enum "get_metadata_and_previews"
                                                   "get_full_size")
                                :perm_val s/Bool}}
-           :responses {200 {:body schema_export-media-entry-perms}}}}]
+           :responses {200 {:body (get-schema :media_entries.schema_export-media-entry-perms)}}}}]
 
    ["/users"
     {:get
@@ -437,7 +463,7 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body [schema_export-media-entry-user-permission]}}}}]
+      :responses {200 {:body [(get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)]}}}}]
 
    ["/user/:user_id"
     {:get {:summary "Get media-entry user permissions."
@@ -449,7 +475,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid
                                :user_id s/Uuid}}
-           :responses {200 {:body schema_export-media-entry-user-permission}}}
+           :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}
 
      :post {:summary "Create media-entry user permissions."
             :swagger {:produces "application/json"}
@@ -460,8 +486,8 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Uuid
                                 :user_id s/Uuid}
-                         :body schema_create-media-entry-user-permission}
-            :responses {200 {:body schema_export-media-entry-user-permission}}}
+                         :body (get-schema :media_entry_user_permissions.schema_create-media-entry-user-permission)}
+            :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}
 
      :delete {:summary "Delete media-entry user permissions."
               :swagger {:produces "application/json"}
@@ -472,7 +498,7 @@
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:media_entry_id s/Uuid
                                   :user_id s/Uuid}}
-              :responses {200 {:body schema_export-media-entry-user-permission}}}}]
+              :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}}]
 
    ["/user/:user_id/:perm_name/:perm_val"
     {:put {:summary "Update media-entry user permissions"
@@ -488,7 +514,7 @@
                                                   "edit_metadata"
                                                   "edit_permissions")
                                :perm_val s/Bool}}
-           :responses {200 {:body schema_export-media-entry-user-permission}}}}]
+           :responses {200 {:body (get-schema :media_entry_user_permissions.schema_export-media-entry-user-permission)}}}}]
 
    ["/groups"
     {:get
@@ -500,7 +526,7 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Uuid}}
-      :responses {200 {:body [schema_export-media-entry-group-permission]}}}}]
+      :responses {200 {:body [(get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)]}}}}]
 
    ["/group/:group_id"
     {:get {:summary "Get media-entry group permissions."
@@ -512,7 +538,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid
                                :group_id s/Uuid}}
-           :responses {200 {:body schema_export-media-entry-group-permission}}}
+           :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}
 
      :post {:summary "Create media-entry group permissions."
             :swagger {:produces "application/json"}
@@ -523,8 +549,8 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Uuid
                                 :group_id s/Uuid}
-                         :body schema_create-media-entry-group-permission}
-            :responses {200 {:body schema_export-media-entry-group-permission}}}
+                         :body (get-schema :media_entry_group_permissions.schema_create-media-entry-group-permission)}
+            :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}
 
      :delete {:summary "Delete media-entry group permissions."
               :swagger {:produces "application/json"}
@@ -535,7 +561,7 @@
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:media_entry_id s/Uuid
                                   :group_id s/Uuid}}
-              :responses {200 {:body schema_export-media-entry-group-permission}}}}]
+              :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}}]
 
    ["/group/:group_id/:perm_name/:perm_val"
     {:put {:summary "Update media-entry group permissions"
@@ -550,7 +576,7 @@
                                                   "get_full_size"
                                                   "edit_metadata")
                                :perm_val s/Bool}}
-           :responses {200 {:body schema_export-media-entry-group-permission}}}}]])
+           :responses {200 {:body (get-schema :media_entry_group_permissions.schema_export-media-entry-group-permission)}}}}]])
 
 (def collection-routes
   ["/collection/:collection_id/perms"
@@ -565,7 +591,7 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body schema_export_collection-permissions-all}}}}]
+      :responses {200 {:body (get-schema :collection_permissions-all.schema_export-collection-permissions-all)}}}}]
 
    ["/resources"
     {:get
@@ -577,7 +603,7 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body schema_export-collection-perms}}}
+      :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}
 
      :put
      {:summary "Update collection entity permissions"
@@ -587,8 +613,8 @@
                    sd/ring-wrap-authorization-edit-permissions]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid}
-                   :body schema_update-collection-perms}
-      :responses {200 {:body schema_export-collection-perms}}}}]
+                   :body (get-schema :collections-perms.schema_update-collection-perms)}
+      :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}}]
 
    ["/resource/:perm_name/:perm_val"
     {:put
@@ -601,7 +627,7 @@
       :parameters {:path {:collection_id s/Uuid
                           :perm_name (s/enum "get_metadata_and_previews")
                           :perm_val s/Bool}}
-      :responses {200 {:body schema_export-collection-perms}}}}]
+      :responses {200 {:body (get-schema :collections-perms.schema_export-collection-perms)}}}}]
 
    ["/users"
     {:get {:summary "Query collection permissions."
@@ -612,7 +638,7 @@
                         sd/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body [schema_export-collection-user-permission]}}}}]
+           :responses {200 {:body [(get-schema :collection_user_permissions.schema_export-collection-user-permission)]}}}}]
 
    ["/user/:user_id"
     {:get {:summary "Get collection user permissions."
@@ -624,7 +650,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid
                                :user_id s/Uuid}}
-           :responses {200 {:body schema_export-collection-user-permission}}}
+           :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}
 
      :post {:summary "Create collection user permissions."
             :swagger {:produces "application/json"}
@@ -635,8 +661,8 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Uuid
                                 :user_id s/Uuid}
-                         :body schema_create-collection-user-permission}
-            :responses {200 {:body schema_export-collection-user-permission}}}
+                         :body (get-schema :collection_user_permissions.schema_create-collection-user-permission)}
+            :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}
 
      :delete {:summary "Delete collection user permissions."
               :swagger {:produces "application/json"}
@@ -647,7 +673,7 @@
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid
                                   :user_id s/Uuid}}
-              :responses {200 {:body schema_export-collection-user-permission}}}}]
+              :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}}]
 
    ["/user/:user_id/:perm_name/:perm_val"
     {:put {:summary "Update collection user permissions"
@@ -661,7 +687,7 @@
                                                   "edit_metadata_and_relations"
                                                   "edit_permissions")
                                :perm_val s/Bool}}
-           :responses {200 {:body schema_export-collection-user-permission}}}}]
+           :responses {200 {:body (get-schema :collection_user_permissions.schema_export-collection-user-permission)}}}}]
 
    ["/groups"
     {:get
@@ -673,7 +699,7 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body [schema_export-collection-group-permission]}}}}]
+      :responses {200 {:body [(get-schema :collection_group_permissions.schema_export-collection-group-permission)]}}}}]
 
    ["/group/:group_id"
     {:get {:summary "Get collection group permissions."
@@ -685,7 +711,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid
                                :group_id s/Uuid}}
-           :responses {200 {:body schema_export-collection-group-permission}}}
+           :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}
 
      :post {:summary "Create collection group permissions."
             :swagger {:produces "application/json"}
@@ -696,8 +722,8 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Uuid
                                 :group_id s/Uuid}
-                         :body schema_create-collection-group-permission}
-            :responses {200 {:body schema_export-collection-group-permission}}}
+                         :body (get-schema :collection_group_permissions.schema_create-collection-group-permission)}
+            :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}
 
      :delete {:summary "Delete collection group permissions."
               :swagger {:produces "application/json"}
@@ -708,7 +734,7 @@
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid
                                   :group_id s/Uuid}}
-              :responses {200 {:body schema_export-collection-group-permission}}}}]
+              :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}}]
 
    ["/group/:group_id/:perm_name/:perm_val"
     {:put {:summary "Update collection group permissions"
@@ -722,5 +748,4 @@
                                :perm_name (s/enum "get_metadata_and_previews"
                                                   "edit_metadata_and_relations")
                                :perm_val s/Bool}}
-           :responses {200 {:body schema_export-collection-group-permission}}}}]])
-
+           :responses {200 {:body (get-schema :collection_group_permissions.schema_export-collection-group-permission)}}}}]])

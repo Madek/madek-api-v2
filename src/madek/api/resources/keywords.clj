@@ -3,65 +3,67 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [convert-map]]
-   [madek.api.utils.helper :refer [d t]]
+   [madek.api.utils.helper :refer [d]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
 
 ;### swagger io schema ####################################################################
 
-(def schema_create_keyword
-  {:meta_key_id s/Str
-   :term s/Str
-   (s/optional-key :description) (s/maybe s/Str)
-   (s/optional-key :position) (s/maybe s/Int)
-   (s/optional-key :external_uris) [s/Str]
-   (s/optional-key :rdf_class) s/Str})
-
-(def schema_update_keyword
-  {;id
-   ;(s/optional-key :meta_key_id) s/Str
-   (s/optional-key :term) s/Str
-   (s/optional-key :description) (s/maybe s/Str)
-   (s/optional-key :position) s/Int
-   (s/optional-key :external_uris) [s/Str]
-   (s/optional-key :rdf_class) s/Str})
-
-(def schema_export_keyword_usr
-  {:id s/Uuid
-   :meta_key_id s/Str
-   :term s/Str
-   :description (s/maybe s/Str)
-   :position (s/maybe s/Int)
-   :external_uris [s/Any]
-   :external_uri (s/maybe s/Str)
-   :rdf_class s/Str})
-
-(def schema_export_keyword_adm
-  {:id s/Uuid
-   :meta_key_id s/Str
-   :term s/Str
-   :description (s/maybe s/Str)
-   :position (s/maybe s/Int)
-   :external_uris [s/Any]
-   :external_uri (s/maybe s/Str)
-   :rdf_class s/Str
-   :creator_id (s/maybe s/Uuid)
-   :created_at s/Any
-   :updated_at s/Any})
-
-(def schema_query_keyword
-  {(s/optional-key :id) s/Uuid
-   (s/optional-key :meta_key_id) s/Str
-   (s/optional-key :term) s/Str
-   (s/optional-key :description) s/Str
-   (s/optional-key :rdf_class) s/Str
-   (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int})
+;(def schema_create_keyword
+;  {:meta_key_id s/Str
+;   :term s/Str
+;   (s/optional-key :description) (s/maybe s/Str)
+;   (s/optional-key :position) (s/maybe s/Int)
+;   (s/optional-key :external_uris) [s/Str]
+;   (s/optional-key :rdf_class) s/Str})
+;
+;(def schema_update_keyword
+;  {;id
+;   ;(s/optional-key :meta_key_id) s/Str
+;   (s/optional-key :term) s/Str
+;   (s/optional-key :description) (s/maybe s/Str)
+;   (s/optional-key :position) s/Int
+;   (s/optional-key :external_uris) [s/Str]
+;   (s/optional-key :rdf_class) s/Str})
+;
+;(def schema_export_keyword_usr                              ;;here
+;  {:id s/Uuid
+;   :meta_key_id s/Str
+;   :term s/Str
+;   :description (s/maybe s/Str)
+;   :position (s/maybe s/Int)
+;   :external_uris [s/Any]
+;   :external_uri (s/maybe s/Str)
+;   :rdf_class s/Str})
+;
+;(def schema_export_keyword_adm                                ;;here
+;  {:id s/Uuid
+;   :meta_key_id s/Str
+;   :term s/Str
+;   :description (s/maybe s/Str)
+;   :position (s/maybe s/Int)
+;   :external_uris [s/Any]
+;   :external_uri (s/maybe s/Str)
+;   :rdf_class s/Str
+;   :creator_id (s/maybe s/Uuid)
+;   :created_at s/Any
+;   :updated_at s/Any})
+;
+;(def schema_query_keyword
+;  {(s/optional-key :id) s/Uuid
+;   (s/optional-key :meta_key_id) s/Str
+;   (s/optional-key :term) s/Str
+;   (s/optional-key :description) s/Str
+;   (s/optional-key :rdf_class) s/Str
+;
+;   (s/optional-key :page) s/Int
+;   (s/optional-key :count) s/Int})
 
 (defn user-export-keyword [keyword]
   (->
@@ -205,7 +207,7 @@
                                        :format "int32"
                                        :default 10}}]}
 
-      :responses {200 {:body {:keywords [schema_export_keyword_usr]}}
+      :responses {200 {:body {:keywords [(get-schema :keywords.schema_export_keyword_usr)]}}
                   202 {:description "Successful response, list of items."
                        :schema {} ;; Define your response schema as needed
                        :examples {"application/json" {:message "Here are your items."
@@ -221,7 +223,7 @@
       :middleware [wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_keyword_usr}
+      :responses {200 {:body (get-schema :keywords.schema_export_keyword_usr)}
                   404 {:body s/Any}}
       :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
 
@@ -234,8 +236,8 @@
       :handler handle_adm-query-keywords
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_keyword}
-      :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+      :parameters {:query (get-schema :keywords.schema_query_keyword)}
+      :responses {200 {:body {:keywords [(get-schema :keywords.schema_export_keyword_adm)]}}}
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 
      :post
@@ -243,8 +245,8 @@
       :coercion reitit.coercion.schema/coercion
       :handler handle_create-keyword
       :middleware [wrap-authorize-admin!]
-      :parameters {:body schema_create_keyword}
-      :responses {200 {:body schema_export_keyword_adm}
+      :parameters {:body (get-schema :keywords.schema_create_keyword)}
+      :responses {200 {:body (get-schema :keywords.schema_export_keyword_adm)}
                   406 {:body s/Any}}}}]
    ["/:id"
     {:get
@@ -254,7 +256,7 @@
                    wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_keyword_adm}
+      :responses {200 {:body (get-schema :keywords.schema_export_keyword_adm)}
                   404 {:body s/Any}}
       :description "Get keyword for id. Returns 404, if no such keyword exists."}
 
@@ -265,8 +267,8 @@
                    wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}
-                   :body schema_update_keyword}
-      :responses {200 {:body schema_export_keyword_adm}
+                   :body (get-schema :keywords.schema_update_keyword)}
+      :responses {200 {:body (get-schema :keywords.schema_export_keyword_adm)}
                   404 {:body s/Any}
                   406 {:body s/Any}}}
 
@@ -277,7 +279,7 @@
                    wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_keyword_adm}
+      :responses {200 {:body (get-schema :keywords.schema_export_keyword_adm)}
                   404 {:body s/Any}
                   406 {:body s/Any}}}}]])
 

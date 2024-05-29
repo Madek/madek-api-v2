@@ -4,9 +4,9 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -113,11 +113,12 @@
                                     :media_entries :id
                                     :media_entry true))))
 
-(def schema_favorite_media_entries_export
-  {:user_id s/Uuid
-   :media_entry_id s/Uuid
-   :updated_at s/Any
-   :created_at s/Any})
+;(def schema_favorite_media_entries_export
+;  {:user_id s/Uuid
+;   :media_entry_id s/Uuid
+;   :updated_at s/Any
+;   :created_at s/Any})
+;
 
 ; TODO docu
 ; TODO tests
@@ -145,7 +146,7 @@
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
-           :responses {200 {:body schema_favorite_media_entries_export}
+           :responses {200 {:body (get-schema :favorite-media-entries-raw.schema_favorite_media_entries_export)}
                        404 {:body s/Any}
                        406 {:body s/Any}}}
 
@@ -157,7 +158,7 @@
                        (wwrap-find-favorite_media_entry-by-auth true)]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Uuid}}
-          :responses {200 {:body schema_favorite_media_entries_export}
+          :responses {200 {:body (get-schema :favorite-media-entries-raw.schema_favorite_media_entries_export)}
                       404 {:body s/Any}
                       406 {:body s/Any}}}
 
@@ -169,7 +170,7 @@
                           (wwrap-find-media_entry :media_entry_id)
                           (wwrap-find-favorite_media_entry-by-auth true)]
              :parameters {:path {:media_entry_id s/Uuid}}
-             :responses {200 {:body schema_favorite_media_entries_export}
+             :responses {200 {:body (get-schema :favorite-media-entries-raw.schema_favorite_media_entries_export)}
                          404 {:body s/Any}
                          406 {:body s/Any}}}}])
 

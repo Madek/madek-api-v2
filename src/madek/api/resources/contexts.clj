@@ -3,9 +3,10 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [cast-to-hstore t]]
+   [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -108,28 +109,28 @@
                                     :contexts colname
                                     :context send404))))
 
-(def schema_import_contexts
-  {:id s/Str
-   :admin_comment (s/maybe s/Str)
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)})
-
-(def schema_update_contexts
-  {;(s/optional-key :id) s/Str
-   (s/optional-key :admin_comment) (s/maybe s/Str)
-   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
-   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)})
-
-(def schema_export_contexts_usr
-  {:id s/Str
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)})
-
-(def schema_export_contexts_adm
-  {:id s/Str
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)
-   :admin_comment (s/maybe s/Str)})
+;(def schema_import_contexts
+;  {:id s/Str
+;   :admin_comment (s/maybe s/Str)
+;   :labels (s/maybe sd/schema_ml_list)
+;   :descriptions (s/maybe sd/schema_ml_list)})
+;
+;(def schema_update_contexts
+;  {;(s/optional-key :id) s/Str
+;   (s/optional-key :admin_comment) (s/maybe s/Str)
+;   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)})
+;
+;(def schema_export_contexts_usr
+;  {:id s/Str
+;   :labels (s/maybe sd/schema_ml_list)
+;   :descriptions (s/maybe sd/schema_ml_list)})
+;
+;(def schema_export_contexts_adm
+;  {:id s/Str
+;   :admin_comment (s/maybe s/Str)})
+;   :labels (s/maybe sd/schema_ml_list)
+;   :descriptions (s/maybe sd/schema_ml_list)
 
 ; TODO more checks
 ; TODO response coercion
@@ -144,8 +145,8 @@
             :handler handle_create-contexts
             :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion
-            :parameters {:body schema_import_contexts}
-            :responses {200 {:body schema_export_contexts_adm}
+            :parameters {:body (get-schema :contexts.schema_import_contexts)}
+            :responses {200 {:body (get-schema :contexts.schema_export_contexts_adm)}
                         406 {:body s/Any}}}
      ; context list / query
      :get {:summary (sd/sum_adm "List contexts.")
@@ -153,7 +154,7 @@
            :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
-           :responses {200 {:body [schema_export_contexts_adm]}
+           :responses {200 {:body [(get-schema :contexts.schema_export_contexts_adm)]}
                        406 {:body s/Any}}}}]
    ; edit context
    ["/:id"
@@ -163,7 +164,7 @@
                         (wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export_contexts_adm}
+           :responses {200 {:body (get-schema :contexts.schema_export_contexts_adm)}
                        404 {:body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update contexts with id.")
@@ -172,8 +173,8 @@
                         (wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
-                        :body schema_update_contexts}
-           :responses {200 {:body schema_export_contexts_adm}
+                        :body (get-schema :contexts.schema_update_contexts)}
+           :responses {200 {:body (get-schema :contexts.schema_export_contexts_adm)}
                        404 {:body s/Any}
                        406 {:body s/Any}
                        500 {:body s/Any}}}
@@ -184,7 +185,7 @@
               :middleware [wrap-authorize-admin!
                            (wwrap-find-context :id :id true)]
               :parameters {:path {:id s/Str}}
-              :responses {200 {:body schema_export_contexts_adm}
+              :responses {200 {:body (get-schema :contexts.schema_export_contexts_adm)}
                           404 {:body s/Any}
                           406 {:body s/Any}
                           500 {:body s/Any}}}}]])
@@ -199,7 +200,7 @@
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
-           :responses {200 {:body [schema_export_contexts_usr]}
+           :responses {200 {:body [(get-schema :contexts.schema_export_contexts_usr)]}
                        406 {:body s/Any}}}}]
    ; edit context
    ["/:id"
@@ -208,5 +209,5 @@
            :middleware [(wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export_contexts_usr}
+           :responses {200 {:body (get-schema :contexts.schema_export_contexts_usr)}
                        404 {:body s/Any}}}}]])

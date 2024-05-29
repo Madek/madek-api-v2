@@ -3,9 +3,10 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist t]]
+   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -61,91 +62,91 @@
         (sd/response_failed "Could not update app-settings." 406)))
     (catch Exception ex (sd/parsed_response_exception ex))))
 
-;;; schema ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def schema_update-app-settings
-  {(s/optional-key :about_pages) sd/schema_ml_list
-   (s/optional-key :available_locales) [s/Str]
-   (s/optional-key :brand_logo_url) (s/maybe s/Str)
-   (s/optional-key :brand_texts) sd/schema_ml_list
-   (s/optional-key :catalog_context_keys) [s/Str]
-   (s/optional-key :catalog_subtitles) sd/schema_ml_list
-   (s/optional-key :catalog_titles) sd/schema_ml_list
-   (s/optional-key :context_for_collection_summary) (s/maybe s/Str)
-   (s/optional-key :context_for_entry_summary) (s/maybe s/Str)
-   (s/optional-key :contexts_for_collection_edit) [s/Str]
-   (s/optional-key :contexts_for_collection_extra) [s/Str]
-   (s/optional-key :contexts_for_dynamic_filters) [s/Str]
-   (s/optional-key :contexts_for_entry_edit) [s/Str]
-   (s/optional-key :contexts_for_entry_extra) [s/Str]
-   (s/optional-key :contexts_for_entry_validation) [s/Str]
-   (s/optional-key :contexts_for_list_details) [s/Str]
-   (s/optional-key :copyright_notice_default_text) (s/maybe s/Str)
-   (s/optional-key :copyright_notice_templates) [s/Str]
-   (s/optional-key :default_locale) (s/maybe s/Str)
-   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Uuid)
-   (s/optional-key :featured_set_subtitles) sd/schema_ml_list
-   (s/optional-key :featured_set_titles) sd/schema_ml_list
-   (s/optional-key :ignored_keyword_keys_for_browsing) (s/maybe s/Str)
-   (s/optional-key :media_entry_default_license_id) (s/maybe s/Str)
-   (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
-   (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
-   (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
-   (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
-   (s/optional-key :section_meta_key_id) (s/maybe s/Str)
-   (s/optional-key :site_titles) sd/schema_ml_list
-   (s/optional-key :sitemap) (s/maybe s/Any) ;jsonb
-   (s/optional-key :splashscreen_slideshow_set_id) (s/maybe s/Uuid)
-   (s/optional-key :support_urls) sd/schema_ml_list
-   (s/optional-key :teaser_set_id) (s/maybe s/Uuid)
-   (s/optional-key :time_zone) s/Str
-   (s/optional-key :welcome_texts) sd/schema_ml_list
-   (s/optional-key :welcome_titles) sd/schema_ml_list
-   (s/optional-key :featured_set_id) (s/maybe s/Uuid)})
-
-(def schema_export-app-settings
-  {(s/optional-key :about_pages) (s/maybe sd/schema_ml_list)
-   (s/optional-key :available_locales) [s/Str]
-   (s/optional-key :brand_logo_url) (s/maybe s/Str)
-   (s/optional-key :brand_texts) (s/maybe sd/schema_ml_list)
-   (s/optional-key :catalog_context_keys) [s/Str]
-   (s/optional-key :catalog_subtitles) (s/maybe sd/schema_ml_list)
-   (s/optional-key :catalog_titles) (s/maybe sd/schema_ml_list)
-   (s/optional-key :context_for_collection_summary) (s/maybe s/Str)
-   (s/optional-key :context_for_entry_summary) (s/maybe s/Str)
-   (s/optional-key :contexts_for_collection_edit) [s/Str]
-   (s/optional-key :contexts_for_collection_extra) [s/Str]
-   (s/optional-key :contexts_for_dynamic_filters) [s/Str]
-   (s/optional-key :contexts_for_entry_edit) [s/Str]
-   (s/optional-key :contexts_for_entry_extra) [s/Str]
-   (s/optional-key :contexts_for_entry_validation) [s/Str]
-   (s/optional-key :contexts_for_list_details) [s/Str]
-   (s/optional-key :copyright_notice_default_text) (s/maybe s/Str)
-   (s/optional-key :copyright_notice_templates) [s/Str]
-   (s/optional-key :created_at) s/Any
-   (s/optional-key :default_locale) (s/maybe s/Str)
-   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Uuid)
-   (s/optional-key :featured_set_id) (s/maybe s/Uuid)
-   (s/optional-key :featured_set_subtitles) (s/maybe sd/schema_ml_list)
-   (s/optional-key :featured_set_titles) (s/maybe sd/schema_ml_list)
-   (s/optional-key :id) s/Int
-   (s/optional-key :ignored_keyword_keys_for_browsing) (s/maybe s/Str)
-   (s/optional-key :media_entry_default_license_id) (s/maybe s/Uuid)
-   (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
-   (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
-   (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
-   (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
-   (s/optional-key :section_meta_key_id) (s/maybe s/Str)
-   (s/optional-key :site_titles) (s/maybe sd/schema_ml_list)
-   (s/optional-key :sitemap) (s/maybe s/Any) ;jsonb
-   (s/optional-key :splashscreen_slideshow_set_id) (s/maybe s/Uuid)
-   (s/optional-key :support_urls) (s/maybe sd/schema_ml_list)
-   (s/optional-key :teaser_set_id) (s/maybe s/Uuid)
-   (s/optional-key :time_zone) s/Str
-   (s/optional-key :updated_at) s/Any
-   (s/optional-key :users_active_until_ui_default) (s/maybe s/Int)
-   (s/optional-key :welcome_texts) (s/maybe sd/schema_ml_list)
-   (s/optional-key :welcome_titles) (s/maybe sd/schema_ml_list)})
+;;;; schema ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;(def schema_update-app-settings
+;  {(s/optional-key :about_pages) sd/schema_ml_list
+;   (s/optional-key :available_locales) [s/Str]
+;   (s/optional-key :brand_logo_url) (s/maybe s/Str)
+;   (s/optional-key :brand_texts) sd/schema_ml_list
+;   (s/optional-key :catalog_context_keys) [s/Str]
+;   (s/optional-key :catalog_subtitles) sd/schema_ml_list
+;   (s/optional-key :catalog_titles) sd/schema_ml_list
+;   (s/optional-key :context_for_collection_summary) (s/maybe s/Str)
+;   (s/optional-key :context_for_entry_summary) (s/maybe s/Str)
+;   (s/optional-key :contexts_for_collection_edit) [s/Str]
+;   (s/optional-key :contexts_for_collection_extra) [s/Str]
+;   (s/optional-key :contexts_for_dynamic_filters) [s/Str]
+;   (s/optional-key :contexts_for_entry_edit) [s/Str]
+;   (s/optional-key :contexts_for_entry_extra) [s/Str]
+;   (s/optional-key :contexts_for_entry_validation) [s/Str]
+;   (s/optional-key :contexts_for_list_details) [s/Str]
+;   (s/optional-key :copyright_notice_default_text) (s/maybe s/Str)
+;   (s/optional-key :copyright_notice_templates) [s/Str]
+;   (s/optional-key :default_locale) (s/maybe s/Str)
+;   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Uuid)
+;   (s/optional-key :featured_set_subtitles) sd/schema_ml_list
+;   (s/optional-key :featured_set_titles) sd/schema_ml_list
+;   (s/optional-key :ignored_keyword_keys_for_browsing) (s/maybe s/Str)
+;   (s/optional-key :media_entry_default_license_id) (s/maybe s/Str)
+;   (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
+;   (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
+;   (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
+;   (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :section_meta_key_id) (s/maybe s/Str)
+;   (s/optional-key :site_titles) sd/schema_ml_list
+;   (s/optional-key :sitemap) (s/maybe s/Any) ;jsonb
+;   (s/optional-key :splashscreen_slideshow_set_id) (s/maybe s/Uuid)
+;   (s/optional-key :support_urls) sd/schema_ml_list
+;   (s/optional-key :teaser_set_id) (s/maybe s/Uuid)
+;   (s/optional-key :time_zone) s/Str
+;   (s/optional-key :welcome_texts) sd/schema_ml_list
+;   (s/optional-key :welcome_titles) sd/schema_ml_list
+;   (s/optional-key :featured_set_id) (s/maybe s/Uuid)})
+;
+;(def schema_export-app-settings
+;  {(s/optional-key :about_pages) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :available_locales) [s/Str]
+;   (s/optional-key :brand_logo_url) (s/maybe s/Str)
+;   (s/optional-key :brand_texts) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :catalog_context_keys) [s/Str]
+;   (s/optional-key :catalog_subtitles) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :catalog_titles) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :context_for_collection_summary) (s/maybe s/Str)
+;   (s/optional-key :context_for_entry_summary) (s/maybe s/Str)
+;   (s/optional-key :contexts_for_collection_edit) [s/Str]
+;   (s/optional-key :contexts_for_collection_extra) [s/Str]
+;   (s/optional-key :contexts_for_dynamic_filters) [s/Str]
+;   (s/optional-key :contexts_for_entry_edit) [s/Str]
+;   (s/optional-key :contexts_for_entry_extra) [s/Str]
+;   (s/optional-key :contexts_for_entry_validation) [s/Str]
+;   (s/optional-key :contexts_for_list_details) [s/Str]
+;   (s/optional-key :copyright_notice_default_text) (s/maybe s/Str)
+;   (s/optional-key :copyright_notice_templates) [s/Str]
+;   (s/optional-key :created_at) s/Any
+;   (s/optional-key :default_locale) (s/maybe s/Str)
+;   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Uuid)
+;   (s/optional-key :featured_set_id) (s/maybe s/Uuid)
+;   (s/optional-key :featured_set_subtitles) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :featured_set_titles) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :id) s/Int
+;   (s/optional-key :ignored_keyword_keys_for_browsing) (s/maybe s/Str)
+;   (s/optional-key :media_entry_default_license_id) (s/maybe s/Uuid)
+;   (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
+;   (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
+;   (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
+;   (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :section_meta_key_id) (s/maybe s/Str)
+;   (s/optional-key :site_titles) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :sitemap) (s/maybe s/Any) ;jsonb
+;   (s/optional-key :splashscreen_slideshow_set_id) (s/maybe s/Uuid)
+;   (s/optional-key :support_urls) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :teaser_set_id) (s/maybe s/Uuid)
+;   (s/optional-key :time_zone) s/Str
+;   (s/optional-key :updated_at) s/Any
+;   (s/optional-key :users_active_until_ui_default) (s/maybe s/Int)
+;   (s/optional-key :welcome_texts) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :welcome_titles) (s/maybe sd/schema_ml_list)})
 
 ;;; routes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -169,8 +170,8 @@
                       :consumes "application/json"}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :parameters {:body schema_update-app-settings}
-            :responses {200 {:body schema_export-app-settings}
+            :parameters {:body (get-schema :app_settings-raw.schema_update-app-settings)}
+            :responses {200 {:body (get-schema :app_settings-raw.schema_export-app-settings)}
                         403 {:message "Only administrators are allowed to access this resource."}
                         404 {:message "<Groups|Meta-Keys> entry does not exist"}}}}]]])
 
@@ -183,7 +184,8 @@
             :swagger {:produces "application/json"}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body schema_export-app-settings}}}}]]])
+            :responses {200 {:body (get-schema :app_settings-raw.schema_export-app-settings)}}}}]]])
+;:responses {200 {:body (get-schema :app_settings-raw.schema_export-app-settings)}}}}]]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

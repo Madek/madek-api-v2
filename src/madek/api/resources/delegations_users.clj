@@ -2,8 +2,8 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -26,7 +26,7 @@
                 user_id (sql/where [:= :user_id user_id]))
         db-result (jdbc/execute! (:tx req) (sql-format query))]
 
-;(->> db-result (map :id) set)
+    ;(->> db-result (map :id) set)
     (info "handle_list-delegations_user" "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -114,11 +114,11 @@
                                     :delegations
                                     :id :delegation true))))
 
-(def schema_delegations_users_export
-  {:user_id s/Uuid
-   :delegation_id s/Uuid
-   :updated_at s/Any
-   :created_at s/Any})
+;(def schema_delegations_users_export
+;  {:user_id s/Uuid
+;   :delegation_id s/Uuid
+;   :updated_at s/Any
+;   :created_at s/Any})
 
 ; TODO response coercion
 ; TODO docu
@@ -148,7 +148,7 @@
             :swagger {:produces "application/json"}
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:delegation_id s/Uuid}}
-            :responses {200 {:body schema_delegations_users_export}
+            :responses {200 {:body (get-schema :delegations-users.schema_delegations_users_export)}
                         404 {:body s/Any}
                         406 {:body s/Any}}}
 
@@ -158,7 +158,7 @@
                         (wwrap-find-delegations_user-by-auth true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:delegation_id s/Uuid}}
-           :responses {200 {:body schema_delegations_users_export}
+           :responses {200 {:body (get-schema :delegations-users.schema_delegations_users_export)}
                        404 {:body s/Any}
                        406 {:body s/Any}}}
 
@@ -168,7 +168,7 @@
               :middleware [(wwrap-find-delegation :delegation_id)
                            (wwrap-find-delegations_user-by-auth true)]
               :parameters {:path {:delegation_id s/Uuid}}
-              :responses {200 {:body schema_delegations_users_export}
+              :responses {200 {:body (get-schema :delegations-users.schema_delegations_users_export)}
                           404 {:body s/Any}
                           406 {:body s/Any}}}}]])
 

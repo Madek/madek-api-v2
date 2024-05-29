@@ -2,11 +2,11 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.users.common :refer [find-user-by-uid wrap-find-user]]
-   [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [f t]]
+   [madek.api.utils.helper]
    [madek.api.utils.helper :refer [mslurp]]
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]
@@ -32,16 +32,16 @@
     (sd/response_ok (find-user-by-uid user-id tx) 200)
     (sd/response_not_found "No such user.")))
 
-(def schema
-  {(s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
-   (s/optional-key :autocomplete) s/Str
-   (s/optional-key :email) s/Str
-   (s/optional-key :first_name) s/Str
-   (s/optional-key :institution) s/Str
-   (s/optional-key :last_name) s/Str
-   (s/optional-key :login) s/Str
-   (s/optional-key :notes) (s/maybe s/Str) ; TODO
-   (s/optional-key :searchable) s/Str})
+;(def schema
+;  {(s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid) ; TODO
+;   (s/optional-key :autocomplete) s/Str
+;   (s/optional-key :email) s/Str
+;   (s/optional-key :first_name) s/Str
+;   (s/optional-key :institution) s/Str
+;   (s/optional-key :last_name) s/Str
+;   (s/optional-key :login) s/Str
+;   (s/optional-key :notes) (s/maybe s/Str) ; TODO
+;   (s/optional-key :searchable) s/Str})
 
 (def route
   {:summary (sd/sum_adm "Update user with id")
@@ -55,11 +55,11 @@
    :content-type "application/json"
    :accept "application/json"
    :parameters {:path {:id s/Str}
-                :body schema}
+                :body (get-schema :users-schema-payload)}
    :handler update-user-handler
    :middleware [wrap-authorize-admin!
                 (wrap-find-user :id)]
-   :responses {200 {:body get-user/schema}
+   :responses {200 {:body (get-schema :get.users-schema-payload)}
                404 {:description "Not Found."
                     :schema s/Str
                     :examples {"application/json" {:message "No such user."}}}}})

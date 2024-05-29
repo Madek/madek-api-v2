@@ -1,5 +1,6 @@
 (ns madek.api.resources.previews
   (:require
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.previews.preview :as preview]
@@ -48,19 +49,19 @@
   (fn [request]
     (ring-add-media-resource-preview request handler)))
 
-(def schema_export_preview
-  {:id s/Uuid
-   :media_file_id s/Uuid
-   :media_type s/Str
-   :content_type s/Str
-   ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
-   :thumbnail s/Str
-   :width (s/maybe s/Int)
-   :height (s/maybe s/Int)
-   :filename s/Str
-   :conversion_profile (s/maybe s/Str)
-   :updated_at s/Any
-   :created_at s/Any})
+;(def schema_export_preview
+;  {:id s/Uuid
+;   :media_file_id s/Uuid
+;   :media_type s/Str
+;   :content_type s/Str
+;   ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
+;   :thumbnail s/Str
+;   :width (s/maybe s/Int)
+;   :height (s/maybe s/Int)
+;   :filename s/Str
+;   :conversion_profile (s/maybe s/Str)
+;   :updated_at s/Any
+;   :created_at s/Any})
 
 ; TODO tests
 (def preview-routes
@@ -101,7 +102,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :query {(s/optional-key :size) s/Str}}
-           :responses {200 {:body schema_export_preview}
+           :responses {200 {:body (get-schema :previews.schema_export_preview)}
                        404 {:body s/Any}}}}]
    ; TODO media-entry preview auth
    ["/:media_entry_id/preview/data-stream"

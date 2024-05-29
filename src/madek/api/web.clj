@@ -1,5 +1,6 @@
 (ns madek.api.web
   (:require
+   [clojure.string :as str]
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
    [madek.api.authentication :as authentication]
@@ -121,8 +122,8 @@
    [auth-info-route
     madek.api.resources/user-routes
     madek.api.resources/admin-routes
-    ;management/api-routes
-    ;test-routes
+     ;management/api-routes
+     ;test-routes
     swagger-routes]
    (filterv some?)))
 
@@ -130,8 +131,8 @@
   (->>
    [auth-info-route
     madek.api.resources/user-routes
-    ;management/api-routes
-    ;test-routes
+     ;management/api-routes
+     ;test-routes
     swagger-routes]
    (filterv some?)))
 
@@ -139,8 +140,8 @@
   (->>
    [auth-info-route
     madek.api.resources/admin-routes
-    ;management/api-routes
-    ;test-routes
+     ;management/api-routes
+     ;test-routes
     swagger-routes]
    (filterv some?)))
 
@@ -161,6 +162,20 @@
    rrc/coerce-response-middleware
    multipart/multipart-middleware])
 
+(defn coercion-error-debug-log [ex]
+  (when (str/ends-with? (.getMessage ex) "coercion failed")
+    (let [data (ex-data ex)
+          msg (.getMessage ex)
+          {:keys [schema errors in]} data
+          {:keys [template]} (:reitit.core/match (:request data))
+
+          _ (error "Coercion-Error-Summary:\n
+    HINT: go to schema_definitions.clj to fix it, error-message: >" msg "<\n
+    url:" template "\n
+    schema-definition:" schema "\n
+    failure occurred in:" in "\n
+    errors:" errors "\n")])))
+
 (when DEBUG
   (def ^:dynamic debug-last-ex nil)
   (defn wrap-debug [handler]
@@ -178,9 +193,12 @@
             response)
           (catch Exception ex
             (def ^:dynamic debug-last-ex ex)
-            (error "RING-LOGGING-WRAPPER COUGHT EXCEPTION "
+
+            (coercion-error-debug-log ex)
+
+            (error "RING-LOGGING-WRAPPER CAUGHT EXCEPTION "
                    {:wrap-debug-level wrap-debug-level} (ex-message ex))
-            (error "RING-LOGGING-WRAPPER COUGHT EXCEPTION " (thrown/stringify ex))
+            (error "RING-LOGGING-WRAPPER CAUGHT EXCEPTION " (thrown/stringify ex))
             (throw ex))))))
   (let [mws middlewares]
     (def ^:dynamic middlewares

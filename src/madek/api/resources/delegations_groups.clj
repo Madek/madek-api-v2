@@ -114,11 +114,11 @@
                                     :delegations :id
                                     :delegation true))))
 
-(def schema_delegations_groups_export
-  {:group_id s/Uuid
-   :delegation_id s/Uuid
-   :updated_at s/Any
-   :created_at s/Any})
+;(def schema_delegations_groups_export
+;  {:group_id s/Uuid
+;   :delegation_id s/Uuid
+;   :updated_at s/Any
+;   :created_at s/Any})
 
 ; TODO response coercion
 ; TODO docu

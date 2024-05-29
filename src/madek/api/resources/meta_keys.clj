@@ -2,12 +2,13 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist f replace-java-hashmaps t v]]
+   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist replace-java-hashmaps v]]
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -131,101 +132,103 @@
       (sd/response_ok db-result)
       (sd/response_failed "Could not delete meta-key." 406))))
 
-(def schema_create-meta-key
-  {:id s/Str
-   :is_extensible_list s/Bool
-   :meta_datum_object_type (s/enum "MetaDatum::Text"
-                                   "MetaDatum::TextDate"
-                                   "MetaDatum::JSON"
-                                   "MetaDatum::Keywords"
-                                   "MetaDatum::People"
-                                   "MetaDatum::Roles")
-   (s/optional-key :keywords_alphabetical_order) s/Bool
-   (s/optional-key :position) s/Int
-   :is_enabled_for_media_entries s/Bool
-   :is_enabled_for_collections s/Bool
-   :vocabulary_id s/Str
+;(def schema_create-meta-key
+;  {:id s/Str
+;   :is_extensible_list s/Bool
+;   :meta_datum_object_type (s/enum "MetaDatum::Text"
+;                                   "MetaDatum::TextDate"
+;                                   "MetaDatum::JSON"
+;                                   "MetaDatum::Keywords"
+;                                   "MetaDatum::People"
+;                                   "MetaDatum::Roles")
+;   (s/optional-key :keywords_alphabetical_order) s/Bool
+;   (s/optional-key :position) s/Int
+;   :is_enabled_for_media_entries s/Bool
+;   :is_enabled_for_collections s/Bool
+;   :vocabulary_id s/Str
+;
+;   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
+;   (s/optional-key :text_type) s/Str
+;   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
+;
+;   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :hints) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
+;
+;   (s/optional-key :admin_comment) (s/maybe s/Str)})
 
-   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
-   (s/optional-key :text_type) s/Str
-   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
+;(def schema_update-meta-key
+;  {;:id s/Str
+;   (s/optional-key :is_extensible_list) s/Bool
+;   ;:meta_datum_object_type (s/enum "MetaDatum::Text"
+;   ;                                "MetaDatum::TextDate"
+;   ;                                "MetaDatum::JSON"
+;   ;                                "MetaDatum::Keywords"
+;   ;                                "MetaDatum::People"
+;   ;                                "MetaDatum::Roles")
+;   (s/optional-key :keywords_alphabetical_order) s/Bool
+;   (s/optional-key :position) s/Int
+;   (s/optional-key :is_enabled_for_media_entries) s/Bool
+;   (s/optional-key :is_enabled_for_collections) s/Bool
+;   ;:vocabulary_id s/Str
+;
+;   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
+;   (s/optional-key :text_type) s/Str ; TODO enum
+;   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
+;
+;   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :hints) (s/maybe sd/schema_ml_list)
+;   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
+;
+;   (s/optional-key :admin_comment) (s/maybe s/Str)})
 
-   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
-   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
-   (s/optional-key :hints) (s/maybe sd/schema_ml_list)
-   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
+;(def schema_export-meta-key-usr
+;  {:id s/Str
+;   (s/optional-key :is_extensible_list) s/Bool
+;   (s/optional-key :meta_datum_object_type) s/Str
+;   (s/optional-key :keywords_alphabetical_order) s/Bool
+;   (s/optional-key :position) s/Int
+;   (s/optional-key :is_enabled_for_media_entries) s/Bool
+;   (s/optional-key :is_enabled_for_collections) s/Bool
+;   :vocabulary_id s/Str
+;
+;   (s/optional-key :allowed_people_subtypes) [s/Str]
+;   (s/optional-key :text_type) s/Str
+;   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
+;
+;   :labels (s/maybe sd/schema_ml_list)
+;   :descriptions (s/maybe sd/schema_ml_list)
+;   :hints (s/maybe sd/schema_ml_list)
+;   :documentation_urls (s/maybe sd/schema_ml_list)
+;
+;   ;:admin_comment (s/maybe s/Str)
+;   ;; FYI: io_mappings
+;   (s/optional-key :io_mappings) s/Any
+;
+;   ;; FYI: vocabularies
+;   (s/optional-key :enabled_for_public_use) s/Bool
+;   (s/optional-key :enabled_for_public_view) s/Bool
+;   (s/optional-key :position_2) s/Int
+;   (s/optional-key :labels_2) s/Any
+;   (s/optional-key :descriptions_2) s/Any
+;   (s/optional-key :id_2) s/Str
+;   ;:admin_comment_2 (s/maybe s/Str)
+;   })
 
-   (s/optional-key :admin_comment) (s/maybe s/Str)})
+;(def schema_export-meta-key-adm
+;  (assoc schema_export-meta-key-usr
+;         :admin_comment (s/maybe s/Str)
+;         (s/optional-key :admin_comment_2) (s/maybe s/Str)))
 
-(def schema_update-meta-key
-  {;:id s/Str
-   (s/optional-key :is_extensible_list) s/Bool
-   ;:meta_datum_object_type (s/enum "MetaDatum::Text"
-   ;                                "MetaDatum::TextDate"
-   ;                                "MetaDatum::JSON"
-   ;                                "MetaDatum::Keywords"
-   ;                                "MetaDatum::People"
-   ;                                "MetaDatum::Roles")
-   (s/optional-key :keywords_alphabetical_order) s/Bool
-   (s/optional-key :position) s/Int
-   (s/optional-key :is_enabled_for_media_entries) s/Bool
-   (s/optional-key :is_enabled_for_collections) s/Bool
-   ;:vocabulary_id s/Str
-
-   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
-   (s/optional-key :text_type) s/Str ; TODO enum
-   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
-
-   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
-   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
-   (s/optional-key :hints) (s/maybe sd/schema_ml_list)
-   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
-
-   (s/optional-key :admin_comment) (s/maybe s/Str)})
-
-(def schema_export-meta-key-usr
-  {:id s/Str
-   (s/optional-key :is_extensible_list) s/Bool
-   (s/optional-key :meta_datum_object_type) s/Str
-   (s/optional-key :keywords_alphabetical_order) s/Bool
-   (s/optional-key :position) s/Int
-   (s/optional-key :is_enabled_for_media_entries) s/Bool
-   (s/optional-key :is_enabled_for_collections) s/Bool
-   :vocabulary_id s/Str
-
-   (s/optional-key :allowed_people_subtypes) [s/Str]
-   (s/optional-key :text_type) s/Str
-   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
-
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)
-   :hints (s/maybe sd/schema_ml_list)
-   :documentation_urls (s/maybe sd/schema_ml_list)
-
-   ;:admin_comment (s/maybe s/Str)
-   (s/optional-key :io_mappings) s/Any
-
-   (s/optional-key :enabled_for_public_use) s/Bool
-   (s/optional-key :enabled_for_public_view) s/Bool
-   (s/optional-key :position_2) s/Int
-   (s/optional-key :labels_2) s/Any
-   (s/optional-key :descriptions_2) s/Any
-   (s/optional-key :id_2) s/Str
-   ;:admin_comment_2 (s/maybe s/Str)
-   })
-
-(def schema_export-meta-key-adm
-  (assoc schema_export-meta-key-usr
-         :admin_comment (s/maybe s/Str)
-         (s/optional-key :admin_comment_2) (s/maybe s/Str)))
-
-(def schema_query-meta-key
-  {(s/optional-key :id) s/Str
-   (s/optional-key :vocabulary_id) s/Str
-   (s/optional-key :meta_datum_object_type) s/Str ; TODO enum
-   (s/optional-key :is_enabled_for_collections) s/Bool
-   (s/optional-key :is_enabled_for_media_entries) s/Bool
-   (s/optional-key :scope) (s/enum "view" "use")})
+;(def schema_query-meta-key
+;  {(s/optional-key :id) s/Str
+;   (s/optional-key :vocabulary_id) s/Str
+;   (s/optional-key :meta_datum_object_type) s/Str ; TODO enum
+;   (s/optional-key :is_enabled_for_collections) s/Bool
+;   (s/optional-key :is_enabled_for_media_entries) s/Bool
+;   (s/optional-key :scope) (s/enum "view" "use")})
 
 (defn wwrap-find-meta_key [param colname send404]
   (fn [handler]
@@ -246,11 +249,11 @@
 
            ; FIXME: returns vocabulary.id instead of meta-keys.id ??
 
-           :parameters {:query schema_query-meta-key}
+           :parameters {:query (get-schema :meta-keys.schema_query-meta-key)}
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"
-                            :body {:meta-keys [schema_export-meta-key-adm]}}}}
+                            :body {:meta-keys [(get-schema :meta-keys.schema_export-meta-key-adm)]}}}}
 
      :post {:summary (sd/sum_adm "Create meta-key.")
             :handler handle_create_meta-key
@@ -258,10 +261,10 @@
 
             :description (mslurp "./md/meta-key-post.md")
 
-            :parameters {:body schema_create-meta-key}
+            :parameters {:body (get-schema :meta-keys.schema_create-meta-key)}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body schema_create-meta-key}
+            :responses {200 {:body (get-schema :meta-keys.schema_create-meta-key)}
                         404 {:description "Duplicate key error"
                              :schema s/Str
                              :examples {"application/json" {:msg "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists."}}}
@@ -289,7 +292,7 @@
                                    :required true
                                    :pattern "^[a-z0-9\\-\\_\\:]+:[a-z0-9\\-\\_\\:]+$"}]}
 
-           :responses {200 {:body schema_export-meta-key-adm}
+           :responses {200 {:body (get-schema :meta-keys.schema_export-meta-key-adm)}
                        404 {:body {:message s/Str}}
                        422 {:description "Wrong format"
                             :schema s/Str
@@ -315,9 +318,9 @@
                                    :type "string"
                                    :required true}]}
 
-           :parameters {:body schema_update-meta-key}
+           :parameters {:body (get-schema :meta-keys.schema_update-meta-key)}
 
-           :responses {200 {:body schema_export-meta-key-adm}
+           :responses {200 {:body (get-schema :meta-keys.schema_export-meta-key-adm)}
                        406 {:description "Update failed"
                             :schema s/Str
                             :examples {"application/json" {:message "Could not update meta_key."}}}}}
@@ -335,7 +338,7 @@
                                       :type "string"
                                       :required true}]}
 
-              :responses {200 {:body schema_export-meta-key-adm}
+              :responses {200 {:body (get-schema :meta-keys.schema_export-meta-key-adm)}
                           406 {:description "Entry not found"
                                :schema s/Str
                                :examples {"application/json" {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}}
@@ -349,14 +352,14 @@
     {:get {:summary (sd/sum_usr_pub "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
-           :parameters {:query schema_query-meta-key}
+           :parameters {:query (get-schema :meta-keys.schema_query-meta-key)}
            :swagger (generate-swagger-pagination-params)
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
 
            ; TODO or better own link
            :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"
-                            :body {:meta-keys [schema_export-meta-key-usr]}}}}}]
+                            :body {:meta-keys [(get-schema :meta-keys.schema_export-meta-key-usr)]}}}}}]
 
    ["/:id"
     {:get {:summary (sd/sum_usr_pub (v "Get meta-key by id"))
@@ -376,7 +379,7 @@
                                    :required true
                                    :pattern "^[a-z0-9\\-\\_\\:]+:[a-z0-9\\-\\_\\:]+$"}]}
 
-           :responses {200 {:body schema_export-meta-key-usr}
+           :responses {200 {:body (get-schema :meta-keys.schema_export-meta-key-usr)}
 
                        404 {:description "No entry found for the given id"
                             :schema s/Str

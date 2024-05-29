@@ -3,9 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [t]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -86,29 +86,29 @@
                                     :usage_terms :id
                                     :usage_term true))))
 
-(def schema_import_usage_terms
-  {;:id is db assigned or optional
-   :title s/Str
-   :version s/Str
-   :intro s/Str
-   :body s/Str})
-
-(def schema_update_usage_terms
-  {;:id s/Uuid
-   (s/optional-key :title) s/Str
-   (s/optional-key :version) s/Str
-   (s/optional-key :intro) s/Str
-   (s/optional-key :body) s/Str})
-
-; TODO Inst coercion
-(def schema_export_usage_term
-  {:id s/Uuid
-   (s/optional-key :title) s/Str
-   (s/optional-key :version) s/Str
-   (s/optional-key :intro) s/Str
-   (s/optional-key :body) s/Str
-   (s/optional-key :created_at) s/Any ; TODO as Inst
-   (s/optional-key :updated_at) s/Any})
+;(def schema_import_usage_terms
+;  {;:id is db assigned or optional
+;   :title s/Str
+;   :version s/Str
+;   :intro s/Str
+;   :body s/Str})
+;
+;(def schema_update_usage_terms
+;  {;:id s/Uuid
+;   (s/optional-key :title) s/Str
+;   (s/optional-key :version) s/Str
+;   (s/optional-key :intro) s/Str
+;   (s/optional-key :body) s/Str})
+;
+;; TODO Inst coercion
+;(def schema_export_usage_term
+;  {:id s/Uuid
+;   (s/optional-key :title) s/Str
+;   (s/optional-key :version) s/Str
+;   (s/optional-key :intro) s/Str
+;   (s/optional-key :body) s/Str
+;   (s/optional-key :created_at) s/Any ; TODO as Inst
+;   (s/optional-key :updated_at) s/Any})
 
 ; TODO auth admin
 ; TODO response coercion
@@ -124,8 +124,8 @@
             ;:middleware [(wwrap-find-usage_term :id "id" false)]
             :coercion reitit.coercion.schema/coercion
             :middleware [wrap-authorize-admin!]
-            :parameters {:body schema_import_usage_terms}
-            :responses {200 {:body schema_export_usage_term}
+            :parameters {:body (get-schema :usage_terms.schema_import_usage_terms)}
+            :responses {200 {:body (get-schema :usage_terms.schema_export_usage_term)}
                         406 {:body s/Any}}}
 
      ; usage_term list / query
@@ -134,7 +134,7 @@
            :coercion reitit.coercion.schema/coercion
            :middleware [wrap-authorize-admin!]
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_usage_term]}
+           :responses {200 {:body [(get-schema :usage_terms.schema_export_usage_term)]}
                        406 {:body s/Any}}}}]
 
    ; edit usage_term
@@ -145,7 +145,7 @@
                         (wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_usage_term}
+           :responses {200 {:body (get-schema :usage_terms.schema_export_usage_term)}
                        404 {:description "Not found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}
@@ -156,8 +156,8 @@
                         (wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
-                        :body schema_update_usage_terms}
-           :responses {200 {:body schema_export_usage_term}
+                        :body (get-schema :usage_terms.schema_update_usage_terms)}
+           :responses {200 {:body (get-schema :usage_terms.schema_export_usage_term)}
                        404 {:description "Not found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}
@@ -169,7 +169,7 @@
               :middleware [wrap-authorize-admin!
                            (wwrap-find-usage_term :id)]
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export_usage_term}
+              :responses {200 {:body (get-schema :usage_terms.schema_export_usage_term)}
 
                           404 {:description "Not found."
                                :schema s/Str
@@ -184,7 +184,7 @@
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_usage_term]}}}}]
+           :responses {200 {:body [(get-schema :usage_terms.schema_export_usage_term)]}}}}]
 
    ["/:id"
     {:get {:summary (sd/sum_pub "Get usage_terms by id.")
@@ -192,5 +192,5 @@
            :middleware [(wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_usage_term}
+           :responses {200 {:body (get-schema :usage_terms.schema_export_usage_term)}
                        404 {:body s/Any}}}}]])

@@ -14,10 +14,6 @@
             [schema.core :as s]
             [taoensso.timbre :refer [error info warn]]))
 
-(def schema_ml_list
-  {(s/optional-key :de) (s/maybe s/Str)
-   (s/optional-key :en) (s/maybe s/Str)})
-
 (defn transform_ml [hashMap]
   "Builds Map with keys as keywords and values from HashMap (sql-hstore)"
   (if (nil? hashMap)

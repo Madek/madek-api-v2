@@ -2,7 +2,7 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -78,30 +78,30 @@
     (fn [request] (sd/req-find-data request handler param
                                     :delegations colname :delegation send404))))
 
-(def schema_import_delegations
-  {;:id s/Str
-   :name s/Str
-   :description s/Str
-   :admin_comment (s/maybe s/Str)})
-
-(def schema_update_delegations
-  {;(s/optional-key :id) s/Str
-   (s/optional-key :name) s/Str
-   (s/optional-key :description) s/Str
-   (s/optional-key :admin_comment) (s/maybe s/Str)})
-
-(def schema_get_delegations
-  {:id s/Uuid
-   (s/optional-key :name) s/Str
-   (s/optional-key :description) s/Str
-   (s/optional-key :admin_comment) (s/maybe s/Str)})
-
-; TODO Inst coercion
-(def schema_export_delegations
-  {:id s/Uuid
-   :name s/Str
-   :description s/Str
-   :admin_comment (s/maybe s/Str)})
+;(def schema_import_delegations
+;  {;:id s/Str
+;   :name s/Str
+;   :description s/Str
+;   :admin_comment (s/maybe s/Str)})
+;
+;(def schema_update_delegations
+;  {;(s/optional-key :id) s/Str
+;   (s/optional-key :name) s/Str
+;   (s/optional-key :description) s/Str
+;   (s/optional-key :admin_comment) (s/maybe s/Str)})
+;
+;(def schema_get_delegations
+;  {:id s/Uuid
+;   (s/optional-key :name) s/Str
+;   (s/optional-key :description) s/Str
+;   (s/optional-key :admin_comment) (s/maybe s/Str)})
+;
+;; TODO Inst coercion
+;(def schema_export_delegations
+;  {:id s/Uuid
+;   :name s/Str
+;   :description s/Str
+;   :admin_comment (s/maybe s/Str)})
 
 ; TODO more checks
 ; TODO response coercion
@@ -116,8 +116,8 @@
             ; TODO labels and descriptions
             :handler handle_create-delegations
             :coercion reitit.coercion.schema/coercion
-            :parameters {:body schema_import_delegations}
-            :responses {200 {:body schema_export_delegations}
+            :parameters {:body (get-schema :delegations.schema_import_delegations)}
+            :responses {200 {:body (get-schema :delegations.schema_export_delegations)}
                         406 {:body s/Any}}}
      :get {:summary (sd/sum_adm "List delegations.")
            :handler handle_list-delegations
@@ -130,16 +130,16 @@
                                    :value false
                                    :default false
                                    :type "boolean"}]}
-           :responses {200 {:body [schema_get_delegations]}}}}]
+           :responses {200 {:body [(get-schema :delegations.schema_get_delegations)]}}}}]
 
-; edit delegation
+   ; edit delegation
    ["/:id"
     {:get {:summary (sd/sum_adm "Get delegations by id.")
            :handler handle_get-delegation
            :middleware [(wwrap-find-delegation :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_delegations}
+           :responses {200 {:body (get-schema :delegations.schema_export_delegations)}
                        404 {:description "Not Found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :delegations as :id with <id>"}}}}}
@@ -149,8 +149,8 @@
            :middleware [(wwrap-find-delegation :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
-                        :body schema_update_delegations}
-           :responses {200 {:body schema_export_delegations}
+                        :body (get-schema :delegations.schema_update_delegations)}
+           :responses {200 {:body (get-schema :delegations.schema_export_delegations)}
                        404 {:description "Not Found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :delegations as :id with <id>"}}}
@@ -163,7 +163,7 @@
               :handler handle_delete-delegation
               :middleware [(wwrap-find-delegation :id :id true)]
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export_delegations}
+              :responses {200 {:body (get-schema :delegations.schema_export_delegations)}
                           404 {:description "Not Found."
                                :schema s/Str
                                :examples {"application/json" {:message "No such delegation found"}}}

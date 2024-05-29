@@ -3,9 +3,9 @@
    [clj-uuid :refer [as-uuid]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.people.common :refer [find-person-by-uid]]
-   [madek.api.resources.people.create :as create]
-   [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
@@ -43,12 +43,12 @@
    :content-type "application/json"
    :accept "application/json"
    :parameters {:path {:id s/Uuid}
-                :body (-> create/schema
+                :body (-> (get-schema :people.schema)
                           (dissoc :subtype)
-                          (assoc (s/optional-key :subtype) (:subtype create/schema)))}
+                          (assoc (s/optional-key :subtype) (:subtype (get-schema :people.schema))))}
    :handler update-person-handler
    :middleware [wrap-authorize-admin!]
-   :responses {200 {:body get-person/schema}
+   :responses {200 {:body (get-schema :people.get.schema)}
                404 {:description "Not found."
                     :schema s/Str
                     :examples {"application/json" {:message "Person not found."}}}

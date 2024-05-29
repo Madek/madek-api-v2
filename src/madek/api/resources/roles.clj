@@ -1,36 +1,36 @@
 (ns madek.api.resources.roles
   (:require
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.roles.role :as role]
    [madek.api.resources.shared :as sd]
-   [madek.api.utils.helper :refer [t]]
    [madek.api.utils.validation :refer [positive-number-0-to-100-validation positive-number-1-to-1000-validation]]
    [reitit.coercion.schema]
    [schema.core :as s]))
 
-(def schema_create-role
-  {;:id s/Uuid
-   :meta_key_id s/Str
-   :labels sd/schema_ml_list
-   ;:creator_id s/Uuid
-   ;:created_at s/Any
-   ;:updated_at s/Any
-   })
-
-(def schema_update-role
-  {;:id s/Uuid
-   ;:meta_key_id s/Str
-   :labels sd/schema_ml_list
-   ;:creator_id s/Uuid
-   ;:created_at s/Any
-   ;:updated_at s/Any
-   })
-(def schema_export-role
-  {:id s/Uuid
-   :meta_key_id s/Str
-   :labels sd/schema_ml_list
-   (s/optional-key :creator_id) s/Uuid
-   (s/optional-key :created_at) s/Any
-   (s/optional-key :updated_at) s/Any})
+;(def schema_create-role
+;  {;:id s/Uuid
+;   :meta_key_id s/Str
+;   :labels sd/schema_ml_list
+;   ;:creator_id s/Uuid
+;   ;:created_at s/Any
+;   ;:updated_at s/Any
+;   })
+;
+;(def schema_update-role
+;  {;:id s/Uuid
+;   ;:meta_key_id s/Str
+;   :labels sd/schema_ml_list
+;   ;:creator_id s/Uuid
+;   ;:created_at s/Any
+;   ;:updated_at s/Any
+;   })
+;(def schema_export-role
+;  {:id s/Uuid
+;   :meta_key_id s/Str
+;   :labels sd/schema_ml_list
+;   (s/optional-key :creator_id) s/Uuid
+;   (s/optional-key :created_at) s/Any
+;   (s/optional-key :updated_at) s/Any})
 
 ; TODO roles by meta_key_id ?
 ; TODO tests
@@ -47,7 +47,7 @@
                                     (s/optional-key :count) s/Int}}
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion}
-         :responses {200 {:body {:roles [schema_export-role]}}}}]
+         :responses {200 {:body {:roles [(get-schema :roles.schema_export-role)]}}}}]
 
    ["/:id"
     {:get {:summary "Get role by id"
@@ -57,7 +57,7 @@
            :handler role/handle_get-role-usr
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export-role}
+           :responses {200 {:body (get-schema :roles.schema_export-role)}
                        404 {:body s/Any}}}}]])
 
 ; switch to meta_key as address?
@@ -77,7 +77,7 @@
 
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
-               :responses {200 {:body {:roles [schema_export-role]}}}}
+               :responses {200 {:body {:roles [(get-schema :roles.schema_export-role)]}}}}
 
          :post {:summary (sd/sum_adm "Create role.")
                 :handler role/handle_create-role
@@ -86,8 +86,8 @@
                 :content-type "application/json"
                 :accept "application/json"
                 :coercion reitit.coercion.schema/coercion
-                :parameters {:body schema_create-role}
-                :responses {200 {:body schema_export-role}
+                :parameters {:body (get-schema :roles.schema_create-role)}
+                :responses {200 {:body (get-schema :roles.schema_export-role)}
                             404 {:body s/Any}
                             403 {:description "Forbidden."
                                  :schema s/Str
@@ -104,7 +104,7 @@
            :handler role/handle_get-role-admin
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export-role}
+           :responses {200 {:body (get-schema :roles.schema_export-role)}
                        404 {:body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update role.")
@@ -114,8 +114,8 @@
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
-                        :body schema_update-role}
-           :responses {200 {:body schema_export-role}
+                        :body (get-schema :roles.schema_update-role)}
+           :responses {200 {:body (get-schema :roles.schema_export-role)}
                        404 {:body s/Any}
                        406 {:description "Not Acceptable."
                             :schema s/Str
@@ -127,7 +127,7 @@
               :content-type "application/json"
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export-role}
+              :responses {200 {:body (get-schema :roles.schema_export-role)}
                           404 {:description "Not found."
                                :schema s/Str
                                :examples {"application/json" {:message "No such role."}}}

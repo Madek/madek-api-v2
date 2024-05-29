@@ -2,6 +2,7 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
+            [madek.api.db.dynamic_schema.common :refer [get-schema]]
             [madek.api.resources.shared :as sd]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -139,23 +140,23 @@
           (sd/response_failed (str "No such custom_url " col-name " : " mr-id) 404))))
     (catch Exception ex (sd/response_exception ex))))
 
-(def schema_create_custom_url
-  {:id s/Str
-   :is_primary s/Bool})
-
-(def schema_update_custom_url
-  {(s/optional-key :id) s/Str
-   (s/optional-key :is_primary) s/Bool})
-
-(def schema_export_custom_url
-  {:id s/Str
-   :is_primary s/Bool
-   :creator_id s/Uuid
-   :updator_id s/Uuid
-   :updated_at s/Any
-   :created_at s/Any
-   :media_entry_id (s/maybe s/Uuid)
-   :collection_id (s/maybe s/Uuid)})
+;(def schema_create_custom_url
+;  {:id s/Str
+;   :is_primary s/Bool})
+;
+;(def schema_update_custom_url
+;  {(s/optional-key :id) s/Str
+;   (s/optional-key :is_primary) s/Bool})
+;
+;(def schema_export_custom_url
+;  {:id s/Str
+;   :is_primary s/Bool
+;   :creator_id s/Uuid
+;   :updator_id s/Uuid
+;   :updated_at s/Any
+;   :created_at s/Any
+;   :media_entry_id (s/maybe s/Uuid)
+;   :collection_id (s/maybe s/Uuid)})
 
 ; TODO custom urls response coercion
 (def query-routes
@@ -186,7 +187,7 @@
                        sd/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}}
-          :responses {200 {:body schema_export_custom_url}
+          :responses {200 {:body (get-schema :custom_urls.schema_export_custom_url)}
                       404 {:body s/Any}}}
     ; TODO db schema allows multiple entries for multiple users
     :post {:summary (sd/sum_usr "Create custom_url for media entry.")
@@ -195,8 +196,8 @@
                         sd/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
-                        :body schema_create_custom_url}
-           :responses {200 {:body schema_export_custom_url}
+                        :body (get-schema :custom_urls.schema_create_custom_url)}
+           :responses {200 {:body (get-schema :custom_urls.schema_export_custom_url)}
                        406 {:body s/Any}}}
 
     :put {:summary (sd/sum_usr "Update custom_url for media entry.")
@@ -205,8 +206,8 @@
                        sd/ring-wrap-authorization-edit-metadata]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}
-                       :body schema_update_custom_url}
-          :responses {200 {:body schema_export_custom_url}
+                       :body (get-schema :custom_urls.schema_update_custom_url)}
+          :responses {200 {:body (get-schema :custom_urls.schema_export_custom_url)}
                       406 {:body s/Any}}}
 
     :delete {:summary (sd/sum_todo "Delete custom_url for media entry.")
@@ -215,7 +216,7 @@
                           sd/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:media_entry_id s/Str}}
-             :responses {200 {:body schema_export_custom_url}
+             :responses {200 {:body (get-schema :custom_urls.schema_export_custom_url)}
                          404 {:body s/Any}}}}])
 
 (def collection-routes
@@ -234,8 +235,8 @@
                         sd/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str}
-                        :body schema_create_custom_url}
-           :responses {200 {:body schema_export_custom_url}
+                        :body (get-schema :custom_urls.schema_create_custom_url)}
+           :responses {200 {:body (get-schema :custom_urls.schema_export_custom_url)}
                        406 {:body s/Any}}}
 
     :put {:summary (sd/sum_usr "Update custom_url for collection.")
@@ -244,8 +245,8 @@
                        sd/ring-wrap-authorization-edit-metadata]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Str}
-                       :body schema_update_custom_url}
-          :responses {200 {:body schema_export_custom_url}
+                       :body (get-schema :custom_urls.schema_update_custom_url)}
+          :responses {200 {:body (get-schema :custom_urls.schema_export_custom_url)}
                       406 {:body s/Any}}}
 
     :delete {:summary (sd/sum_todo "Delete custom_url for collection.")
@@ -254,5 +255,5 @@
                           sd/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:collection_id s/Str}}
-             :responses {200 {:body schema_export_custom_url}
+             :responses {200 {:body (get-schema :custom_urls.schema_export_custom_url)}
                          404 {:body s/Any}}}}])

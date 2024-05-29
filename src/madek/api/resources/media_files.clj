@@ -1,9 +1,6 @@
 (ns madek.api.resources.media-files
   (:require
-   [clojure.tools.logging :as logging]
-   [logbug.catcher :as catcher]
-   [logbug.debug :as debug :refer [I>]]
-   [logbug.ring :as logbug-ring :refer [wrap-handler-with-logging]]
+   [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-files.authorization :as media-files.authorization]
    [madek.api.resources.media-files.media-file :as media-file]
    [madek.api.resources.shared :as sd]
@@ -41,23 +38,23 @@
         (handler (assoc request :media-file (first media-files)))
         (sd/response_not_found "No media-file for media_entry_id")))))
 
-(def schema_export-media-file
-  {:id s/Uuid
-   :media_entry_id s/Uuid
-   :media_type (s/maybe s/Str)
-   :content_type s/Str
-   :filename s/Str
-
-   :previews s/Any
-   :size s/Int
-   ;:width s/Int
-   ;:height s/Int
-   ;:access_hash s/Str
-   ;:meta_data s/Str
-   ;:uploader_id s/Uuid
-   ;:conversion_profiles [s/Str]
-   :created_at s/Any
-   :updated_at s/Any})
+;(def schema_export-media-file
+;  {:id s/Uuid
+;   :media_entry_id s/Uuid
+;   :media_type (s/maybe s/Str)
+;   :content_type s/Str
+;   :filename s/Str
+;
+;   :previews s/Any
+;   :size s/Int
+;   ;:width s/Int
+;   ;:height s/Int
+;   ;:access_hash s/Str
+;   ;:meta_data s/Str
+;   ;:uploader_id s/Uuid
+;   ;:conversion_profiles [s/Str]
+;   :created_at s/Any
+;   :updated_at s/Any})
 
 ;##############################################################################
 
@@ -73,7 +70,7 @@
                         media-files.authorization/wrap-auth-media-file-metadata-and-previews]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_file_id s/Str}}
-           :responses {200 {:body schema_export-media-file}
+           :responses {200 {:body (get-schema :media_files.schema_export-media-file)}
                        404 {:body s/Any}}}}]
 
    ["/:media_file_id/data-stream"
@@ -98,7 +95,7 @@
                    sd/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
-      :responses {200 {:body schema_export-media-file}
+      :responses {200 {:body (get-schema :media_files.schema_export-media-file)}
                   404 {:body s/Any}}}}]
 
    ["/:media_entry_id/media-file/data-stream"

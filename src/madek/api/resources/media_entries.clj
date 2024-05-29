@@ -6,6 +6,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.authorization :as authorization]
             [madek.api.constants :refer [FILE_STORAGE_DIR]]
+            [madek.api.db.dynamic_schema.common :refer [get-schema]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
@@ -138,19 +139,19 @@
     (io/copy (io/file temp-path) (io/file store-location))
     (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)})))
 
-    ; We dont do add meta-data or collection.
-    ; This is done via front-end.
-    ;(me_add-default-license new-mer)
-    ;(me_exract-and-store-metadata new-mer)
-    ;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
-    ;(if-let [collection (sd/query-eq-find-one "collections" "id" collection-id)]
-    ;  (if-let [add-col-res (collection-media-entry-arcs/create-col-me-arc collection-id (:id media-entry) {} tx)]
-    ;    (info "handle_uploaded_file_resp_ok: added to collection: " collection-id "\nresult\n" add-col-res)
-    ;    (error "Failed: handle_uploaded_file_resp_ok: add to collection: " collection-id))
-    ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file :collection_id collection-id)})
-    ;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)}))
+; We dont do add meta-data or collection.
+; This is done via front-end.
+;(me_add-default-license new-mer)
+;(me_exract-and-store-metadata new-mer)
+;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
+;(if-let [collection (sd/query-eq-find-one "collections" "id" collection-id)]
+;  (if-let [add-col-res (collection-media-entry-arcs/create-col-me-arc collection-id (:id media-entry) {} tx)]
+;    (info "handle_uploaded_file_resp_ok: added to collection: " collection-id "\nresult\n" add-col-res)
+;    (error "Failed: handle_uploaded_file_resp_ok: add to collection: " collection-id))
+;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file :collection_id collection-id)})
+;    (sd/response_ok {:media_entry (assoc media-entry :media_file media-file)}))
 
-  ;))
+;))
 
 (defn create-media_entry
   "Only for testing. Does not trigger media convert. So previews are missing."
@@ -215,135 +216,141 @@
         (sd/response_failed "Not authed" 406)
         (create-media_entry file auth mime collection-id tx)))))
 
-(def schema_query_media_entries
-  {(s/optional-key :collection_id) s/Uuid
-   ; TODO order enum docu
-   ;(s/optional-key :order) (s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
-   (s/optional-key :order) s/Any
-   ; TODO filterby json docu
-   (s/optional-key :filter_by) s/Str
-   ;(s/optional-key :filter_by)
-   ; {
-   ;  (s/optional-key :media_entry) {:is_published s/Bool
-   ;                                 :creator_id s/Uuid
-   ;                                 :responsible_user_id s/Uuid
-   ;                                 }
-   ;  (s/optional-key :media_files) {:keys :values}
-   ;  (s/optional-key :permissions) {(s/optional-key :public) s/Bool
-   ;                                 (s/optional-key :responsible_user) s/Uuid
-   ;                                 (s/optional-key :entrusted_to_user) s/Uuid
-   ; TODO
-   ;                                 (s/optional-key :view_to_user) s/Uuid
-   ;                                 (s/optional-key :download_to_user) s/Uuid
-   ;                                 (s/optional-key :edit_md_to_user) s/Uuid
-   ;                                 (s/optional-key :edit_perms_to_user) s/Uuid
-   ;                                 (s/optional-key :entrusted_to_group) s/Uuid
-   ;                                }
-   ;  (s/optional-key :meta_data) [{(s/optional-key :type) s/Str
-   ;                               (s/optional-key :key) s/Str
-   ;                               (s/optional-key :match) s/Str
-   ;                               (s/optional-key :value) s/Str}]
-   ; TODO docu
-   ;  (s/optional-key :search) s/Str
-   ;  }
+;(def schema_query_media_entries
+;  {(s/optional-key :collection_id) s/Uuid
+;   ; TODO order enum docu
+;   ;(s/optional-key :order) (s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
+;
+;   ;; :collection_media_entry_arcs
+;   (s/optional-key :order) s/Any
+;   ; TODO filterby json docu
+;   (s/optional-key :filter_by) s/Str
+;   ;(s/optional-key :filter_by)
+;   ; {
+;   ;  (s/optional-key :media_entry) {:is_published s/Bool
+;   ;                                 :creator_id s/Uuid
+;   ;                                 :responsible_user_id s/Uuid
+;   ;                                 }
+;   ;  (s/optional-key :media_files) {:keys :values}
+;   ;  (s/optional-key :permissions) {(s/optional-key :public) s/Bool
+;   ;                                 (s/optional-key :responsible_user) s/Uuid
+;   ;                                 (s/optional-key :entrusted_to_user) s/Uuid
+;   ; TODO
+;   ;                                 (s/optional-key :view_to_user) s/Uuid
+;   ;                                 (s/optional-key :download_to_user) s/Uuid
+;   ;                                 (s/optional-key :edit_md_to_user) s/Uuid
+;   ;                                 (s/optional-key :edit_perms_to_user) s/Uuid
+;   ;                                 (s/optional-key :entrusted_to_group) s/Uuid
+;   ;                                }
+;   ;  (s/optional-key :meta_data) [{(s/optional-key :type) s/Str
+;   ;                               (s/optional-key :key) s/Str
+;   ;                               (s/optional-key :match) s/Str
+;   ;                               (s/optional-key :value) s/Str}]
+;   ; TODO docu
+;   ;  (s/optional-key :search) s/Str
+;   ;  }
+;
+;   ;; media_entry_user_permission
+;   (s/optional-key :me_get_metadata_and_previews) s/Bool
+;   (s/optional-key :me_get_full_size) s/Bool
+;
+;   (s/optional-key :me_edit_metadata) s/Bool
+;   (s/optional-key :me_edit_permissions) s/Bool
+;
+;   ;; media_entries
+;   (s/optional-key :public_get_metadata_and_previews) s/Bool
+;   (s/optional-key :public_get_full_size) s/Bool
+;
+;   (s/optional-key :page) s/Int
+;   (s/optional-key :count) s/Int
+;   (s/optional-key :full_data) s/Bool})
 
-   (s/optional-key :me_get_metadata_and_previews) s/Bool
-   (s/optional-key :me_get_full_size) s/Bool
+;(def schema_export_media_entry
+;  {:id s/Uuid
+;   (s/optional-key :creator_id) s/Uuid
+;   (s/optional-key :responsible_user_id) s/Uuid
+;   (s/optional-key :get_full_size) s/Bool
+;   (s/optional-key :get_metadata_and_previews) s/Bool
+;   (s/optional-key :is_published) s/Bool
+;
+;   (s/optional-key :created_at) s/Any
+;   (s/optional-key :updated_at) s/Any
+;
+;   (s/optional-key :edit_session_updated_at) s/Any
+;   (s/optional-key :meta_data_updated_at) s/Any
+;
+;   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
 
-   (s/optional-key :me_edit_metadata) s/Bool
-   (s/optional-key :me_edit_permissions) s/Bool
+;(def schema_export_col_arc
+;  {:media_entry_id s/Uuid
+;   :id s/Uuid
+;   :order (s/maybe s/Num)
+;   :position (s/maybe s/Int)
+;   :created_at s/Any
+;   :updated_at s/Any})
 
-   (s/optional-key :public_get_metadata_and_previews) s/Bool
-   (s/optional-key :public_get_full_size) s/Bool
-   (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int
-   (s/optional-key :full_data) s/Bool})
+;;; TODO: not in use
+;(def schema_query_media_entries_result
+;  {:media_entries [(get-schema  :media-entries.schema_export_media_entry )]
+;   (s/optional-key :col_arcs) [(get-schema :media-entries.schema_export_col_arc)]})
 
-(def schema_export_media_entry
-  {:id s/Uuid
-   (s/optional-key :creator_id) s/Uuid
-   (s/optional-key :responsible_user_id) s/Uuid
-   (s/optional-key :get_full_size) s/Bool
-   (s/optional-key :get_metadata_and_previews) s/Bool
-   (s/optional-key :is_published) s/Bool
+;(def schema_export_media_file
+;  {:id s/Uuid
+;   :media_entry_id s/Uuid
+;   :conversion_profiles [s/Any]
+;   :media_type (s/maybe s/Str) ; TODO enum
+;   :width (s/maybe s/Int)
+;   :height (s/maybe s/Int)
+;   :meta_data (s/maybe s/Str)
+;   :size s/Int
+;   :uploader_id s/Uuid
+;   :content_type s/Str
+;   :access_hash s/Str
+;   :extension s/Str
+;   :filename s/Str
+;   :guid s/Str
+;   :updated_at s/Any
+;   :created_at s/Any})
 
-   (s/optional-key :created_at) s/Any
-   (s/optional-key :updated_at) s/Any
+;(def schema_export_preview
+;  {:id s/Uuid
+;   :media_file_id s/Uuid
+;   :media_type s/Str
+;   :content_type s/Str
+;   ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
+;   :thumbnail s/Str
+;   :width (s/maybe s/Int)
+;   :height (s/maybe s/Int)
+;   :filename s/Str
+;   :conversion_profile (s/maybe s/Str)
+;   :updated_at s/Any
+;   :created_at s/Any})
 
-   (s/optional-key :edit_session_updated_at) s/Any
-   (s/optional-key :meta_data_updated_at) s/Any
+;(def schema_export_meta_data
+;  {:id s/Uuid
+;   :media_entry_id (s/maybe s/Uuid)
+;   :collection_id (s/maybe s/Uuid)
+;
+;   :type s/Str
+;   :meta_key_id s/Str
+;   :string (s/maybe s/Str)
+;   :json (s/maybe s/Str)
+;
+;   :meta_data_updated_at s/Any
+;   :other_media_entry_id (s/maybe s/Uuid)})
 
-   (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
-
-(def schema_export_col_arc
-  {:media_entry_id s/Uuid
-   :id s/Uuid
-   :order (s/maybe s/Num)
-   :position (s/maybe s/Int)
-   :created_at s/Any
-   :updated_at s/Any})
-
-(def schema_query_media_entries_result
-  {:media_entries [schema_export_media_entry]
-   (s/optional-key :col_arcs) [schema_export_col_arc]})
-
-(def schema_export_media_file
-  {:id s/Uuid
-   :media_entry_id s/Uuid
-   :conversion_profiles [s/Any]
-   :media_type (s/maybe s/Str) ; TODO enum
-   :width (s/maybe s/Int)
-   :height (s/maybe s/Int)
-   :meta_data (s/maybe s/Str)
-   :size s/Int
-   :uploader_id s/Uuid
-   :content_type s/Str
-   :access_hash s/Str
-   :extension s/Str
-   :filename s/Str
-   :guid s/Str
-   :updated_at s/Any
-   :created_at s/Any})
-
-(def schema_export_preview
-  {:id s/Uuid
-   :media_file_id s/Uuid
-   :media_type s/Str
-   :content_type s/Str
-   ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
-   :thumbnail s/Str
-   :width (s/maybe s/Int)
-   :height (s/maybe s/Int)
-   :filename s/Str
-   :conversion_profile (s/maybe s/Str)
-   :updated_at s/Any
-   :created_at s/Any})
-
-(def schema_export_meta_data
-  {:id s/Uuid
-   :media_entry_id (s/maybe s/Uuid)
-   :collection_id (s/maybe s/Uuid)
-
-   :type s/Str
-   :meta_key_id s/Str
-   :string (s/maybe s/Str)
-   :json (s/maybe s/Str)
-
-   :meta_data_updated_at s/Any
-   :other_media_entry_id (s/maybe s/Uuid)})
-
-(def schema_query_media_entries_related_result
-  {:media_entries [schema_export_media_entry]
-   :meta_data [[schema_export_meta_data]]
-   :media_files [(s/maybe schema_export_media_file)]
-   :previews [[(s/maybe schema_export_preview)]]
-   (s/optional-key :col_arcs) [schema_export_col_arc]
-   (s/optional-key :col_meta_data) [schema_export_meta_data]})
-
-(def schema_publish_failed
-  {:message {:is_publishable s/Bool
-             :media_entry_id s/Uuid
-             :has_meta_data [{s/Any s/Bool}]}})
+;(def schema_query_media_entries_related_result
+;  {:media_entries [(get-schema  :media-entries.schema_export_media_entry )]
+;   :meta_data [[(get-schema :media-entries.schema_export_meta_data)]]
+;   :media_files [(s/maybe (get-schema :media-files.schema_export_media_file))]
+;   :previews [[(s/maybe (get-schema :media-entries.schema_export_preview))]]
+;   (s/optional-key :col_arcs) [(get-schema :media-entries.schema_export_col_arc)]
+;   (s/optional-key :col_meta_data) [(get-schema :media-entries.schema_export_meta_data)]})
+;
+;(def schema_publish_failed
+;  {:message {:is_publishable s/Bool
+;             :media_entry_id s/Uuid
+;             :has_meta_data [{s/Any s/Bool}]}})
 
 (def ring-routes
   ["/"
@@ -356,7 +363,7 @@
       :handler handle_query_media_entry
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}
+      :parameters {:query (get-schema :media-entries.schema_query_media_entries)}
       :responses {200 {:body s/Any}
                   422 {:body s/Any}}}}]
    ["media-entries-related-data"
@@ -367,8 +374,8 @@
       :handler handle_query_media_entry-related-data
       :middleware [sd/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}
-      :responses {200 {:body schema_query_media_entries_related_result}}}}]])
+      :parameters {:query (get-schema :media-entries.schema_query_media_entries)}
+      :responses {200 {:body (get-schema :media-entries-schema-schema_query_media_entries_related_result)}}}}]])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)
@@ -423,8 +430,8 @@
                         sd/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
-           :responses {200 {:body schema_export_media_entry}
-                       406 {:body schema_publish_failed}}}}]])
+           :responses {200 {:body (get-schema :media-entries.schema_export_media_entry)}
+                       406 {:body (get-schema :media-entries-schema-schema_publish_failed)}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
