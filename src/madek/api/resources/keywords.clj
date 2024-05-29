@@ -3,11 +3,11 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   ;[madek.api.db.dyn_schema.db :refer [fetch-table-metadata]]
-   ;[madek.api.db.dyn_schema.db :refer [fetch-table-metadata-thunk]]
-   [madek.api.resources.keywords.keyword :as kw]
+   ;[madek.api.db.dynamic_schema.db :refer [fetch-table-metadata]]
+   ;[madek.api.db.dynamic_schema.db :refer [fetch-table-metadata-thunk]]
+   [madek.api.db.dynamic_schema.schemas :refer [keyword-query-schema]]
 
-   [madek.api.db.dyn_schema.schemas :refer [keyword-query-schema]]
+   [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared :as sd]
 
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -223,8 +223,11 @@
                                        :format "int32"
                                        :default 10}}]}
 
-      ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
-                  :responses {200 {:body {:keywords [(keyword-query-schema)]}}
+
+      ;:responses {200 {:body {:keywords [(get-schema :keywords.schema_export_keyword_usr)]}}
+
+                  ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
+      :responses {200 {:body {:keywords [(keyword-query-schema "keywords/")]}}
                   ;:responses {200 {:body {:keywords [schema_export_keyword_usr]}}
                   ;:responses {200 {:body {:keywords [keyword-query-schema]}}
 
@@ -245,7 +248,7 @@
       :parameters {:path {:id s/Uuid}}
 
       ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
-      :responses {200 {:body {:keywords [(keyword-query-schema)]}}
+      :responses {200 {:body {:keywords [(keyword-query-schema "keywords/:id")]}}
                   ;:responses {200 {:body schema_export_keyword_usr}
                   ;:responses {200 {:body keyword-query-schema}
 

@@ -8,7 +8,7 @@
    [madek.api.cli_config_parser :as cli_parser]
    [madek.api.constants]
    [madek.api.db.core :as db]
-   ;[madek.api.db.dyn_schema.schema_main :refer [init-schema-by-db]]
+   ;[madek.api.db.dynamic_schema.schema_main :refer [init-schema-by-db]]
    [madek.api.utils.config :as config :refer [get-config]]
    [madek.api.utils.exit :as exit]
    [madek.api.utils.logging :as logging]
