@@ -20,8 +20,9 @@
                                                                                {:position {:value-type TYPE_MAYBE}}
                                                                                {:external_uri {:value-type TYPE_MAYBE}}]
 
-                                                                       ;:bl [:created_at :updated_at :creator_id]}}
-                                                                       :bl [:created_at :updated_at :creator_id :not-existing-field-test]}} ;; TODO: test validation
+                                                                       :bl [:created_at :updated_at :creator_id]}}
+                                                                       ;:bl [:created_at :updated_at :creator_id :not-existing-field-test]}} ;; TODO: test validation
+
                                  {:keywords.schema_export_keyword_adm {:alias "mar.keywords/schema_export_keyword_adm"
                                                                        :types [{:description {:value-type TYPE_MAYBE}}
                                                                                {:position {:value-type TYPE_MAYBE}}

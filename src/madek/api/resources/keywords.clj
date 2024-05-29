@@ -266,8 +266,8 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_keyword}
 
-      ;:responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
-      :responses {200 {:body {:keywords [(keyword-query-schema :non-existing-keyword)]}}} ;; TODO: test validation
+      :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+      ;:responses {200 {:body {:keywords [(keyword-query-schema :non-existing-keyword)]}}} ;; TODO: test validation
 
 
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
