@@ -2,13 +2,9 @@
   (:require [clojure.walk :refer [postwalk]]
    ;[madek.api.db :refer [get-schema-from-db]]
 
-            [madek.api.db.dynamic_schema.common :refer [get-schema]]
-            [madek.api.db.dynamic_schema.db :refer [metadata-fetcher]]
+            [madek.api.db.dynamic_schema.common :refer [get-schema has-schema]]
+            [madek.api.db.dynamic_schema.core :refer [create-dynamic-schema]]
 
-            [madek.api.db.dynamic_schema.core :refer [create-dynamic-schema init-enums-by-db]]
-
-
-            [schema.core :as s]
             )
   )
 
@@ -24,7 +20,8 @@
                                                                                {:position {:value-type TYPE_MAYBE}}
                                                                                {:external_uri {:value-type TYPE_MAYBE}}]
 
-                                                                       :bl [:created_at :updated_at :creator_id]}}
+                                                                       ;:bl [:created_at :updated_at :creator_id]}}
+                                                                       :bl [:created_at :updated_at :creator_id :not-existing-field-test]}} ;; TODO: test validation
                                  {:keywords.schema_export_keyword_adm {:alias "mar.keywords/schema_export_keyword_adm"
                                                                        :types [{:description {:value-type TYPE_MAYBE}}
                                                                                {:position {:value-type TYPE_MAYBE}}
@@ -52,14 +49,16 @@
 
         key :keywords.schema_export_keyword_usr
 
-        res (get-schema key)
+        ;res (get-schema key)
+        res (has-schema key)
+        p (println ">o> has-schema?" res)
 
-
-        res (if (nil? res)
+        ;res (if (nil? res)
+        res (if res
               (do
                 p (println ">o> >>> schema_cache.get-schema -> not found!! .. continue with create schema")
                 (create-dynamic-schema keywords-schema))
-              res)
+              (get-schema key))
 
         ;key :nix
         ;res (find-schema-element key keywords-schema)
@@ -74,9 +73,9 @@
 
 
 (defn keyword-query-schema
-  ([]
-   (keyword-query-schema [nil])
-   )
+  ;([]
+  ; (keyword-query-schema [nil])
+  ; )
 
 
   ([key]
@@ -85,26 +84,51 @@
 
    (let [
 
-         p (println ">o> abc" key)
+         ;p (println ">o> ... process [keyword-query-schema]")
          ;meta ((@fetch-table-metadata) "keywords")
 
-         meta (metadata-fetcher)
-
-         p (println "\n>o> meta.from.db=" meta "\n")
-
-
-         res {:id s/Uuid
-              :meta_key_id s/Str
-              :term s/Str
-              :description (s/maybe s/Str)
-              :position (s/maybe s/Int)
-              :external_uris [s/Any]
-              :external_uri (s/maybe s/Str)
-              :rdf_class s/Str}
+         ;;; if schema is not found in cache, create it
+         ;res (get-schema key)
+         ;res (if (nil? res)
+         ;      (do
+         ;        p (println ">o> >>> schema_cache.get-schema -> not found!! .. continue with create schema")
+         ;        (create-dynamic-schema keywords-schema)
+         ;        (get-schema key))
+         ;      res)
 
 
+         res (has-schema key)
+         p (println ">o> has-schema?" res)
 
-         p (println "\n>o> returned.res=" res "\n")
+         ;res (if (nil? res)
+         res (if res
+               (do
+                 p (println ">o> >>> LOADING-STATUS: schema_cache.get-schema -> not found!! .. continue with create schema")
+                 (create-dynamic-schema keywords-schema))
+               (do
+                 p (println ">o> >>> LOADING-STATUS: schema_cache.get-schema -> found")
+                 (get-schema key)))
+
+         p (println "\n>o> final.schema\nkey=" key "\n" res "\n")
+
+
+         ;meta (metadata-fetcher)
+         ;
+         ;p (println "\n>o> meta.from.db=" meta "\n")
+         ;
+         ;
+         ;res {:id s/Uuid
+         ;     :meta_key_id s/Str
+         ;     :term s/Str
+         ;     :description (s/maybe s/Str)
+         ;     :position (s/maybe s/Int)
+         ;     :external_uris [s/Any]
+         ;     :external_uri (s/maybe s/Str)
+         ;     :rdf_class s/Str}
+         ;
+         ;
+         ;
+         ;p (println "\n>o> returned.res=" res "\n")
 
          ] res))
 

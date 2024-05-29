@@ -8,6 +8,8 @@
    [madek.api.cli_config_parser :as cli_parser]
    [madek.api.constants]
    [madek.api.db.core :as db]
+   [madek.api.db.dynamic_schema.common :refer [get-validation-cache set-schema]]
+
    ;[madek.api.db.dynamic_schema.schema_main :refer [init-schema-by-db]]
    [madek.api.utils.config :as config :refer [get-config]]
    [madek.api.utils.exit :as exit]
@@ -15,7 +17,7 @@
    [madek.api.utils.nrepl :as nrepl]
    [madek.api.utils.rdbms :as rdbms]
    [pg-types.all]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [info error]]))
 
 ;; cli ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -80,6 +82,13 @@
    ;(init-schema-by-db)
     (println ">o> run.init-db ... DONE")
    (dynamic-web-initialize options)
+
+    (let [errors (get-validation-cache)
+            _ (if (empty? errors)
+                (info "[init-schema-by-db] Schema-Validation is OK, no differences between db and generated schema-definitions recognized.")
+                (error "[init-schema-by-db] Schema-Validation failed: " (count errors) " errors occurred\n\nDetails:\n" errors "\n"))])
+
+
    (info 'madek.api.main "... initialized")))
 
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

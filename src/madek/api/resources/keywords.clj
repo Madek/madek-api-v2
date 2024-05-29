@@ -226,8 +226,8 @@
 
       ;:responses {200 {:body {:keywords [(get-schema :keywords.schema_export_keyword_usr)]}}
 
-                  ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
-      :responses {200 {:body {:keywords [(keyword-query-schema "keywords/")]}}
+      ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
+      :responses {200 {:body {:keywords [(keyword-query-schema :keywords.schema_export_keyword_usr)]}}
                   ;:responses {200 {:body {:keywords [schema_export_keyword_usr]}}
                   ;:responses {200 {:body {:keywords [keyword-query-schema]}}
 
@@ -248,7 +248,7 @@
       :parameters {:path {:id s/Uuid}}
 
       ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
-      :responses {200 {:body {:keywords [(keyword-query-schema "keywords/:id")]}}
+      :responses {200 {:body {:keywords [(keyword-query-schema :keywords.schema_export_keyword_usr)]}}
                   ;:responses {200 {:body schema_export_keyword_usr}
                   ;:responses {200 {:body keyword-query-schema}
 
@@ -265,7 +265,11 @@
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_keyword}
-      :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+
+      ;:responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+      :responses {200 {:body {:keywords [(keyword-query-schema :non-existing-keyword)]}}} ;; TODO: test validation
+
+
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 
      :post

@@ -16,6 +16,19 @@
     (slog (str "[get-schema] " key "=" val))
     val))
 
+(defn has-schema [key]
+
+  (nil? (get @schema-cache key nil))
+
+  ;(let [val (or (get @schema-cache key default) s/Any)
+  ;      _ (if (= val s/Any)
+  ;          (swap! validation-cache conj "ERROR: no schema for key=" key))]
+  ;  (slog (str "[get-schema] " key "=" val))
+  ;  val
+  ;
+  ;  )
+  )
+
 (defn set-schema [key value]
   (slog (str "[set-schema] (" key ") ->" value))
   (swap! schema-cache assoc key (into {} value)))
