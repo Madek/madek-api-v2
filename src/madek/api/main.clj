@@ -5,15 +5,15 @@
    [clojure.tools.cli :as cli]
    [logbug.catcher :as catcher]
    [logbug.thrown]
+   [madek.api.cli_config_parser :as cli_parser]
    [madek.api.constants]
    [madek.api.db.core :as db]
+   ;[madek.api.db.dyn_schema.schema_main :refer [init-schema-by-db]]
    [madek.api.utils.config :as config :refer [get-config]]
    [madek.api.utils.exit :as exit]
    [madek.api.utils.logging :as logging]
    [madek.api.utils.nrepl :as nrepl]
    [madek.api.utils.rdbms :as rdbms]
-   [madek.api.web]
-   [madek.api.web :as web]
    [pg-types.all]
    [taoensso.timbre :refer [info]]))
 
@@ -25,7 +25,7 @@
     ["-d" "--dev-mode"]]
    exit/cli-options
    nrepl/cli-options
-   web/cli-options
+   cli_parser/cli-options
    db/cli-options))
 
 (defn main-usage [options-summary & more]
@@ -48,6 +48,11 @@
 
 ;; run ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn dynamic-web-initialize [options]
+  (require '[madek.api.web :as web])
+  (let [initialize-fn (resolve 'web/initialize)]
+    (initialize-fn options)))
+
 (defn run [options]
   (catcher/snatch
    {:level :fatal
@@ -65,11 +70,16 @@
    (info "Effective startup config " (get-config))
     ; WIP switching to new db container; remove old rdbms later
    (rdbms/initialize (config/get-db-spec :api))
+
+
+    (println ">o> run.init-db")
    (db/init options)
     ;
    (nrepl/init options)
    (madek.api.constants/initialize (get-config))
-   (madek.api.web/initialize options)
+   ;(init-schema-by-db)
+    (println ">o> run.init-db ... DONE")
+   (dynamic-web-initialize options)
    (info 'madek.api.main "... initialized")))
 
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
