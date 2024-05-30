@@ -8,27 +8,26 @@
    [madek.api.cli_config_parser :as cli_parser]
    [madek.api.constants]
    [madek.api.db.core :as db]
-   [madek.api.db.dynamic_schema.common :refer [get-validation-cache set-schema]]
-
-   ;[madek.api.db.dynamic_schema.schema_main :refer [init-schema-by-db]]
+   [madek.api.db.dynamic_schema.common :refer [get-validation-cache]]
+   [madek.api.db.dynamic_schema.core :refer [init-enums-by-db]]
    [madek.api.utils.config :as config :refer [get-config]]
    [madek.api.utils.exit :as exit]
    [madek.api.utils.logging :as logging]
    [madek.api.utils.nrepl :as nrepl]
    [madek.api.utils.rdbms :as rdbms]
    [pg-types.all]
-   [taoensso.timbre :refer [info error]]))
+   [taoensso.timbre :refer [error info]]))
 
 ;; cli ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def cli-options
   (concat
-   [["-h" "--help"]
-    ["-d" "--dev-mode"]]
-   exit/cli-options
-   nrepl/cli-options
-   cli_parser/cli-options
-   db/cli-options))
+    [["-h" "--help"]
+     ["-d" "--dev-mode"]]
+    exit/cli-options
+    nrepl/cli-options
+    cli_parser/cli-options
+    db/cli-options))
 
 (defn main-usage [options-summary & more]
   (->> ["Madek API"
@@ -43,7 +42,7 @@
           ["-------------------------------------------------------------------"
            (with-out-str (pprint more))
            "-------------------------------------------------------------------"])]
-       flatten (clojure.string/join \newline)))
+    flatten (clojure.string/join \newline)))
 
 (defn helpnexit [summary args options]
   (println (main-usage summary {:args args :options options})))
@@ -55,41 +54,41 @@
   (let [initialize-fn (resolve 'web/initialize)]
     (initialize-fn options)))
 
+(defn init-dynamic-schema []
+  (init-enums-by-db)
+  (let [errors (get-validation-cache)]
+    (if (empty? errors)
+      (info "[init-schema-by-db] Schema-Validation is OK, no differences between db and generated schema-definitions recognized.")
+      (error "[init-schema-by-db] Schema-Validation failed: " (count errors) " errors occurred\n\nDetails:\n" errors "\n"))))
+
+
 (defn run [options]
   (catcher/snatch
-   {:level :fatal
-    :throwable Throwable
-    :return-fn (fn [e] (System/exit -1))}
-   (info 'madek.api.main "initializing ...")
-   (madek.api.utils.config/initialize
-    {:filenames ["./config/settings.yml"
-                 "../config/settings.yml",
-                 "./datalayer/config/settings.yml",
-                 "../webapp/datalayer/config/settings.yml",
-                 "./config/settings.local.yml"
-                 "../config/settings.local.yml"]})
-   (info "Effective startup options " options)
-   (info "Effective startup config " (get-config))
+    {:level :fatal
+     :throwable Throwable
+     :return-fn (fn [e] (System/exit -1))}
+    (info 'madek.api.main "initializing ...")
+    (madek.api.utils.config/initialize
+      {:filenames ["./config/settings.yml"
+                   "../config/settings.yml",
+                   "./datalayer/config/settings.yml",
+                   "../webapp/datalayer/config/settings.yml",
+                   "./config/settings.local.yml"
+                   "../config/settings.local.yml"]})
+    (info "Effective startup options " options)
+    (info "Effective startup config " (get-config))
     ; WIP switching to new db container; remove old rdbms later
-   (rdbms/initialize (config/get-db-spec :api))
+    (rdbms/initialize (config/get-db-spec :api))
 
 
     (println ">o> run.init-db")
-   (db/init options)
+    (db/init options)
     ;
-   (nrepl/init options)
-   (madek.api.constants/initialize (get-config))
-   ;(init-schema-by-db)
-    (println ">o> run.init-db ... DONE")
-   (dynamic-web-initialize options)
-
-    (let [errors (get-validation-cache)
-            _ (if (empty? errors)
-                (info "[init-schema-by-db] Schema-Validation is OK, no differences between db and generated schema-definitions recognized.")
-                (error "[init-schema-by-db] Schema-Validation failed: " (count errors) " errors occurred\n\nDetails:\n" errors "\n"))])
-
-
-   (info 'madek.api.main "... initialized")))
+    (nrepl/init options)
+    (madek.api.constants/initialize (get-config))
+    (dynamic-web-initialize options)
+    (init-dynamic-schema)
+    (info 'madek.api.main "... initialized")))
 
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
