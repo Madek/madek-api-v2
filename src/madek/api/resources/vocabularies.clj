@@ -4,14 +4,11 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.resources.vocabularies.index :refer [get-index]]
    [madek.api.resources.vocabularies.permissions :as permissions]
-
-   [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
-
-
    [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist f mslurp t]]
@@ -235,7 +232,6 @@
               :accept "application/json"
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Str}}
-              ;:responses {200 {:body schema_export-vocabulary}
 
               :responses {200 {:body (query-schema :vocabularies.schema_export-vocabulary-admin "vocabularies-schema")}
               ;:responses {200 {:body schema_export-vocabulary-admin}

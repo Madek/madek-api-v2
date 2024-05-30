@@ -3,13 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   ;[madek.api.db.dynamic_schema.db :refer [fetch-table-metadata]]
-   ;[madek.api.db.dynamic_schema.db :refer [fetch-table-metadata-thunk]]
    [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
-
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared :as sd]
-
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [convert-map]]
    [madek.api.utils.helper :refer [d]]
@@ -36,13 +32,6 @@
    (s/optional-key :external_uris) [s/Str]
    (s/optional-key :rdf_class) s/Str})
 
-
-
-
-
-
-
-
 ;; TODO: this
 (def schema_export_keyword_usr
   {:id s/Uuid
@@ -53,11 +42,6 @@
    :external_uris [s/Any]
    :external_uri (s/maybe s/Str)
    :rdf_class s/Str})
-
-
-
-
-
 
 (def schema_export_keyword_adm
   {:id s/Uuid
@@ -88,13 +72,13 @@
    ; [:id :meta_key_id :term :description :external_uris :rdf_class
    ;  :created_at])
    (dissoc :creator_id :created_at :updated_at)
-   (assoc                                                   ; support old (singular) version of field
+   (assoc ; support old (singular) version of field
     :external_uri (first (keyword :external_uris)))))
 
 (defn adm-export-keyword [keyword]
   (->
    keyword
-   (assoc                                                   ; support old (singular) version of field
+   (assoc ; support old (singular) version of field
     :external_uri (first (keyword :external_uris)))))
 
 ;### handlers get and query ####################################################################
@@ -182,9 +166,9 @@
 
 (defn wrap-find-keyword [handler]
   (fn [request] (sd/req-find-data request handler
-                  :id
-                  :keywords :id
-                  :keyword true)))
+                                  :id
+                                  :keywords :id
+                                  :keyword true)))
 
 (s/defschema ItemQueryParams
   {:page (s/constrained s/Int #(>= % 1) "Must be a positive integer")
@@ -223,13 +207,11 @@
                                        :format "int32"
                                        :default 10}}]}
 
-
       :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_usr "keywords-schema")]}}
                   ;:responses {200 {:body {:keywords [schema_export_keyword_usr]}}
 
-
                   202 {:description "Successful response, list of items."
-                       :schema {}                           ;; Define your response schema as needed
+                       :schema {} ;; Define your response schema as needed
                        :examples {"application/json" {:message "Here are your items."
                                                       :page 1
                                                       :size 2
@@ -265,7 +247,6 @@
       :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_adm "keywords-schema")]}}}
 
                   ;:responses {200 {:body {:keywords [(keyword-query-schema :non-existing-keyword)]}}} ;; TODO: test validation
-
 
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 

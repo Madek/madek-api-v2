@@ -20,6 +20,3 @@
             :default (or (some-> http-resources-scope-key env)
                          "ALL")
             :validate [#(some #{%} ["ALL" "ADMIN" "USER"]) "scope must be ALL, ADMIN or USER"]]]))
-
-
-

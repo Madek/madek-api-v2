@@ -26,7 +26,8 @@
         _ (set-enum :collections_default_resource_type (create-enum-spec "collection_default_resource_type"))
 
         ;;;; TODO: revise db-ddl to use enum
-        _ (set-enum :groups.type (s/enum "AuthenticationGroup" "InstitutionalGroup" "Group"))]))
+        _ (set-enum :groups.type (s/enum "AuthenticationGroup" "InstitutionalGroup" "Group"))
+        _ (println ">o> !!! init-enums-by-db: DONE")]))
 
 (defn remove-maps-by-entry-values
   "Removes maps from a list where the specified entry key matches any of the values in the provided list."

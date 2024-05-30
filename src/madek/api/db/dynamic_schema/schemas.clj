@@ -1,10 +1,6 @@
 (ns madek.api.db.dynamic_schema.schemas
   (:require [madek.api.db.dynamic_schema.common :refer [get-schema has-schema set-schema]]
-            [madek.api.db.dynamic_schema.core :refer [create-dynamic-schema]]
-            )
-  )
-
-
+            [madek.api.db.dynamic_schema.core :refer [create-dynamic-schema]]))
 
 (defn get-var-value [namespace var-name]
   (let [ns-symbol (symbol namespace)
@@ -14,7 +10,6 @@
       (when resolved-var
         (deref resolved-var)))))
 
-
 (defn get-fn-value [namespace fn-name]
   (let [ns-symbol (symbol namespace)
         fn-symbol (symbol fn-name)]
@@ -22,12 +17,6 @@
     (let [resolved-fn (ns-resolve ns-symbol fn-symbol)]
       (when (and resolved-fn (fn? @resolved-fn))
         @resolved-fn))))
-
-
-;(defn set-schema-by-map [schema-map]
-;  (doseq [[k v] (seq schema-map)]
-;    (set-schema k v)))
-
 
 (defn query-schema
   "key               .. schemas-key OR raw-schema-name
@@ -41,7 +30,6 @@
       (do
         (create-dynamic-schema schema-def)
         (when schema-fnc
-          ;(set-schema-by-map (schema-fnc))
           (doseq [[k v] (seq (schema-fnc))]
             (set-schema k v)))
         (get-schema key)))))
