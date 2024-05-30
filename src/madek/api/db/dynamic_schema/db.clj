@@ -2,7 +2,7 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.db.core :as db]
+   [madek.api.db.core]
    [madek.api.db.core :refer [get-ds]]
    [next.jdbc :as jdbc]))
 

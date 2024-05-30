@@ -27,7 +27,8 @@
 
         ;;;; TODO: revise db-ddl to use enum
         _ (set-enum :groups.type (s/enum "AuthenticationGroup" "InstitutionalGroup" "Group"))
-        _ (println ">o> !!! init-enums-by-db: DONE")]))
+        _ (slog (str "[init-enums-by-db] init-enums-by-db: DONE"))
+        ]))
 
 (defn remove-maps-by-entry-values
   "Removes maps from a list where the specified entry key matches any of the values in the provided list."
@@ -149,19 +150,6 @@
 
         _ (set-schema raw-schema-name res)]
     res))
-
-(defn rename-by-keys
-  [maps key-map]
-  (map
-   (fn [m]
-     (reduce
-      (fn [acc [old-key new-key]]
-        (if (contains? m old-key)
-          (assoc acc new-key (m old-key))
-          acc))
-      (apply dissoc m (keys key-map))
-      key-map))
-   maps))
 
 (defn fetch-value-by-key
   [maps key]
