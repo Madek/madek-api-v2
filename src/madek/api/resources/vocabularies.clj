@@ -6,6 +6,8 @@
    [logbug.catcher :as catcher]
 
    [madek.api.resources.vocabularies.get :as get]
+   [madek.api.resources.vocabularies.delete :as delete]
+   [madek.api.resources.vocabularies.post :as post]
 
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
@@ -156,25 +158,7 @@
    ["/"
     {:get get/admin.vocabularies
 
-     :post {:summary (sd/sum_adm "Create vocabulary.")
-            :handler handle_create-vocab
-            :middleware [wrap-authorize-admin!]
-
-            :description (mslurp "./md/vocabularies-post.md")
-
-            :content-type "application/json"
-            :accept "application/json"
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:body (get-schema :vocabularies.schema_import-vocabulary)}
-            :responses {200 {:body (get-schema :vocabularies.schema_export-vocabulary-admin)}
-                        406 {:description "Creation failed."
-                             :schema s/Str
-                             :examples {"application/json" {:message "Could not create vocabulary."}}}
-
-                        500 {:description "Duplicate key"
-                             :schema s/Str
-                             :examples {"application/json" {:message "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists."}}}}
-            :swagger {:consumes "application/json" :produces "application/json"}}}]
+     :post post/admin.vocabularies}]
 
    ["/:id"
     {:get get/admin.vocabularies.id
@@ -202,27 +186,7 @@
                             :schema s/Str
                             :examples {"application/json" {:message "No such vocabulary."}}}}}
 
-     :delete {:summary (sd/sum_adm_todo "Delete vocabulary.")
-              :handler handle_delete-vocab
-              :middleware [wrap-authorize-admin!]
-              :content-type "application/json"
-
-              ;; TODO: remove this
-              :description (str "TODO: REMOVE THIS | user_id: columns")
-
-              :accept "application/json"
-              :coercion reitit.coercion.schema/coercion
-              :parameters {:path {:id s/Str}}
-              ;:responses {200 {:body schema_export-vocabulary}
-              :responses {200 {:body (get-schema :vocabularies.schema_export-vocabulary-admin)}
-                          403 {:description "Forbidden."
-                               :schema s/Str
-                               :examples {"application/json" {:message "References still exist"}}}
-                          404 {:description "Not found."
-                               :schema s/Str
-                               :examples {"application/json" {:message "No such vocabulary."}}}
-                          500 {:body s/Any}}
-              :swagger {:produces "application/json"}}}]
+     :delete delete/admin.vocabularies.id}]
 
    ["/:id/perms"
     ["/"
@@ -256,28 +220,8 @@
     ["/user/:user_id"
      {:get get/admin.vocabularies.users.user_id
 
-      :post
-      {:summary (sd/sum_adm "Create vocabulary user permissions")
-       :handler permissions/handle_create-vocab-user-perms
+      :post post/admin.vocabularies.users.user_id
 
-       ;; TODO: remove this
-       :description (str "TODO: REMOVE THIS | user_id: columns , id: d48e4387-b80d-45de-9077-5d88c331fa6a")
-
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str
-                           :user_id s/Uuid}
-                    :body (get-schema :vocabularies.schema_perms-update-user-or-group)}
-
-       :responses {200 {:body (get-schema :vocabularies.vocabulary_user_permissions)}
-                   404 {:description "Not found."
-                        :schema s/Str
-                        :examples {"application/json" {:message "{Vocabulary|User} entry not found"}}}
-                   409 {:description "Conflict."
-                        :schema s/Str
-                        :examples {"application/json" {:message "Entry already exists"}}}}}
 
       :put
       {:summary (sd/sum_adm "Update vocabulary user permissions")
@@ -298,28 +242,8 @@
                         :schema s/Str
                         :examples {"application/json" {:message "Could not update vocabulary user permission"}}}}}
 
-      :delete
-      {:summary (sd/sum_adm "Delete vocabulary user permissions")
-       :handler permissions/handle_delete-vocab-user-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str
-                           :user_id s/Uuid}}
-
-       ;; TODO: remove this
-       :description (str "TODO: REMOVE THIS | user_id: columns , id: d48e4387-b80d-45de-9077-5d88c331fa6a")
-
-       :responses {200 {:body (get-schema :vocabularies.vocabulary_user_permissions)}
-
-                   404 {:description "Not Found."
-                        :schema s/Str
-                        :examples {"application/json" {:message "No such vocabulary user permission."}}}
-
-                   406 {:description "Not Acceptable."
-                        :schema s/Str
-                        :examples {"application/json" {:message "Could not delete vocabulary user permission"}}}}}}]
+      :delete delete/admin.vocabularies.user.user_id
+      }]
 
     ["/groups"
      {:get get/admin.vocabularies.groups
@@ -329,26 +253,8 @@
      {:get get/admin.vocabularies.group.group_id
 
 
-      :post
-      {:summary (sd/sum_adm_todo "Create vocabulary group permissions")
-       :handler permissions/handle_create-vocab-group-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str
-                           :group_id s/Uuid}
-                    :body (get-schema :vocabularies.schema_perms-update-user-or-group)}
-       :responses {200 {:body (get-schema :vocabularies.schema_export-group-perms)}
-                   404 {:description "Not Found."
-                        :schema s/Str
-                        :examples {"application/json" {:message "Vocabulary entry not found"}}}
-                   406 {:description "Not Acceptable."
-                        :schema s/Str
-                        :examples {"application/json" {:message "Could not delete vocabulary group permission"}}}
-                   409 {:description "Conflict."
-                        :schema s/Str
-                        :examples {"application/json" {:message "Entry already exists"}}}}}
+      :post post/admin.vocabularies.group.group_id
+
 
       :put
       {:summary (sd/sum_adm_todo "Update vocabulary group permissions")
@@ -372,23 +278,8 @@
                         :schema s/Str
                         :examples {"application/json" {:message "Could not update vocabulary group permission"}}}}}
 
-      :delete
-      {:summary (sd/sum_adm_todo "Delete vocabulary group permissions")
-       :handler permissions/handle_delete-vocab-group-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str
-                           :group_id s/Uuid}}
-       :responses {200 {:body (get-schema :vocabularies.schema_export-group-perms)}
-                   404 {:description "Not Found."
-                        :schema s/Str
-                        ;:examples {"application/json" {:message "Vocabulary entry not found"}}}
-                        :examples {"application/json" {:message "No such vocabulary group permission."}}}
-                   406 {:description "Not Acceptable."
-                        :schema s/Str
-                        :examples {"application/json" {:message "Could not delete vocabulary group permission"}}}}}}]]])
+      :delete delete/admin.vocabularies.group.group_id
+      }]]])
 
 (def user-routes
   ["/vocabularies"
