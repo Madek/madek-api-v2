@@ -6,32 +6,31 @@
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error warn]]))
 
-
 ; begin media resources helpers
 (defn get-media-resource
   "First checks for collection_id, then for media_entry_id.
    If creating collection-media-entry-arc, the collection permission is checked."
   ([params tx]
    (or (get-media-resource params :collection_id "collections" "Collection" tx)
-     (get-media-resource params :media_entry_id "media_entries" "MediaEntry" tx)))
+       (get-media-resource params :media_entry_id "media_entries" "MediaEntry" tx)))
 
   ([params id-key table-name type tx]
    (try
      (when-let [id (-> params :parameters :path id-key)]
        ;(info "get-media-resource" "\nid\n" id)
        (when-let [resource (jdbc/execute-one! tx
-                             (-> (sql/select :*)
-                                 (sql/from (keyword table-name))
-                                 (sql/where [:= :id (to-uuid id)])
-                                 sql-format))]
+                                              (-> (sql/select :*)
+                                                  (sql/from (keyword table-name))
+                                                  (sql/where [:= :id (to-uuid id)])
+                                                  sql-format))]
          (assoc resource :type type :table-name table-name)))
 
      (catch Exception e
        (error "ERROR: get-media-resource: " (ex-data e))
        (merge (ex-data e)
-         {:statuc 406, :body {:message (.getMessage e)}})))))
+              {:statuc 406, :body {:message (.getMessage e)}})))))
 
-(defn ring-add-media-resource [request handler tx]         ;;here
+(defn ring-add-media-resource [request handler tx] ;;here
   (if-let [media-resource (get-media-resource request tx)]
     (let [request-with-media-resource (assoc request :media-resource media-resource)]
       ;(info "ring-add-media-resource" "\nmedia-resource\n" media-resource)

@@ -5,9 +5,9 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist convert-map-if-exist mslurp replace-java-hashmaps replace-java-hashmaps cast-to-hstore v]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -64,7 +64,7 @@
 (defn handle_adm-query-meta-keys [req]
   (let [db-result (mkindex/db-query-meta-keys req)
         result (map adm-export-meta-key-list db-result)]
-    (sd/response_ok {:meta-keys result})))                  ;; TODO: add headers.x-total-count?
+    (sd/response_ok {:meta-keys result}))) ;; TODO: add headers.x-total-count?
 
 (defn handle_usr-query-meta-keys [req]
   (let [db-result (mkindex/db-query-meta-keys req)
@@ -75,14 +75,14 @@
   (let [mk (-> req :meta_key)
         tx (:tx req)
         result (mk/include-io-mappings
-                 (adm-export-meta-key mk) (:id mk) tx)]
+                (adm-export-meta-key mk) (:id mk) tx)]
     (sd/response_ok result)))
 
 (defn handle_usr-get-meta-key [req]
   (let [mk (-> req :meta_key)
         tx (:tx req)
         result (mk/include-io-mappings
-                 (user-export-meta-key mk) (:id mk) tx)]
+                (user-export-meta-key mk) (:id mk) tx)]
     (sd/response_ok result)))
 
 (defn handle_create_meta-key [req]
@@ -111,8 +111,8 @@
         db-result (replace-java-hashmaps db-result)]
 
     (info "handle_update_meta-key:"
-      "\nid: " id
-      "\ndwid\n" dwid)
+          "\nid: " id
+          "\ndwid\n" dwid)
 
     (if db-result
       (sd/response_ok db-result)
@@ -232,9 +232,9 @@
 (defn wwrap-find-meta_key [param colname send404]
   (fn [handler]
     (fn [request] (sd/req-find-data-new request handler
-                    param
-                    :meta_keys colname
-                    :meta_key send404))))
+                                        param
+                                        :meta_keys colname
+                                        :meta_key send404))))
 
 (def admin-routes
   ["/meta-keys"

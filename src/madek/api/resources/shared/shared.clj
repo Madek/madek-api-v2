@@ -3,9 +3,9 @@
             [clojure.walk :refer [keywordize-keys]]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
+            [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.semver :as semver]
             [madek.api.utils.helper :refer [to-uuid]]
-            [madek.api.resources.shared.db_helper :as dbh]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error info]]))
 
@@ -158,18 +158,17 @@
 (defn is-admin [user-id tx]
   (let [none (->
               (jdbc/execute!
-                tx
-                (-> (sql/select :*)
-                    (sql/from :admins)
-                    (sql/where [:= :user_id (to-uuid user-id)])
-                    sql-format))
+               tx
+               (-> (sql/select :*)
+                   (sql/from :admins)
+                   (sql/where [:= :user_id (to-uuid user-id)])
+                   sql-format))
               empty?)
         result (not none)]
     ;(info "is-admin: " user-id " : " result)
     result))
 
 ; end user and other util wrappers
-
 
 ; begin swagger docu summary helpers
 

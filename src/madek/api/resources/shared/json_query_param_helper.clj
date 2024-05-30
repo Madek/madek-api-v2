@@ -1,11 +1,10 @@
 (ns madek.api.resources.shared.json_query_param_helper
   (:require [cheshire.core :as cheshire]
 
+            [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.media_resource_helper :as mrh]
             [madek.api.resources.shared.meta_data_helper :as mdh]
-            [madek.api.resources.shared.db_helper :as dbh]
-            [madek.api.resources.shared.shared :as sd]
-            ))
+            [madek.api.resources.shared.shared :as sd]))
 
 (defn generate-swagger-pagination-params []
   {:produces "application/json"
@@ -37,8 +36,8 @@
   ;((assoc-in request [:query-params2] (-> request :parameters :query))
   (handler (assoc request :query-params
                   (->> request :query-params
-                    (map (fn [[k v]] [k (try-as-json v)]))
-                    (into {})))))
+                       (map (fn [[k v]] [k (try-as-json v)]))
+                       (into {})))))
 
 ; end json query param helpers
 
@@ -79,7 +78,7 @@
         (if (re-find #"^[a-z0-9\-\_\:]+:[a-z0-9\-\_\:]+$" meta-key-id)
           (handler request)
           (sd/response_failed (str "Wrong meta_key_id format! See documentation."
-                                " (" meta-key-id ")") 422))))))
+                                   " (" meta-key-id ")") 422))))))
 
 (defn wrap-check-valid-meta-key-new [param]
   (fn [handler]
@@ -88,6 +87,6 @@
         (if (:and (not (nil? meta-key-id)) (re-find #"^[a-z0-9\-\_\:]+:[a-z0-9\-\_\:]+$" meta-key-id))
           (handler request)
           (sd/response_failed (str "Wrong meta_key_id format! See documentation."
-                                " (" meta-key-id ")") 422))))))
+                                   " (" meta-key-id ")") 422))))))
 
 ;(debug/debug-ns *ns*)

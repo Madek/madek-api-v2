@@ -4,8 +4,8 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 

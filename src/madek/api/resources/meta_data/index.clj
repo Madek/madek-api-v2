@@ -3,9 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.constants :as constants]
-   [madek.api.resources.shared.shared :as sd]
-   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.resources.shared.shared :as sd]
 
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))

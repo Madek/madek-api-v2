@@ -8,9 +8,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.legacy.session.encryptor :refer [decrypt]]
    [madek.api.legacy.session.signature :refer [valid?]]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.config :refer [get-config
                                    parse-config-duration-to-seconds]]

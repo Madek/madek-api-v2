@@ -3,9 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]
-   [madek.api.resources.shared.db_helper :as dbh]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))

@@ -3,9 +3,9 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-files.authorization :as media-files.authorization]
    [madek.api.resources.media-files.media-file :as media-file]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.shared :as sd]
-   [madek.api.resources.shared.db_helper :as dbh]
    [reitit.coercion.schema]
    [schema.core :as s]))
 

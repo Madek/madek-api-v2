@@ -4,9 +4,9 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared.db_helper :as dbh]
-
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
+
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]))
 

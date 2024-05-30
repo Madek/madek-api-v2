@@ -5,13 +5,13 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
-   [next.jdbc :as jdbc]
-   [madek.api.resources.shared.db_helper :as dbh]
 
-   [madek.api.resources.shared.db_helper :as dbh]
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [error]]))

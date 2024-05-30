@@ -2,8 +2,8 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]

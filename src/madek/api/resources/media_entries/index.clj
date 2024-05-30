@@ -10,14 +10,14 @@
    [logbug.catcher :as catcher]
    [logbug.debug :refer [I> identity-with-logging]]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared.db_helper :as dbh]
-
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
+
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.media-entries.permissions :as media-entry-perms]
    [madek.api.resources.media-entries.query :refer [query-index-resources]]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.meta-data.index :as meta-data.index]
+   [madek.api.resources.shared.db_helper :as dbh]
 
    [madek.api.resources.shared.shared :as sd]
 
@@ -289,7 +289,7 @@
 (defn get-preview-list [melist auth-entity tx]
   (let [auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity tx))
                           (dbh/query-eq-find-all :previews :media_file_id
-                                                (:id (media-files/query-media-file-by-media-entry-id (:id %) tx)) tx)) melist)]
+                                                 (:id (media-files/query-media-file-by-media-entry-id (:id %) tx)) tx)) melist)]
     ;(info "get-preview-list" auth-list)
     auth-list))
 

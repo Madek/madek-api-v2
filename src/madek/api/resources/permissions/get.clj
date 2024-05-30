@@ -3,8 +3,8 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-resources.permissions :as mr-permissions]
    [madek.api.resources.permissions.common :refer :all]
-   [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.resources.shared.shared :as sd]
    [reitit.coercion.schema]
    [schema.core :as s]))
 
