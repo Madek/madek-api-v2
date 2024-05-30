@@ -5,7 +5,7 @@
    [logbug.catcher :as catcher]
    ;[madek.api.db.dynamic_schema.db :refer [fetch-table-metadata]]
    ;[madek.api.db.dynamic_schema.db :refer [fetch-table-metadata-thunk]]
-   [madek.api.db.dynamic_schema.schemas :refer [keyword-query-schema]]
+   [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
 
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared :as sd]
@@ -227,7 +227,7 @@
       ;:responses {200 {:body {:keywords [(get-schema :keywords.schema_export_keyword_usr)]}}
 
       ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
-      :responses {200 {:body {:keywords [(keyword-query-schema :keywords.schema_export_keyword_usr)]}}
+      :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_usr "keywords-schema")]}}
                   ;:responses {200 {:body {:keywords [schema_export_keyword_usr]}}
                   ;:responses {200 {:body {:keywords [keyword-query-schema]}}
 
@@ -248,7 +248,7 @@
       :parameters {:path {:id s/Uuid}}
 
       ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
-      :responses {200 {:body {:keywords [(keyword-query-schema :keywords.schema_export_keyword_usr)]}}
+      :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_usr "keywords-schema")]}}
                   ;:responses {200 {:body schema_export_keyword_usr}
                   ;:responses {200 {:body keyword-query-schema}
 

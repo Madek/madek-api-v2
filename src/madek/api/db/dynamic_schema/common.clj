@@ -14,24 +14,37 @@
         _ (if (= val s/Any)
             (swap! validation-cache conj "ERROR: no schema for key=" key))]
     (slog (str "[get-schema] " key "=" val))
+    (println ">o> !!! [get-schema] " key "=" val)
     val))
 
 (defn has-schema [key]
 
-  (nil? (get @schema-cache key nil))
 
-  ;(let [val (or (get @schema-cache key default) s/Any)
-  ;      _ (if (= val s/Any)
-  ;          (swap! validation-cache conj "ERROR: no schema for key=" key))]
-  ;  (slog (str "[get-schema] " key "=" val))
-  ;  val
-  ;
-  ;  )
+  (let [
+        res (not (nil? (get @schema-cache key nil)))
+        p (println ">o> has-schema.res=" res)
+        ] res)
+
   )
 
+;(let [val (or (get @schema-cache key default) s/Any)
+;      _ (if (= val s/Any)
+;          (swap! validation-cache conj "ERROR: no schema for key=" key))]
+;  (slog (str "[get-schema] " key "=" val))
+;  val
+;
+;  )
+
+
 (defn set-schema [key value]
-  (slog (str "[set-schema] (" key ") ->" value))
-  (swap! schema-cache assoc key (into {} value)))
+  (let [
+        value (into {} value)
+
+        _ (slog (str "[set-schema] (" key ") ->" value))
+        _ (println ">o> !!! [set-schema] (" key ") ->" value)
+        _ (swap! schema-cache assoc key value)
+
+        ]))
 
 (defn get-enum [key & [default]]
   (let [val (get @enum-cache key default)] val))
