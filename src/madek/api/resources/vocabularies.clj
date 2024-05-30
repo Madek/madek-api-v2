@@ -260,8 +260,8 @@
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str}}
 
-       ;:responses {200 {:body (query-schema :vocabularies.schema_export-perms_all "vocabularies-schema")}
-       :responses {200 {:body schema_export-perms_all}
+       :responses {200 {:body (query-schema :vocabularies.schema_export-perms_all "vocabularies-schema")}
+       ;:responses {200 {:body schema_export-perms_all}
 
                    404 {:description "Not found."
                         :schema s/Str

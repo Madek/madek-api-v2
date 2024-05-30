@@ -175,7 +175,6 @@
                         res (schema-fnc)
                         _ (println ">o> >>> ????????? fnc=" res)
                         _ (set-schema-by-map res)
-
                         ]
 
                     ))
