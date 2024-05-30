@@ -7,6 +7,8 @@
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.helper :refer [t]]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.resources.shared.db_helper :as dbh]
+
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]

@@ -75,7 +75,7 @@
 (defn handle_list-vocab-user-perms [req]
   (let [id (-> req :path-params :id)
         tx (:tx req)
-        result (sd/query-eq-find-all
+        result (dbh/query-eq-find-all
                 :vocabulary_user_permissions
                 :vocabulary_id id tx)]
     (sd/response_ok result
@@ -143,7 +143,7 @@
                            :vocabulary_user_permissions
                            :vocabulary_id vid
                            :user_id uid tx)]
-          (let [del-clause (sd/sql-update-clause "vocabulary_id" vid "user_id" uid)
+          (let [del-clause (dbh/sql-update-clause "vocabulary_id" vid "user_id" uid)
                 query (-> (sql/delete-from :vocabulary_user_permissions)
                           (sql/where [:= :vocabulary_id vid] [:= :user_id uid])
                           sql-format)
@@ -157,7 +157,7 @@
 (defn handle_list-vocab-group-perms [req]
   (let [id (-> req :path-params :id)
         tx (:tx req)
-        result (sd/query-eq-find-all
+        result (dbh/query-eq-find-all
                 :vocabulary_group_permissions
                 :vocabulary_id id tx)]
     (sd/response_ok result)))
@@ -245,8 +245,8 @@
     ;; Early exit if resource-perms is nil
     (if (nil? resource-perms)
       (sd/response_failed "No such vocabulary." 404)
-      (let [user-perms (sd/query-eq-find-all :vocabulary_user_permissions :vocabulary_id id tx)
-            group-perms (sd/query-eq-find-all :vocabulary_group_permissions :vocabulary_id id tx)
+      (let [user-perms (dbh/query-eq-find-all :vocabulary_user_permissions :vocabulary_id id tx)
+            group-perms (dbh/query-eq-find-all :vocabulary_group_permissions :vocabulary_id id tx)
             result {:vocabulary (select-keys resource-perms [:id :enabled_for_public_view :enabled_for_public_use])
                     :users user-perms
                     :groups group-perms}]

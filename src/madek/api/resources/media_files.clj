@@ -18,7 +18,7 @@
   (dbh/query-eq-find-one :media_files :media_entry_id media-entry-id tx))
 
 (defn query-media-files-by-media-entry-id [media-entry-id tx]
-  (sd/query-eq-find-all :media_files :media_entry_id media-entry-id tx))
+  (dbh/query-eq-find-all :media_files :media_entry_id media-entry-id tx))
 
 (defn wrap-find-and-add-media-file
   "Extracts path parameter media_entry_id,
@@ -106,7 +106,7 @@
       :handler media-file/get-media-file-data-stream
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
                    jqh/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-download]
+                   jqh/ring-wrap-authorization-download]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
       ;:responses {:200 {:body s/Any}

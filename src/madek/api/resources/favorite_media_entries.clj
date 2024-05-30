@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
@@ -26,7 +27,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         user-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all :favorite_media_entries :user_id user-id (:tx req))
+        db-result (dbh/query-eq-find-all :favorite_media_entries :user_id user-id (:tx req))
         id-set (map :media_entry_id db-result)]
     ;(info "handle_list-favorite_media_entry" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:media_entry_ids id-set})))

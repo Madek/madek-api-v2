@@ -6,8 +6,8 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.helper :refer [cast-to-hstore]]
-   [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
+   [madek.api.resources.shared.db_helper :as dbh]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))

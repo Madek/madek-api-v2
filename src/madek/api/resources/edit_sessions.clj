@@ -9,6 +9,8 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   ;[madek.api.resources.shared.db_helper :as dbh]
+
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -66,7 +68,7 @@
         mr-id (-> mr :id str)
         col-key (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
     ;(info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
-    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id (:tx req))]
+    (if-let [result (dbh/query-eq-find-all :edit_sessions col-key mr-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))))
 
@@ -79,7 +81,7 @@
         mr-id (-> mr :id str)
         col-key (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
     ;(info "handle_get-edit-sessions" "\ntype\n" mr-type "\nmr-id\n" mr-id "\ncol-name\n" col-name)
-    (if-let [result (sd/query-eq-find-all :edit_sessions col-key mr-id :user_id u-id tx)]
+    (if-let [result (dbh/query-eq-find-all :edit_sessions col-key mr-id :user_id u-id tx)]
       (sd/response_ok result)
       (sd/response_not_found (str "No such edit_session for " mr-type " with id: " mr-id)))))
 

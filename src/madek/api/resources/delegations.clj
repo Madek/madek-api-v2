@@ -41,7 +41,7 @@
         id (-> req :parameters :path :id)
         dwid (assoc data :id id)
         old-data (-> req :delegation)
-        upd-query (sd/sql-update-clause "id" (str id))
+        upd-query (dbh/sql-update-clause "id" (str id))
         tx (:tx req)
         sql-query (-> (sql/update :delegations)
                       (sql/set dwid)

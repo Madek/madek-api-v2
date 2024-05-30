@@ -6,6 +6,8 @@
             [madek.api.db.dynamic_schema.common :refer [get-schema]]
             [madek.api.resources.shared.shared :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
+
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -34,7 +36,7 @@
     (catcher/with-logging {}
       (let [data (-> req :parameters :body)
             conf-data-or-str (:configuration data)
-            conf-data (sd/try-as-json conf-data-or-str)
+            conf-data (jqh/try-as-json conf-data-or-str)
             uid (-> req :authenticated-entity :id)
             ins-data (assoc data :creator_id uid :configuration (with-meta conf-data {:pgtype "jsonb"}))
             sql-query (-> (sql/insert-into :workflows)
@@ -58,7 +60,7 @@
             id (-> req :parameters :path :id)
             tx (:tx req)
             dwid (assoc data :id id)
-            upd-query (sd/sql-update-clause "id" (str id))
+            upd-query (dbh/sql-update-clause "id" (str id))
             sql-query (-> (sql/update :workflows)
                           (sql/set dwid)
                           (sql/where upd-query)

@@ -2,7 +2,6 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   ;[madek.api.resources.locales :refer [add-field-for-default-locale]]
    [next.jdbc :as jdbc]))
 
 ;; TODO: not in use

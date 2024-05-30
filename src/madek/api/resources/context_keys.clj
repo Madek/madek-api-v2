@@ -10,6 +10,8 @@
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
    [next.jdbc :as jdbc]
    [madek.api.resources.shared.db_helper :as dbh]
+
+   [madek.api.resources.shared.db_helper :as dbh]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [error]]))
@@ -32,9 +34,9 @@
                      (dbh/build-query-param req-query :meta_key_id)
                      (dbh/build-query-param req-query :is_required)
 
-                     (sd/build-query-created-or-updated-after req-query :changed_after)
-                     (sd/build-query-ts-after req-query :created_after "created_at")
-                     (sd/build-query-ts-after req-query :updated_after "updated_at")
+                     (dbh/build-query-created-or-updated-after req-query :changed_after)
+                     (dbh/build-query-ts-after req-query :created_after "created_at")
+                     (dbh/build-query-ts-after req-query :updated_after "updated_at")
 
                      (pagination/add-offset-for-honeysql req-query)
                      sql-format)

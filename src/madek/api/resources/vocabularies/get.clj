@@ -6,9 +6,9 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared.shared :as sd]
-   [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.vocabularies.index :refer [get-index]]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -91,7 +91,7 @@
                          :handler get-index
                          :middleware [wrap-authorize-admin!]
                          :content-type "application/json"
-                         :swagger (generate-swagger-pagination-params)
+                         :swagger (jqh/generate-swagger-pagination-params)
                          :coercion reitit.coercion.schema/coercion
                          :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary-admin)]}}}})
 
@@ -190,7 +190,7 @@
                         :handler get-index
                         :content-type "application/json"
                         :coercion reitit.coercion.schema/coercion
-                        :swagger (generate-swagger-pagination-params)
+                        :swagger (jqh/generate-swagger-pagination-params)
                         :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary)]}}}})
 
 (def user.vocabularies.id {:summary "Get vocabulary by id."

@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared.shared :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -34,7 +35,7 @@
   [req]
   (let [;full-data (true? (-> req :parameters :query :full-data))
         user-id (-> req :authenticated-entity :id)
-        db-result (sd/query-eq-find-all :delegations_users :user_id user-id (:tx req))
+        db-result (dbh/query-eq-find-all :delegations_users :user_id user-id (:tx req))
         id-set (map :delegation_id db-result)]
     (info "handle_list-delegations_user" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:delegation_ids id-set})

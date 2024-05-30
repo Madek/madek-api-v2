@@ -4,7 +4,6 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
-   [madek.api.resources.shared]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]

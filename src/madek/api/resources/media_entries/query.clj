@@ -10,6 +10,7 @@
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.shared :as sd]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.core :refer [keyword str]]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
@@ -162,7 +163,7 @@
 
 (defn- set-order [query query-params tx]
   (-> (let [qorder (-> query-params :order)
-            order (sd/try-as-json qorder)
+            order (jqh/try-as-json qorder)
             collection-id (-> query-params :collection_id)
             result (cond
                      (nil? order) (default-order query)

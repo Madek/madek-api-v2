@@ -5,6 +5,8 @@
             [java-time.api :as jt]
             [logbug.catcher :as catcher]
             [madek.api.constants :as mc]
+            ;[madek.api.resources.shared.db_helper :as dbh]
+
             [madek.api.utils.helper :refer [to-uuid]]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error info]]))
@@ -95,7 +97,7 @@
        query
        (-> query (sql/where [:like db-param qval]))))))
 
-(defn- sql-query-find-eq
+(defn sql-query-find-eq
   ([table-name col-name row-data]
    (let [query (-> (build-query-base table-name :*)
                    (sql/where [:= col-name (to-uuid row-data col-name table-name)])

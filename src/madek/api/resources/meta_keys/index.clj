@@ -4,8 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :refer [add-offset-for-honeysql]]
-   [madek.api.resources.shared]
-   [madek.api.resources.shared.shared :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))

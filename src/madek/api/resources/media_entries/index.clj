@@ -10,6 +10,8 @@
    [logbug.catcher :as catcher]
    [logbug.debug :refer [I> identity-with-logging]]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.shared.db_helper :as dbh]
+
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.media-entries.permissions :as media-entry-perms]
@@ -171,7 +173,7 @@
 ;
 ;(defn- set-order [query query-params tx]
 ;  (-> (let [qorder (-> query-params :order)
-;            order (sd/try-as-json qorder)
+;            order (jqh/try-as-json qorder)
 ;            collection-id (-> query-params :collection_id)
 ;            result (cond
 ;                     (nil? order) (default-order query)
@@ -286,7 +288,7 @@
 
 (defn get-preview-list [melist auth-entity tx]
   (let [auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity tx))
-                          (sd/query-eq-find-all :previews :media_file_id
+                          (dbh/query-eq-find-all :previews :media_file_id
                                                 (:id (media-files/query-media-file-by-media-entry-id (:id %) tx)) tx)) melist)]
     ;(info "get-preview-list" auth-list)
     auth-list))

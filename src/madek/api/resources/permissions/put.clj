@@ -96,7 +96,7 @@
                    :description (str "Valid perm_name values are" valid_permission_names)
                    :handler handle_update-ressource-perms
                    :middleware [jqh/ring-wrap-add-media-resource
-                                sd/ring-wrap-authorization-edit-permissions]
+                                jqh/ring-wrap-authorization-edit-permissions]
                    :coercion reitit.coercion.schema/coercion
                    :parameters {:path {:media_entry_id s/Uuid}
                                 :body (get-schema :media_entries.schema_update-media-entry-perms)}
@@ -106,7 +106,7 @@
                                      :description (str "Valid perm_name values are" valid_permission_names)
                                      :handler handle_update-resource-perm-value
                                      :middleware [jqh/ring-wrap-add-media-resource
-                                                  sd/ring-wrap-authorization-edit-permissions]
+                                                  jqh/ring-wrap-authorization-edit-permissions]
                                      :coercion reitit.coercion.schema/coercion
                                      :parameters {:path {:media_entry_id s/Uuid
                                                          :perm_name (s/enum "get_metadata_and_previews"
@@ -118,7 +118,7 @@
                                          :description (str "Valid perm_name values are" valid_permission_names)
                                          :handler handle_update-user-perms
                                          :middleware [jqh/ring-wrap-add-media-resource
-                                                      sd/ring-wrap-authorization-edit-permissions]
+                                                      jqh/ring-wrap-authorization-edit-permissions]
                                          :coercion reitit.coercion.schema/coercion
                                          :parameters {:path {:media_entry_id s/Uuid
                                                              :user_id s/Uuid
@@ -133,7 +133,7 @@
                                           :description (str "Valid perm_name values are" valid_permission_names)
                                           :handler handle_update-group-perms
                                           :middleware [jqh/ring-wrap-add-media-resource
-                                                       sd/ring-wrap-authorization-edit-permissions]
+                                                       jqh/ring-wrap-authorization-edit-permissions]
                                           :coercion reitit.coercion.schema/coercion
                                           :parameters {:path {:media_entry_id s/Uuid
                                                               :group_id s/Uuid
@@ -147,7 +147,7 @@
                     :description (str "Valid perm_name values are" valid_permission_names)
                     :handler handle_update-ressource-perms
                     :middleware [jqh/ring-wrap-add-media-resource
-                                 sd/ring-wrap-authorization-edit-permissions]
+                                 jqh/ring-wrap-authorization-edit-permissions]
                     :coercion reitit.coercion.schema/coercion
                     :parameters {:path {:collection_id s/Uuid}
                                  :body (get-schema :collections-perms.schema_update-collection-perms)}
@@ -157,7 +157,7 @@
                                       :description (str "Valid perm_name values are" valid_permission_names)
                                       :handler handle_update-resource-perm-value
                                       :middleware [jqh/ring-wrap-add-media-resource
-                                                   sd/ring-wrap-authorization-edit-permissions]
+                                                   jqh/ring-wrap-authorization-edit-permissions]
                                       :coercion reitit.coercion.schema/coercion
                                       :parameters {:path {:collection_id s/Uuid
                                                           :perm_name (s/enum "get_metadata_and_previews")
@@ -167,7 +167,7 @@
 (def col.user.user_id.perm_name.perm_val {:summary "Update collection user permissions"
                                           :handler handle_update-user-perms
                                           :middleware [jqh/ring-wrap-add-media-resource
-                                                       sd/ring-wrap-authorization-edit-permissions]
+                                                       jqh/ring-wrap-authorization-edit-permissions]
                                           :coercion reitit.coercion.schema/coercion
                                           :parameters {:path {:collection_id s/Uuid
                                                               :user_id s/Uuid
@@ -181,7 +181,7 @@
                                             :description (str "Valid perm_name values are" valid_permission_names)
                                             :handler handle_update-group-perms
                                             :middleware [jqh/ring-wrap-add-media-resource
-                                                         sd/ring-wrap-authorization-edit-permissions]
+                                                         jqh/ring-wrap-authorization-edit-permissions]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:collection_id s/Uuid
                                                                 :group_id s/Uuid

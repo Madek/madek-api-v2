@@ -5,6 +5,8 @@
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.resources.shared.shared :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
+
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -177,7 +179,7 @@
 
 (defn db-get-meta-data-keywords
   [md-id tx]
-  (sd/query-eq-find-all :meta_data_keywords :meta_datum_id md-id tx))
+  (dbh/query-eq-find-all :meta_data_keywords :meta_datum_id md-id tx))
 #_(let [query (-> (sd/build-query-base :meta_data_keywords :*)
                   (sql/merge-where [:= :meta_datum_id md-id])
                   (sql/merge-join :keywords [:= :keywords.id :meta_data_keywords.keyword_id])
@@ -188,11 +190,11 @@
       (info "db-get-meta-data-keywords:\n" result)))
 
 (defn db-get-meta-data-roles [md-id tx]
-  (sd/query-eq-find-all :meta_data_roles :meta_datum_id md-id tx))
+  (dbh/query-eq-find-all :meta_data_roles :meta_datum_id md-id tx))
 
 (defn db-get-meta-data-people
   [md-id tx]
-  (sd/query-eq-find-all :meta_data_people :meta_datum_id md-id tx))
+  (dbh/query-eq-find-all :meta_data_people :meta_datum_id md-id tx))
 
 (defn wrap-add-keyword [handler]
   (fn [request] (sd/req-find-data

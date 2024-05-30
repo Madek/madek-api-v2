@@ -6,10 +6,9 @@
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
    [madek.api.resources.shared.shared :as sd]
-   [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist replace-java-hashmaps v]]
-   [madek.api.utils.helper :refer [mslurp]]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist convert-map-if-exist mslurp replace-java-hashmaps replace-java-hashmaps cast-to-hstore v]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
@@ -65,7 +64,7 @@
 (defn handle_adm-query-meta-keys [req]
   (let [db-result (mkindex/db-query-meta-keys req)
         result (map adm-export-meta-key-list db-result)]
-    (sd/response_ok {:meta-keys result}))) ;; TODO: add headers.x-total-count?
+    (sd/response_ok {:meta-keys result})))                  ;; TODO: add headers.x-total-count?
 
 (defn handle_usr-query-meta-keys [req]
   (let [db-result (mkindex/db-query-meta-keys req)
@@ -76,14 +75,14 @@
   (let [mk (-> req :meta_key)
         tx (:tx req)
         result (mk/include-io-mappings
-                (adm-export-meta-key mk) (:id mk) tx)]
+                 (adm-export-meta-key mk) (:id mk) tx)]
     (sd/response_ok result)))
 
 (defn handle_usr-get-meta-key [req]
   (let [mk (-> req :meta_key)
         tx (:tx req)
         result (mk/include-io-mappings
-                (user-export-meta-key mk) (:id mk) tx)]
+                 (user-export-meta-key mk) (:id mk) tx)]
     (sd/response_ok result)))
 
 (defn handle_create_meta-key [req]
@@ -112,8 +111,8 @@
         db-result (replace-java-hashmaps db-result)]
 
     (info "handle_update_meta-key:"
-          "\nid: " id
-          "\ndwid\n" dwid)
+      "\nid: " id
+      "\ndwid\n" dwid)
 
     (if db-result
       (sd/response_ok db-result)
@@ -233,9 +232,9 @@
 (defn wwrap-find-meta_key [param colname send404]
   (fn [handler]
     (fn [request] (sd/req-find-data-new request handler
-                                        param
-                                        :meta_keys colname
-                                        :meta_key send404))))
+                    param
+                    :meta_keys colname
+                    :meta_key send404))))
 
 (def admin-routes
   ["/meta-keys"
@@ -245,7 +244,7 @@
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_adm-query-meta-keys
            :middleware [wrap-authorize-admin!]
-           :swagger (generate-swagger-pagination-params)
+           :swagger (jqh/generate-swagger-pagination-params)
 
            ; FIXME: returns vocabulary.id instead of meta-keys.id ??
 
@@ -279,7 +278,7 @@
            :content-type "application/json"
            :accept "application/json"
            :middleware [wrap-authorize-admin!
-                        (sd/wrap-check-valid-meta-key-new :id)
+                        (jqh/wrap-check-valid-meta-key-new :id)
                         (wwrap-find-meta_key :id :id true)]
            :handler handle_adm-get-meta-key
            :coercion reitit.coercion.schema/coercion
@@ -306,7 +305,7 @@
            :description (mslurp "./md/meta-key-put.md")
 
            :middleware [wrap-authorize-admin!
-                        (sd/wrap-check-valid-meta-key-new :id)
+                        (jqh/wrap-check-valid-meta-key-new :id)
                         (wwrap-find-meta_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
 
@@ -327,7 +326,7 @@
 
      :delete {:summary (sd/sum_adm "Delete meta-key.")
               :handler handle_delete_meta-key
-              :middleware [(sd/wrap-check-valid-meta-key-new :id)
+              :middleware [(jqh/wrap-check-valid-meta-key-new :id)
                            (wwrap-find-meta_key :id :id true)]
               :coercion reitit.coercion.schema/coercion
               :swagger {:produces "application/json"
@@ -353,7 +352,7 @@
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
            :parameters {:query (get-schema :meta-keys.schema_query-meta-key)}
-           :swagger (generate-swagger-pagination-params)
+           :swagger (jqh/generate-swagger-pagination-params)
            :content-type "application/json"
            :coercion reitit.coercion.schema/coercion
 
@@ -367,7 +366,7 @@
            :content-type "application/json"
            :accept "application/json"
            :handler handle_usr-get-meta-key
-           :middleware [(sd/wrap-check-valid-meta-key-new :id)
+           :middleware [(jqh/wrap-check-valid-meta-key-new :id)
                         (wwrap-find-meta_key :id :id true)]
            :coercion reitit.coercion.schema/coercion
 

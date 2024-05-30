@@ -49,7 +49,7 @@
                       :content-type "application/json"
                       :handler handle_delete-user-perms
                       :middleware [jqh/ring-wrap-add-media-resource
-                                   sd/ring-wrap-authorization-edit-permissions]
+                                   jqh/ring-wrap-authorization-edit-permissions]
                       :coercion reitit.coercion.schema/coercion
                       :parameters {:path {:media_entry_id s/Uuid
                                           :user_id s/Uuid}}
@@ -60,7 +60,7 @@
                         :content-type "application/json"
                         :handler handle_delete-group-perms
                         :middleware [jqh/ring-wrap-add-media-resource
-                                     sd/ring-wrap-authorization-edit-permissions]
+                                     jqh/ring-wrap-authorization-edit-permissions]
                         :coercion reitit.coercion.schema/coercion
                         :parameters {:path {:media_entry_id s/Uuid
                                             :group_id s/Uuid}}
@@ -71,7 +71,7 @@
                        :content-type "application/json"
                        :handler handle_delete-user-perms
                        :middleware [jqh/ring-wrap-add-media-resource
-                                    sd/ring-wrap-authorization-edit-permissions]
+                                    jqh/ring-wrap-authorization-edit-permissions]
                        :coercion reitit.coercion.schema/coercion
                        :parameters {:path {:collection_id s/Uuid
                                            :user_id s/Uuid}}
@@ -82,7 +82,7 @@
                          :content-type "application/json"
                          :handler handle_delete-group-perms
                          :middleware [jqh/ring-wrap-add-media-resource
-                                      sd/ring-wrap-authorization-edit-permissions]
+                                      jqh/ring-wrap-authorization-edit-permissions]
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:path {:collection_id s/Uuid
                                              :group_id s/Uuid}}

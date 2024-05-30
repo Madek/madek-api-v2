@@ -5,8 +5,9 @@
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.previews.preview :as preview]
    [madek.api.resources.shared.shared :as sd]
-
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.media_resource_helper :as mrh]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -16,7 +17,7 @@
   ([request handler]
    (when-let [preview-id (-> request :parameters :path :preview_id)]
      (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id)
-     (when-let [preview (first (sd/query-eq-find-all :previews :id preview-id (:tx request)))]
+     (when-let [preview (first (dbh/query-eq-find-all :previews :id preview-id (:tx request)))]
        (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
        (handler (assoc request :preview preview))))))
 
@@ -33,14 +34,14 @@
 (defn add-preview-for-media-file [handler request]
   (let [media-file (-> request :media-file)
         id (:id media-file)
-        previews (sd/query-eq-find-all :previews :media_file_id id (:tx request))
+        previews (dbh/query-eq-find-all :previews :media_file_id id (:tx request))
         pfirst (first previews)]
     (handler (assoc request :preview pfirst))))
 
 (defn wrap-add-preview-for-media-file [handler]
   (fn [request] (add-preview-for-media-file handler request)))
 
-(defn- mrh/ring-add-media-resource-preview [request handler]
+(defn ring-add-media-resource-preview [request handler]
   (if-let [media-resource (get-media-entry-for-preview request)]
     (let [mmr (assoc media-resource :type "MediaEntry" :table-name "media_entries")
           request-with-media-resource (assoc request :media-resource mmr)]
@@ -49,7 +50,7 @@
 
 (defn ring-wrap-add-media-resource-preview [handler]
   (fn [request]
-    (mrh/ring-add-media-resource-preview request handler)))
+    (ring-add-media-resource-preview request handler)))
 
 ;(def schema_export_preview
 ;  {:id s/Uuid

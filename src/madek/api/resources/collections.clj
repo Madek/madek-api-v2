@@ -246,7 +246,7 @@
      :delete {:summary (sd/sum_usr "Delete collection for id.")
               :handler handle_delete-collection
               :middleware [jqh/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
+                           jqh/ring-wrap-authorization-edit-permissions]
               :swagger {:produces "application/json"
                         :consumes "application/json"}
               :coercion reitit.coercion.schema/coercion

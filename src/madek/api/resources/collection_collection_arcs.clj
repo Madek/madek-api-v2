@@ -7,6 +7,8 @@
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.resources.shared.db_helper :as dbh]
+
    [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]

@@ -6,6 +6,7 @@
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.shared :as sd]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -103,7 +104,7 @@
         md (db-get-meta-data mr meta-key-id MD_TYPE_ROLES tx)
         md-id (-> md :id)
         ;mdr (db-get-meta-data-roles md-id)
-        del-clause (sd/sql-update-clause
+        del-clause (dbh/sql-update-clause
                     "meta_datum_id" md-id
                     "role_id" role-id
                     "person_id" person-id)

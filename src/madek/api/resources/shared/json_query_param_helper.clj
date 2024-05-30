@@ -3,6 +3,7 @@
 
             [madek.api.resources.shared.media_resource_helper :as mrh]
             [madek.api.resources.shared.meta_data_helper :as mdh]
+            [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.shared :as sd]
             ))
 

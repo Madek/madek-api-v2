@@ -55,7 +55,7 @@
 
 (defn- get-context-keys-4-context [contextId tx]
   (map :meta_key_id
-       (sd/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
+       (dbh/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
 
 (defn- check-has-meta-data-for-context-key [meId mkId tx]
   (let [md (dbh/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId tx)
@@ -363,7 +363,7 @@
       :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry
-      :middleware [sd/ring-wrap-parse-json-query-parameters]
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query (get-schema :media-entries.schema_query_media_entries)}
       :responses {200 {:body s/Any}
@@ -374,7 +374,7 @@
       :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry-related-data
-      :middleware [sd/ring-wrap-parse-json-query-parameters]
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query (get-schema :media-entries.schema_query_media_entries)}
       :responses {200 {:body (get-schema :media-entries-schema-schema_query_media_entries_related_result)}}}}]])
@@ -418,7 +418,7 @@
               :content-type "application/json"
 
               :middleware [jqh/ring-wrap-add-media-resource
-                           sd/ring-wrap-authorization-edit-permissions]
+                           jqh/ring-wrap-authorization-edit-permissions]
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:media_entry_id s/Uuid}}}}]
 

@@ -177,7 +177,7 @@
 ;; ###meta-data-routes ##########################################################
 
 (def meta_datum_id {:handler meta-datum/get-meta-datum
-                    :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
+                    :middleware [jqh/ring-wrap-add-meta-datum-with-media-resource
                                  jqh/ring-wrap-authorization-view]
                     :summary "Get meta-data for id"
                     :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
@@ -190,7 +190,7 @@
 
 (def meta_datum_id.data-stream {:handler meta-datum/get-meta-datum-data-stream
                                 ; TODO json meta-data: fix response conversion error
-                                :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
+                                :middleware [jqh/ring-wrap-add-meta-datum-with-media-resource
                                              jqh/ring-wrap-authorization-view]
                                 :summary "Get meta-data data-stream."
                                 :description "Get meta-data data-stream."
