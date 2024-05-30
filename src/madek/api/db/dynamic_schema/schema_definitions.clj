@@ -976,3 +976,40 @@
    {:vocabulary (get-schema :vocabularies.schema_export-perms_all_vocabulary)
     :users [(get-schema :vocabularies.vocabulary_user_permissions)]
     :groups [(get-schema :vocabularies.schema_export-group-perms)]}})
+
+
+
+(def collections-schema-cfg [{:raw [{:collections {}}],
+                                 :raw-schema-name :collections-schema-raw
+                                 :schemas [{:collections.schema_collection-import {:alias "mar.collections/schema_collection-import"
+                                                                                   :key-types "optional"
+                                                                                   :types [{:default_context_id {:value-type TYPE_MAYBE}}
+                                                                                           {:workflow_id {:value-type TYPE_MAYBE}}]}}
+
+                                           {:collections.schema_collection-export {:alias "mar.collections/schema_collection-export"
+                                                                                   :key-types "optional"
+                                                                                   :types [{:id {:key-type TYPE_NOTHING}}
+                                                                                           {:responsible_user_id {:value-type TYPE_MAYBE}}
+                                                                                           {:default_context_id {:value-type TYPE_MAYBE}}
+                                                                                           {:clipboard_user_id {:value-type TYPE_MAYBE}}
+                                                                                           {:workflow_id {:value-type TYPE_MAYBE}}
+                                                                                           {:responsible_delegation_id {:value-type TYPE_MAYBE}}]}}
+
+                                           {:collections.schema_collection-update {:alias "mar.collections/schema_collection-update"
+                                                                                   :key-types "optional"
+                                                                                   :types [{:default_context_id {:value-type TYPE_MAYBE}}
+                                                                                           {:workflow_id {:value-type TYPE_MAYBE}}]
+                                                                                   :wl [:layout :is_master :sorting :default_context_id :workflow_id :default_resource_type]}}]}
+
+                                {:raw [{:collections {:wl ["collection_id" "creator_id" "responsible_user_id" "clipboard_user_id" "workflow_id" "responsible_delegation_id" "public_get_metadata_and_previews"]
+                                                      :_additional [{:column_name "order", :data_type "any"}]
+                                                      :rename {"get_metadata_and_previews" "public_get_metadata_and_previews"
+                                                               "id" "collection_id"}}}
+                                       {:collection_user_permissions {:wl ["me_get_metadata_and_previews" "me_edit_permission" "me_edit_metadata_and_relations"]
+                                                                      :rename {"get_metadata_and_previews" "me_get_metadata_and_previews"
+                                                                               "edit_permissions" "me_edit_permission"
+                                                                               "edit_metadata_and_relations" "me_edit_metadata_and_relations"}}}
+                                       {:_additional (concat schema_pagination_raw schema_full_data_raw)}],
+                                 :raw-schema-name :collections-collection_user_permission-schema-raw
+                                 :schemas [{:collections.schema_collection-query {:alias "mar.collections/schema_collection-query"
+                                                                                  :key-types "optional"}}]}])

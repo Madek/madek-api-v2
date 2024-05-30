@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
    [madek.api.resources.collections.index :refer [get-index]]
+   [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.helper :refer [convert-map-if-exist f t]]
    [madek.api.utils.helper :refer [mslurp]]
@@ -217,8 +218,12 @@
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body schema_collection-export}
-                       404 {:body s/Any}
+
+           ;:responses {200 {:body schema_collection-export}
+                       :responses {200 {:body (query-schema :collections.schema_collection-export "collections-schema")}
+
+
+                                   404 {:body s/Any}
                        422 {:body s/Any}}}
 
      :put {:summary (sd/sum_usr "Update collection for id.")
@@ -229,8 +234,12 @@
                      :consumes "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}
-                        :body schema_collection-update}
-           :responses {;200 {:body schema_collection-export} ;; TODO: fixme
+
+                        ;:body schema_collection-update}
+           :body (query-schema :collections.schema_collection-update "collections-schema")}
+
+
+     :responses {;200 {:body schema_collection-export} ;; TODO: fixme
                        200 {:body s/Any}
                        404 {:body s/Any}
                        422 {:body s/Any}}}

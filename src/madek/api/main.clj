@@ -55,7 +55,7 @@
     (initialize-fn options)))
 
 (defn init-dynamic-schema []
-  (init-enums-by-db)
+  ;(init-enums-by-db)
   (let [errors (get-validation-cache)]
     (if (empty? errors)
       (info "[init-schema-by-db] Schema-Validation is OK, no differences between db and generated schema-definitions recognized.")
