@@ -977,8 +977,19 @@
 
                                             {:vocabularies.schema_perms-update-user-or-group {:alias "mar.vocabularies/schema_perms-update-user-or-group"
                                                                                               :wl [:use :view]}}]}])
+
+;(defn vocabularies-schema-fnc []
+;  (println ">o> !!! vocabularies-schema-fnc ?????????????")
 ;
-;(defn vocabularies-schema-fnc [] {:vocabularies.schema_export-perms_all
+;  {:vocabularies.schema_export-perms_all
 ;                                        {:vocabulary (query-schema :vocabularies.schema_export-perms_all_vocabulary "vocabularies-schema")
 ;                                         :users [(query-schema :vocabularies.vocabulary_user_permissions "vocabularies-schema")]
 ;                                         :groups [(query-schema :vocabularies.schema_export-group-perms "vocabularies-schema")]}})
+
+(defn vocabularies-schema-fnc []
+
+  (println ">o> !!! vocabularies-schema-fnc ?????????????")
+  {:vocabularies.schema_export-perms_all
+                                        {:vocabulary (get-schema :vocabularies.schema_export-perms_all_vocabulary)
+                                         :users [(get-schema :vocabularies.vocabulary_user_permissions)]
+                                         :groups [(get-schema :vocabularies.schema_export-group-perms)]}})

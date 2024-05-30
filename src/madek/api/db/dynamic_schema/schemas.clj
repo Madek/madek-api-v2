@@ -1,10 +1,8 @@
 (ns madek.api.db.dynamic_schema.schemas
   (:require [clojure.walk :refer [postwalk]]
-   ;[madek.api.db :refer [get-schema-from-db]]
-
-            [madek.api.db.dynamic_schema.common :refer [get-schema has-schema]]
+            [madek.api.db.dynamic_schema.common :refer [get-schema has-schema set-schema]]
             [madek.api.db.dynamic_schema.core :refer [create-dynamic-schema]]
-   ;[madek.api.db.dynamic_schema.schema_definitions :as defs]
+            ;[madek.api.db.dynamic_schema.schema_definitions :refer [set-schema-by-map]]
             )
   )
 
@@ -38,6 +36,11 @@
         x)
       data)
     @result))
+
+
+(defn set-schema-by-map [schema-map]
+  (doseq [[k v] (seq schema-map)]
+    (set-schema k v)))
 
 (comment
 
@@ -124,29 +127,29 @@
 
         ;; fetch schema-def
         schema-def (let [
-                  namespace (symbol namespace)
-                  var-name (symbol (str schema-def-prefix "-cfg"))
+                         namespace (symbol namespace)
+                         var-name (symbol (str schema-def-prefix "-cfg"))
 
-                  res (get-var-value namespace var-name)
-                  ]
-              res)
+                         res (get-var-value namespace var-name)
+                         ]
+                     res)
         p (println ">o> has-schema-def?" schema-def)
 
         ;; fetch schema-fnc
         schema-fnc (let [
-                  namespace (symbol namespace)
-                  ;var-name (symbol (str schema-def-prefix "-fnc"))
-                  var-name (str schema-def-prefix "-fnc")
-                  res (get-fn-value namespace var-name)
-                  ]
-              res)
+                         namespace (symbol namespace)
+                         ;var-name (symbol (str schema-def-prefix "-fnc"))
+                         var-name (str schema-def-prefix "-fnc")
+                         res (get-fn-value namespace var-name)
+                         ]
+                     res)
 
         _ (if (nil? schema-fnc)
             (do
               p (println ">o> >>> no schema-fnc available")
               ) (do
                   p (println ">o> >>> schema-fnc available")
-                  p (println ">o> >>> schema-fnc=" (schema-fnc))
+                  ;p (println ">o> >>> schema-fnc=" (schema-fnc))
                   ))
         ;p (println ">o> has-schema-fnc?" schema-fnc)
 
@@ -167,15 +170,20 @@
                 (create-dynamic-schema schema-def)
 
                 (when-not (nil? schema-fnc)
-                    (do
-                      (println ">o> >>> EXECUTE TOP-LEVEL-FNC, key=" key)
-                      (schema-fnc)
-                      ))
+                  (let [
+                        _ (println ">o> >>> EXECUTE TOP-LEVEL-FNC, key=" key)
+                        res (schema-fnc)
+                        _ (println ">o> >>> ????????? fnc=" res)
+                        _ (set-schema-by-map res)
+
+                        ]
+
+                    ))
                 (get-schema key)
                 )
-           )
+              )
 
         p (println "\n>o> final.schema\nkey=" key "\n" res "\n")
-        p (println ">o> >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n" )
+        p (println ">o> >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n")
         ] res)
   )
