@@ -5,16 +5,16 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
 
-   [madek.api.resources.vocabularies.get :as get]
-   [madek.api.resources.vocabularies.delete :as delete]
-   [madek.api.resources.vocabularies.post :as post]
-   [madek.api.resources.vocabularies.put :as put]
-
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
+   [madek.api.resources.vocabularies.delete :as delete]
+
+   [madek.api.resources.vocabularies.get :as get]
    [madek.api.resources.vocabularies.index :refer [get-index]]
    [madek.api.resources.vocabularies.permissions :as permissions]
+   [madek.api.resources.vocabularies.post :as post]
+   [madek.api.resources.vocabularies.put :as put]
    [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist mslurp]]
@@ -22,7 +22,6 @@
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
-
 
 ;(def schema_export-vocabulary
 ;  {:id s/Str
@@ -107,42 +106,31 @@
     ["/"
      {:get get/admin.vocabularies.id.perms
 
-
-      :put put/admin.vocabularies.id.perms
-      }]
+      :put put/admin.vocabularies.id.perms}]
 
     ["/users"
-     {:get get/admin.vocabularies.users
-      }]
+     {:get get/admin.vocabularies.users}]
 
     ["/user/:user_id"
      {:get get/admin.vocabularies.users.user_id
 
       :post post/admin.vocabularies.users.user_id
 
-
       :put put/admin.vocabularies.users.user_id
 
-
-      :delete delete/admin.vocabularies.user.user_id
-      }]
+      :delete delete/admin.vocabularies.user.user_id}]
 
     ["/groups"
-     {:get get/admin.vocabularies.groups
-      }]
+     {:get get/admin.vocabularies.groups}]
 
     ["/group/:group_id"
      {:get get/admin.vocabularies.group.group_id
 
-
       :post post/admin.vocabularies.group.group_id
-
 
       :put put/admin.vocabularies.group.group_id
 
-
-      :delete delete/admin.vocabularies.group.group_id
-      }]]])
+      :delete delete/admin.vocabularies.group.group_id}]]])
 
 (def user-routes
   ["/vocabularies"

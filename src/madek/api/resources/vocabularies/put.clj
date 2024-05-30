@@ -17,24 +17,6 @@
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
 
-; TODO logwrite
-
-(defn handle_create-vocab [req]
-  (try
-    (catcher/with-logging {}
-      (let [data (-> req :parameters :body)
-            sql-query (-> (sql/insert-into :vocabularies)
-                          (sql/values [(convert-map-if-exist (cast-to-hstore data))])
-                          (sql/returning :*)
-                          sql-format)
-            ins-res (jdbc/execute-one! (:tx req) sql-query)
-            ins-res (sd/transform_ml_map ins-res)]
-
-        (if ins-res
-          (sd/response_ok ins-res)
-          (sd/response_failed "Could not create vocabulary." 406))))
-    (catch Exception ex (sd/response_exception ex))))
-
 (defn handle_update-vocab [req]
   (try
     (catcher/with-logging {}
@@ -65,28 +47,7 @@
           (sd/response_not_found "No such vocabulary."))))
     (catch Exception ex (sd/response_exception ex))))
 
-(defn handle_delete-vocab [req]
-  (try
-    (catcher/with-logging {}
-      (let [id (-> req :parameters :path :id)
-            tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one :vocabularies :id id tx)]
-          (let [sql-query (-> (sql/delete-from :vocabularies)
-                              (sql/where [:= :id id])
-                              (sql/returning :*)
-                              sql-format)
-                db-result (jdbc/execute-one! tx sql-query)]
-
-            (if db-result
-              (sd/response_ok (sd/transform_ml_map old-data))
-              (sd/response_failed "Could not delete vocabulary." 406)))
-          (sd/response_not_found "No such vocabulary."))))
-    (catch Exception ex (sd/parsed_response_exception ex))))
-
-
-
 ;### DEFS ##################################################################
-
 
 (def admin.vocabularies.id {:summary (sd/sum_adm_todo "Update vocabulary.")
                             :handler handle_update-vocab
@@ -130,7 +91,6 @@
                                                    :schema s/Str
                                                    :examples {"application/json" {:message "Could not update vocabulary."}}}}})
 
-
 (def admin.vocabularies.users.user_id {:summary (sd/sum_adm "Update vocabulary user permissions")
                                        :handler permissions/handle_update-vocab-user-perms
                                        :middleware [wrap-authorize-admin!]
@@ -148,7 +108,6 @@
                                                    406 {:description "Not Acceptable."
                                                         :schema s/Str
                                                         :examples {"application/json" {:message "Could not update vocabulary user permission"}}}}})
-
 
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Update vocabulary group permissions")
                                         :handler permissions/handle_update-vocab-group-perms
@@ -171,11 +130,6 @@
                                                          :schema s/Str
                                                          :examples {"application/json" {:message "Could not update vocabulary group permission"}}}}})
 
-
-
-
-
-
 (def user.vocabularies {:summary "Get list of vocabularies ids."
                         :description "Get list of vocabularies ids."
                         :handler get-index
@@ -183,7 +137,6 @@
                         :coercion reitit.coercion.schema/coercion
                         :swagger (generate-swagger-pagination-params)
                         :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary)]}}}})
-
 
 (def user.vocabularies.id {:summary "Get vocabulary by id."
                            ;:description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."

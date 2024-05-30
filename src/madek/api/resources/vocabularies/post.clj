@@ -35,56 +35,6 @@
           (sd/response_failed "Could not create vocabulary." 406))))
     (catch Exception ex (sd/response_exception ex))))
 
-(defn handle_update-vocab [req]
-  (try
-    (catcher/with-logging {}
-      (let [data (-> req :parameters :body)
-            id (-> req :path-params :id)
-            dwid (assoc data :id id)
-            tx (:tx req)
-            dwid (convert-map-if-exist (cast-to-hstore dwid))
-            old-data (sd/query-eq-find-one :vocabularies :id id tx)]
-
-        (if old-data
-          (let [is_admin_endpoint (str/includes? (-> req :uri) "/admin/")
-                cols (if is_admin_endpoint [:*] [:id :position :labels :descriptions :admin_comment])
-                sql-query (-> (sql/update :vocabularies)
-                              (sql/set dwid)
-                              (sql/where [:= :id id]))
-                sql-query (apply sql/returning sql-query cols)
-                sql-query (-> sql-query
-                              sql-format)
-                upd-res (jdbc/execute-one! tx sql-query)
-                upd-res (sd/transform_ml_map upd-res)]
-
-            (if upd-res
-              (do
-                (info "handle_update-vocab" "\nid: " id "\nnew-data:\n" upd-res)
-                (sd/response_ok upd-res))
-              (sd/response_failed "Could not update vocabulary." 406)))
-          (sd/response_not_found "No such vocabulary."))))
-    (catch Exception ex (sd/response_exception ex))))
-
-(defn handle_delete-vocab [req]
-  (try
-    (catcher/with-logging {}
-      (let [id (-> req :parameters :path :id)
-            tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one :vocabularies :id id tx)]
-          (let [sql-query (-> (sql/delete-from :vocabularies)
-                              (sql/where [:= :id id])
-                              (sql/returning :*)
-                              sql-format)
-                db-result (jdbc/execute-one! tx sql-query)]
-
-            (if db-result
-              (sd/response_ok (sd/transform_ml_map old-data))
-              (sd/response_failed "Could not delete vocabulary." 406)))
-          (sd/response_not_found "No such vocabulary."))))
-    (catch Exception ex (sd/parsed_response_exception ex))))
-
-
-
 ;### DEFS ##################################################################
 
 (def admin.vocabularies {:summary (sd/sum_adm "Create vocabulary.")
@@ -106,8 +56,6 @@
                                           :schema s/Str
                                           :examples {"application/json" {:message "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists."}}}}
                          :swagger {:consumes "application/json" :produces "application/json"}})
-
-
 
 (def admin.vocabularies.users.user_id {:summary (sd/sum_adm "Create vocabulary user permissions")
                                        :handler permissions/handle_create-vocab-user-perms
@@ -131,7 +79,6 @@
                                                         :schema s/Str
                                                         :examples {"application/json" {:message "Entry already exists"}}}}})
 
-
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Create vocabulary group permissions")
                                         :handler permissions/handle_create-vocab-group-perms
                                         :middleware [wrap-authorize-admin!]
@@ -151,8 +98,6 @@
                                                     409 {:description "Conflict."
                                                          :schema s/Str
                                                          :examples {"application/json" {:message "Entry already exists"}}}}})
-
-
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

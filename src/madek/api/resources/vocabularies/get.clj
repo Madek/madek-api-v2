@@ -83,19 +83,16 @@
           (sd/response_not_found "No such vocabulary."))))
     (catch Exception ex (sd/parsed_response_exception ex))))
 
-
-
 ;### DEFS ##################################################################
 
 (def admin.vocabularies {:summary "Get list of vocabularies ids."
-            :description "Get list of vocabularies ids."
-            :handler get-index
-            :middleware [wrap-authorize-admin!]
-            :content-type "application/json"
-            :swagger (generate-swagger-pagination-params)
-            :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary-admin)]}}}})
-
+                         :description "Get list of vocabularies ids."
+                         :handler get-index
+                         :middleware [wrap-authorize-admin!]
+                         :content-type "application/json"
+                         :swagger (generate-swagger-pagination-params)
+                         :coercion reitit.coercion.schema/coercion
+                         :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary-admin)]}}}})
 
 (def admin.vocabularies.id {:summary (sd/sum_adm "Get vocabulary by id.")
                             :handler get-vocabulary
@@ -174,7 +171,6 @@
                                 :coercion reitit.coercion.schema/coercion
                                 :responses {200 {:body [(get-schema :vocabularies.schema_export-group-perms)]}}})
 
-
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Get vocabulary group permissions")
                                         :handler permissions/handle_get-vocab-group-perms
                                         :middleware [wrap-authorize-admin!]
@@ -188,11 +184,6 @@
                                                          :schema s/Str
                                                          :examples {"application/json" {:message "No such vocabulary group permission."}}}}})
 
-
-
-
-
-
 (def user.vocabularies {:summary "Get list of vocabularies ids."
                         :description "Get list of vocabularies ids."
                         :handler get-index
@@ -200,7 +191,6 @@
                         :coercion reitit.coercion.schema/coercion
                         :swagger (generate-swagger-pagination-params)
                         :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary)]}}}})
-
 
 (def user.vocabularies.id {:summary "Get vocabulary by id."
                            ;:description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
