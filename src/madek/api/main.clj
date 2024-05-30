@@ -5,17 +5,18 @@
    [clojure.tools.cli :as cli]
    [logbug.catcher :as catcher]
    [logbug.thrown]
+   [madek.api.cli_config_parser :as cli_parser]
    [madek.api.constants]
    [madek.api.db.core :as db]
+   [madek.api.db.dynamic_schema.common :refer [get-validation-cache]]
+   [madek.api.db.dynamic_schema.core :refer [init-enums-by-db]]
    [madek.api.utils.config :as config :refer [get-config]]
    [madek.api.utils.exit :as exit]
    [madek.api.utils.logging :as logging]
    [madek.api.utils.nrepl :as nrepl]
    [madek.api.utils.rdbms :as rdbms]
-   [madek.api.web]
-   [madek.api.web :as web]
    [pg-types.all]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [error info]]))
 
 ;; cli ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -25,7 +26,7 @@
     ["-d" "--dev-mode"]]
    exit/cli-options
    nrepl/cli-options
-   web/cli-options
+   cli_parser/cli-options
    db/cli-options))
 
 (defn main-usage [options-summary & more]
@@ -48,6 +49,18 @@
 
 ;; run ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn dynamic-web-initialize [options]
+  (require '[madek.api.web :as web])
+  (let [initialize-fn (resolve 'web/initialize)]
+    (initialize-fn options)))
+
+(defn init-dynamic-schema []
+  ;(init-enums-by-db)
+  (let [errors (get-validation-cache)]
+    (if (empty? errors)
+      (info "[init-schema-by-db] Schema-Validation is OK, no differences between db and generated schema-definitions recognized.")
+      (error "[init-schema-by-db] Schema-Validation failed: " (count errors) " errors occurred\n\nDetails:\n" errors "\n"))))
+
 (defn run [options]
   (catcher/snatch
    {:level :fatal
@@ -65,11 +78,14 @@
    (info "Effective startup config " (get-config))
     ; WIP switching to new db container; remove old rdbms later
    (rdbms/initialize (config/get-db-spec :api))
+
+   (println ">o> run.init-db")
    (db/init options)
     ;
    (nrepl/init options)
    (madek.api.constants/initialize (get-config))
-   (madek.api.web/initialize options)
+   (dynamic-web-initialize options)
+   (init-dynamic-schema)
    (info 'madek.api.main "... initialized")))
 
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -3,11 +3,12 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [convert-map]]
-   [madek.api.utils.helper :refer [d t]]
+   [madek.api.utils.helper :refer [d]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -31,6 +32,7 @@
    (s/optional-key :external_uris) [s/Str]
    (s/optional-key :rdf_class) s/Str})
 
+;; TODO: this
 (def schema_export_keyword_usr
   {:id s/Uuid
    :meta_key_id s/Str
@@ -205,7 +207,9 @@
                                        :format "int32"
                                        :default 10}}]}
 
-      :responses {200 {:body {:keywords [schema_export_keyword_usr]}}
+      :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_usr "keywords-schema")]}}
+                  ;:responses {200 {:body {:keywords [schema_export_keyword_usr]}}
+
                   202 {:description "Successful response, list of items."
                        :schema {} ;; Define your response schema as needed
                        :examples {"application/json" {:message "Here are your items."
@@ -221,7 +225,10 @@
       :middleware [wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_keyword_usr}
+
+      :responses {200 {:body (query-schema :keywords.schema_export_keyword_usr "keywords-schema")}
+                  ;:responses {200 {:body schema_export_keyword_usr}
+
                   404 {:body s/Any}}
       :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
 
@@ -235,7 +242,12 @@
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_keyword}
-      :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+
+      ;:responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+      :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_adm "keywords-schema")]}}}
+
+                  ;:responses {200 {:body {:keywords [(keyword-query-schema :non-existing-keyword)]}}} ;; TODO: test validation
+
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 
      :post

@@ -4,6 +4,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.resources.vocabularies.index :refer [get-index]]
@@ -231,8 +232,10 @@
               :accept "application/json"
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Str}}
-              ;:responses {200 {:body schema_export-vocabulary}
-              :responses {200 {:body schema_export-vocabulary-admin}
+
+              :responses {200 {:body (query-schema :vocabularies.schema_export-vocabulary-admin "vocabularies-schema")}
+              ;:responses {200 {:body schema_export-vocabulary-admin}
+
                           403 {:description "Forbidden."
                                :schema s/Str
                                :examples {"application/json" {:message "References still exist"}}}
@@ -252,7 +255,10 @@
        :accept "application/json"
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:id s/Str}}
-       :responses {200 {:body schema_export-perms_all}
+
+       :responses {200 {:body (query-schema :vocabularies.schema_export-perms_all "vocabularies-schema")}
+       ;:responses {200 {:body schema_export-perms_all}
+
                    404 {:description "Not found."
                         :schema s/Str
                         :examples {"application/json" {:message "No such vocabulary."}}}}}
