@@ -2,7 +2,7 @@
   (:require
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.db.dynamic_schema.statics :refer [TYPE_EITHER TYPE_MAYBE TYPE_NOTHING TYPE_OPTIONAL]]
-   [madek.api.db.dynamic_schema.schemas :refer [query-schema]]
+   ;[madek.api.db.dynamic_schema.schemas :refer [query-schema]]
    [madek.api.utils.validation :refer [vector-or-hashmap-validation]]
    [schema.core :as s]))
 
@@ -933,52 +933,52 @@
 
 
 
-(def vocabularies-schema-cfg [{:raw [{:vocabularies {}}],
-                                  :raw-schema-name :vocabularies-raw
-
-                                  :schemas [{:vocabularies.schema_export-vocabulary {:alias "mar.vocabularies/schema_export-vocabulary"
-                                                                                     :types [{:labels {:value-type TYPE_MAYBE}}
-                                                                                             {:descriptions {:value-type TYPE_MAYBE}}
-                                                                                             {:admin_comment {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}]
-                                                                                     :bl [:enabled_for_public_view :enabled_for_public_use]}}
-
-                                            {:vocabularies.schema_export-vocabulary-admin {:alias "mar.vocabularies/schema_export-vocabulary-admin"
-                                                                                           :types [{:labels {:value-type TYPE_MAYBE}}
-                                                                                                   {:descriptions {:value-type TYPE_MAYBE}}
-                                                                                                   {:admin_comment {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}]}}
-
-                                            {:vocabularies.schema_import-vocabulary {:alias "mar.vocabularies/schema_import-vocabulary"
-                                                                                     :types [{:labels {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}
-                                                                                             {:descriptions {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}
-                                                                                             {:admin_comment {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}]}}
-
-                                            {:vocabularies.schema_update-vocabulary {:alias "mar.vocabularies/schema_update-vocabulary"
-                                                                                     :key-types "optional"
-                                                                                     :value-types TYPE_MAYBE
-                                                                                     :types [{:position {:value-type TYPE_NOTHING}}]
-                                                                                     :bl [:id :enabled_for_public_view :enabled_for_public_use]}}
-
-                                            {:vocabularies.schema_perms-update {:alias "mar.vocabularies/schema_perms-update"
-                                                                                :key-types "optional"
-                                                                                :wl [:enabled_for_public_view :enabled_for_public_use]}}
-
-                                            {:vocabularies.schema_export-perms_all_vocabulary {:alias "mar.vocabularies/schema_export-perms_all"
-                                                                                               :wl [:id :enabled_for_public_view :enabled_for_public_use]}}]}
-
-                                 {:raw [{:vocabulary_group_permissions {}}],
-                                  :raw-schema-name :vocabulary_group_permissions-raw
-
-                                  :schemas [{:vocabularies.schema_export-group-perms {:alias "mar.vocabularies/schema_export-group-perms"}}]}
-
-                                 {:raw [{:vocabulary_user_permissions {}}],
-                                  :raw-schema-name :vocabulary_user_permissions-raw
-
-                                  :schemas [{:vocabularies.vocabulary_user_permissions {:alias "mar.vocabularies/vocabulary_user_permissions"}}
-
-                                            {:vocabularies.schema_perms-update-user-or-group {:alias "mar.vocabularies/schema_perms-update-user-or-group"
-                                                                                              :wl [:use :view]}}]}])
-
-(defn vocabularies-schema-fnc [] {:vocabularies.schema_export-perms_all
-                                        {:vocabulary (query-schema :vocabularies.schema_export-perms_all_vocabulary "vocabularies-schema")
-                                         :users [(query-schema :vocabularies.vocabulary_user_permissions "vocabularies-schema")]
-                                         :groups [(query-schema :vocabularies.schema_export-group-perms "vocabularies-schema")]}})
+;(def vocabularies-schema-cfg [{:raw [{:vocabularies {}}],
+;                                  :raw-schema-name :vocabularies-raw
+;
+;                                  :schemas [{:vocabularies.schema_export-vocabulary {:alias "mar.vocabularies/schema_export-vocabulary"
+;                                                                                     :types [{:labels {:value-type TYPE_MAYBE}}
+;                                                                                             {:descriptions {:value-type TYPE_MAYBE}}
+;                                                                                             {:admin_comment {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}]
+;                                                                                     :bl [:enabled_for_public_view :enabled_for_public_use]}}
+;
+;                                            {:vocabularies.schema_export-vocabulary-admin {:alias "mar.vocabularies/schema_export-vocabulary-admin"
+;                                                                                           :types [{:labels {:value-type TYPE_MAYBE}}
+;                                                                                                   {:descriptions {:value-type TYPE_MAYBE}}
+;                                                                                                   {:admin_comment {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}]}}
+;
+;                                            {:vocabularies.schema_import-vocabulary {:alias "mar.vocabularies/schema_import-vocabulary"
+;                                                                                     :types [{:labels {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}
+;                                                                                             {:descriptions {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}
+;                                                                                             {:admin_comment {:key-type TYPE_OPTIONAL :value-type TYPE_MAYBE}}]}}
+;
+;                                            {:vocabularies.schema_update-vocabulary {:alias "mar.vocabularies/schema_update-vocabulary"
+;                                                                                     :key-types "optional"
+;                                                                                     :value-types TYPE_MAYBE
+;                                                                                     :types [{:position {:value-type TYPE_NOTHING}}]
+;                                                                                     :bl [:id :enabled_for_public_view :enabled_for_public_use]}}
+;
+;                                            {:vocabularies.schema_perms-update {:alias "mar.vocabularies/schema_perms-update"
+;                                                                                :key-types "optional"
+;                                                                                :wl [:enabled_for_public_view :enabled_for_public_use]}}
+;
+;                                            {:vocabularies.schema_export-perms_all_vocabulary {:alias "mar.vocabularies/schema_export-perms_all"
+;                                                                                               :wl [:id :enabled_for_public_view :enabled_for_public_use]}}]}
+;
+;                                 {:raw [{:vocabulary_group_permissions {}}],
+;                                  :raw-schema-name :vocabulary_group_permissions-raw
+;
+;                                  :schemas [{:vocabularies.schema_export-group-perms {:alias "mar.vocabularies/schema_export-group-perms"}}]}
+;
+;                                 {:raw [{:vocabulary_user_permissions {}}],
+;                                  :raw-schema-name :vocabulary_user_permissions-raw
+;
+;                                  :schemas [{:vocabularies.vocabulary_user_permissions {:alias "mar.vocabularies/vocabulary_user_permissions"}}
+;
+;                                            {:vocabularies.schema_perms-update-user-or-group {:alias "mar.vocabularies/schema_perms-update-user-or-group"
+;                                                                                              :wl [:use :view]}}]}])
+;
+;(defn vocabularies-schema-fnc [] {:vocabularies.schema_export-perms_all
+;                                        {:vocabulary (query-schema :vocabularies.schema_export-perms_all_vocabulary "vocabularies-schema")
+;                                         :users [(query-schema :vocabularies.vocabulary_user_permissions "vocabularies-schema")]
+;                                         :groups [(query-schema :vocabularies.schema_export-group-perms "vocabularies-schema")]}})
