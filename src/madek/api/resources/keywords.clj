@@ -224,12 +224,9 @@
                                        :default 10}}]}
 
 
-      ;:responses {200 {:body {:keywords [(get-schema :keywords.schema_export_keyword_usr)]}}
-
-      ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
       :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_usr "keywords-schema")]}}
                   ;:responses {200 {:body {:keywords [schema_export_keyword_usr]}}
-                  ;:responses {200 {:body {:keywords [keyword-query-schema]}}
+
 
                   202 {:description "Successful response, list of items."
                        :schema {}                           ;; Define your response schema as needed
@@ -247,10 +244,8 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
 
-      ;:responses {200 {:body {:keywords [(@fetch-table-metadata :groups)]}}
-      :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_usr "keywords-schema")]}}
+      :responses {200 {:body (query-schema :keywords.schema_export_keyword_usr "keywords-schema")}
                   ;:responses {200 {:body schema_export_keyword_usr}
-                  ;:responses {200 {:body keyword-query-schema}
 
                   404 {:body s/Any}}
       :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
@@ -266,8 +261,10 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_keyword}
 
-      :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
-      ;:responses {200 {:body {:keywords [(keyword-query-schema :non-existing-keyword)]}}} ;; TODO: test validation
+      ;:responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+      :responses {200 {:body {:keywords [(query-schema :keywords.schema_export_keyword_adm "keywords-schema")]}}}
+
+                  ;:responses {200 {:body {:keywords [(keyword-query-schema :non-existing-keyword)]}}} ;; TODO: test validation
 
 
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}

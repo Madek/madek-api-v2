@@ -237,8 +237,8 @@
               :parameters {:path {:id s/Str}}
               ;:responses {200 {:body schema_export-vocabulary}
 
-              ;:responses {200 {:body (query-schema :vocabularies.schema_export-vocabulary-admin "vocabularies-schema")}
-              :responses {200 {:body schema_export-vocabulary-admin}
+              :responses {200 {:body (query-schema :vocabularies.schema_export-vocabulary-admin "vocabularies-schema")}
+              ;:responses {200 {:body schema_export-vocabulary-admin}
 
                           403 {:description "Forbidden."
                                :schema s/Str
