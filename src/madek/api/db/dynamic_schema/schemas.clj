@@ -120,7 +120,6 @@
   (let [
 
         p (println "\n\n>o> query-schema >>>>!!!!!!!>>>>>" key)
-
         namespace "madek.api.db.dynamic_schema.schema_definitions"
 
         ;; fetch schema-def
@@ -157,22 +156,10 @@
         res (has-schema key)
         p (println ">o> has-schema?" res)
 
-        ;qualified-symbol (symbol (str "madek.api.db.dynamic_schema.schema_definitions" schema-def-prefix))
-        ;
-        ;
-        ;
-        ;p (println ">o> qualified-symbol=" qualified-symbol)
-        ;schema-def (resolve qualified-symbol)
-        ;
-        ;p (println ">o> schema-def=" schema-def)
-
-
-        ;schema-fnc (if (nil? schema-fnc)
         res (if res
               (do
                 (println ">o> >>> LOADING-STATUS: schema_cache.get-schema -> found -> " key)
                 (get-schema key)
-
                 )
               (do
                 (println ">o> >>> LOADING-STATUS: schema_cache.get-schema -> not found!! .. continue with create schema\n key ->" key)
@@ -184,36 +171,11 @@
                       (println ">o> >>> EXECUTE TOP-LEVEL-FNC, key=" key)
                       (schema-fnc)
                       ))
-
                 (get-schema key)
-
                 )
            )
 
         p (println "\n>o> final.schema\nkey=" key "\n" res "\n")
-
-
-        ;meta (metadata-fetcher)
-        ;
-        ;p (println "\n>o> meta.from.db=" meta "\n")
-        ;
-        ;
-        ;schema-fnc {:id s/Uuid
-        ;     :meta_key_id s/Str
-        ;     :term s/Str
-        ;     :description (s/maybe s/Str)
-        ;     :position (s/maybe s/Int)
-        ;     :external_uris [s/Any]
-        ;     :external_uri (s/maybe s/Str)
-        ;     :rdf_class s/Str}
-        ;
-        ;
-        ;
-        ;p (println "\n>o> returned.schema-fnc=" schema-fnc "\n")
-
         p (println ">o> >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n" )
         ] res)
   )
-
-;)
-;)
