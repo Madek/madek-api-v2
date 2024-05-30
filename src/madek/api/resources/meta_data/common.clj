@@ -4,7 +4,7 @@
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.shared :as sd]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]

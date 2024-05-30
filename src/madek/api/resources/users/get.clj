@@ -2,7 +2,7 @@
   (:require
    [clojure.data.json :as json]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.users.common :refer [wrap-find-user]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [reitit.coercion.schema]

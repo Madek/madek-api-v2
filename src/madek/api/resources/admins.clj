@@ -4,7 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]

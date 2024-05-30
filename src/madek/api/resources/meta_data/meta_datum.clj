@@ -4,7 +4,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.keywords.index :as keywords]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
    [ring.util.response :as ring-response]

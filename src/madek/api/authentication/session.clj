@@ -10,7 +10,7 @@
    [logbug.catcher :as catcher]
    [madek.api.legacy.session.encryptor :refer [decrypt]]
    [madek.api.legacy.session.signature :refer [valid?]]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.config :refer [get-config
                                    parse-config-duration-to-seconds]]
    [next.jdbc :as jdbc]

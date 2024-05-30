@@ -5,7 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]

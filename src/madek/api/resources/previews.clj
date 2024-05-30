@@ -4,7 +4,7 @@
    [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.previews.preview :as preview]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))

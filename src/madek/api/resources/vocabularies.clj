@@ -6,7 +6,7 @@
    [logbug.catcher :as catcher]
 
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.resources.vocabularies.delete :as delete]
 

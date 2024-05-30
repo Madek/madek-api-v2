@@ -3,7 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]

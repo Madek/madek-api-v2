@@ -6,7 +6,7 @@
 
    [madek.api.resources.permissions.common :refer :all]
 
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [reitit.coercion.schema]
    [schema.core :as s]))
 

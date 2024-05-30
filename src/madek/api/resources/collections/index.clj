@@ -5,7 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]))
 
 ;### collection_id ############################################################

@@ -4,7 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))

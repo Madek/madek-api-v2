@@ -7,7 +7,7 @@
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
             [madek.api.resources.meta_data.common :refer :all]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.shared :as sd]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]

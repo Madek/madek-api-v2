@@ -5,7 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
    [next.jdbc :as jdbc]

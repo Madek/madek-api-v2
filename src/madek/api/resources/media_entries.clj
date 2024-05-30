@@ -10,7 +10,7 @@
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.shared :as sd]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]

@@ -6,7 +6,7 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.people.common :refer [find-person-by-uid]]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]

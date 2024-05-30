@@ -3,7 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]))
 
 (defn db-keywords-get-one [id tx]

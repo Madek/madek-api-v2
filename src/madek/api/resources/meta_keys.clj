@@ -5,7 +5,7 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
-   [madek.api.resources.shared :as sd]
+   [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist replace-java-hashmaps v]]

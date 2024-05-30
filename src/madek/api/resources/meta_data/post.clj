@@ -8,7 +8,7 @@
 
             [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.resources.meta_data.common :refer :all]
-            [madek.api.resources.shared :as sd]
+            [madek.api.resources.shared.shared :as sd]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
