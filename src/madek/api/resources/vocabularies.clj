@@ -4,6 +4,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+
+   [madek.api.resources.vocabularies.get :as get]
+
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
@@ -151,14 +154,7 @@
   ["/vocabularies"
    {:swagger {:tags ["admin/vocabularies"] :security [{"auth" []}]}}
    ["/"
-    {:get {:summary "Get list of vocabularies ids."
-           :description "Get list of vocabularies ids."
-           :handler get-index
-           :middleware [wrap-authorize-admin!]
-           :content-type "application/json"
-           :swagger (generate-swagger-pagination-params)
-           :coercion reitit.coercion.schema/coercion
-           :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary-admin)]}}}}
+    {:get get/admin.vocabularies
 
      :post {:summary (sd/sum_adm "Create vocabulary.")
             :handler handle_create-vocab
@@ -181,22 +177,7 @@
             :swagger {:consumes "application/json" :produces "application/json"}}}]
 
    ["/:id"
-    {:get {:summary (sd/sum_adm "Get vocabulary by id.")
-           :handler get-vocabulary
-           :middleware [wrap-authorize-admin!]
-           :swagger {:produces "application/json"}
-           :content-type "application/json"
-
-           ;:description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
-           ;; TODO: remove this
-           :description (str "TODO: REMOVE THIS | id: media_content")
-
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:id s/Str}}
-           :responses {200 {:body (get-schema :vocabularies.schema_export-vocabulary-admin)}
-                       404 {:description "Creation failed."
-                            :schema s/Str
-                            :examples {"application/json" {:message "Vocabulary could not be found!"}}}}}
+    {:get get/admin.vocabularies.id
 
      :put {:summary (sd/sum_adm_todo "Update vocabulary.")
            :handler handle_update-vocab
@@ -245,18 +226,8 @@
 
    ["/:id/perms"
     ["/"
-     {:get
-      {:summary (sd/sum_adm "List vocabulary permissions")
-       :handler permissions/handle_list-vocab-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str}}
-       :responses {200 {:body (get-schema :vocabularies.schema_export-perms_all)}
-                   404 {:description "Not found."
-                        :schema s/Str
-                        :examples {"application/json" {:message "No such vocabulary."}}}}}
+     {:get get/admin.vocabularies.id.perms
+
 
       :put
       {:summary (sd/sum_adm "Update vocabulary resource permissions")
@@ -279,39 +250,12 @@
                         :examples {"application/json" {:message "Could not update vocabulary."}}}}}}]
 
     ["/users"
-     {:get
-      {:summary (sd/sum_adm_todo "List vocabulary user permissions")
-       :handler permissions/handle_list-vocab-user-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-
-       :swagger {:produces "application/json"
-                 :parameters [{:name "id"
-                               :in "path"
-                               :description "e.g.: columns"
-                               :type "string"
-                               :required true
-                               :pattern "^[a-z0-9\\-\\_\\:]+$"}]}
-
-       :responses {200 {:body [(get-schema :vocabularies.vocabulary_user_permissions)]}
-                   404 {:body s/Any}}}}]
+     {:get get/admin.vocabularies.users
+      }]
 
     ["/user/:user_id"
-     {:get
-      {:summary (sd/sum_adm_todo "Get vocabulary user permissions")
-       :handler permissions/handle_get-vocab-user-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str
-                           :user_id s/Uuid}}
-       :responses {200 {:body (get-schema :vocabularies.vocabulary_user_permissions)}
-                   404 {:description "Not found."
-                        :schema s/Str
-                        :examples {"application/json" {:message "No such vocabulary user permission."}}}}}
+     {:get get/admin.vocabularies.users.user_id
+
       :post
       {:summary (sd/sum_adm "Create vocabulary user permissions")
        :handler permissions/handle_create-vocab-user-perms
@@ -378,38 +322,12 @@
                         :examples {"application/json" {:message "Could not delete vocabulary user permission"}}}}}}]
 
     ["/groups"
-     {:get
-      {:summary (sd/sum_adm_todo "List vocabulary group permissions")
-       :handler permissions/handle_list-vocab-group-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-
-       :swagger {:produces "application/json"
-                 :parameters [{:name "id"
-                               :in "path"
-                               :description "e.g.: columns"
-                               :type "string"
-                               :required true
-                               :pattern "^[a-z0-9\\-\\_\\:]+$"}]}
-
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :responses {200 {:body [(get-schema :vocabularies.schema_export-group-perms)]}}}}]
+     {:get get/admin.vocabularies.groups
+      }]
 
     ["/group/:group_id"
-     {:get
-      {:summary (sd/sum_adm_todo "Get vocabulary group permissions")
-       :handler permissions/handle_get-vocab-group-perms
-       :middleware [wrap-authorize-admin!]
-       :content-type "application/json"
-       :accept "application/json"
-       :coercion reitit.coercion.schema/coercion
-       :parameters {:path {:id s/Str
-                           :group_id s/Uuid}}
-       :responses {200 {:body (get-schema :vocabularies.schema_export-group-perms)}
-                   404 {:description "Not found."
-                        :schema s/Str
-                        :examples {"application/json" {:message "No such vocabulary group permission."}}}}}
+     {:get get/admin.vocabularies.group.group_id
+
 
       :post
       {:summary (sd/sum_adm_todo "Create vocabulary group permissions")
@@ -475,25 +393,9 @@
 (def user-routes
   ["/vocabularies"
    {:swagger {:tags ["vocabulary"]}}
-   ["/" {:get {:summary "Get list of vocabularies ids."
-               :description "Get list of vocabularies ids."
-               :handler get-index
-               :content-type "application/json"
-               :coercion reitit.coercion.schema/coercion
-               :swagger (generate-swagger-pagination-params)
-               :responses {200 {:body {:vocabularies [(get-schema :vocabularies.schema_export-vocabulary)]}}}}}]
+   ["/" {:get get/user.vocabularies}]
 
-   ["/:id" {:get {:summary "Get vocabulary by id."
-                  ;:description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
-                  :swagger {:produces "application/json"}
-                  :content-type "application/json"
-                  :handler get-vocabulary
-                  :coercion reitit.coercion.schema/coercion
-                  :parameters {:path {:id s/Str}}
-                  :responses {200 {:body (get-schema :vocabularies.schema_export-vocabulary)}
-                              404 {:description "Creation failed."
-                                   :schema s/Str
-                                   :examples {"application/json" {:message "Vocabulary could not be found!"}}}}}}]])
+   ["/:id" {:get get/user.vocabularies.id}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
