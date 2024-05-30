@@ -3,17 +3,19 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-files.authorization :as media-files.authorization]
    [madek.api.resources.media-files.media-file :as media-file]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.shared :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [reitit.coercion.schema]
    [schema.core :as s]))
 
 ;##############################################################################
 
 (defn- query-media-file [media-file-id tx]
-  (sd/query-eq-find-one :media_files :id media-file-id tx))
+  (dbh/query-eq-find-one :media_files :id media-file-id tx))
 
 (defn query-media-file-by-media-entry-id [media-entry-id tx]
-  (sd/query-eq-find-one :media_files :media_entry_id media-entry-id tx))
+  (dbh/query-eq-find-one :media_files :media_entry_id media-entry-id tx))
 
 (defn query-media-files-by-media-entry-id [media-entry-id tx]
   (sd/query-eq-find-all :media_files :media_entry_id media-entry-id tx))
@@ -91,8 +93,8 @@
      {:summary (sd/sum_usr_pub "Get media-file for media-entry id.")
       :handler media-file/get-media-file
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                   sd/ring-wrap-add-media-resource
-                   sd/ring-wrap-authorization-view]
+                   jqh/ring-wrap-add-media-resource
+                   jqh/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
       :responses {200 {:body (get-schema :media_files.schema_export-media-file)}
@@ -103,7 +105,7 @@
      {:summary (sd/sum_usr_pub "Get media-file data-stream for media-entry id.")
       :handler media-file/get-media-file-data-stream
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
-                   sd/ring-wrap-add-media-resource
+                   jqh/ring-wrap-add-media-resource
                    sd/ring-wrap-authorization-download]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}

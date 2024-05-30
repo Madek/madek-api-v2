@@ -6,7 +6,7 @@
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.resources.meta_data.common :refer :all]
-
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.resources.shared.shared :as sd]
 
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
@@ -82,8 +82,8 @@
 
 (def media_entry.meta_key_id.json {:summary "Update meta-data json for media-entry"
                                    :handler handle_update-meta-data-json
-                                   :middleware [sd/ring-wrap-add-media-resource
-                                                sd/ring-wrap-authorization-edit-metadata]
+                                   :middleware [jqh/ring-wrap-add-media-resource
+                                                jqh/ring-wrap-authorization-edit-metadata]
                                    :coercion reitit.coercion.schema/coercion
                                    :parameters {:path {:media_entry_id s/Uuid
                                                        :meta_key_id s/Str}
@@ -92,8 +92,8 @@
 
 (def meta_key_id.text-date {:summary "Update meta-data text-date for media-entry"
                             :handler handle_update-meta-data-text-date
-                            :middleware [sd/ring-wrap-add-media-resource
-                                         sd/ring-wrap-authorization-edit-metadata]
+                            :middleware [jqh/ring-wrap-add-media-resource
+                                         jqh/ring-wrap-authorization-edit-metadata]
                             :coercion reitit.coercion.schema/coercion
                             :parameters {:path {:media_entry_id s/Uuid
                                                 :meta_key_id s/Str}
@@ -102,8 +102,8 @@
 
 (def media_entry.meta_key_id.text {:summary "Update meta-data text for media-entry"
                                    :handler handle_update-meta-data-text
-                                   :middleware [sd/ring-wrap-add-media-resource
-                                                sd/ring-wrap-authorization-edit-metadata]
+                                   :middleware [jqh/ring-wrap-add-media-resource
+                                                jqh/ring-wrap-authorization-edit-metadata]
                                    :coercion reitit.coercion.schema/coercion
                                    :parameters {:path {:media_entry_id s/Uuid
                                                        :meta_key_id s/Str}
@@ -112,8 +112,8 @@
 
 (def collection.meta_key_id.json {:summary "Update meta-data json for collection."
                                   :handler handle_update-meta-data-json
-                                  :middleware [sd/ring-wrap-add-media-resource
-                                               sd/ring-wrap-authorization-edit-metadata]
+                                  :middleware [jqh/ring-wrap-add-media-resource
+                                               jqh/ring-wrap-authorization-edit-metadata]
                                   :coercion reitit.coercion.schema/coercion
                                   :parameters {:path {:collection_id s/Uuid
                                                       :meta_key_id s/Str}
@@ -122,8 +122,8 @@
 
 (def text.meta_key_id.text-date {:summary "Update meta-data text-date for collection."
                                  :handler handle_update-meta-data-text-date
-                                 :middleware [sd/ring-wrap-add-media-resource
-                                              sd/ring-wrap-authorization-edit-metadata]
+                                 :middleware [jqh/ring-wrap-add-media-resource
+                                              jqh/ring-wrap-authorization-edit-metadata]
                                  :coercion reitit.coercion.schema/coercion
                                  :parameters {:path {:collection_id s/Uuid
                                                      :meta_key_id s/Str}
@@ -132,8 +132,8 @@
 
 (def meta_key_id.text {:summary "Update meta-data text for collection."
                        :handler handle_update-meta-data-text
-                       :middleware [sd/ring-wrap-add-media-resource
-                                    sd/ring-wrap-authorization-edit-metadata]
+                       :middleware [jqh/ring-wrap-add-media-resource
+                                    jqh/ring-wrap-authorization-edit-metadata]
                        :accept "application/json"
                        :content-type "application/json"
                        :swagger {:produces "application/json" :consumes "application/json"}

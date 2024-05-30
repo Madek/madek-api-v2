@@ -8,6 +8,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.legacy.session.encryptor :refer [decrypt]]
    [madek.api.legacy.session.signature :refer [valid?]]
    [madek.api.resources.shared.shared :as sd]
@@ -117,7 +118,7 @@
       (if-let [user-session (first (user-session token-hash tx))]
         (let [user-id (:users/user_id user-session)
               expires-at (:session_expires_at user-session)
-              user (assoc (sd/query-eq-find-one :users :id user-id tx) :type "User")]
+              user (assoc (dbh/query-eq-find-one :users :id user-id tx) :type "User")]
           #_(info "handle session: "
                   "\nfound user session:\n " user-session
                   "\n user-id:  " user-id

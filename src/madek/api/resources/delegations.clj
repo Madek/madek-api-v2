@@ -5,6 +5,7 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]
+   [madek.api.resources.shared.db_helper :as dbh]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -13,7 +14,7 @@
   [req]
   (let [full-data (= "true" (get (-> req :query-params) "full-data"))
         qd (if (true? full-data) :* :delegations.id)
-        db-result (sd/query-find-all :delegations qd (:tx req))]
+        db-result (dbh/query-find-all :delegations qd (:tx req))]
     ;(info "handle_list-delegation" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -52,7 +53,7 @@
           "\nupd-query\n" upd-query)
 
     (if-let [ins-res (first (jdbc/execute! tx sql-query))]
-      (let [new-data (sd/query-eq-find-one :delegations :id id tx)]
+      (let [new-data (dbh/query-eq-find-one :delegations :id id tx)]
         (info "handle_update-delegations:" "\nnew-data\n" new-data)
         (sd/response_ok new-data))
       (sd/response_failed "Could not update delegation." 406))))
@@ -66,7 +67,7 @@
                       (sql/returning :*)
                       sql-format)]
     (try
-      (if (sd/query-eq-find-one :delegation :id id tx)
+      (if (dbh/query-eq-find-one :delegation :id id tx)
         (if (jdbc/execute-one! tx sql-query)
           (sd/response_ok delegation)
           (sd/response_failed "Could not delete delegation." 406))

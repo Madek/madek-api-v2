@@ -16,7 +16,7 @@
   (let [full-data (true? (-> req :parameters :query :full_data))
         qd (if (true? full-data) :usage_terms.* :usage_terms.id)
         tx (:tx req)
-        db-result (sd/query-find-all :usage_terms qd tx)]
+        db-result (dbh/query-find-all :usage_terms qd tx)]
     ;(->> db-result (map :id) set)
     ;(info "handle_list-usage_term" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))

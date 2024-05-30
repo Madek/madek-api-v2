@@ -38,8 +38,8 @@
         full_data (= true (:full_data query-params))
         sql-query (-> (base-query full_data)
                       (set-order query-params)
-                      (sd/build-query-param query-params :creator_id)
-                      (sd/build-query-param query-params :responsible_user_id)
+                      (dbh/build-query-param query-params :creator_id)
+                      (dbh/build-query-param query-params :responsible_user_id)
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params
                                                           authenticated-entity)

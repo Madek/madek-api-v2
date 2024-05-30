@@ -5,6 +5,8 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared.shared :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -15,7 +17,7 @@
   (let [qd (if (true? (-> req :parameters :query :full_data))
              :admins.*
              :admins.id)
-        db-result (sd/query-find-all :admins qd (:tx req))]
+        db-result (dbh/query-find-all :admins qd (:tx req))]
     (sd/response_ok {:admins db-result})))
 
 (defn handle_get-admin

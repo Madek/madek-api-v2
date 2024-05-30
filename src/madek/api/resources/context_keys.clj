@@ -9,6 +9,7 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
    [next.jdbc :as jdbc]
+   [madek.api.resources.shared.db_helper :as dbh]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [error]]))
@@ -26,10 +27,10 @@
         db-query (-> (sql/select :*)
                      (sql/from :context_keys)
 
-                     (sd/build-query-param req-query :id)
-                     (sd/build-query-param req-query :context_id)
-                     (sd/build-query-param req-query :meta_key_id)
-                     (sd/build-query-param req-query :is_required)
+                     (dbh/build-query-param req-query :id)
+                     (dbh/build-query-param req-query :context_id)
+                     (dbh/build-query-param req-query :meta_key_id)
+                     (dbh/build-query-param req-query :is_required)
 
                      (sd/build-query-created-or-updated-after req-query :changed_after)
                      (sd/build-query-ts-after req-query :created_after "created_at")
@@ -48,10 +49,10 @@
                                  :is_required :position :length_min :length_max
                                  :labels :hints :descriptions :documentation_urls)
                      (sql/from :context_keys)
-                     (sd/build-query-param req-query :id)
-                     (sd/build-query-param req-query :context_id)
-                     (sd/build-query-param req-query :meta_key_id)
-                     (sd/build-query-param req-query :is_required)
+                     (dbh/build-query-param req-query :id)
+                     (dbh/build-query-param req-query :context_id)
+                     (dbh/build-query-param req-query :meta_key_id)
+                     (dbh/build-query-param req-query :is_required)
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
         tf (map context_key_transform_ml db-result)]
@@ -105,7 +106,7 @@
         (sd/logwrite req (str "handle_update-context_keys: " id "\nnew-data\n" dwid "\nupd-result: " upd-result))
 
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (context_key_transform_ml (sd/query-eq-find-one :context_keys :id id tx)))
+          (sd/response_ok (context_key_transform_ml (dbh/query-eq-find-one :context_keys :id id tx)))
           (sd/response_failed "Could not update context_key." 406))))
     (catch Exception ex (sd/response_exception ex))))
 

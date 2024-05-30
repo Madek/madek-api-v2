@@ -7,6 +7,7 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.shared :as sd]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.helper :refer [convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
@@ -216,8 +217,8 @@
    ["collection/:collection_id"
     {:get {:summary (sd/sum_usr_pub "Get collection for id.")
            :handler handle_get-collection
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-view]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-view]
 
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
@@ -228,8 +229,8 @@
 
      :put {:summary (sd/sum_usr "Update collection for id.")
            :handler handle_update-collection
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :swagger {:produces "application/json"
                      :consumes "application/json"}
            :coercion reitit.coercion.schema/coercion
@@ -244,7 +245,7 @@
      ; TODO check owner or responsible
      :delete {:summary (sd/sum_usr "Delete collection for id.")
               :handler handle_delete-collection
-              :middleware [sd/ring-wrap-add-media-resource
+              :middleware [jqh/ring-wrap-add-media-resource
                            sd/ring-wrap-authorization-edit-permissions]
               :swagger {:produces "application/json"
                         :consumes "application/json"}

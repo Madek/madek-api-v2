@@ -21,7 +21,7 @@
   (let [col-sel (if (true? (-> req :parameters :query :full_data))
                   :*
                   :user_id)
-        db-result (sd/query-find-all :favorite_collections col-sel (:tx req))]
+        db-result (dbh/query-find-all :favorite_collections col-sel (:tx req))]
     (sd/response_ok db-result)))
 
 (defn handle_list-favorite_collection-by-user

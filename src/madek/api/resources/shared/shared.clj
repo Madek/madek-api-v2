@@ -5,6 +5,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.semver :as semver]
             [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.resources.shared.db_helper :as dbh]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error info]]))
 
@@ -100,7 +101,7 @@
   (let [search (-> request :parameters :path path-param)
         tx (:tx request)]
     ;(info "req-find-data: " search " " db_table " " db_col_name)
-    (if-let [result-db (query-eq-find-one db_table db_col_name search tx)]
+    (if-let [result-db (dbh/query-eq-find-one db_table db_col_name search tx)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)
         (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search))
@@ -114,7 +115,7 @@
   (let [search (-> request :path-params path-param)
         tx (:tx request)]
     ;(info "req-find-data: " search " " db_table " " db_col_name)
-    (if-let [result-db (query-eq-find-one db_table db_col_name search tx)]
+    (if-let [result-db (dbh/query-eq-find-one db_table db_col_name search tx)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)
         (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search))
@@ -126,7 +127,7 @@
    If it exists it is associated with the request as reqkey"
   [request handler search search2 db_table db_col_name db_col_name2 reqkey send404]
   (info "req-find-data-search2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
-  (if-let [result-db (query-eq-find-one db_table db_col_name search db_col_name2 search2 (:tx request))]
+  (if-let [result-db (dbh/query-eq-find-one db_table db_col_name search db_col_name2 search2 (:tx request))]
     (handler (assoc request reqkey result-db))
     (if (= true send404)
       (response_not_found (str "No such entity in " db_table " as " db_col_name " with " search " and " db_col_name2 " with " search2))
@@ -141,7 +142,7 @@
   (let [search (-> request :parameters :path path-param str)
         search2 (-> request :parameters :path path-param2 str)
         tx (:tx request)
-        res (query-eq-find-one db_table db_col_name search db_col_name2 search2 tx)]
+        res (dbh/query-eq-find-one db_table db_col_name search db_col_name2 search2 tx)]
 
     ;(info "req-find-data2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
     (if-let [result-db res]

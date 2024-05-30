@@ -5,6 +5,7 @@
             [madek.api.authorization :as authorization]
             [madek.api.db.dynamic_schema.common :refer [get-schema]]
             [madek.api.resources.shared.shared :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -16,7 +17,7 @@
              :workflows.*
              :workflows.id)
         tx (:tx req)
-        db-result (sd/query-find-all :workflows qd tx)]
+        db-result (dbh/query-find-all :workflows qd tx)]
     ;(info "handle_list-workflows" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -67,7 +68,7 @@
         (info "handle_update-workflow: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
         (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (sd/query-eq-find-one :workflows :id id tx))
+          (sd/response_ok (dbh/query-eq-find-one :workflows :id id tx))
           (sd/response_failed "Could not update workflow." 406))))
     (catch Exception e (sd/response_exception e))))
 

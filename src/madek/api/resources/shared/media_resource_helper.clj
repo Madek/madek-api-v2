@@ -8,7 +8,7 @@
 
 
 ; begin media resources helpers
-(defn- get-media-resource
+(defn get-media-resource
   "First checks for collection_id, then for media_entry_id.
    If creating collection-media-entry-arc, the collection permission is checked."
   ([params tx]
@@ -31,7 +31,7 @@
        (merge (ex-data e)
          {:statuc 406, :body {:message (.getMessage e)}})))))
 
-(defn- ring-add-media-resource [request handler tx]         ;;here
+(defn ring-add-media-resource [request handler tx]         ;;here
   (if-let [media-resource (get-media-resource request tx)]
     (let [request-with-media-resource (assoc request :media-resource media-resource)]
       ;(info "ring-add-media-resource" "\nmedia-resource\n" media-resource)
@@ -45,7 +45,7 @@
 (defn- public? [resource]
   (-> resource :get_metadata_and_previews boolean))
 
-(defn- authorize-request-for-media-resource [request handler scope]
+(defn authorize-request-for-media-resource [request handler scope]
   ;(
   ;(info "auth-request-for-mr"
   ;              "\nscope: " scope
@@ -74,7 +74,7 @@
 
     ; else
     (let [response {:status 500 :body {:message "No media-resource in request."}}]
-      (warn 'authorize-request-for-media-resource response [request handler])
+      (warn 'mrh/authorize-request-for-media-resource response [request handler])
       response))
   ;)
   )

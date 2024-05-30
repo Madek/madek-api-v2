@@ -5,6 +5,7 @@
             [logbug.catcher :as catcher]
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.shared :as sd]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -128,8 +129,8 @@
 (def delete.meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
                                             :handler handle_delete-meta-data-keyword
                                             :middleware [wrap-add-keyword
-                                                         sd/ring-wrap-add-media-resource
-                                                         sd/ring-wrap-authorization-edit-metadata]
+                                                         jqh/ring-wrap-add-media-resource
+                                                         jqh/ring-wrap-authorization-edit-metadata]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:collection_id s/Uuid
                                                                 :meta_key_id s/Str
@@ -140,8 +141,8 @@
                                          :handler handle_delete-meta-data-role
                                          :middleware [wrap-add-role
                                                       wrap-add-person
-                                                      sd/ring-wrap-add-media-resource
-                                                      sd/ring-wrap-authorization-edit-metadata]
+                                                      jqh/ring-wrap-add-media-resource
+                                                      jqh/ring-wrap-authorization-edit-metadata]
                                          :coercion reitit.coercion.schema/coercion
                                          :parameters {:path {:media_entry_id s/Uuid
                                                              :meta_key_id s/Str
@@ -152,8 +153,8 @@
 (def media_entry.meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
                                                :handler handle_delete-meta-data-people
                                                :middleware [wrap-add-person
-                                                            sd/ring-wrap-add-media-resource
-                                                            sd/ring-wrap-authorization-edit-metadata]
+                                                            jqh/ring-wrap-add-media-resource
+                                                            jqh/ring-wrap-authorization-edit-metadata]
                                                :coercion reitit.coercion.schema/coercion
                                                :parameters {:path {:media_entry_id s/Uuid
                                                                    :meta_key_id s/Str
@@ -162,8 +163,8 @@
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
-                                            :middleware [sd/ring-wrap-add-media-resource
-                                                         sd/ring-wrap-authorization-view
+                                            :middleware [jqh/ring-wrap-add-media-resource
+                                                         jqh/ring-wrap-authorization-view
                                                          wrap-me-add-meta-data]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid
@@ -173,8 +174,8 @@
 (def collection.meta_key_id.people.person_id {:summary "Delete meta-data people for collection."
                                               :handler handle_delete-meta-data-people
                                               :middleware [wrap-add-person
-                                                           sd/ring-wrap-add-media-resource
-                                                           sd/ring-wrap-authorization-edit-metadata]
+                                                           jqh/ring-wrap-add-media-resource
+                                                           jqh/ring-wrap-authorization-edit-metadata]
                                               :coercion reitit.coercion.schema/coercion
                                               :parameters {:path {:collection_id s/Uuid
                                                                   :meta_key_id s/Str
@@ -184,8 +185,8 @@
 (def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
                                      :handler handle_delete-meta-data-keyword
                                      :middleware [wrap-add-keyword
-                                                  sd/ring-wrap-add-media-resource
-                                                  sd/ring-wrap-authorization-edit-metadata]
+                                                  jqh/ring-wrap-add-media-resource
+                                                  jqh/ring-wrap-authorization-edit-metadata]
                                      :coercion reitit.coercion.schema/coercion
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str
@@ -194,8 +195,8 @@
 
 (def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key"
                                            :handler handle-delete-meta-data
-                                           :middleware [sd/ring-wrap-add-media-resource
-                                                        sd/ring-wrap-authorization-view
+                                           :middleware [jqh/ring-wrap-add-media-resource
+                                                        jqh/ring-wrap-authorization-view
                                                         wrap-col-add-meta-data]
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid
@@ -206,8 +207,8 @@
                                          :handler handle_delete-meta-data-role
                                          :middleware [wrap-add-role
                                                       wrap-add-person
-                                                      sd/ring-wrap-add-media-resource
-                                                      sd/ring-wrap-authorization-edit-metadata]
+                                                      jqh/ring-wrap-add-media-resource
+                                                      jqh/ring-wrap-authorization-edit-metadata]
                                          :coercion reitit.coercion.schema/coercion
                                          :parameters {:path {:media_entry_id s/Uuid
                                                              :meta_key_id s/Str
@@ -218,8 +219,8 @@
 (def meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
                                    :handler handle_delete-meta-data-people
                                    :middleware [wrap-add-person
-                                                sd/ring-wrap-add-media-resource
-                                                sd/ring-wrap-authorization-edit-metadata]
+                                                jqh/ring-wrap-add-media-resource
+                                                jqh/ring-wrap-authorization-edit-metadata]
                                    :coercion reitit.coercion.schema/coercion
                                    :parameters {:path {:media_entry_id s/Uuid
                                                        :meta_key_id s/Str
@@ -229,8 +230,8 @@
 (def meta_key_id.keyword.keyword_id2 {:summary "Delete meta-data keyword for media-entry."
                                       :handler handle_delete-meta-data-keyword
                                       :middleware [wrap-add-keyword
-                                                   sd/ring-wrap-add-media-resource
-                                                   sd/ring-wrap-authorization-edit-metadata]
+                                                   jqh/ring-wrap-add-media-resource
+                                                   jqh/ring-wrap-authorization-edit-metadata]
                                       :coercion reitit.coercion.schema/coercion
                                       :parameters {:path {:media_entry_id s/Uuid
                                                           :meta_key_id s/Str
@@ -239,8 +240,8 @@
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
-                                            :middleware [sd/ring-wrap-add-media-resource
-                                                         sd/ring-wrap-authorization-view
+                                            :middleware [jqh/ring-wrap-add-media-resource
+                                                         jqh/ring-wrap-authorization-view
                                                          wrap-me-add-meta-data]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid
@@ -250,8 +251,8 @@
 (def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
                                      :handler handle_delete-meta-data-keyword
                                      :middleware [wrap-add-keyword
-                                                  sd/ring-wrap-add-media-resource
-                                                  sd/ring-wrap-authorization-edit-metadata]
+                                                  jqh/ring-wrap-add-media-resource
+                                                  jqh/ring-wrap-authorization-edit-metadata]
                                      :coercion reitit.coercion.schema/coercion
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str
@@ -260,8 +261,8 @@
 
 (def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key"
                                            :handler handle-delete-meta-data
-                                           :middleware [sd/ring-wrap-add-media-resource
-                                                        sd/ring-wrap-authorization-view
+                                           :middleware [jqh/ring-wrap-add-media-resource
+                                                        jqh/ring-wrap-authorization-view
                                                         wrap-col-add-meta-data]
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid

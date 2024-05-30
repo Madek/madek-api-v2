@@ -5,6 +5,8 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.shared :as sd]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -40,8 +42,8 @@
 (defn arcs-query [query-params]
   (-> (sql/select :*)
       (sql/from :collection_collection_arcs)
-      (sd/build-query-param query-params :child_id)
-      (sd/build-query-param query-params :parent_id)
+      (dbh/build-query-param query-params :child_id)
+      (dbh/build-query-param query-params :parent_id)
       (pagination/add-offset-for-honeysql query-params)
       sql-format))
 
@@ -80,7 +82,7 @@
             result (next.jdbc/execute! tx query)]
 
         (if (= 1 (first result))
-          (sd/response_ok (sd/query-eq-find-one
+          (sd/response_ok (dbh/query-eq-find-one
                            :collection_collection_arcs
                            :parent_id parent-id
                            :child_id child-id tx))
@@ -94,7 +96,7 @@
             child-id (-> req :parameters :path :child_id)
             tx (:tx req)
             ;; TODO: fetch old data by delete-query
-            olddata (sd/query-eq-find-one
+            olddata (dbh/query-eq-find-one
                      :collection_collection_arcs
                      :parent_id parent-id
                      :child_id child-id

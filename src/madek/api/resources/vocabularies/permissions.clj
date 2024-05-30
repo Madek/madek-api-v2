@@ -5,6 +5,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.shared :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -86,7 +87,7 @@
   (let [id (-> req :parameters :path :id)
         tx (:tx req)
         uid (-> req :parameters :path :user_id)]
-    (if-let [result (sd/query-eq-find-one
+    (if-let [result (dbh/query-eq-find-one
                      :vocabulary_user_permissions
                      :vocabulary_id id
                      :user_id uid
@@ -138,7 +139,7 @@
       (let [vid (-> req :parameters :path :id)
             uid (to-uuid (-> req :parameters :path :user_id))
             tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one
+        (if-let [old-data (dbh/query-eq-find-one
                            :vocabulary_user_permissions
                            :vocabulary_id vid
                            :user_id uid tx)]
@@ -165,7 +166,7 @@
   (let [id (-> req :parameters :path :id)
         tx (:tx req)
         gid (-> req :parameters :path :group_id)]
-    (if-let [result (sd/query-eq-find-one
+    (if-let [result (dbh/query-eq-find-one
                      :vocabulary_group_permissions
                      :vocabulary_id id
                      :group_id gid tx)]
@@ -198,7 +199,7 @@
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
             tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one
+        (if-let [old-data (dbh/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
                            :group_id gid tx)]
@@ -221,7 +222,7 @@
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
             tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one
+        (if-let [old-data (dbh/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
                            :group_id gid tx)]
@@ -239,7 +240,7 @@
 (defn handle_list-vocab-perms [req]
   (let [id (-> req :parameters :path :id)
         tx (:tx req)
-        resource-perms (sd/query-eq-find-one :vocabularies :id id tx)]
+        resource-perms (dbh/query-eq-find-one :vocabularies :id id tx)]
 
     ;; Early exit if resource-perms is nil
     (if (nil? resource-perms)

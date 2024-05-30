@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -19,7 +20,7 @@
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)
             tx (:tx req)]
-        (if-let [old-data (sd/query-eq-find-one :vocabularies :id id tx)]
+        (if-let [old-data (dbh/query-eq-find-one :vocabularies :id id tx)]
           (let [sql-query (-> (sql/delete-from :vocabularies)
                               (sql/where [:= :id id])
                               (sql/returning :*)

@@ -5,7 +5,7 @@
             [honey.sql.helpers :as sql]
 
             [logbug.catcher :as catcher]
-
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.shared :as sd]
@@ -209,8 +209,8 @@
 (def meta-datum.meta_key_id.text
   {:summary "Create meta-data text for media-entry"
    :handler handle_create-meta-data-text
-   :middleware [sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+   :middleware [jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str}
@@ -220,8 +220,8 @@
 (def meta-datum.meta_key_id.text-date
   {:summary "Create meta-data text-date for media-entry"
    :handler handle_create-meta-data-text-date
-   :middleware [sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+   :middleware [jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str}
@@ -231,8 +231,8 @@
 (def meta-datum.meta_key_id.json
   {:summary "Create meta-data json for media-entry"
    :handler handle_create-meta-data-json
-   :middleware [sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+   :middleware [jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str}
@@ -244,8 +244,8 @@
    :handler handle_create-meta-data-keyword
    :middleware [;wrap-me-add-meta-data
                 wrap-add-keyword
-                sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+                jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str ;; is this meta_datum_id
@@ -256,8 +256,8 @@
   {:summary "Create meta-data people for a media-entries meta-key."
    :handler handle_create-meta-data-people
    :middleware [wrap-add-person
-                sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata
+                jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata
                 wrap-me-add-meta-data]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:media_entry_id s/Uuid
@@ -270,8 +270,8 @@
    :handler handle_create-meta-data-role
    :middleware [wrap-add-role
                 wrap-add-person
-                sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+                jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str
@@ -283,8 +283,8 @@
 (def collection_id.meta-datum:meta_key_id.text
   {:summary "Create meta-data text for collection."
    :handler handle_create-meta-data-text
-   :middleware [sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+   :middleware [jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :accept "application/json"
    :content-type "application/json"
    :swagger {:produces "application/json" :consumes "application/json"}
@@ -297,8 +297,8 @@
 (def collection_id.meta-datum:meta_key_id.text-date
   {:summary "Create meta-data json for collection."
    :handler handle_create-meta-data-text-date
-   :middleware [sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+   :middleware [jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
@@ -308,8 +308,8 @@
 (def collection_id.meta_key_id.json
   {:summary "Create meta-data json for collection."
    :handler handle_create-meta-data-json
-   :middleware [sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+   :middleware [jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
@@ -321,8 +321,8 @@
    :handler handle_create-meta-data-keyword
    :middleware [;wrap-me-add-meta-data
                 wrap-add-keyword
-                sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+                jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str
@@ -334,8 +334,8 @@
    :handler handle_create-meta-data-people
    :middleware [;wrap-me-add-meta-data
                 wrap-add-person
-                sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+                jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str
@@ -346,8 +346,8 @@
   {:summary "Create meta-data role for media-entry"
    :handler handle_create-meta-data-role
    :middleware [wrap-add-role
-                sd/ring-wrap-add-media-resource
-                sd/ring-wrap-authorization-edit-metadata]
+                jqh/ring-wrap-add-media-resource
+                jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str

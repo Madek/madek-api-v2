@@ -4,6 +4,7 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.media-resources.permissions :as mr-permissions]
    [madek.api.resources.permissions.common :refer :all]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.shared :as sd]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -43,7 +44,7 @@
                       :swagger {:produces "application/json"}
                       :content-type "application/json"
                       :handler handle_create-user-perms
-                      :middleware [sd/ring-wrap-add-media-resource
+                      :middleware [jqh/ring-wrap-add-media-resource
                                    sd/ring-wrap-authorization-edit-permissions]
                       :coercion reitit.coercion.schema/coercion
                       :parameters {:path {:media_entry_id s/Uuid
@@ -55,7 +56,7 @@
                         :swagger {:produces "application/json"}
                         :content-type "application/json"
                         :handler handle_create-group-perms
-                        :middleware [sd/ring-wrap-add-media-resource
+                        :middleware [jqh/ring-wrap-add-media-resource
                                      sd/ring-wrap-authorization-edit-permissions]
                         :coercion reitit.coercion.schema/coercion
                         :parameters {:path {:media_entry_id s/Uuid
@@ -67,7 +68,7 @@
                        :swagger {:produces "application/json"}
                        :content-type "application/json"
                        :handler handle_create-user-perms
-                       :middleware [sd/ring-wrap-add-media-resource
+                       :middleware [jqh/ring-wrap-add-media-resource
                                     sd/ring-wrap-authorization-edit-permissions]
                        :coercion reitit.coercion.schema/coercion
                        :parameters {:path {:collection_id s/Uuid
@@ -79,7 +80,7 @@
                          :swagger {:produces "application/json"}
                          :content-type "application/json"
                          :handler handle_create-group-perms
-                         :middleware [sd/ring-wrap-add-media-resource
+                         :middleware [jqh/ring-wrap-add-media-resource
                                       sd/ring-wrap-authorization-edit-permissions]
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:path {:collection_id s/Uuid

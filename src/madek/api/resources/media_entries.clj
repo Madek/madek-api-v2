@@ -6,6 +6,8 @@
             [honey.sql.helpers :as sql]
             [madek.api.authorization :as authorization]
             [madek.api.constants :refer [FILE_STORAGE_DIR]]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.db.dynamic_schema.common :refer [get-schema]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
@@ -56,7 +58,7 @@
        (sd/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
 
 (defn- check-has-meta-data-for-context-key [meId mkId tx]
-  (let [md (sd/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId tx)
+  (let [md (dbh/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId tx)
         hasMD (not (nil? md))
         result {(keyword mkId) hasMD}]
     result))
@@ -67,7 +69,7 @@
    In that case, the is_publishable of the entry is set to true."
   (let [eid (-> req :parameters :path :media_entry_id)
         tx (:tx req)
-        validationContexts (-> (sd/query-find-all :app_settings :contexts_for_entry_validation tx)
+        validationContexts (-> (dbh/query-find-all :app_settings :contexts_for_entry_validation tx)
                                first
                                :contexts_for_entry_validation)
         contextKeys (first (map get-context-keys-4-context validationContexts))
@@ -97,7 +99,7 @@
               "\n dresult: \n" dresult)
 
         (if (= 1 (::jdbc/update-count dresult))
-          (sd/response_ok (sd/query-eq-find-one :media_entries :id eid tx))
+          (sd/response_ok (dbh/query-eq-find-one :media_entries :id eid tx))
           (sd/response_failed "Could not update publish on media_entry." 406)))
 
       (sd/response_failed {:is_publishable publishable
@@ -402,8 +404,8 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
 
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-view]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
            :responses {200 {:body s/Any}
@@ -415,7 +417,7 @@
               :swagger {:produces "application/json"}
               :content-type "application/json"
 
-              :middleware [sd/ring-wrap-add-media-resource
+              :middleware [jqh/ring-wrap-add-media-resource
                            sd/ring-wrap-authorization-edit-permissions]
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:media_entry_id s/Uuid}}}}]
@@ -426,8 +428,8 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
 
-           :middleware [sd/ring-wrap-add-media-resource
-                        sd/ring-wrap-authorization-edit-metadata]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
            :responses {200 {:body (get-schema :media-entries.schema_export_media_entry)}

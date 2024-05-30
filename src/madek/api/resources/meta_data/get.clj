@@ -3,7 +3,8 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.db.dynamic_schema.common :refer [get-schema]]
-
+            [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
             [madek.api.resources.meta_data.common :refer :all]
@@ -26,7 +27,7 @@
       (let [md-id (-> md :id)
             mdr (db-get-meta-data-keywords md-id tx)
             mdr-ids (map (-> :keyword_id) mdr)
-            keywords (map #(sd/query-eq-find-one :keywords :id % tx) mdr-ids)
+            keywords (map #(dbh/query-eq-find-one :keywords :id % tx) mdr-ids)
             result {:meta_data md
                     MD_KEY_KW_IDS mdr-ids
                     MD_KEY_KW_DATA mdr
@@ -45,7 +46,7 @@
       (let [md-id (-> md :id)
             mdr (db-get-meta-data-people md-id tx)
             mdr-ids (map (-> :person_id) mdr)
-            people (map #(sd/query-eq-find-one :people :id % tx) mdr-ids)
+            people (map #(dbh/query-eq-find-one :people :id % tx) mdr-ids)
             result {:meta_data md
                     MD_KEY_PEOPLE_IDS mdr-ids
                     MD_KEY_PEOPLE_DATA mdr
@@ -66,8 +67,8 @@
             mdr (db-get-meta-data-roles md-id tx)
             mdr-rids (map (-> :role_id) mdr)
             mdr-pids (map (-> :person_id) mdr)
-            roles (map #(sd/query-eq-find-one :roles :id % tx) mdr-rids)
-            people (map #(sd/query-eq-find-one :people :id % tx) mdr-pids)
+            roles (map #(dbh/query-eq-find-one :roles :id % tx) mdr-rids)
+            people (map #(dbh/query-eq-find-one :people :id % tx) mdr-pids)
             result {:meta_data md
 
                     MD_KEY_ROLES_IDS mdr-rids
@@ -105,15 +106,15 @@
                    "MetaDatum::Keywords" (->>
                                           mde
                                           (map (-> :keyword_id))
-                                          (map #(sd/query-eq-find-one :keywords :id % tx)))
+                                          (map #(dbh/query-eq-find-one :keywords :id % tx)))
                    "MetaDatum::People" (->>
                                         mde
                                         (map (-> :person_id))
-                                        (map #(sd/query-eq-find-one :people :id % tx)))
+                                        (map #(dbh/query-eq-find-one :people :id % tx)))
                    "MetaDatum::Roles" (->>
                                        mde
                                        (map (-> :role_id))
-                                       (map #(sd/query-eq-find-one :roles :id % tx)))
+                                       (map #(dbh/query-eq-find-one :roles :id % tx)))
                    "default")
         mde-result {:meta-data result
                     (keyword md-type-kw) mde
@@ -177,7 +178,7 @@
 
 (def meta_datum_id {:handler meta-datum/get-meta-datum
                     :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
-                                 sd/ring-wrap-authorization-view]
+                                 jqh/ring-wrap-authorization-view]
                     :summary "Get meta-data for id"
                     :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
                     :coercion reitit.coercion.schema/coercion
@@ -190,7 +191,7 @@
 (def meta_datum_id.data-stream {:handler meta-datum/get-meta-datum-data-stream
                                 ; TODO json meta-data: fix response conversion error
                                 :middleware [sd/ring-wrap-add-meta-datum-with-media-resource
-                                             sd/ring-wrap-authorization-view]
+                                             jqh/ring-wrap-authorization-view]
                                 :summary "Get meta-data data-stream."
                                 :description "Get meta-data data-stream."
                                 :coercion reitit.coercion.schema/coercion
@@ -199,8 +200,8 @@
 (def media-entry.media_entry_id.meta-data {:summary "Get meta-data for media-entry."
                                            :handler meta-data.index/get-index
                                            ; TODO 401s test fails
-                                           :middleware [sd/ring-wrap-add-media-resource
-                                                        sd/ring-wrap-authorization-view]
+                                           :middleware [jqh/ring-wrap-add-media-resource
+                                                        jqh/ring-wrap-authorization-view]
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:media_entry_id s/Uuid}
                                                         :query {(s/optional-key :updated_after) s/Inst
@@ -217,8 +218,8 @@
 
 (def collection_id.meta-data {:summary "Get meta-data for collection."
                               :handler meta-data.index/get-index
-                              :middleware [sd/ring-wrap-add-media-resource
-                                           sd/ring-wrap-authorization-view]
+                              :middleware [jqh/ring-wrap-add-media-resource
+                                           jqh/ring-wrap-authorization-view]
                               ; TODO 401s test fails
                               :coercion reitit.coercion.schema/coercion
                               :parameters {:path {:collection_id s/Uuid}
@@ -228,8 +229,8 @@
 
 (def collection_id.meta-data-related {:summary "Get meta-data for collection."
                                       :handler handle_get-mr-meta-data-with-related
-                                      :middleware [sd/ring-wrap-add-media-resource
-                                                   sd/ring-wrap-authorization-view]
+                                      :middleware [jqh/ring-wrap-add-media-resource
+                                                   jqh/ring-wrap-authorization-view]
                                       ; TODO 401s test fails
                                       :coercion reitit.coercion.schema/coercion
                                       :parameters {:path {:collection_id s/Uuid}
@@ -242,8 +243,8 @@
 
                                            :middleware [wrap-add-meta-key
                                                         wrap-check-vocab
-                                                        sd/ring-wrap-add-media-resource
-                                                        sd/ring-wrap-authorization-view]
+                                                        jqh/ring-wrap-add-media-resource
+                                                        jqh/ring-wrap-authorization-view]
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid
                                                                :meta_key_id s/Str}}
@@ -252,8 +253,8 @@
 (def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
                                      :handler handle_get-meta-data-keywords
                                      :middleware [;wrap-me-add-meta-data
-                                                  sd/ring-wrap-add-media-resource
-                                                  sd/ring-wrap-authorization-view]
+                                                  jqh/ring-wrap-add-media-resource
+                                                  jqh/ring-wrap-authorization-view]
                                      :coercion reitit.coercion.schema/coercion
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str}}
@@ -262,8 +263,8 @@
 (def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
                           :handler handle_get-meta-data-people
                           :middleware [;wrap-me-add-meta-data
-                                       sd/ring-wrap-add-media-resource
-                                       sd/ring-wrap-authorization-edit-metadata]
+                                       jqh/ring-wrap-add-media-resource
+                                       jqh/ring-wrap-authorization-edit-metadata]
                           :coercion reitit.coercion.schema/coercion
                           :parameters {:path {:collection_id s/Uuid
                                               :meta_key_id s/Str}}
@@ -271,8 +272,8 @@
 
 (def media_entry_id.meta-data-related {:summary "Get meta-data for media-entry."
                                        :handler handle_get-mr-meta-data-with-related
-                                       :middleware [sd/ring-wrap-add-media-resource
-                                                    sd/ring-wrap-authorization-view]
+                                       :middleware [jqh/ring-wrap-add-media-resource
+                                                    jqh/ring-wrap-authorization-view]
                                        :coercion reitit.coercion.schema/coercion
                                        :parameters {:path {:media_entry_id s/Uuid}
                                                     :query {(s/optional-key :updated_after) s/Inst
@@ -283,8 +284,8 @@
                                             :handler handle_get-meta-key-meta-data
                                             :middleware [wrap-add-meta-key
                                                          ;wrap-check-vocab
-                                                         sd/ring-wrap-add-media-resource
-                                                         sd/ring-wrap-authorization-view]
+                                                         jqh/ring-wrap-add-media-resource
+                                                         jqh/ring-wrap-authorization-view]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid
                                                                 :meta_key_id s/Str}}
@@ -293,8 +294,8 @@
 (def media_entry.meta_key_id.keyword {:summary "Get meta-data keywords for media-entries meta-key"
                                       :handler handle_get-meta-data-keywords
                                       :middleware [;wrap-me-add-meta-data
-                                                   sd/ring-wrap-add-media-resource
-                                                   sd/ring-wrap-authorization-view]
+                                                   jqh/ring-wrap-add-media-resource
+                                                   jqh/ring-wrap-authorization-view]
                                       :coercion reitit.coercion.schema/coercion
                                       :parameters {:path {:media_entry_id s/Uuid
                                                           :meta_key_id s/Str}}
@@ -304,8 +305,8 @@
 (def meta_key_id.people {:summary "Get meta-data people for media-entries meta-key."
                          :handler handle_get-meta-data-people
                          :middleware [;wrap-me-add-meta-data
-                                      sd/ring-wrap-add-media-resource
-                                      sd/ring-wrap-authorization-view]
+                                      jqh/ring-wrap-add-media-resource
+                                      jqh/ring-wrap-authorization-view]
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:path {:media_entry_id s/Uuid
                                              :meta_key_id s/Str}}
@@ -313,8 +314,8 @@
 
 (def meta_key_id.role {:summary "Get meta-data role for media-entry."
                        :handler handle_get-meta-data-roles
-                       :middleware [sd/ring-wrap-add-media-resource
-                                    sd/ring-wrap-authorization-view]
+                       :middleware [jqh/ring-wrap-add-media-resource
+                                    jqh/ring-wrap-authorization-view]
                        :coercion reitit.coercion.schema/coercion
                        :parameters {:path {:media_entry_id s/Uuid
                                            :meta_key_id s/Str}}

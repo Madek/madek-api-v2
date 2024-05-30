@@ -1,5 +1,10 @@
 (ns madek.api.resources.shared.json_query_param_helper
-  (:require [cheshire.core :as cheshire]))
+  (:require [cheshire.core :as cheshire]
+
+            [madek.api.resources.shared.media_resource_helper :as mrh]
+            [madek.api.resources.shared.meta_data_helper :as mdh]
+            [madek.api.resources.shared.shared :as sd]
+            ))
 
 (defn generate-swagger-pagination-params []
   {:produces "application/json"
@@ -40,27 +45,27 @@
 
 (defn ring-wrap-add-media-resource [handler]
   (fn [request]
-    (ring-add-media-resource request handler (:tx request))))
+    (mrh/ring-add-media-resource request handler (:tx request))))
 
 (defn ring-wrap-add-meta-datum-with-media-resource [handler]
   (fn [request]
-    (ring-add-meta-datum-with-media-resource request handler)))
+    (mdh/ring-add-meta-datum-with-media-resource request handler)))
 
 (defn ring-wrap-authorization-view [handler]
   (fn [request]
-    (authorize-request-for-media-resource request handler :view)))
+    (mrh/authorize-request-for-media-resource request handler :view)))
 
 (defn ring-wrap-authorization-download [handler]
   (fn [request]
-    (authorize-request-for-media-resource request handler :download)))
+    (mrh/authorize-request-for-media-resource request handler :download)))
 
 (defn ring-wrap-authorization-edit-metadata [handler]
   (fn [request]
-    (authorize-request-for-media-resource request handler :edit-md)))
+    (mrh/authorize-request-for-media-resource request handler :edit-md)))
 
 (defn ring-wrap-authorization-edit-permissions [handler]
   (fn [request]
-    (authorize-request-for-media-resource request handler :edit-perm)))
+    (mrh/authorize-request-for-media-resource request handler :edit-perm)))
 
 (defn ring-wrap-parse-json-query-parameters [handler]
   (fn [request]
@@ -72,7 +77,7 @@
       (let [meta-key-id (-> request :parameters :path param)]
         (if (re-find #"^[a-z0-9\-\_\:]+:[a-z0-9\-\_\:]+$" meta-key-id)
           (handler request)
-          (response_failed (str "Wrong meta_key_id format! See documentation."
+          (sd/response_failed (str "Wrong meta_key_id format! See documentation."
                                 " (" meta-key-id ")") 422))))))
 
 (defn wrap-check-valid-meta-key-new [param]
@@ -81,7 +86,7 @@
       (let [meta-key-id (-> request :path-params param)]
         (if (:and (not (nil? meta-key-id)) (re-find #"^[a-z0-9\-\_\:]+:[a-z0-9\-\_\:]+$" meta-key-id))
           (handler request)
-          (response_failed (str "Wrong meta_key_id format! See documentation."
+          (sd/response_failed (str "Wrong meta_key_id format! See documentation."
                                 " (" meta-key-id ")") 422))))))
 
 ;(debug/debug-ns *ns*)

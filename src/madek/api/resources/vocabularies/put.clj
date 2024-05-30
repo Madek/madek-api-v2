@@ -7,6 +7,7 @@
    [madek.api.db.dynamic_schema.common :refer [get-schema]]
    [madek.api.resources.shared.shared :as sd]
    [madek.api.resources.shared :refer [generate-swagger-pagination-params]]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.vocabularies.index :refer [get-index]]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
@@ -25,7 +26,7 @@
             dwid (assoc data :id id)
             tx (:tx req)
             dwid (convert-map-if-exist (cast-to-hstore dwid))
-            old-data (sd/query-eq-find-one :vocabularies :id id tx)]
+            old-data (dbh/query-eq-find-one :vocabularies :id id tx)]
 
         (if old-data
           (let [is_admin_endpoint (str/includes? (-> req :uri) "/admin/")
