@@ -988,12 +988,15 @@
 
                                            {:collections.schema_collection-export {:alias "mar.collections/schema_collection-export"
                                                                                    :key-types "optional"
-                                                                                   :types [{:id {:key-type TYPE_NOTHING}}
-                                                                                           {:responsible_user_id {:value-type TYPE_MAYBE}}
-                                                                                           {:default_context_id {:value-type TYPE_MAYBE}}
-                                                                                           {:clipboard_user_id {:value-type TYPE_MAYBE}}
-                                                                                           {:workflow_id {:value-type TYPE_MAYBE}}
-                                                                                           {:responsible_delegation_id {:value-type TYPE_MAYBE}}]}}
+                                                                                   ;:types [{:id {:key-type TYPE_NOTHING}}
+                                                                                   ;        {:responsible_user_id {:value-type TYPE_MAYBE}}
+                                                                                   ;        {:default_context_id {:value-type TYPE_MAYBE}}
+                                                                                   ;        {:clipboard_user_id {:value-type TYPE_MAYBE}}
+                                                                                   ;        {:workflow_id {:value-type TYPE_MAYBE}}
+                                                                                   ;        {:responsible_delegation_id {:value-type TYPE_MAYBE}}]
+                                                                                   :k/TYPE_NOTHING [:default_context_id :workflow_id]
+                                                                                   :v/TYPE_MAYBE [:workflow_id :default_context_id]
+                                                                                   }}
 
                                            {:collections.schema_collection-update {:alias "mar.collections/schema_collection-update"
                                                                                    :key-types "optional"
