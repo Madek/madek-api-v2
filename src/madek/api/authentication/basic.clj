@@ -11,36 +11,39 @@
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [debug warn]])
   (:import
-   [java.util Base64]))
+   (java.util Base64)))
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
-       (map #(assoc % :type (-> table-name ->PascalCase singular)))
-       (map #(clojure.set/rename-keys % {:email :email_address}))
-       first))
+    (map #(assoc % :type (-> table-name ->PascalCase singular)))
+    (map #(clojure.set/rename-keys % {:email :email_address}))
+    first))
 
 (defn- get-api-client-by-login [login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from :api_clients) (sql/where [:= :login login]) sql-format))
-       (map #(assoc % :type "ApiClient"))
-       first))
+    (map #(assoc % :type "ApiClient"))
+    first))
 
 (defn- get-user-by-login-or-email-address [login-or-email tx]
   (->> (jdbc/execute! tx (-> (sql/select :*)
                              (sql/from :users)
                              (sql/where [:or [:= :login login-or-email] [:= :email login-or-email]])
                              sql-format))
-       (map #(assoc % :type "User"))
-       (map #(clojure.set/rename-keys % {:email :email_address}))
-       first))
+    (map #(assoc % :type "User"))
+    (map #(clojure.set/rename-keys % {:email :email_address}))
+    first))
 
 (defn get-entity-by-login-or-email [login-or-email tx]
   (or (get-api-client-by-login login-or-email tx)
-      (get-user-by-login-or-email-address login-or-email tx)))
+    (get-user-by-login-or-email-address login-or-email tx)))
 
 (defn- get-auth-systems-user [userId tx]
   (jdbc/execute-one! tx (-> (sql/select :*)
                             (sql/from :auth_systems_users)
-                            (sql/where [:= :user_id userId])
+                            ;(sql/where [:= :user_id userId])
+                            (sql/where [:= :user_id userId] [:= :auth_system_id "password"])
+                            ; needed to get password-entry first if more than one and of different auth_system_id's exist
+                            ;(sql/order-by [:auth_system_id :asc])
                             sql-format)))
 
 (defn base64-decode [^String encoded]
@@ -59,14 +62,24 @@
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
         entity (get-entity-by-login-or-email login-or-email tx)
-        asuser (when entity (get-auth-systems-user (:id entity) tx))]
+        asuser (when entity (get-auth-systems-user (:id entity) tx))
+
+        p (println ">o>x entity=" entity)
+        p (println ">o>x (get-auth-systems-user (:id entity)=" (get-auth-systems-user (:id entity) tx))
+        p (println ">o>x asuser=" asuser)
+        p (println ">o>x asuser.data=" (:data asuser))
+        p (println ">o>x abc ----------------")
+        p (println ">o>x 1asuser.data=" (:data asuser))
+        p (println ">o>x 2asuser.login=" login-or-email password)
+        ]
 
     (cond
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
-      (not asuser) {:status 401 :body "Only password auth users supported for basic auth."}
-      (not (checkpw password (:data asuser))) {:status 401 :body (str "Password mismatch for "
-                                                                      {:login-or-email-address login-or-email})}
+      ;(or (nil? (:data asuser)) (not asuser)) {:status 401 :body "Only password auth users supported for basic auth."}
+      ;(not (checkpw password (:data asuser))) {:status 401 :body (str "Password mismatch for "
+      (and (not (nil? password)) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
+                                                                                                  {:login-or-email-address login-or-email})}
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
@@ -81,7 +94,7 @@
   * carry on by adding :authenticated-entity to the request."
   (let [{username :username password :password} (extract request)]
     (if-not username
-      (handler request); carry on without authenticated entity
+      (handler request)                                     ; carry on without authenticated entity
       (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
         (token-authentication/authenticate user-token handler request)
         (user-password-authentication username password handler request)))))
