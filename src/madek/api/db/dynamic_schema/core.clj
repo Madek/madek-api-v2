@@ -186,28 +186,13 @@
 
 
         is-k-required (keyword-in-vector? (keyword column_name) (:k/TYPE_REQUIRED value) )
-        ;is-k-nothing (contains? (:k/TYPE_NOTHING value) (keyword column_name))
         is-k-nothing (keyword-in-vector? (keyword column_name) (:k/TYPE_NOTHING value))
-
-        ;p (println ">o> ??? contains? " (:k/TYPE_NOTHING value (keyword column_name))) ;broken
+        is-k-optional (keyword-in-vector? (keyword column_name)(:k/TYPE_OPTIONAL value) )
         p (println ">o> ??? contains2? " (keyword-in-vector? (keyword column_name) (:k/TYPE_NOTHING value ))) ;;ok
 
-        is-k-optional (keyword-in-vector? (keyword column_name)(:k/TYPE_OPTIONAL value) )
-
         is-v-nothing (keyword-in-vector? (keyword column_name)(:v/TYPE_NOTHING value) )
-
-        ;is-v-maybe (contains? (:v/TYPE_MAYBE value) (keyword column_name))
         is-v-maybe (keyword-in-vector? (keyword column_name) (:v/TYPE_MAYBE value)  )
-
         is-v-either (keyword-in-vector? (keyword column_name)(:v/TYPE_EITHER value) )
-
-        ;is-k-required (contains? (get value :k/TYPE_REQUIRED) (keyword column_name))
-        ;is-k-nothing (contains? (get value :k/TYPE_NOTHING ) (keyword column_name))
-        ;is-k-optional (contains? (get value :k/TYPE_OPTIONAL ) (keyword column_name))
-        ;
-        ;is-v-nothing (contains? (get value :v/TYPE_NOTHING ) (keyword column_name))
-        ;is-v-maybe (contains? (get value :v/TYPE_MAYBE ) (keyword column_name))
-        ;is-v-either (contains? (get value :v/TYPE_EITHER ) (keyword column_name))
 
         key-type (if (not (nil? key-types))
                    (if (nil? key-type) key-types key-type)
@@ -233,25 +218,6 @@
                         is-v-either "either"
                         :else value-type)
 
-
-        ;p (println ">o> key-type=" key-type)
-        ;p (println ">o> value-type=" value-type)
-        ;p (println ">o> -------------")
-        ;p (println ">o> k-nothing=" k-nothing "\n
-        ;k-optional=" k-optional "\n
-        ;v-nothing=" v-nothing "\n
-        ;v-maybe=" v-maybe "\n
-        ;v-either=" v-either "\n"
-        ;    )
-
-
-
-
-        ;keySection (cond (or (= key-type TYPE_REQUIRED) is-k-required) (s/required-key (keyword column_name))
-        ;                 (or (= key-type TYPE_OPTIONAL) is-k-optional) (s/optional-key (keyword column_name))
-        ;                 (or (= key-type TYPE_NOTHING) is-k-nothing) (keyword column_name)
-        ;                 :else (keyword column_name))
-
         keySection (cond (= key-type TYPE_REQUIRED) (s/required-key (keyword column_name))
                          (= key-type TYPE_OPTIONAL) (s/optional-key (keyword column_name))
                          (= key-type TYPE_NOTHING) (keyword column_name)
@@ -266,6 +232,7 @@
                                                              type-mapping-enums-res)
                        (and (= value-type TYPE_EITHER) (not (nil? either-condition))) (s/->Either either-condition)
                        (= value-type TYPE_MAYBE) (s/maybe column_type)
+                       (= value-type TYPE_NOTHING ) (s/maybe column_type)
                        :else column_type)
 
         _ (slog (str "[revise-schema-types] <<<<<<<<<<<<<<< before <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n
