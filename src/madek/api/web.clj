@@ -95,7 +95,8 @@
 
 (def auth-info-route
   ["/api"
-   {:swagger {:tags ["api/auth-info"] :security [{:basicAuth []}]}}
+;   {:swagger {:tags ["api/auth-info"] :security [{"auth" []} ]}}
+   {:swagger {:tags ["api/auth-info"] :security [{:basicAuth [] "auth" []} ]}}
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."
@@ -107,14 +108,11 @@
                               :login s/Str
                               :created_at s/Any
                               :email_address s/Str
-                              :authentication-method s/Str}}
+                              (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
                        :schema s/Str
-                       :examples {"application/json" {:message "Not authorized"}}}
-                  404 {:description "User not found"
-                       :schema s/Str
-                       :examples {"application/json" {:content-type "application/octet-stream"
-                                                      :message "Neither User nor ApiClient exists for {:login-or-email-address <username>}"}}}}}}]])
+                       :examples {"application/json" {:message "Not authorized"}}}}
+      }}]])
 
 (def swagger-routes
   [""
@@ -136,8 +134,8 @@
    [auth-info-route
     madek.api.resources/user-routes
     madek.api.resources/admin-routes
-     ;management/api-routes
-     ;test-routes
+    ;management/api-routes
+    ;test-routes
     swagger-routes]
    (filterv some?)))
 
@@ -145,8 +143,8 @@
   (->>
    [auth-info-route
     madek.api.resources/user-routes
-     ;management/api-routes
-     ;test-routes
+    ;management/api-routes
+    ;test-routes
     swagger-routes]
    (filterv some?)))
 
@@ -154,8 +152,8 @@
   (->>
    [auth-info-route
     madek.api.resources/admin-routes
-     ;management/api-routes
-     ;test-routes
+    ;management/api-routes
+    ;test-routes
     swagger-routes]
    (filterv some?)))
 

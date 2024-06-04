@@ -11,7 +11,7 @@
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [debug warn]])
   (:import
-   (java.util Base64)))
+   [java.util Base64]))
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
@@ -62,41 +62,18 @@
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
         entity (get-entity-by-login-or-email login-or-email tx)
-        asuser (when entity (get-auth-systems-user (:id entity) tx))
-
-        p (println ">o>x entity=" entity)
-        p (println ">o>x (get-auth-systems-user (:id entity)=" (get-auth-systems-user (:id entity) tx))
-        p (println ">o>x asuser=" asuser)
-        p (println ">o>x asuser.data=" (:data asuser))
-        p (println ">o>x abc ----------------")
-        p (println ">o>x 1asuser.data=" (:data asuser))
-        p (println ">o>x 2asuser.login=" login-or-email password)]
+        asuser (when entity (get-auth-systems-user (:id entity) tx))]
 
     (cond
-      (not entity) {:status 404 :body (str "Neither User nor ApiClient exists for "
+      (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
-      ;(or (nil? (:data asuser)) (not asuser)) {:status 401 :body "Only password auth users supported for basic auth."}
-      ;(not (checkpw password (:data asuser))) {:status 401 :body (str "Password mismatch for "
+      (or (nil? (:data asuser)) (not asuser)) {:status 401 :body "Only password auth users supported for basic auth."}
       (and (not (nil? password)) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
                                                                                                   {:login-or-email-address login-or-email})}
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
                             :authentication-method "Basic Authentication")))))
-
-;(defn wrap-basic-auth [handler]
-;  (fn [request]
-;    (let [uri (:uri request)]
-;      (if (or (= uri "/swagger-ui/index.html")
-;            (= uri "/swagger.json")
-;            (.startsWith uri "/swagger-ui"))
-;        (handler request)
-;        (let [auth-header (get-in request [:headers "authorization"])]
-;          (if (and auth-header (re-matches #"Basic .+" auth-header))
-;            (handler request)
-;            {:status 401
-;             :headers {"WWW-Authenticate" "Basic"}
-;             :body "Authentication required"}))))))
 
 (defn authenticate [request handler]
   "Authenticate with the following rules:
@@ -105,15 +82,9 @@
   * return 401 if there is a login and entity but the password doesn't match,
   * return 403 if we find the token but the scope does not suffice,
   * carry on by adding :authenticated-entity to the request."
-  (let [{username :username password :password} (extract request)
-        p (println ">o> !!! request=" request)
-        p (println ">o> !!! (:swagger-ui? request)=" (:swagger-ui? request))]
-
+  (let [{username :username password :password} (extract request)]
     (if-not username
-    ;(if (or (not (nil? username)) (or (= uri "/swagger-ui/index.html")
-    ;                   (= uri "/swagger.json")
-    ;                   (.startsWith uri "/swagger-ui")))
-      (handler request) ; carry on without authenticated entity
+      (handler request); carry on without authenticated entity
       (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
         (token-authentication/authenticate user-token handler request)
         (user-password-authentication username password handler request)))))
