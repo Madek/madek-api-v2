@@ -95,29 +95,13 @@
 
 (def auth-info-route
   ["/api"
-   ;   {:swagger {:tags ["api/auth-info"] :security [{"auth" []} ]}}
-   ;   {:swagger {:tags ["api/auth-info"] :security [{:basicAuth [] "auth" []} ]}}
-   {:swagger {:tags ["api/auth-info"]
-;                    :security [{:basicAuth [] "auth" []}
-;;                                                       :apiAuth []
-;                                                       {:apiAuth {:type "apiKey"
-;                                                                  :name "Authorization"
-;                                                                  :in   "header"}}
-;                                                       ]
-              }}
+   {:swagger {:tags ["api/auth-info"]}}
 
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."
       :handler auth-info/auth-info
       :middleware [authentication/wrap]
-
-;      ;; TODO: is this really needed?
-;      :swagger {:parameters [{:name "Authorization"
-;                              :in "header"
-;                              :description "Example: token replace_this_with_your_token"
-;                              }
-;                           ]}
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:type s/Str
                               :id s/Uuid
@@ -143,7 +127,6 @@
 ;                                    :auth {:type "basic"}
                                     }
               :security [{:basicAuth [] "auth" []}
-                         ;                                                       :apiAuth []
                          {:apiAuth {:type "apiKey"
                                     :name "Authorization"
                                     :in "header"}}]}}
