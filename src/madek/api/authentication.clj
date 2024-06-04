@@ -29,25 +29,21 @@
   (fn [request]
     (let [req-from-swagger-ui? (try
                                  (let [headers (:headers request)
-                                       _ (println ">o> !!! 1request.ref _> " headers)
-                                       _ (println ">o> !!! 2request.ref _> " (get headers "referer"))
                                        referer (get headers "referer")
-                                       _ (println ">o> !!! 3request.ref _> " referer)
-                                       req-from-swagger-ui? (str/includes? referer "api-docs/index.html")
-                                       _ (println ">o> !!! 4request.ref _> " req-from-swagger-ui?)]
+                                       req-from-swagger-ui? (str/includes? referer "api-docs/index.html")]
                                    req-from-swagger-ui?)
                                  (catch Exception e
                                    (println "Error processing request: " (.getMessage e))
                                    false))
           request (assoc request :swagger-ui? req-from-swagger-ui?)
           response ((-> handler
-                        ; wrap-detect-swagger
                         session-auth/wrap
                         token-auth/wrap
                         basic-auth/wrap) request)]
+      ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-browser-popup
       (if req-from-swagger-ui?
         response
-        (add-www-auth-header-if-401 response))))) ; not needed because swagger-ui provides
+        (add-www-auth-header-if-401 response)))))
 
 
 ;### Debug ####################################################################
