@@ -94,7 +94,7 @@
 
 (def auth-info-route
   ["/api"
-   {:swagger {:tags ["api/auth-info"] :security [{"auth" []}]}}
+   {:swagger {:tags ["api/auth-info"] :security [{:basicAuth []}]}}
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."

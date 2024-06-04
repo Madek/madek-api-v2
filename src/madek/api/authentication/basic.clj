@@ -70,7 +70,24 @@
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
-                            :authentication-method "Basic Authentication")))))
+                            :authentication-method "Basic Authentication"
+                            )))))
+
+
+;(defn wrap-basic-auth [handler]
+;  (fn [request]
+;    (let [uri (:uri request)]
+;      (if (or (= uri "/swagger-ui/index.html")
+;            (= uri "/swagger.json")
+;            (.startsWith uri "/swagger-ui"))
+;        (handler request)
+;        (let [auth-header (get-in request [:headers "authorization"])]
+;          (if (and auth-header (re-matches #"Basic .+" auth-header))
+;            (handler request)
+;            {:status 401
+;             :headers {"WWW-Authenticate" "Basic"}
+;             :body "Authentication required"}))))))
+
 
 (defn authenticate [request handler]
   "Authenticate with the following rules:
@@ -79,9 +96,17 @@
   * return 401 if there is a login and entity but the password doesn't match,
   * return 403 if we find the token but the scope does not suffice,
   * carry on by adding :authenticated-entity to the request."
-  (let [{username :username password :password} (extract request)]
+  (let [{username :username password :password} (extract request)
+p (println ">o> !!! request=" request)
+p (println ">o> !!! (:swagger-ui? request)=" (:swagger-ui? request))
+
+        ]
+
     (if-not username
-      (handler request); carry on without authenticated entity
+    ;(if (or (not (nil? username)) (or (= uri "/swagger-ui/index.html")
+    ;                   (= uri "/swagger.json")
+    ;                   (.startsWith uri "/swagger-ui")))
+      (handler request)                                     ; carry on without authenticated entity
       (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
         (token-authentication/authenticate user-token handler request)
         (user-password-authentication username password handler request)))))
