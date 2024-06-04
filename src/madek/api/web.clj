@@ -1,33 +1,33 @@
 (ns madek.api.web
   (:require
-   [environ.core :refer [env]]
-   [logbug.thrown :as thrown]
-   [madek.api.authentication :as authentication]
-   [madek.api.db.core :as db]
-   [madek.api.http.server :as http-server]
-   [madek.api.json-protocol]
-   [madek.api.resources]
-   [madek.api.resources.auth-info :as auth-info]
-   [madek.api.utils.cli :refer [long-opt-for-key]]
-   [madek.api.utils.helper :refer [mslurp]]
-   [madek.api.utils.ring-audits :as ring-audits]
-   [muuntaja.core :as m]
-   [reitit.coercion.schema]
-   [reitit.coercion.spec]
-   [reitit.ring :as rr]
-   [reitit.ring.coercion :as rrc]
-   [reitit.ring.middleware.multipart :as multipart]
-   [reitit.ring.middleware.muuntaja :as muuntaja]
-   [reitit.ring.middleware.parameters :as rmp]
-   [reitit.ring.spec :as rs]
-   [reitit.swagger :as swagger]
-   [reitit.swagger-ui :as swagger-ui]
-   [ring.middleware.cors :as cors-middleware]
-   [ring.middleware.defaults :as ring-defaults]
-   [ring.middleware.json]
-   [ring.middleware.reload :refer [wrap-reload]]
-   [schema.core :as s]
-   [taoensso.timbre :refer [debug error warn]]))
+    [environ.core :refer [env]]
+    [logbug.thrown :as thrown]
+    [madek.api.authentication :as authentication]
+    [madek.api.db.core :as db]
+    [madek.api.http.server :as http-server]
+    [madek.api.json-protocol]
+    [madek.api.resources]
+    [madek.api.resources.auth-info :as auth-info]
+    [madek.api.utils.cli :refer [long-opt-for-key]]
+    [madek.api.utils.helper :refer [mslurp]]
+    [madek.api.utils.ring-audits :as ring-audits]
+    [muuntaja.core :as m]
+    [reitit.coercion.schema]
+    [reitit.coercion.spec]
+    [reitit.ring :as rr]
+    [reitit.ring.coercion :as rrc]
+    [reitit.ring.middleware.multipart :as multipart]
+    [reitit.ring.middleware.muuntaja :as muuntaja]
+    [reitit.ring.middleware.parameters :as rmp]
+    [reitit.ring.spec :as rs]
+    [reitit.swagger :as swagger]
+    [reitit.swagger-ui :as swagger-ui]
+    [ring.middleware.cors :as cors-middleware]
+    [ring.middleware.defaults :as ring-defaults]
+    [ring.middleware.json]
+    [ring.middleware.reload :refer [wrap-reload]]
+    [schema.core :as s]
+    [taoensso.timbre :refer [debug error warn]]))
 
 ; changing DEBUG to true will wrap each middleware defined in this file with
 ; extended debug logging; this will increase LOGGING OUTPUT IMMENSELY and might
@@ -45,7 +45,7 @@
   (error "Exception" (ex-message exception))
   (warn "Exception" (thrown/stringify exception))
   {:status 500
-   :body {:msg (ex-message exception)}})
+   :body   {:msg (ex-message exception)}})
 
 (defn- status-error-response [status exception]
   ; status error response can be due to missing authorization etc
@@ -53,7 +53,7 @@
   (warn "Exception" (ex-message exception))
   (debug "Exception" (thrown/stringify exception))
   {:status status
-   :body {:msg (ex-message exception)}})
+   :body   {:msg (ex-message exception)}})
 
 (defn- wrap-catch-exception
   [handler]
@@ -95,24 +95,39 @@
 
 (def auth-info-route
   ["/api"
-;   {:swagger {:tags ["api/auth-info"] :security [{"auth" []} ]}}
-   {:swagger {:tags ["api/auth-info"] :security [{:basicAuth [] "auth" []} ]}}
+   ;   {:swagger {:tags ["api/auth-info"] :security [{"auth" []} ]}}
+   ;   {:swagger {:tags ["api/auth-info"] :security [{:basicAuth [] "auth" []} ]}}
+         {:swagger {:tags ["api/auth-info"]
+;                    :security [{:basicAuth [] "auth" []}
+;;                                                       :apiAuth []
+;                                                       {:apiAuth {:type "apiKey"
+;                                                                  :name "Authorization"
+;                                                                  :in   "header"}}
+;                                                       ]
+                    }}
+
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."
       :handler auth-info/auth-info
       :middleware [authentication/wrap]
-      :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body {:type s/Str
-                              :id s/Uuid
-                              :login s/Str
-                              :created_at s/Any
-                              :email_address s/Str
-                              (s/optional-key :authentication-method) s/Str}}
-                  401 {:description "Creation failed."
-                       :schema s/Str
-                       :examples {"application/json" {:message "Not authorized"}}}}
-      }}]])
+
+;      ;; TODO: is this really needed?
+;      :swagger {:parameters [{:name "Authorization"
+;                              :in "header"
+;                              :description "Example: token replace_this_with_your_token"
+;                              }
+;                           ]}
+     :coercion  reitit.coercion.schema/coercion
+     :responses {200 {:body {:type                                   s/Str
+                             :id                                     s/Uuid
+                             :login                                  s/Str
+                             :created_at                             s/Any
+                             :email_address                          s/Str
+                             (s/optional-key :authentication-method) s/Str}}
+                 401 {:description "Creation failed."
+                      :schema      s/Str
+                      :examples    {"application/json" {:message "Not authorized"}}}}}}]])
 
 (def swagger-routes
   [""
@@ -120,11 +135,20 @@
     :swagger {:info {:title "Madek API v2"
                      :description (mslurp "md/api-description.md")
                      :version "2.0.0"
-                     :contact {:name "fjdkls"}}
+                     :contact {:name "N/D"}}
               :securityDefinitions {:apiAuth {:type "apiKey"
                                               :name "Authorization"
                                               :in "header"}
-                                    :basicAuth {:type "basic"}}}}
+                                    :basicAuth {:type "basic"}
+;                                    :auth {:type "basic"}
+                                    }
+              :security [{:basicAuth [] "auth" []}
+                         ;                                                       :apiAuth []
+                         {:apiAuth {:type "apiKey"
+                                    :name "Authorization"
+                                    :in   "header"}}
+                         ]
+              }}
 
    ["/swagger.json" {:no-doc true :get (swagger/create-swagger-handler)}]
    ["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler)}]])
@@ -182,12 +206,12 @@
         (try
           (debug "RING-LOGGING-WRAPPER"
                  {:wrap-debug-level wrap-debug-level
-                  :request request})
+                  :request          request})
           (let [response (handler
                           (assoc request :wrap-debug-level (inc wrap-debug-level)))]
             (debug "RING-LOGGING-WRAPPER"
                    {:wrap-debug-level wrap-debug-level
-                    :response response})
+                    :response         response})
             response)
           (catch Exception ex
             (def ^:dynamic debug-last-ex ex)
@@ -206,8 +230,9 @@
 (def get-router-options
   {:validate rs/validate
    #_#_:compile coercion/compile-request-coercers
-   :data {:middleware middlewares
-          :muuntaja m/instance}})
+   :data
+   {:middleware middlewares
+    :muuntaja   m/instance}})
 
 (def app-all
   (rr/ring-handler
@@ -251,10 +276,11 @@
 
 (def cli-options
   (concat http-server/cli-options
-          [[nil (long-opt-for-key http-resources-scope-key)
+          [[nil
+            (long-opt-for-key http-resources-scope-key)
             "Either ALL, ADMIN or USER"
-            :default (or (some-> http-resources-scope-key env)
-                         "ALL")
+            :default  (or (some-> http-resources-scope-key env)
+                          "ALL")
             :validate [#(some #{%} ["ALL" "ADMIN" "USER"]) "scope must be ALL, ADMIN or USER"]]]))
 
 (defn initialize-all [http-conf is_reloadable]
@@ -274,9 +300,9 @@
 
 (defn initialize [options]
   (let [handler (case (http-resources-scope-key options)
-                  "ALL" (middleware (wrap-reload app-all))
+                  "ALL"   (middleware (wrap-reload app-all))
                   "ADMIN" (middleware app-admin)
-                  "USER" (middleware app-user))]
+                  "USER"  (middleware app-user))]
     (http-server/start handler options)))
 
 ;### Debug ####################################################################

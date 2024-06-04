@@ -36,6 +36,8 @@ describe "API-Token Authentication" do
           basic_auth_plain_faraday_json_client(token.token, nil)
         end
         it "accessing auth-info results in 200" do
+          puts ">> basic: token/nil, token.token=#{token.token}"
+
           expect(response.status).to be == 200
         end
       end
@@ -103,6 +105,7 @@ describe "API-Token Authentication" do
 
     context 'connection via token as password and some "nonsense" as username' do
       let :client do
+        puts ">> basic: nonsense/token, token.token=#{token.token}"
         basic_auth_plain_faraday_json_client("nonsense", token.token)
       end
       it "enables to read the auth-info" do
@@ -112,6 +115,10 @@ describe "API-Token Authentication" do
 
     context 'connection via token "Authorization: token TOKEN" header' do
       let :client do
+        puts ">> token into login/authToken, token.token=#{token.token}"
+
+        binding.pry
+
         basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
       end
 
@@ -133,6 +140,7 @@ describe "API-Token Authentication" do
       ApiToken.create user: user, scope_read: false, scope_write: true
     end
     let :client do
+      puts ">> token into login, token.token=#{token.token}"
       basic_auth_plain_faraday_json_client(token.token, nil)
     end
     it "reading auth_info results in forbidden " do
