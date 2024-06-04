@@ -26,6 +26,7 @@
    [ring.middleware.defaults :as ring-defaults]
    [ring.middleware.json]
    [ring.middleware.reload :refer [wrap-reload]]
+   [schema.core :as s]
    [taoensso.timbre :refer [debug error warn]]))
 
 ; changing DEBUG to true will wrap each middleware defined in this file with
@@ -99,7 +100,21 @@
     {:get
      {:summary "Authentication help and info."
       :handler auth-info/auth-info
-      :middleware [authentication/wrap]}}]])
+      :middleware [authentication/wrap]
+      :coercion reitit.coercion.schema/coercion
+      :responses {200 {:body {:type s/Str
+                              :id s/Uuid
+                              :login s/Str
+                              :created_at s/Any
+                              :email_address s/Str
+                              :authentication-method s/Str}}
+                  401 {:description "Creation failed."
+                       :schema s/Str
+                       :examples {"application/json" {:message "Not authorized"}}}
+                  404 {:description "User not found"
+                       :schema s/Str
+                       :examples {"application/json" {:content-type "application/octet-stream"
+                                                      :message "Neither User nor ApiClient exists for {:login-or-email-address <username>}"}}}}}}]])
 
 (def swagger-routes
   [""
@@ -121,8 +136,8 @@
    [auth-info-route
     madek.api.resources/user-routes
     madek.api.resources/admin-routes
-    ;management/api-routes
-    ;test-routes
+     ;management/api-routes
+     ;test-routes
     swagger-routes]
    (filterv some?)))
 
@@ -130,8 +145,8 @@
   (->>
    [auth-info-route
     madek.api.resources/user-routes
-    ;management/api-routes
-    ;test-routes
+     ;management/api-routes
+     ;test-routes
     swagger-routes]
    (filterv some?)))
 
@@ -139,8 +154,8 @@
   (->>
    [auth-info-route
     madek.api.resources/admin-routes
-    ;management/api-routes
-    ;test-routes
+     ;management/api-routes
+     ;test-routes
     swagger-routes]
    (filterv some?)))
 

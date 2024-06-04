@@ -32,9 +32,7 @@
                                        referer (get headers "referer")
                                        req-from-swagger-ui? (str/includes? referer "api-docs/index.html")]
                                    req-from-swagger-ui?)
-                                 (catch Exception e
-                                   (println "Error processing request: " (.getMessage e))
-                                   false))
+                                 (catch Exception e false))
           request (assoc request :swagger-ui? req-from-swagger-ui?)
           response ((-> handler
                         session-auth/wrap
@@ -44,7 +42,6 @@
       (if req-from-swagger-ui?
         response
         (add-www-auth-header-if-401 response)))))
-
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

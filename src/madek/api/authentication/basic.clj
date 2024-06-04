@@ -15,27 +15,27 @@
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
-    (map #(assoc % :type (-> table-name ->PascalCase singular)))
-    (map #(clojure.set/rename-keys % {:email :email_address}))
-    first))
+       (map #(assoc % :type (-> table-name ->PascalCase singular)))
+       (map #(clojure.set/rename-keys % {:email :email_address}))
+       first))
 
 (defn- get-api-client-by-login [login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from :api_clients) (sql/where [:= :login login]) sql-format))
-    (map #(assoc % :type "ApiClient"))
-    first))
+       (map #(assoc % :type "ApiClient"))
+       first))
 
 (defn- get-user-by-login-or-email-address [login-or-email tx]
   (->> (jdbc/execute! tx (-> (sql/select :*)
                              (sql/from :users)
                              (sql/where [:or [:= :login login-or-email] [:= :email login-or-email]])
                              sql-format))
-    (map #(assoc % :type "User"))
-    (map #(clojure.set/rename-keys % {:email :email_address}))
-    first))
+       (map #(assoc % :type "User"))
+       (map #(clojure.set/rename-keys % {:email :email_address}))
+       first))
 
 (defn get-entity-by-login-or-email [login-or-email tx]
   (or (get-api-client-by-login login-or-email tx)
-    (get-user-by-login-or-email-address login-or-email tx)))
+      (get-user-by-login-or-email-address login-or-email tx)))
 
 (defn- get-auth-systems-user [userId tx]
   (jdbc/execute-one! tx (-> (sql/select :*)
@@ -70,11 +70,10 @@
         p (println ">o>x asuser.data=" (:data asuser))
         p (println ">o>x abc ----------------")
         p (println ">o>x 1asuser.data=" (:data asuser))
-        p (println ">o>x 2asuser.login=" login-or-email password)
-        ]
+        p (println ">o>x 2asuser.login=" login-or-email password)]
 
     (cond
-      (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
+      (not entity) {:status 404 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
       ;(or (nil? (:data asuser)) (not asuser)) {:status 401 :body "Only password auth users supported for basic auth."}
       ;(not (checkpw password (:data asuser))) {:status 401 :body (str "Password mismatch for "
@@ -83,9 +82,7 @@
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
-                            :authentication-method "Basic Authentication"
-                            )))))
-
+                            :authentication-method "Basic Authentication")))))
 
 ;(defn wrap-basic-auth [handler]
 ;  (fn [request]
@@ -101,7 +98,6 @@
 ;             :headers {"WWW-Authenticate" "Basic"}
 ;             :body "Authentication required"}))))))
 
-
 (defn authenticate [request handler]
   "Authenticate with the following rules:
   * carry on of there is no auth header with request as is,
@@ -110,16 +106,14 @@
   * return 403 if we find the token but the scope does not suffice,
   * carry on by adding :authenticated-entity to the request."
   (let [{username :username password :password} (extract request)
-p (println ">o> !!! request=" request)
-p (println ">o> !!! (:swagger-ui? request)=" (:swagger-ui? request))
-
-        ]
+        p (println ">o> !!! request=" request)
+        p (println ">o> !!! (:swagger-ui? request)=" (:swagger-ui? request))]
 
     (if-not username
     ;(if (or (not (nil? username)) (or (= uri "/swagger-ui/index.html")
     ;                   (= uri "/swagger.json")
     ;                   (.startsWith uri "/swagger-ui")))
-      (handler request)                                     ; carry on without authenticated entity
+      (handler request) ; carry on without authenticated entity
       (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
         (token-authentication/authenticate user-token handler request)
         (user-password-authentication username password handler request)))))
