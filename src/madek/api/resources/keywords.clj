@@ -175,7 +175,7 @@
 ;; FIXME: broken endpoint to test doc
 (def query-routes
   ["/keywords"
-   {:swagger {:tags ["keywords"]}}
+   {:swagger {:tags ["keywords"] :security []}}
    ["/"
     {:get
      {:summary (sd/sum_pub (d "Query / list keywords."))

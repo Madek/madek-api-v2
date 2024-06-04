@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -119,12 +120,13 @@
 (def admin-routes
 
   ["/static-pages"
-   {:swagger {:tags ["admin/static-pages"] :security [{"auth" []}]}}
+   {:swagger {:tags ["admin/static-pages"]}}
    ["/"
     {:post {:summary (sd/sum_adm "Create static_page.")
             :handler handle_create-static_page
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_create_static_page}
+            :middleware [wrap-authorize-admin!]
             :responses {200 {:body schema_export_static_page}
                         406 {:description "Not Acceptable."
                              :schema s/Str
@@ -136,12 +138,14 @@
      :get {:summary (sd/sum_adm "List static_pages.")
            :handler handle_list-static_pages
            :coercion reitit.coercion.schema/coercion
+           :middleware [wrap-authorize-admin!]
            :parameters {:query {(s/optional-key :full_data) s/Bool}}}}]
 
    ["/:id"
     {:get {:summary (sd/sum_adm "Get static_pages by id.")
            :handler handle_get-static_page
-           :middleware [(wwrap-find-static_page :id)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-static_page :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:body schema_export_static_page}
@@ -151,7 +155,8 @@
 
      :put {:summary (sd/sum_adm "Update static_pages with id.")
            :handler handle_update-static_page
-           :middleware [(wwrap-find-static_page :id)]
+           :middleware [wrap-authorize-admin!
+                        (wwrap-find-static_page :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update_static_page}
@@ -164,7 +169,8 @@
      :delete {:summary (sd/sum_adm "Delete static_page by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-static_page
-              :middleware [(wwrap-find-static_page :id)]
+              :middleware [wrap-authorize-admin!
+                           (wwrap-find-static_page :id)]
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:body schema_export_static_page}
                           404 {:description "Not Found."

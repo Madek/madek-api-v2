@@ -184,6 +184,7 @@
 (defn sum_usr [text] (apply str "USER Context: " text))
 (defn sum_usr_pub [text] (apply str "PUBLIC/USER Context: " text))
 (defn sum_adm [text] (apply str "ADMIN Context: " text))
+(defn sum_auth [text] (apply str "Authorized Context: " text))
 
 (defn sum_cnv [text] (apply str text " " s_cnv_acc))
 

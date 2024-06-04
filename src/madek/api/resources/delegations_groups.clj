@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -132,6 +133,7 @@
     {:summary (sd/sum_adm "Query delegation groups.")
      :handler handle_list-delegations_groups-by-group
      :swagger {:produces "application/json"}
+     :middleware [wrap-authorize-admin!]
      :coercion reitit.coercion.schema/coercion
      :parameters {:query {(s/optional-key :delegation_id) s/Uuid
                           (s/optional-key :group_id) s/Uuid}}
@@ -139,11 +141,12 @@
 
 (def admin-routes
   [["/delegation/groups"
-    {:swagger {:tags ["admin/delegation/groups"] :security [{"auth" []}]}}
+    {:swagger {:tags ["admin/delegation/groups"]}}
     ["/"
      {:get
       {:summary (sd/sum_adm "Query delegations_groups.")
        :handler handle_list-delegations_groups
+       :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion
        :parameters {:query {(s/optional-key :group_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid
@@ -153,7 +156,8 @@
      {:post
       {:summary (sd/sum_adm "Create delegations_group for group and delegation.")
        :handler handle_create-delegations_group
-       :middleware [(wwrap-find-group :group_id)
+       :middleware [wrap-authorize-admin!
+                    (wwrap-find-group :group_id)
                     (wwrap-find-delegation :delegation_id)
                     (wwrap-find-delegations_group false)]
        :coercion reitit.coercion.schema/coercion
@@ -163,7 +167,7 @@
       :get
       {:summary (sd/sum_adm "Get delegations_group for group and delegation.")
        :handler handle_get-delegations_group
-       :middleware [(wwrap-find-delegations_group true)]
+       :middleware [wrap-authorize-admin! (wwrap-find-delegations_group true)]
        :coercion reitit.coercion.schema/coercion
        :parameters {:path {:group_id s/Uuid
                            :delegation_id s/Uuid}}}
@@ -172,6 +176,6 @@
       {:summary (sd/sum_adm "Delete delegations_group for group and delegation.")
        :coercion reitit.coercion.schema/coercion
        :handler handle_delete-delegations_group
-       :middleware [(wwrap-find-delegations_group true)]
+       :middleware [wrap-authorize-admin! (wwrap-find-delegations_group true)]
        :parameters {:path {:group_id s/Uuid
                            :delegation_id s/Uuid}}}}]]])

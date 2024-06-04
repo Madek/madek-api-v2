@@ -270,7 +270,7 @@
 ; TODO docu
 (def user-routes
   ["/context-keys"
-   {:swagger {:tags ["context-keys"]}}
+   {:swagger {:tags ["context-keys"] :security []}}
    ["/"
     {:get
      {:summary (sd/sum_pub "Query / List context_keys.")

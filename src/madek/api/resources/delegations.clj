@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -110,17 +111,19 @@
 (def ring-routes
 
   ["/delegations"
-   {:swagger {:tags ["admin/delegations"] :security [{"auth" []}]}}
+   {:swagger {:tags ["admin/delegations"]}}
    ["/"
     {:post {:summary (sd/sum_adm_todo "Create delegations.")
             ; TODO labels and descriptions
             :handler handle_create-delegations
+            :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_delegations}
             :responses {200 {:body schema_export_delegations}
                         406 {:body s/Any}}}
      :get {:summary (sd/sum_adm "List delegations.")
            :handler handle_list-delegations
+           :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            :swagger {:produces "application/json"
                      :parameters [{:name "full-data"

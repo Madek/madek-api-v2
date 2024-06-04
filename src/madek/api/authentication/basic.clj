@@ -40,7 +40,7 @@
 (defn- get-auth-systems-user [userId tx]
   (jdbc/execute-one! tx (-> (sql/select :*)
                             (sql/from :auth_systems_users)
-                            (sql/where [:= :user_id userId])
+                            (sql/where [:= :user_id userId] [:= :auth_system_id "password"])
                             sql-format)))
 
 (defn base64-decode [^String encoded]
@@ -64,9 +64,9 @@
     (cond
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
-      (not asuser) {:status 401 :body "Only password auth users supported for basic auth."}
-      (not (checkpw password (:data asuser))) {:status 401 :body (str "Password mismatch for "
-                                                                      {:login-or-email-address login-or-email})}
+      (nil? (get asuser :data)) {:status 401 :body "Only password auth users supported for basic auth."}
+      (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
+                                                                                           {:login-or-email-address login-or-email})}
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)

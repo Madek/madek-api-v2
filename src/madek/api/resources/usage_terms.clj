@@ -178,7 +178,7 @@
 ; TODO usage_terms get the most recent one ?!?
 (def user-routes
   ["/usage-terms"
-   {:swagger {:tags ["usage-terms"]}}
+   {:swagger {:tags ["usage-terms"] :security []}}
    ["/"
     {:get {:summary (sd/sum_pub "List usage_terms.")
            :handler handle_list-usage_term

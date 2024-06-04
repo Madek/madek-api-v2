@@ -125,9 +125,9 @@
 (def user-routes
 
   ["/workflows"
-   {:swagger {:tags ["admin/workflows"] :security [{"auth" []}]}}
+   {:swagger {:tags ["admin/workflows"]}}
    ["/"
-    {:post {:summary (sd/sum_adm "Create workflow.")
+    {:post {:summary (sd/sum_auth "Create workflow.")
             :handler handle_create-workflow
             :middleware [authorization/wrap-authorized-user]
             :coercion reitit.coercion.schema/coercion
@@ -135,7 +135,7 @@
             :responses {200 {:body schema_export_workflow}
                         406 {:body s/Any}}}
 
-     :get {:summary (sd/sum_adm "List workflows.")
+     :get {:summary (sd/sum_auth "List workflows.")
            :handler handle_list-workflows
            :middleware [authorization/wrap-authorized-user]
            :coercion reitit.coercion.schema/coercion
@@ -145,7 +145,7 @@
                        406 {:body s/Any}}}}]
 
    ["/:id"
-    {:get {:summary (sd/sum_adm "Get workflow by id.")
+    {:get {:summary (sd/sum_auth "Get workflow by id.")
            :handler handle_get-workflow
            :middleware [authorization/wrap-authorized-user
                         (wwrap-find-workflow :id)]
@@ -154,7 +154,7 @@
            :responses {200 {:body schema_export_workflow}
                        404 {:body s/Any}}}
 
-     :put {:summary (sd/sum_adm "Update workflow with id.")
+     :put {:summary (sd/sum_auth "Update workflow with id.")
            :handler handle_update-workflow
            :middleware [authorization/wrap-authorized-user
                         (wwrap-find-workflow :id)]
@@ -165,7 +165,7 @@
                        404 {:body s/Any}
                        406 {:body s/Any}}}
 
-     :delete {:summary (sd/sum_adm "Delete workflow by id.")
+     :delete {:summary (sd/sum_auth "Delete workflow by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-workflow
               :middleware [authorization/wrap-authorized-user

@@ -26,6 +26,7 @@
    [ring.middleware.defaults :as ring-defaults]
    [ring.middleware.json]
    [ring.middleware.reload :refer [wrap-reload]]
+   [schema.core :as s]
    [taoensso.timbre :refer [debug error warn]]))
 
 ; changing DEBUG to true will wrap each middleware defined in this file with
@@ -94,12 +95,22 @@
 
 (def auth-info-route
   ["/api"
-   {:swagger {:tags ["api/auth-info"] :security [{"auth" []}]}}
+   {:swagger {:tags ["api/auth-info"]}}
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."
       :handler auth-info/auth-info
-      :middleware [authentication/wrap]}}]])
+      :middleware [authentication/wrap]
+      :coercion reitit.coercion.schema/coercion
+      :responses {200 {:body {:type s/Str
+                              :id s/Uuid
+                              :login s/Str
+                              :created_at s/Any
+                              :email_address s/Str
+                              (s/optional-key :authentication-method) s/Str}}
+                  401 {:description "Creation failed."
+                       :schema s/Str
+                       :examples {"application/json" {:message "Not authorized"}}}}}}]])
 
 (def swagger-routes
   [""
@@ -107,11 +118,15 @@
     :swagger {:info {:title "Madek API v2"
                      :description (mslurp "md/api-description.md")
                      :version "2.0.0"
-                     :contact {:name "fjdkls"}}
+                     :contact {:name "N/D"}}
               :securityDefinitions {:apiAuth {:type "apiKey"
                                               :name "Authorization"
                                               :in "header"}
-                                    :basicAuth {:type "basic"}}}}
+                                    :basicAuth {:type "basic"}}
+              :security [{:basicAuth [] "auth" []}
+                         {:apiAuth {:type "apiKey"
+                                    :name "Authorization"
+                                    :in "header"}}]}}
 
    ["/swagger.json" {:no-doc true :get (swagger/create-swagger-handler)}]
    ["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler)}]])
