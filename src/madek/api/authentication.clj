@@ -10,31 +10,20 @@
 (defn- add-www-auth-header-if-401 [response]
   (case (:status response)
     401 (assoc-in response [:headers "WWW-Authenticate"]
-          (str "Basic realm=\"Madek ApiClient with password"
-               " or User with token.\""))
+                  (str "Basic realm=\"Madek ApiClient with password"
+                       " or User with token.\""))
     response))
 
 (defn wrap-log [handler]
   (fn [request]
     (info "wrap auth "
-      " - method: " (:request-method request)
-      " - path: " (request/path-info request)
-      " - auth-method: " (-> request :authentication-method)
-      " - type: " (-> request :authenticated-entity :type)
-      " - is_admin: " (:is_admin request)
-      " - auth-entity: " (-> request :authenticated-entity :id))
+          " - method: " (:request-method request)
+          " - path: " (request/path-info request)
+          " - auth-method: " (-> request :authentication-method)
+          " - type: " (-> request :authenticated-entity :type)
+          " - is_admin: " (:is_admin request)
+          " - auth-entity: " (-> request :authenticated-entity :id))
     (handler request)))
-
-
-(defn wrap-detect-swagger [handler]
-  (fn [request]
-    (let [user-agent (get-in request [:headers "user-agent"])]
-      (if (and user-agent (re-find #"Swagger" user-agent))
-        ;; Handle Swagger UI request
-        (handler (assoc request :swagger-ui? true))
-        ;; Handle other requests
-        (handler request)))))
-
 
 (defn wrap [handler]
   (fn [request]
