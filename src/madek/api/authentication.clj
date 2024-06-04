@@ -27,9 +27,8 @@
 
 (defn wrap [handler]
   (fn [request]
-    (let [
-           p (println ">o> ??? request=" request)
-           req-from-swagger-ui? (try
+    (let [p (println ">o> ??? request=" request)
+          req-from-swagger-ui? (try
                                  (let [headers (:headers request)
                                        referer (get headers "referer")
                                        req-from-swagger-ui? (str/includes? referer "api-docs/index.html")]

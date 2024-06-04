@@ -61,28 +61,6 @@ def basic_auth_wtoken_header_plain_faraday_json_client(login, password, token)
   end
 end
 
-
-# def basic_auth_wtoken_header_plain_faraday_json_client(login, password, token)
-#   @basic_auth_plain_faraday_json_client ||= Faraday.new(
-#     url: api_base_url,
-#     headers: {accept: "application/json", Authorization: "token #{token}"}
-#   ) do |conn|
-#     conn.request :basic_auth, login, password
-#
-#     # Intercept the request to print or log the headers
-#     conn.request :instrumentation do |request|
-#       request.on_complete do |env|
-#         puts "Request Headers: #{env.request_headers.inspect}"
-#       end
-#     end
-#
-#     yield(conn) if block_given?
-#     conn.response :json, content_type: /\bjson$/
-#     conn.adapter Faraday.default_adapter
-#   end
-# end
-
-
 def session_auth_plain_faraday_json_client(cookie_string)
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
