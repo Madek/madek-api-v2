@@ -4,8 +4,8 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [next.jdbc :as jdbc]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -111,7 +111,7 @@
 (def ring-routes
 
   ["/delegations"
-   {:swagger {:tags ["admin/delegations"] }}
+   {:swagger {:tags ["admin/delegations"]}}
    ["/"
     {:post {:summary (sd/sum_adm_todo "Create delegations.")
             ; TODO labels and descriptions

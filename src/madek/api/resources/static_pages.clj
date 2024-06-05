@@ -5,9 +5,9 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -121,7 +121,7 @@
 
   ["/static-pages"
 ;   {:swagger {:tags ["admin/static-pages"] :security [{"auth" []}]}}
-   {:swagger {:tags ["admin/static-pages"] }}
+   {:swagger {:tags ["admin/static-pages"]}}
    ["/"
     {:post {:summary (sd/sum_adm "Create static_page.")
             :handler handle_create-static_page
@@ -147,7 +147,7 @@
     {:get {:summary (sd/sum_adm "Get static_pages by id.")
            :handler handle_get-static_page
            :middleware [wrap-authorize-admin!
-                         (wwrap-find-static_page :id)]
+                        (wwrap-find-static_page :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:body schema_export_static_page}

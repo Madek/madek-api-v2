@@ -20,20 +20,20 @@
 (defn find-user-token-by-some-secret [secrets tx]
   (println ">o> 1secrets=" secrets)
   (println ">o> 2secrets=" (->> (-> (sql/select :users.*
-                                               [:scope_read :token_scope_read]
-                                               [:scope_write :token_scope_write]
-                                               [:revoked :token_revoked]
-                                               [:description :token_description])
-                                   (sql/from :api_tokens)
-                                   (sql/where [:in :api_tokens.token_hash
-                                               (->> secrets
-                                                    (filter identity)
-                                                    (map hash-string))])
-                                   (sql/where [:<> :api_tokens.revoked true])
-                                   (sql/where [:raw "now() < api_tokens.expires_at"])
-                                   (sql/join :users [:= :users.id :api_tokens.user_id])
-                                   (sql-format))
-                               (jdbc/execute! tx)))
+                                                [:scope_read :token_scope_read]
+                                                [:scope_write :token_scope_write]
+                                                [:revoked :token_revoked]
+                                                [:description :token_description])
+                                    (sql/from :api_tokens)
+                                    (sql/where [:in :api_tokens.token_hash
+                                                (->> secrets
+                                                     (filter identity)
+                                                     (map hash-string))])
+                                    (sql/where [:<> :api_tokens.revoked true])
+                                    (sql/where [:raw "now() < api_tokens.expires_at"])
+                                    (sql/join :users [:= :users.id :api_tokens.user_id])
+                                    (sql-format))
+                                (jdbc/execute! tx)))
   (println ">o> 3secrets=" (->> secrets
                                 (filter identity)
                                 (map hash-string)))
@@ -92,13 +92,11 @@
 (defn find-and-authenticate-token-secret-or-continue [handler request]
   (if-let [token-secret (find-token-secret-in-header request)]
     (let [user-token (find-user-token-by-some-secret [token-secret] (:tx request))
-          p (println ">o> ?? user-token=" user-token)
-          ]
+          p (println ">o> ?? user-token=" user-token)]
       (if user-token
-      (authenticate user-token handler request)
-      {:status 401
-       :body {:message "No token for this token-secret found!"}})
-      )
+        (authenticate user-token handler request)
+        {:status 401
+         :body {:message "No token for this token-secret found!"}}))
     (handler request)))
 
 (defn wrap [handler]

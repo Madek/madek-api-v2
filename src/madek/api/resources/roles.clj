@@ -2,9 +2,9 @@
   (:require
    [madek.api.resources.roles.role :as role]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.validation :refer [positive-number-0-to-100-validation positive-number-1-to-1000-validation]]
    [reitit.coercion.schema]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [schema.core :as s]))
 
 (def schema_create-role

@@ -4,9 +4,9 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [schema.core :as s]
    [taoensso.timbre :refer [error info]]))
 
@@ -175,7 +175,7 @@
 
 (def admin-routes
   [["/delegation/users"
-    {:swagger {:tags ["admin/delegation/users"] }}
+    {:swagger {:tags ["admin/delegation/users"]}}
     ["/"
      {:get
       {:summary (sd/sum_adm "Query delegations_users.")

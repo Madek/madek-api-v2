@@ -4,8 +4,8 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [next.jdbc :as jdbc]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [error info]]))
@@ -141,7 +141,7 @@
 
 (def admin-routes
   [["/delegation/groups"
-    {:swagger {:tags ["admin/delegation/groups"] }}
+    {:swagger {:tags ["admin/delegation/groups"]}}
     ["/"
      {:get
       {:summary (sd/sum_adm "Query delegations_groups.")
@@ -157,7 +157,7 @@
       {:summary (sd/sum_adm "Create delegations_group for group and delegation.")
        :handler handle_create-delegations_group
        :middleware [wrap-authorize-admin!
-                     (wwrap-find-group :group_id)
+                    (wwrap-find-group :group_id)
                     (wwrap-find-delegation :delegation_id)
                     (wwrap-find-delegations_group false)]
        :coercion reitit.coercion.schema/coercion

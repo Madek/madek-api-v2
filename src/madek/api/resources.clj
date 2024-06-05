@@ -97,7 +97,7 @@
 ;   :security [{:basicAuth [] "auth" []}]
 
 ;      {:swagger {:tags ["admin/vocabularies"] :security [{:basicAuth [] "auth" []}]}}
-      {:swagger {:security [{:basicAuth [] "auth" []}]}}
+   {:swagger {:security [{:basicAuth [] "auth" []}]}}
 
    admins/ring-routes
    app-settings/admin-routes

@@ -161,15 +161,13 @@
 ; begin user and other util wrappers
 
 (defn is-admin [user-id tx]
-  (let [
-
-         p (println ">o> is_admin=" (jdbc/execute!
-                               tx
-                               (-> (sql/select :*)
-                                   (sql/from :admins)
-                                   (sql/where [:= :user_id (to-uuid user-id)])
-                                   sql-format)))
-         none (->
+  (let [p (println ">o> is_admin=" (jdbc/execute!
+                                    tx
+                                    (-> (sql/select :*)
+                                        (sql/from :admins)
+                                        (sql/where [:= :user_id (to-uuid user-id)])
+                                        sql-format)))
+        none (->
               (jdbc/execute!
                tx
                (-> (sql/select :*)

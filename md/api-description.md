@@ -6,6 +6,10 @@
 
 
 
+## Old madek-api
+- https://medienarchiv.zhdk.ch/api/browser/
+
+
 ## Supported auth-methods
 1. **Basic auth**
    1. username *(email OR login)*
@@ -16,4 +20,8 @@
    2. Insert token into basicAuth.username
    2. Insert token into basicAuth.pw
    3. Header: `Authorization: token replace-this-by-token`
+
+
+## Nice2Know
+1. No ROA-support
 

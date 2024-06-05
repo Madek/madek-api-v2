@@ -64,9 +64,8 @@
         entity (get-entity-by-login-or-email login-or-email tx)
         asuser (when entity (get-auth-systems-user (:id entity) tx))
 
-        p (println ">o> entity="  entity)
-        p (println ">o> asuser="  asuser)
-        ]
+        p (println ">o> entity=" entity)
+        p (println ">o> asuser=" asuser)]
 
     (cond
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
