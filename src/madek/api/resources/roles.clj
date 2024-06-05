@@ -4,6 +4,7 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.validation :refer [positive-number-0-to-100-validation positive-number-1-to-1000-validation]]
    [reitit.coercion.schema]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [schema.core :as s]))
 
 (def schema_create-role
@@ -63,11 +64,13 @@
 ; TODO tests
 (def admin-routes
   ["/roles"
-   {:swagger {:tags ["admin/roles"] :security [{"auth" []}]}}
+;   {:swagger {:tags ["admin/roles"] :security [{"auth" []}]}}
+   {:swagger {:tags ["admin/roles"]}}
    ["/" {:get {:summary (sd/sum_adm "Get list of roles.")
                :description "Get list of roles."
                :handler role/get-index
                :swagger {:produces "application/json"}
+               :middleware [wrap-authorize-admin!]
 
                ;; TODO: use swagger-definition with preset values & infos
                ;; Main problem: no validation within swagger-ui, no additional infos
@@ -84,6 +87,8 @@
                           :consumes "application/json"}
                 :content-type "application/json"
                 :accept "application/json"
+                :middleware [wrap-authorize-admin!]
+
                 :coercion reitit.coercion.schema/coercion
                 :parameters {:body schema_create-role}
                 :responses {200 {:body schema_export-role}
@@ -100,6 +105,8 @@
            :description "Get a role by id. Returns 404, if no such role exists."
            :swagger {:produces "application/json"}
            :content-type "application/json"
+           :middleware [wrap-authorize-admin!]
+
            :handler role/handle_get-role-admin
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
@@ -111,6 +118,8 @@
            :swagger {:produces "application/json"
                      :consumes "application/json"}
            :content-type "application/json"
+           :middleware [wrap-authorize-admin!]
+
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update-role}
