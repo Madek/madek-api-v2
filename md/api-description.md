@@ -3,9 +3,17 @@
 
 <br/>
 
+
+
+
 ## Supported auth-methods
-1. Basic auth (username / pw)
-2. Api-Token
-   1. Insert token into basicAuth.username
+1. **Basic auth**
+   1. username *(email OR login)*
+   2. pw
+
+
+2. **Api-Token** *(provides access to public endpoints only, not to /admin/)*
+   2. Insert token into basicAuth.username
    2. Insert token into basicAuth.pw
    3. Header: `Authorization: token replace-this-by-token`
+
