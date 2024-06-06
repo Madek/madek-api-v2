@@ -10,6 +10,7 @@
 - https://medienarchiv.zhdk.ch/
 - https://medienarchiv.zhdk.ch/api/browser/
 
+<br/>
 
 ## Supported auth-methods
 1. **Basic auth**
@@ -25,8 +26,8 @@
 <br/>
 
 ## Nice2Know
-1. No ROA-support
-2. Swagger-Auth
+1. No ROA-support anymore
+2. Swagger-Authorize
    1. Public endpoints should have no lock
    2. *Auth-endpoints* should have a lock that provides
       1. **apiKey-form**
