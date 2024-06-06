@@ -184,7 +184,7 @@
     ["/" {:get {:summary "Get all group ids"
                 :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                 :handler index
-                :middleware [wrap-authorize-admin!]
+;                :middleware [wrap-authorize-admin!]
                 :swagger {:produces "application/json"}
                 :content-type "application/json"
                 :parameters {:query schema_query-groups}

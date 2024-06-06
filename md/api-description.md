@@ -7,6 +7,7 @@
 
 
 ## Old madek-api
+- https://medienarchiv.zhdk.ch/
 - https://medienarchiv.zhdk.ch/api/browser/
 
 
@@ -21,7 +22,7 @@
    2. Insert token into basicAuth.pw
    3. Header: `Authorization: token replace-this-by-token`
 
-
+<br/>
 ## Nice2Know
 1. No ROA-support
 
