@@ -176,7 +176,7 @@
 
 (def user-routes
   [["/"
-    {:swagger {:tags ["app-settings"]  :security []}}
+    {:swagger {:tags ["app-settings"] :security []}}
     ["app-settings"
      {:get {:summary (sd/sum_pub "Get App Settings.")
             :handler handle_get-app-settings

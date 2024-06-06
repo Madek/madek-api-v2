@@ -8,7 +8,7 @@
 
 (def user-routes
   ["/people"
-   {:swagger {:tags ["people"] }}
+   {:swagger {:tags ["people"]}}
    ["/"
     {;:get index/route
      }]

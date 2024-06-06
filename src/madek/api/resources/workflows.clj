@@ -126,7 +126,7 @@
 
   ["/workflows"
 ;   {:swagger {:tags ["admin/workflows"] :security [{"auth" []}]}}
-   {:swagger {:tags ["admin/workflows"] }}
+   {:swagger {:tags ["admin/workflows"]}}
    ["/"
     {:post {:summary (sd/sum_auth "Create workflow.")
             :handler handle_create-workflow
