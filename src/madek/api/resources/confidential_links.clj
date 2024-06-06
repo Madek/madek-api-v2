@@ -216,7 +216,7 @@
 ; TODO check can edit permissions
 (def user-col-routes
   ["/collection/:collection_id"
-   {:swagger {:tags ["api/collection/conf-links"] :security [{"auth" []}]}}
+   {:swagger {:tags ["api/collection/conf-links"]}}
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link

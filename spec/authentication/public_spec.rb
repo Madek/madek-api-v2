@@ -2,18 +2,6 @@ require "spec_helper"
 
 describe "Test status-code as public-user" do
 
-  # context "revoking the token " do
-  #   ["/api/auth-info", "/api/app-settings"].each do |url|
-  #     let(:url) { url }
-  #
-  #     it "accessing #{url} results in 401" do
-  #       puts "Testing URL: #{url}"
-  #       response = plain_faraday_json_client.get(url)
-  #       expect(response.status).to eq(401)
-  #     end
-  #   end
-  # end
-
   it "post responds with 403" do
     # "/api/admin/full-text/" => 404, Post-Request
     user_url = "/api/admin/full_text/"
@@ -45,7 +33,6 @@ describe "Test status-code as public-user" do
       "/api/usage-terms/" => 200,
       "/api/collections" => 200,
       "/api/keywords/?page=1&size=2" => 400, # FIXME
-      # "/api/groups/" => 403, # FIXME: no auth required
       "/api/groups/" => 200,
 
       "/api/workflows/" => 401,
