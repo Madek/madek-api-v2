@@ -76,4 +76,3 @@ scripts:
     start_when:
       the api is running:
         script_key: api-v2-is-running
-

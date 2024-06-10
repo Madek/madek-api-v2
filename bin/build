@@ -1,39 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_NAME="madek-api-v2"
-JAR_NAME="${PROJECT_NAME}.jar"
+JAR_PREFIX_NAME=madek-api-v2
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+TMP_DIR="${TMPDIR:-$PROJECT_DIR/tmp}"
+mkdir -p $TMP_DIR
 
-# dirty working tree checking is problematic on CI => disabled for now
-# IGNORE_DIRTY_WORKING_DIR="${IGNORE_DIRTY_WORKING_DIR:-NO}"
-# if [ $IGNORE_DIRTY_WORKING_DIR == "NO" ]; then
-#   git diff --quiet
-# fi
-
-DIGEST="$(git -C "$PROJECT_DIR" log -n 1 HEAD --pretty=%T)"
-LOCAL_CACHE_DIR="${LOCAL_CACHE_DIR:-"${TMPDIR:-/tmp/}build-cache"}"
-mkdir -p ${LOCAL_CACHE_DIR}
-LOCAL_CACHED_ARTEFACT_PATH="${LOCAL_CACHE_DIR}/${PROJECT_NAME}_${DIGEST}.jar"
-BUILD_CACHE_DISABLED="${BUILD_CACHE_DISABLED:-NO}"
+cd $PROJECT_DIR
 
 function build {
-  cd $PROJECT_DIR
+  echo "Building $JAR_PREFIX_NAME.jar"
   ./bin/clean
-  rm -f $JAR_NAME
+  rm -f $JAR_PREFIX_NAME.jar
   # ./bin/clj-deps-graph
   ./bin/clj-uberjar
   ./bin/clean
 }
 
-if [ $BUILD_CACHE_DISABLED == "YES" ]; then
-  build
-else
-  if [ -e $LOCAL_CACHED_ARTEFACT_PATH ]; then
-    echo "INFO: locally cached jar found"
-    cp $LOCAL_CACHED_ARTEFACT_PATH $PROJECT_DIR/$JAR_NAME
-  else
+if [[ -n $(git status -s) ]]; then
+    echo "WARNING uncommitted changes, (re)building from scratch, no linking"
     build
-    cp $PROJECT_DIR/$JAR_NAME $LOCAL_CACHED_ARTEFACT_PATH
-  fi
+else
+    echo "OK no uncommitted changes, building or using cache"
+    DIGEST=$(git log -1 HEAD --pretty=format:%T)
+    CACHED_JAR="${TMP_DIR}/${JAR_PREFIX_NAME}_${DIGEST}.jar"
+    if [[ -f $CACHED_JAR ]]; then
+        echo "Using cached jar: $CACHED_JAR"
+        touch $CACHED_JAR
+    else
+        echo "No cached jar found, building"
+        build
+        mv $JAR_PREFIX_NAME.jar $CACHED_JAR
+    fi
+    echo "Linking $CACHED_JAR to $JAR_PREFIX_NAME.jar"
+    ln -sf $CACHED_JAR $JAR_PREFIX_NAME.jar
 fi
+
+# Clean cached jars older than a week
+find $TMP_DIR -maxdepth 1 -name "${JAR_PREFIX_NAME}_*.jar" -type f -mtime +7 -delete
