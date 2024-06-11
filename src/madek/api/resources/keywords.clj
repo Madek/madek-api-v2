@@ -13,8 +13,7 @@
     [next.jdbc :as jdbc]
     [reitit.coercion.schema]
     [schema.core :as s]
-    [clojure.spec.alpha :as sa]
-    ))
+    [clojure.spec.alpha :as sa]))
 
 ;### swagger io schema ####################################################################
 
@@ -64,8 +63,9 @@
    (s/optional-key :term)        s/Str
    (s/optional-key :description) s/Str
    (s/optional-key :rdf_class)   s/Str
-   (s/optional-key :page)        s/Int
-   (s/optional-key :count)       s/Int})
+   ;   (s/optional-key :page)        s/Int
+   ;   (s/optional-key :count)       s/Int
+   })
 
 (defn user-export-keyword [keyword]
   (->
@@ -366,9 +366,8 @@
 ;(sa/def schema {:size  ::positive-number  :page  (with-meta ::positive-number {:doc "Page must be a positive number including zero"}) })
 
 
-
 (sa/def ::positive-number (sa/and number? #(>= % 0)))
-(sa/def schema {:size  ::positive-number  :page  ::positive-number })
+(sa/def schema {:size ::positive-number :page ::positive-number})
 
 
 ;;; Define a positive number including zero
@@ -389,9 +388,6 @@
 ;       (sa/keys :req-un [::size ::page]))
 
 
-
-
-
 ;;; Define a positive number including zero / broken
 ;(sa/def ::positive-number
 ;       (sa/and number? #(>= % 0)))
@@ -408,9 +404,6 @@
 ;;; Define the schema
 ;(sa/def ::schema
 ;       (sa/keys :req-un [::size ::page]))
-
-
-
 
 
 ;;; Define a positive number including zero
@@ -430,124 +423,54 @@
 ;       (s/keys :req-un [::size ::page]))
 
 
+(defn pagination-handler
+  "Required query-fields: page & size
 
-(defn move-params [schema]
+  Workflow:
+    - rename :page to :count (needed for internal handling).
+    - cast :page & :size to int.
+    - validate :page & :size (exception returns response with status-code=400 and validation-details).
+  "
+  [schema]
   (fn [handler]
     (fn [request]
       (try
+        (let [cast-fnc        (fn [m]
+                                (println ">o> [cast]" m)
+                                (reduce-kv
+                                 (fn [acc k v]
+                                   (assoc acc k
+                                          (cond
+                                           (= k :page) (str-to-int v v)
+                                           (= k :size) (str-to-int v v)
+                                           :else       v)))
+                                 {}
+                                 m))
 
+              rename-keys-fnc (fn [m key-map]
+                                (println ">o> [rename]" m key-map)
+                                (reduce-kv
+                                 (fn [acc k v]
+                                   (let [new-key (get key-map k k)]
+                                     (assoc acc new-key v)))
+                                 {}
+                                 m))
 
-        (let [; Function to cast parameters
-               cast (fn [m]
-                        (println ">o> [cast]" m )
-                      (reduce-kv
-                       (fn [acc k v]
-                         (assoc acc k
-                                (cond
-                                  (= k :page) (str-to-int v v)
-                                  (= k :size) (str-to-int v v)
-                                  :else v)))
-                       {}
-                       m))
+              casted-vals     (cast-fnc (-> request :params))
+              request         (let [casted-vals (cast-fnc (-> request :params))]
+                                (let [request (assoc-in request [:params] casted-vals)]
+                                  (assoc-in request [:parameters :query] casted-vals)))
+              params          (-> request :params)
+              _               (s/validate schema params)]
 
-               ; Function to rename keys in a map based on key-map
-               rename (fn [m key-map]
-                        (println ">o> [rename]" m key-map)
-                        (reduce-kv
-                         (fn [acc k v]
-                           (let [new-key (get key-map k k)] ; Get the new key from key-map or use the original key if not found
-                             (assoc acc new-key v)))
-                         {}
-                         m))
+          (let [key-map {:size :count}
+                request (let [params-renamed (rename-keys-fnc params key-map)]
+                          (let [request (assoc-in request [:params] params-renamed)]
+                            (assoc-in request [:parameters :query] params-renamed)))]
 
-               ; Cast the parameters and update the request map
-               casted-vals (cast (-> request :params))
-               p (println ">o> abc1")
-;               request (assoc-in request [:params] casted-vals)
-;               request (assoc-in request [:params] casted-vals [:parameters :query] casted-vals)
-
-               request (let [casted-vals (cast (-> request :params))]
-                 (println ">o> abc1")
-                 (let [request (assoc-in request [:params] casted-vals)]
-                   (assoc-in request [:parameters :query] casted-vals)))
-
-
-               p (println ">o> abc2")
-               params (-> request :params)
-               p (println ">o> abc3a" params)
-               p (println ">o> abc3b" (-> request :parameters :query))
-               p (println ">o> abc3c" (-> request :params))
-
-
-
-
-;               schema {:size s/Int :page s/Int}
-
-               p (println ">o> abcx" )
-               ; Validate the schema
-               res (s/validate schema params)
-;               res (reitit.ring.spec/validate schema params)
-               p (println ">o> abcy.after.val=" res)
-               ]
-
-          ; Print debug information
-;          (println ">o> validation-result: " valid? errors)
-          (println ">o> 1?params=" request)
-          (println ">o> 1params=" params)
-
-;          (if-not valid?
-;            (do
-;              (println ">o> Validation failed")
-;              (sd/response_bad_request (str "Invalid query parameters: " errors) errors))
-;            (do
-              ; Rename the keys in params based on key-map
-              (let [key-map {:size :count}
-;                    params-renamed (rename params key-map)
-
-
-;                ; Update the request with the renamed parameters
-;                request                           (let [   (let [request (assoc-in request [:params] params-renamed)]
-;                            (assoc-in request [:parameters :query] params-renamed))
-;                    ])
-
-
-
-
-                    p (println ">o> abc4")
-
-                    request (let [params-renamed (rename params key-map)
-                                  p (println ">o> ???? params-renamed=" params-renamed)
-                                  ]
-                              (println ">o> abc1")
-                              (let [request (assoc-in request [:params] params-renamed)]
-                                (assoc-in request [:parameters :query] params-renamed)))
-
-                    p (println ">o> abc5")
-                    ]
-
-                  (handler request)
-                ;))));)
-                ))
-        ;))
-
-
-
-
-;                (let [request (assoc-in request [:parameters :query] params-renamed)]
-;                  (println ">o> 1cast.before" (-> request :params))
-;                  (println ">o> 2cast.after" (cast (-> request :params)))
-;                  (println ">o> 3cast.after" params-renamed)
-;                  (println ">o> before=" (-> request :parameters :query))
-;                  (println ">o> >> 1after=" (-> request :parameters :query))
-;                  (println ">o> 2after=" (-> request :parameters :query :page))
-;                  (println ">o> 3after=" (class (-> request :parameters :query :page)))
-
-                  ; Call the handler with the updated request
-
+            (handler request)))
         (catch Exception ex
-          (println ">o> abc" ex)
-          (sd/response_bad_request (str "Invalid query parameters: " (.getMessage ex)) (.getData ex)))))));) ;;fixme
-
+          (sd/response_bad_request (str "Invalid query parameters: " (.getMessage ex)) (.getData ex)))))))
 
 
 (defn wrap-find-keyword [handler]
@@ -575,29 +498,19 @@
 
       ;      :middleware [(validate-scheme ItemQueryParams)]
       ;      :middleware [move-params ] ;;ok
-      :middleware [(move-params ItemQueryParams)]
+      :middleware [(pagination-handler ItemQueryParams)]
 
       :swagger    {:parameters [{:name        "page"
                                  :in          "query"
                                  :description "Page number, defaults to 0"
                                  :required    false
-                                 ;                              :value 0 ;; wont set as default
-                                 :value       1
-                                 ;                              :default 3
-                                 ;                              :defaults 2
-                                 ;                              :type "integer"
-                                 ;                              :format "int32"
-                                 ;                              :schema {:type "integer"
-                                 ;                                       :format "int32"
-                                 ;                                       :value 11
-                                 ;                                       :defaults 22
-                                 ;                                       :default 44}
-                                 }
+                                 :value       "1"}
                                 {:name        "size"
                                  :in          "query"
                                  :description "Number of items per page, defaults to 10"
                                  :required    false
-                                 :value       11}]}
+                                 :value       "11"}]}
+
 
       :responses  {200 {:body {:keywords [schema_export_keyword_usr]}}
                    202 {:description "Successful response, list of items."
@@ -627,7 +540,20 @@
     {:get
      {:summary     (sd/sum_adm "Query keywords")
       :handler     handle_adm-query-keywords
-      :middleware  [wrap-authorize-admin!]
+      :middleware  [;                     wrap-authorize-admin!
+                     (pagination-handler ItemQueryParams)]
+
+      :swagger     {:parameters [{:name        "page"
+                                  :in          "query"
+                                  :description "Page number, defaults to 0 (zero-based)"
+                                  :required    true
+                                  :value       "1"}
+                                 {:name        "size"
+                                  :in          "query"
+                                  :description "Number of items per page, defaults to 10"
+                                  :required    true
+                                  :value       "11"}]}
+
       :coercion    reitit.coercion.schema/coercion
       :parameters  {:query schema_query_keyword}
       :responses   {200 {:body {:keywords [schema_export_keyword_adm]}}}

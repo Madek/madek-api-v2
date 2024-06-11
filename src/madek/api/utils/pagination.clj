@@ -34,4 +34,28 @@
            :page (+ i-page 1))))
 
 ;### Debug ####################################################################
+
+;; create fnc defaults: page/size-value, required
+;
+;{:page-val "0"
+; :size-val "11"
+; :page-required true
+;  :size-required true}
+;
+;
+;{:parameters [{:name        "page"
+;               :in          "query"
+;               :description "Page number, defaults to 0 (zero-based)"
+;               :required    true
+;               :value       "0"
+;               }
+;              {:name        "size"
+;               :in          "query"
+;               :description "Number of items per page, defaults to 10"
+;               :required    true
+;               :value       "11"}]}
+
+
+
+;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
