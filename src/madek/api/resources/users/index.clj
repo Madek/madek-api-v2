@@ -31,10 +31,12 @@
         res (sd/transform_ml_map res)]
     (sd/response_ok res)))
 
-(def query-schema
-  {(s/optional-key :count) s/Int
-   (s/optional-key :email) s/Str
-   (s/optional-key :page) s/Int})
+;(def query-schema
+;  {
+;;    (s/optional-key :count) s/Int
+;;   (s/optional-key :page) s/Int
+;   (s/optional-key :email) s/Str
+;   })
 
 (def route
   {:summary (sd/sum_adm (f "Get list of users ids." "no-list"))

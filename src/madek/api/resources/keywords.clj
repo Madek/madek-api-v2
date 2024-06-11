@@ -176,8 +176,8 @@
           (sd/response_failed (str "Invalid query parameters: " errors) 400))))))
 
 
-(sa/def ::positive-number (sa/and number? #(>= % 0)))
-(sa/def schema {:size ::positive-number :page ::positive-number})
+;(sa/def ::positive-number (sa/and number? #(>= % 0)))
+;(sa/def schema {:size ::positive-number :page ::positive-number})
 
 
 (defn wrap-find-keyword [handler]
