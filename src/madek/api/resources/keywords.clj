@@ -12,7 +12,9 @@
     [madek.api.utils.helper :refer [str-to-int]]
     [next.jdbc :as jdbc]
     [reitit.coercion.schema]
-    [schema.core :as s]))
+    [schema.core :as s]
+    [clojure.spec.alpha :as sa]
+    ))
 
 ;### swagger io schema ####################################################################
 
@@ -340,10 +342,101 @@
 ;          (sd/response_bad_request ex
 ;                                   (sd/response_bad_request (str "Invalid query parameters: " (.getMessage ex)) ex)))))))
 
+;(s/def ::positive-number (and number? pos?))
+
+
+;; Adding metadata to the spec
+;(defn with-doc [spec doc-string]
+;  (sa/with-gen spec
+;              (fn []
+;                (sa/gen spec))
+;              (assoc (meta spec) :doc doc-string)))
+
+;;; Adding metadata to the spec
+;(defn with-doc [spec doc-string]
+;  (with-meta spec {:doc doc-string}))
+
+
+;(def ^:const page (with-meta ::positive-number {:doc "Page must be a positive number including zero"}))
+
+
+;(sa/def ::positive-number (sa/and ::positive-number-def (with-meta {:doc "Size must be a positive number including zero"})))
+;(sa/def schema {:size (with-doc ::positive-number "my posNumber") :page (with-doc ::positive-number "mypos2")})
+
+;(sa/def schema {:size  ::positive-number  :page  (with-meta ::positive-number {:doc "Page must be a positive number including zero"}) })
+
+
+
+(sa/def ::positive-number (sa/and number? #(>= % 0)))
+(sa/def schema {:size  ::positive-number  :page  ::positive-number })
+
+
+;;; Define a positive number including zero
+;(sa/def ::positive-number
+;       (sa/and number? #(>= % 0)))
+;
+;;; Helper function to add metadata to specs
+;(defn with-doc [spec doc-string]
+;  (let [spec (sa/spec spec)]
+;    (vary-meta spec assoc :doc doc-string)))
+;
+;;; Define specs with documentation
+;(sa/def ::size (with-doc ::positive-number "Size must be a positive number including zero"))
+;(sa/def ::page (with-doc ::positive-number "Page must be a positive number including zero"))
+;
+;;; Define the schema
+;(sa/def ::schema
+;       (sa/keys :req-un [::size ::page]))
+
+
+
+
+
+;;; Define a positive number including zero / broken
+;(sa/def ::positive-number
+;       (sa/and number? #(>= % 0)))
+;
+;;; Attach metadata directly to the spec definitions
+;(def ^:doc "Size must be a positive number including zero"
+;  ::size
+;  (sa/and ::positive-number))
+;
+;(def ^:doc "Page must be a positive number including zero"
+;  ::page
+;  (sa/and ::positive-number))
+;
+;;; Define the schema
+;(sa/def ::schema
+;       (sa/keys :req-un [::size ::page]))
+
+
+
+
+
+;;; Define a positive number including zero
+;(s/def ::positive-number
+;       (s/and number? #(>= % 0)))
+;
+;;; Define the specs with metadata
+;(defn positive-number-spec [doc]
+;  (let [spec (s/and ::positive-number)]
+;    (with-meta spec {:doc doc})))
+;
+;(s/def ::size (positive-number-spec "Size must be a positive number including zero"))
+;(s/def ::page (positive-number-spec "Page must be a positive number including zero"))
+;
+;;; Define the schema
+;(s/def ::schema
+;       (s/keys :req-un [::size ::page]))
+
+
+
 (defn move-params [schema]
   (fn [handler]
     (fn [request]
       (try
+
+
         (let [; Function to cast parameters
                cast (fn [m]
                         (println ">o> [cast]" m )
@@ -386,10 +479,14 @@
                p (println ">o> abc3c" (-> request :params))
 
 
-               schema {:size s/Int :page s/Int}
+
+
+;               schema {:size s/Int :page s/Int}
+
                p (println ">o> abcx" )
                ; Validate the schema
                res (s/validate schema params)
+;               res (reitit.ring.spec/validate schema params)
                p (println ">o> abcy.after.val=" res)
                ]
 
