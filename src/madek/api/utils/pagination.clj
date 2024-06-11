@@ -43,7 +43,9 @@
 (defn swagger-ui-pagination
   "Returns a map with the swagger-ui parameters for pagination.
 
-   Map-Attributes: :page-val :size-val
+   Map-Attributes:
+   - :page-val.
+   - :size-val
   "
 
   ([]
@@ -51,17 +53,26 @@
 
    ([config]
      (let [page-val (str (get config :page-val "0"))
-           size-val (str (get config :size-val "5"))]
+           size-val (str (get config :size-val "5"))
+           page-req (get config :size-val false)
+           size-req  (get config :size-val false)
+           ]
        {:parameters [{:name        "page"
                       :in          "query"
                       :description (str "Page number, defaults to " page-val)
-                      :required    true
+                      :required    page-req
                       :value       page-val}
                      {:name        "size"
                       :in          "query"
                       :description (str "Number of items per page, defaults to " size-val)
-                      :required    true
-                      :value       size-val}]})))
+                      :required    size-req
+                      :value       size-val}]
+        :produces "application/json"
+        })))
+
+
+
+
 
 
   (defn pagination-handler
@@ -119,6 +130,12 @@
            (catch Exception ex
              (sd/response_bad_request (str "Invalid query parameters: " (.getMessage ex)) (.getData ex))))))))
 
+
+(defn pagination-optional-handler
+  ([]
+   (pagination-handler
+    {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})))
 
 ;(s/defschema ItemQueryParams
 ;  {:page (s/constrained s/Int #(>= % 0) "Must be >=0 integer")

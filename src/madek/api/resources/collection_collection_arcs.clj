@@ -6,6 +6,7 @@
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination pagination-optional-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -148,13 +149,15 @@
    ["/"
     {:get
      {:summary "Query collection collection arcs."
+      :description "Query collection collection arcs with optional pagination."
       :handler handle_query-arcs
-      :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
+      :middleware  [                    (pagination-optional-handler)]
+      :swagger      (swagger-ui-pagination)
       :parameters {:query {(s/optional-key :child_id) s/Uuid
                            (s/optional-key :parent_id) s/Uuid
-                           (s/optional-key :page) s/Int
-                           (s/optional-key :count) s/Int}}
+                           }
+                   }
       :responses {200 {:body s/Any}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id
