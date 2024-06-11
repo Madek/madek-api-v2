@@ -63,10 +63,7 @@
    (s/optional-key :meta_key_id) s/Str
    (s/optional-key :term)        s/Str
    (s/optional-key :description) s/Str
-   (s/optional-key :rdf_class)   s/Str
-   ;   (s/optional-key :page)        s/Int
-   ;   (s/optional-key :count)       s/Int
-   })
+   (s/optional-key :rdf_class)   s/Str})
 
 (defn user-export-keyword [keyword]
   (->
@@ -204,21 +201,7 @@
       :handler    handle_usr-query-keywords
       :coercion   reitit.coercion.schema/coercion
       :middleware [(pagination-handler ItemQueryParams)]
-
-      :swagger (swagger-ui-pagination)
-
-;      :swagger    {:parameters [{:name        "page"
-;                                 :in          "query"
-;                                 :description "Page number, defaults to 0"
-;                                 :required    false
-;                                 :value       "1"}
-;                                {:name        "size"
-;                                 :in          "query"
-;                                 :description "Number of items per page, defaults to 10"
-;                                 :required    false
-;                                 :value       "11"}]}
-
-
+      :swagger    (swagger-ui-pagination)
       :responses  {200 {:body {:keywords [schema_export_keyword_usr]}}
                    202 {:description "Successful response, list of items."
                         :schema      {}
@@ -247,21 +230,9 @@
     {:get
      {:summary     (sd/sum_adm "Query keywords")
       :handler     handle_adm-query-keywords
-      :middleware  [                     wrap-authorize-admin!
-                     (pagination-handler (merge schema_query_keyword ItemQueryParams))]
-
-;      :swagger     {:parameters [{:name        "page"
-;                                  :in          "query"
-;                                  :description "Page number, defaults to 0 (zero-based)"
-;                                  :required    true
-;                                  :value       "1"}
-;                                 {:name        "size"
-;                                  :in          "query"
-;                                  :description "Number of items per page, defaults to 10"
-;                                  :required    true
-;                                  :value       "11"}]}
-
-      :swagger (swagger-ui-pagination)
+      :middleware  [wrap-authorize-admin!
+                    (pagination-handler (merge schema_query_keyword ItemQueryParams))]
+      :swagger     (swagger-ui-pagination)
       :coercion    reitit.coercion.schema/coercion
       :parameters  {:query schema_query_keyword}
       :responses   {200 {:body {:keywords [schema_export_keyword_adm]}}}
