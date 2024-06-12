@@ -220,7 +220,7 @@
      :get
      {:summary (sd/sum_adm "Query context_keys. TESTME")
       :handler handle_adm-list-context_keys
-      :middleware [;                    wrap-authorize-admin!
+      :middleware [wrap-authorize-admin!
                    (pagination-handler)]
       :coercion reitit.coercion.schema/coercion
       :swagger (swagger-ui-pagination)

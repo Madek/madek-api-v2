@@ -17,10 +17,8 @@
   (* (page-count params) (page-number params)))
 
 (defn add-offset-for-honeysql [query params]
-  (let [p (println ">o> 1add-offset-for-honeysql.params=" params)
-        defaults {:page 0 :count 100}
+  (let [defaults {:page 0 :count 100}
         params (merge defaults params)
-        p (println ">o> 2add-offset-for-honeysql.params=" params)
         off (compute-offset params)
         limit (page-count params)]
     (-> query

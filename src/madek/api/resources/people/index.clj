@@ -80,7 +80,7 @@
    :swagger (swagger-ui-pagination)
 
    :handler handler
-   :middleware [;                 wrap-authorize-admin!
+   :middleware [wrap-authorize-admin!
                 (pagination-handler ItemQueryParams)]
 ;                (pagination-handler (merge schema_query_keyword ItemQueryParams))]
    :coercion reitit.coercion.schema/coercion

@@ -158,7 +158,8 @@
    (s/optional-key :searchable) s/Str})
 
 (def schema_query_people
-  {(s/optional-key :description) s/Str
+  {(s/optional-key :count) s/Int ;; TODO
+   (s/optional-key :description) s/Str
    (s/optional-key :first_name) s/Str
    (s/optional-key :full_data) s/Bool
    (s/optional-key :id) s/Uuid
