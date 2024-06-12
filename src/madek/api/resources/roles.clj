@@ -64,6 +64,7 @@
 ; TODO tests
 (def admin-routes
   ["/roles"
+;   {:swagger {:tags ["admin/roles"] :security [{"auth" []}]}}
    {:swagger {:tags ["admin/roles"]}}
    ["/" {:get {:summary (sd/sum_adm "Get list of roles.")
                :description "Get list of roles."
@@ -87,6 +88,7 @@
                 :content-type "application/json"
                 :accept "application/json"
                 :middleware [wrap-authorize-admin!]
+
                 :coercion reitit.coercion.schema/coercion
                 :parameters {:body schema_create-role}
                 :responses {200 {:body schema_export-role}
@@ -104,6 +106,7 @@
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :middleware [wrap-authorize-admin!]
+
            :handler role/handle_get-role-admin
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
@@ -116,6 +119,7 @@
                      :consumes "application/json"}
            :content-type "application/json"
            :middleware [wrap-authorize-admin!]
+
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update-role}

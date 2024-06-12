@@ -40,7 +40,10 @@
 (defn- get-auth-systems-user [userId tx]
   (jdbc/execute-one! tx (-> (sql/select :*)
                             (sql/from :auth_systems_users)
+                            ;(sql/where [:= :user_id userId])
                             (sql/where [:= :user_id userId] [:= :auth_system_id "password"])
+                            ; needed to get password-entry first if more than one and of different auth_system_id's exist
+                            ;(sql/order-by [:auth_system_id :asc])
                             sql-format)))
 
 (defn base64-decode [^String encoded]
@@ -59,14 +62,17 @@
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
         entity (get-entity-by-login-or-email login-or-email tx)
-        asuser (when entity (get-auth-systems-user (:id entity) tx))]
+        asuser (when entity (get-auth-systems-user (:id entity) tx))
+
+        p (println ">o> entity=" entity)
+        p (println ">o> asuser=" asuser)]
 
     (cond
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
-      (nil? (get asuser :data)) {:status 401 :body "Only password auth users supported for basic auth."}
-      (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
-                                                                                           {:login-or-email-address login-or-email})}
+      (or (nil? (:data asuser)) (not asuser)) {:status 401 :body "Only password auth users supported for basic auth."}
+      (and (not (nil? password)) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
+                                                                                                  {:login-or-email-address login-or-email})}
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)

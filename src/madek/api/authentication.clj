@@ -38,7 +38,7 @@
                         session-auth/wrap
                         token-auth/wrap
                         basic-auth/wrap) request)]
-      ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-popup in browser
+      ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-browser-popup
       (if req-from-swagger-ui?
         response
         (add-www-auth-header-if-401 response)))))

@@ -93,6 +93,10 @@
                 ;              authentication/wrap
                               ;wrap-authorize-admin!
                 ;              ]}
+;   {:security [{:basicAuth [] "auth" []}]}
+;   :security [{:basicAuth [] "auth" []}]
+
+;      {:swagger {:tags ["admin/vocabularies"] :security [{:basicAuth [] "auth" []}]}}
    {:swagger {:security [{:basicAuth [] "auth" []}]}}
 
    admins/ring-routes

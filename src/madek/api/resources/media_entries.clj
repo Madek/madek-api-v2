@@ -14,6 +14,7 @@
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
+            [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
             [reitit.ring.middleware.multipart :as multipart]
@@ -257,8 +258,8 @@
 
    (s/optional-key :public_get_metadata_and_previews) s/Bool
    (s/optional-key :public_get_full_size) s/Bool
-   (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int
+;   (s/optional-key :page) s/Int
+;   (s/optional-key :count) s/Int
    (s/optional-key :full_data) s/Bool})
 
 (def schema_export_media_entry
@@ -352,22 +353,28 @@
    {:swagger {:tags ["api/media-entries"]}}
    ["media-entries"
     {:get
-     {:summary "Query media-entries."
-      :swagger {:produces "application/json"}
+     {:summary "Query media-entries. TESTME"
+;      :swagger {:produces "application/json"}
       :content-type "application/json"
       :handler handle_query_media_entry
-      :middleware [jqh/ring-wrap-parse-json-query-parameters]
+      :middleware [jqh/ring-wrap-parse-json-query-parameters
+                   (pagination-handler)
+                   ]
+      :swagger     (swagger-ui-pagination)
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
       :responses {200 {:body s/Any}
                   422 {:body s/Any}}}}]
    ["media-entries-related-data"
     {:get
-     {:summary "Query media-entries with all related data."
-      :swagger {:produces "application/json"}
+     {:summary "Query media-entries with all related data. TESTME"
+;      :swagger {:produces "application/json"}
       :content-type "application/json"
+      :swagger     (swagger-ui-pagination)
       :handler handle_query_media_entry-related-data
-      :middleware [jqh/ring-wrap-parse-json-query-parameters]
+      :middleware [jqh/ring-wrap-parse-json-query-parameters
+                   (pagination-handler)
+                   ]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
       :responses {200 {:body schema_query_media_entries_related_result}}}}]])

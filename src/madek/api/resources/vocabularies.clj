@@ -84,6 +84,7 @@
 ; TODO vocab permission
 (def admin-routes
   ["/vocabularies"
+;   {:swagger {:tags ["admin/vocabularies"] :security [{:basicAuth [] "auth" []}]}}
    {:swagger {:tags ["admin/vocabularies"]}}
    ["/"
     {:get get/admin.vocabularies
