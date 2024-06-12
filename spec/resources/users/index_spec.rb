@@ -16,7 +16,7 @@ context "users" do
 
       describe "get users" do
         let :users_result do
-          client.get("/api/admin/users/?count=100")
+          client.get("/api/admin/users/?size=100")
         end
 
         it "responses with 200" do

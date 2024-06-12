@@ -147,7 +147,7 @@ describe "Access to public /api-endpoints by API-Token" do
   end
 
   let :response do
-    client.get("/api/vocabularies/?page=1&count=100")
+    client.get("/api/vocabularies/?page=1&size=100")
   end
 
   context "revoking the token " do
@@ -206,7 +206,7 @@ describe "Access forbidden for /admin-endpoints by API-Token" do
   end
 
   let :response do
-    client.get("/api/admin/vocabularies/?page=1&count=100")
+    client.get("/api/admin/vocabularies/?page=1&size=100")
   end
 
   context "revoking the token " do
