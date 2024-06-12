@@ -8,9 +8,9 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
+   [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-   [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
 
    [schema.core :as s]
    [taoensso.timbre :refer [error]]))
@@ -220,12 +220,10 @@
      :get
      {:summary (sd/sum_adm "Query context_keys. TESTME")
       :handler handle_adm-list-context_keys
-      :middleware [
-;                    wrap-authorize-admin!
-                    (pagination-handler )
-                    ]
+      :middleware [;                    wrap-authorize-admin!
+                   (pagination-handler)]
       :coercion reitit.coercion.schema/coercion
-      :swagger    (swagger-ui-pagination)
+      :swagger (swagger-ui-pagination)
       :parameters {:query {(s/optional-key :changed_after) s/Inst
                            (s/optional-key :created_after) s/Inst
                            (s/optional-key :updated_after) s/Inst

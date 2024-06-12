@@ -9,9 +9,9 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+            [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
-            [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
             [reitit.coercion.schema]
             [schema.core :as s]
             [taoensso.timbre :refer [error info]]))
@@ -190,7 +190,7 @@
 ;                :swagger {:produces "application/json"}
                 :content-type "application/json"
 
-                :swagger    (swagger-ui-pagination)
+                :swagger (swagger-ui-pagination)
                 :middleware [(pagination-handler)]
 
                 :parameters {:query schema_query-groups}
@@ -291,11 +291,10 @@
 
                                :handler group-users/handle_get-group-users
                                :middleware [wrap-authorize-admin!
-                                            (pagination-handler)
-                                            ]
+                                            (pagination-handler)]
                                :coercion reitit.coercion.schema/coercion
 
-                               :swagger     (swagger-ui-pagination)
+                               :swagger (swagger-ui-pagination)
 
                                :parameters {:path {:group-id s/Uuid}
 ;                                            :query {(s/optional-key :page) s/Int

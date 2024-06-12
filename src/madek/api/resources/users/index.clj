@@ -31,6 +31,7 @@
         res (sd/transform_ml_map res)]
     (sd/response_ok res)))
 
+;; TODO: not in use
 ;(def query-schema
 ;  {
 ;;    (s/optional-key :count) s/Int

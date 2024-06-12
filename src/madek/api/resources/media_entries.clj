@@ -13,8 +13,8 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
-            [next.jdbc :as jdbc]
             [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
+            [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
             [reitit.ring.middleware.multipart :as multipart]
@@ -358,9 +358,8 @@
       :content-type "application/json"
       :handler handle_query_media_entry
       :middleware [jqh/ring-wrap-parse-json-query-parameters
-                   (pagination-handler)
-                   ]
-      :swagger     (swagger-ui-pagination)
+                   (pagination-handler)]
+      :swagger (swagger-ui-pagination)
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
       :responses {200 {:body s/Any}
@@ -370,11 +369,10 @@
      {:summary "Query media-entries with all related data. TESTME"
 ;      :swagger {:produces "application/json"}
       :content-type "application/json"
-      :swagger     (swagger-ui-pagination)
+      :swagger (swagger-ui-pagination)
       :handler handle_query_media_entry-related-data
       :middleware [jqh/ring-wrap-parse-json-query-parameters
-                   (pagination-handler)
-                   ]
+                   (pagination-handler)]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_media_entries}
       :responses {200 {:body schema_query_media_entries_related_result}}}}]])

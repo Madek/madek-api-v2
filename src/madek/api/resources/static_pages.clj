@@ -120,7 +120,6 @@
 (def admin-routes
 
   ["/static-pages"
-;   {:swagger {:tags ["admin/static-pages"] :security [{"auth" []}]}}
    {:swagger {:tags ["admin/static-pages"]}}
    ["/"
     {:post {:summary (sd/sum_adm "Create static_page.")
@@ -128,7 +127,6 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_create_static_page}
             :middleware [wrap-authorize-admin!]
-
             :responses {200 {:body schema_export_static_page}
                         406 {:description "Not Acceptable."
                              :schema s/Str

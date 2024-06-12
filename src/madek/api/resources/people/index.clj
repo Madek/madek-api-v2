@@ -10,7 +10,7 @@
    [madek.api.utils.helper :refer [parse-specific-keys]]
    [madek.api.utils.pagination :as pagination]
    [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination ItemQueryParams]]
-   [madek.api.utils.validation :refer [greater-equal-zero-validation greater-zero-validation ]]
+   [madek.api.utils.validation :refer [greater-equal-zero-validation greater-zero-validation]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -77,11 +77,10 @@
 ;   :swagger {:produces "application/json"}
    :parameters {:query query-schema}
    :content-type "application/json"
-   :swagger     (swagger-ui-pagination)
+   :swagger (swagger-ui-pagination)
 
    :handler handler
-   :middleware [
-;                 wrap-authorize-admin!
+   :middleware [;                 wrap-authorize-admin!
                 (pagination-handler ItemQueryParams)]
 ;                (pagination-handler (merge schema_query_keyword ItemQueryParams))]
    :coercion reitit.coercion.schema/coercion

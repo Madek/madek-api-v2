@@ -152,12 +152,11 @@
       :description "Query collection collection arcs with optional pagination."
       :handler handle_query-arcs
       :coercion reitit.coercion.schema/coercion
-      :middleware  [                    (pagination-optional-handler)]
-      :swagger      (swagger-ui-pagination)
+      :middleware [(pagination-optional-handler)]
+      :swagger (swagger-ui-pagination)
       :parameters {:query {(s/optional-key :child_id) s/Uuid
-                           (s/optional-key :parent_id) s/Uuid
-                           }
-                   }
+                           (s/optional-key :parent_id) s/Uuid}}
+
       :responses {200 {:body s/Any}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id

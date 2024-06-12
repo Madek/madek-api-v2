@@ -8,8 +8,8 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -157,12 +157,10 @@
     {:get {:summary (sd/sum_adm "List edit_sessions. TESTME")
            :handler handle_adm_list-edit-sessions
            :middleware [wrap-authorize-admin!
-                        (pagination-handler )
-                        ]
+                        (pagination-handler)]
            :coercion reitit.coercion.schema/coercion
 
-
-           :swagger    (swagger-ui-pagination)
+           :swagger (swagger-ui-pagination)
 
            :parameters {:query schema_adm_query_edit_session}}}]
    ["/:id"
@@ -185,12 +183,10 @@
    ["/"
     {:get {:summary (sd/sum_usr "List authed users edit_sessions. TESTME")
            :handler handle_usr_list-edit-sessions
-           :middleware [
-                         authorization/wrap-authorized-user
-                         (pagination-handler)
-                           ]
+           :middleware [authorization/wrap-authorized-user
+                        (pagination-handler)]
            :coercion reitit.coercion.schema/coercion
-           :swagger    (swagger-ui-pagination)
+           :swagger (swagger-ui-pagination)
 
            :parameters {:query schema_usr_query_edit_session}}}]
 
