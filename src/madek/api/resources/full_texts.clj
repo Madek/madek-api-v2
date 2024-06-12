@@ -7,6 +7,7 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -107,27 +108,29 @@
                                     :full_texts :media_resource_id
                                     :full_text send404))))
 
+(def schema-query {(s/optional-key :full_data) s/Bool
+                   (s/optional-key :media_resource_id) s/Uuid
+                   (s/optional-key :text) s/Str})
+
 ; TODO tests
 ; TODO howto access control or full_texts is public meta data
 (def query-routes
-  [["/full_texts"
-    {:swagger {:tags ["full_texts"]}}
-    ["/"
-     {:get {:summary (sd/sum_usr "Query or list full_texts.")
-            :handler handle_list-full_texts
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:query {(s/optional-key :full_data) s/Bool
-                                 (s/optional-key :media_resource_id) s/Uuid
-                                 (s/optional-key :text) s/Str
-                                 (s/optional-key :page) s/Int
-                                 (s/optional-key :count) s/Int}}}}]
+  ["/"
+   {:swagger {:tags ["full_texts"]}}
+   ["full_texts"
+    {:get {:summary (sd/sum_usr "Query or list full_texts.")
+           :handler handle_list-full_texts
+           :coercion reitit.coercion.schema/coercion
+           :middleware [(pagination-validation-handler (merge optional-pagination-params schema-query))]
+           :swagger (swagger-ui-pagination)
+           :parameters {:query schema-query}}}]
 
-    ["/full_texts/:media_resource_id"
-     {:get {:summary (sd/sum_usr "Get full_text.")
-            :handler handle_get-full_text
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:media_resource_id s/Uuid}}
-            :middleware [(wrap-find-full_text :media_resource_id true)]}}]]])
+   ["full_texts/:media_resource_id"
+    {:get {:summary (sd/sum_usr "Get full_text.")
+           :handler handle_get-full_text
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:media_resource_id s/Uuid}}
+           :middleware [(wrap-find-full_text :media_resource_id true)]}}]])
 
 ; TODO tests
 ; TODO Frage: siehe web-app: ??

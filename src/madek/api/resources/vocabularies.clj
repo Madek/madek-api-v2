@@ -83,30 +83,30 @@
 
 ; TODO vocab permission
 (def admin-routes
-  ["/vocabularies"
+  ["/"
    {:swagger {:tags ["admin/vocabularies"]}}
-   ["/"
+   ["vocabularies"
     {:get get/admin.vocabularies
 
      :post post/admin.vocabularies}]
 
-   ["/:id"
+   ["vocabularies/:id"
     {:get get/admin.vocabularies.id
 
      :put put/admin.vocabularies.id
 
      :delete delete/admin.vocabularies.id}]
 
-   ["/:id/perms"
-    ["/"
+   ["vocabularies/:id/"
+    ["perms"
      {:get get/admin.vocabularies.id.perms
 
       :put put/admin.vocabularies.id.perms}]
 
-    ["/users"
+    ["perms/users"
      {:get get/admin.vocabularies.users}]
 
-    ["/user/:user_id"
+    ["perms/user/:user_id"
      {:get get/admin.vocabularies.users.user_id
 
       :post post/admin.vocabularies.users.user_id
@@ -115,10 +115,10 @@
 
       :delete delete/admin.vocabularies.user.user_id}]
 
-    ["/groups"
+    ["perms/groups"
      {:get get/admin.vocabularies.groups}]
 
-    ["/group/:group_id"
+    ["perms/group/:group_id"
      {:get get/admin.vocabularies.group.group_id
 
       :post post/admin.vocabularies.group.group_id
@@ -128,11 +128,11 @@
       :delete delete/admin.vocabularies.group.group_id}]]])
 
 (def user-routes
-  ["/vocabularies"
+  ["/"
    {:swagger {:tags ["vocabulary"]}}
-   ["/" {:get get/user.vocabularies}]
+   ["vocabularies" {:get get/user.vocabularies}]
 
-   ["/:id" {:get get/user.vocabularies.id}]])
+   ["vocabularies/:id" {:get get/user.vocabularies.id}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

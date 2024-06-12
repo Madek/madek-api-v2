@@ -110,9 +110,9 @@
 ; TODO tests
 (def ring-routes
 
-  ["/delegations"
+  ["/"
    {:swagger {:tags ["admin/delegations"]}}
-   ["/"
+   ["delegations"
     {:post {:summary (sd/sum_adm_todo "Create delegations.")
             ; TODO labels and descriptions
             :handler handle_create-delegations
@@ -136,7 +136,7 @@
            :responses {200 {:body [schema_get_delegations]}}}}]
 
    ; edit delegation
-   ["/:id"
+   ["delegations/:id"
     {:get {:summary (sd/sum_adm "Get delegations by id.")
            :handler handle_get-delegation
            :middleware [(wwrap-find-delegation :id :id true)]

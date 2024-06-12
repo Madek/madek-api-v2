@@ -8,8 +8,7 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [parse-specific-keys]]
-   [madek.api.utils.pagination :as pagination]
-   [madek.api.utils.validation :refer [greater-equal-zero-validation greater-zero-validation]]
+   [madek.api.utils.pagination :as pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -64,18 +63,16 @@
 
 (def query-schema
   {(s/optional-key :institution) s/Str
-   (s/optional-key :subtype) s/Str
-   (s/optional-key :page) greater-equal-zero-validation
-   (s/optional-key :count) greater-zero-validation})
+   (s/optional-key :subtype) s/Str})
 
 (def route
   {:summary (sd/sum_adm "Get list of people ids.")
    :description "Get list of people ids."
-   :swagger {:produces "application/json"}
    :parameters {:query query-schema}
-   :content-type "application/json"
    :handler handler
-   :middleware [wrap-authorize-admin!]
+   :middleware [wrap-authorize-admin!
+                (pagination-validation-handler (merge optional-pagination-params query-schema))]
+   :swagger (swagger-ui-pagination)
    :coercion reitit.coercion.schema/coercion
    :responses {200 {:body {:people [get-person/schema]}}}})
 

@@ -161,9 +161,9 @@
 
 ; TODO custom urls response coercion
 (def query-routes
-  ["/custom_urls"
+  ["/"
    {:swagger {:tags ["api/custom_urls"]}}
-   ["/"
+   ["custom_urls"
     {:get {:summary (sd/sum_usr "Query and list custom_urls.")
            :handler handle_list-custom-urls
            :coercion reitit.coercion.schema/coercion
@@ -171,7 +171,7 @@
                                 (s/optional-key :id) s/Str
                                 (s/optional-key :media_entry_id) s/Uuid
                                 (s/optional-key :collection_id) s/Uuid}}}}]
-   ["/:id"
+   ["custom_urls/:id"
     {:get {:summary (sd/sum_usr "Get custom_url.")
            :handler handle_get-custom-url
            :coercion reitit.coercion.schema/coercion

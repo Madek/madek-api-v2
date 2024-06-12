@@ -140,9 +140,9 @@
      :responses {200 {:body {:delegation_ids [s/Uuid]}}}}}])
 
 (def admin-routes
-  [["/delegation/groups"
+  [["/delegation/"
     {:swagger {:tags ["admin/delegation/groups"]}}
-    ["/"
+    ["groups"
      {:get
       {:summary (sd/sum_adm "Query delegations_groups.")
        :handler handle_list-delegations_groups
@@ -152,7 +152,7 @@
                             (s/optional-key :delegation_id) s/Uuid
                             (s/optional-key :full-data) s/Bool}}}}]
 
-    ["/delegation/groups/:delegation_id/:group_id"
+    ["groups/delegation/groups/:delegation_id/:group_id"
      {:post
       {:summary (sd/sum_adm "Create delegations_group for group and delegation.")
        :handler handle_create-delegations_group

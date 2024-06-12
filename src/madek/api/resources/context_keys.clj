@@ -8,6 +8,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
+   [madek.api.utils.pagination :refer [pagination-validation-handler optional-pagination-params swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -196,12 +197,21 @@
    :updated_at s/Any
    :created_at s/Any})
 
+(def schema_query
+  {(s/optional-key :changed_after) s/Inst
+   (s/optional-key :created_after) s/Inst
+   (s/optional-key :updated_after) s/Inst
+   (s/optional-key :id) s/Uuid
+   (s/optional-key :context_id) s/Str
+   (s/optional-key :meta_key_id) s/Str
+   (s/optional-key :is_required) s/Bool})
+
 ; TODO docu
 ; TODO tests
 (def admin-routes
-  ["/context-keys"
+  ["/"
    {:swagger {:tags ["admin/context-keys"] :security [{"auth" []}]}}
-   ["/"
+   ["context-keys"
     {:post
      {:summary (sd/sum_adm "Post context_key by id.")
       :swagger {:security [{"auth" []}]}
@@ -218,21 +228,15 @@
      :get
      {:summary (sd/sum_adm "Query context_keys.")
       :handler handle_adm-list-context_keys
-      :middleware [wrap-authorize-admin!]
+      :middleware [wrap-authorize-admin!
+                   (pagination-validation-handler (merge optional-pagination-params schema_query))]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :changed_after) s/Inst
-                           (s/optional-key :created_after) s/Inst
-                           (s/optional-key :updated_after) s/Inst
-                           (s/optional-key :page) s/Int
-                           (s/optional-key :count) s/Int
-                           (s/optional-key :id) s/Uuid
-                           (s/optional-key :context_id) s/Str
-                           (s/optional-key :meta_key_id) s/Str
-                           (s/optional-key :is_required) s/Bool}}
+      :swagger (swagger-ui-pagination)
+      :parameters {:query schema_query}
       :responses {200 {:body [schema_export_context_key_admin]}
                   406 {:body s/Any}}}}]
    ; edit context_key
-   ["/:id"
+   ["context-keys/:id"
     {:get
      {:summary (sd/sum_adm "Get context_key by id.")
       :handler handle_adm-get-context_key
@@ -269,9 +273,9 @@
 
 ; TODO docu
 (def user-routes
-  ["/context-keys"
+  ["/"
    {:swagger {:tags ["context-keys"] :security []}}
-   ["/"
+   ["context-keys"
     {:get
      {:summary (sd/sum_pub "Query / List context_keys.")
       :handler handle_usr-list-context_keys
@@ -283,7 +287,7 @@
       :responses {200 {:body [schema_export_context_key]}
                   406 {:body s/Any}}}}]
 
-   ["/:id"
+   ["context-keys/:id"
     {:get
      {:summary (sd/sum_pub "Get context_key by id.")
       :handler handle_usr-get-context_key

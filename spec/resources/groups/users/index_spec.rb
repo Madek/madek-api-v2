@@ -19,7 +19,7 @@ describe "getting the index of group-users" do
     include_context :json_client_for_authenticated_admin_user do
       describe "getting the group_users " do
         let :group_users_result do
-          client.get("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users/?count=100")
+          client.get("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users?page=0&size=100")
         end
 
         it "works" do

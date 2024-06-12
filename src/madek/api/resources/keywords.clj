@@ -6,8 +6,8 @@
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [convert-map]]
-   [madek.api.utils.helper :refer [d]]
+   [madek.api.utils.helper :refer [convert-map d]]
+   [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -59,9 +59,7 @@
    (s/optional-key :meta_key_id) s/Str
    (s/optional-key :term) s/Str
    (s/optional-key :description) s/Str
-   (s/optional-key :rdf_class) s/Str
-   (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int})
+   (s/optional-key :rdf_class) s/Str})
 
 (defn user-export-keyword [keyword]
   (->
@@ -168,43 +166,18 @@
                                   :keywords :id
                                   :keyword true)))
 
-(s/defschema ItemQueryParams
-  {(s/optional-key :page) (s/constrained s/Int #(>= % 1) "Must be a positive integer")
-   (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
-
 ;; FIXME: broken endpoint to test doc
 (def query-routes
-  ["/keywords"
+  ["/"
    {:swagger {:tags ["keywords"] :security []}}
-   ["/"
+   ["keywords"
     {:get
      {:summary (sd/sum_pub (d "Query / list keywords."))
       :handler handle_usr-query-keywords
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query ItemQueryParams}
-
-      ;:swagger {:parameters [{:name "page1"
-      ;                        :in "query"
-      ;                        :description "Page number, defaults to 1"
-      ;                        :required false
-      ;                        :value 1
-      ;                        :default 3
-      ;                        :defaults 2
-      ;                        ;:schema {:type "integer"
-      ;                        ;         :format "int32"
-      ;                        ;         :value 11
-      ;                        ;         :defaults 22
-      ;                        ;         :default 44}
-      ;                        }
-      ;                       {:name "size2"
-      ;                        :in "query"
-      ;                        :description "Number of items per page, defaults to 10"
-      ;                        :required false
-      ;                        :value 999
-      ;                        :schema {:type "integer"
-      ;                                 :format "int32"
-      ;                                 :default 10}}]}
-
+      :swagger (swagger-ui-pagination)
+      :middleware [(pagination-validation-handler)]
+      :parameters {:query {}}
       :responses {200 {:body {:keywords [schema_export_keyword_usr]}}
                   202 {:description "Successful response, list of items."
                        :schema {} ;; Define your response schema as needed
@@ -214,7 +187,7 @@
                                                       :items [{:id 1, :name "Item 1"}
                                                               {:id 2, :name "Item 2"}]}}}}}}]
 
-   ["/:id"
+   ["keywords/:id"
     {:get
      {:summary (sd/sum_pub "Get keyword for id.")
       :handler handle_usr-get-keyword
@@ -226,14 +199,16 @@
       :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
 
 (def admin-routes
-  ["/keywords"
+  ["/"
    {:swagger {:tags ["admin/keywords"] :security [{"auth" []}]}}
-   ["/"
+   ["keywords"
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords
-      :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
+      :swagger (swagger-ui-pagination)
+      :middleware [wrap-authorize-admin!
+                   (pagination-validation-handler (merge optional-pagination-params schema_query_keyword))]
       :parameters {:query schema_query_keyword}
       :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
@@ -246,7 +221,7 @@
       :parameters {:body schema_create_keyword}
       :responses {200 {:body schema_export_keyword_adm}
                   406 {:body s/Any}}}}]
-   ["/:id"
+   ["keywords/:id"
     {:get
      {:summary (sd/sum_adm "Get keyword for id")
       :handler handle_adm-get-keyword

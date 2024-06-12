@@ -113,9 +113,9 @@
 ;### routes ###################################################################
 ; TODO docu
 (def admin-routes
-  ["/io_interfaces"
+  ["/"
    {:swagger {:tags ["admin/io_interfaces"] :security [{"auth" []}]}}
-   ["/"
+   ["io_interfaces"
     {:post
      {:summary (sd/sum_adm "Create io_interfaces.")
       :handler handle_create-io_interfaces
@@ -135,7 +135,7 @@
       :responses {200 {:body [schema_export_io_interfaces_opt]}}}}]
 
    ; edit io_interface
-   ["/:id"
+   ["io_interfaces/:id"
     {:get
      {:summary (sd/sum_adm "Get io_interfaces by id.")
       :handler handle_get-io_interface

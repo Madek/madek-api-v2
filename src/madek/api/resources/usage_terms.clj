@@ -116,9 +116,9 @@
 ; TODO tests
 (def admin-routes
 
-  ["/usage-terms"
+  ["/"
    {:swagger {:tags ["admin/usage-terms"] :security [{"auth" []}]}}
-   ["/"
+   ["usage-terms"
     {:post {:summary (sd/sum_adm "Create usage_terms.")
             :handler handle_create-usage_terms
             ;:middleware [(wwrap-find-usage_term :id "id" false)]
@@ -138,7 +138,7 @@
                        406 {:body s/Any}}}}]
 
    ; edit usage_term
-   ["/:id"
+   ["usage-terms/:id"
     {:get {:summary (sd/sum_adm "Get usage_terms by id.")
            :handler handle_get-usage_term
            :middleware [wrap-authorize-admin!
@@ -177,16 +177,16 @@
 
 ; TODO usage_terms get the most recent one ?!?
 (def user-routes
-  ["/usage-terms"
+  ["/"
    {:swagger {:tags ["usage-terms"] :security []}}
-   ["/"
+   ["usage-terms"
     {:get {:summary (sd/sum_pub "List usage_terms.")
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
            :responses {200 {:body [schema_export_usage_term]}}}}]
 
-   ["/:id"
+   ["usage-terms/:id"
     {:get {:summary (sd/sum_pub "Get usage_terms by id.")
            :handler handle_get-usage_term
            :middleware [(wwrap-find-usage_term :id)]

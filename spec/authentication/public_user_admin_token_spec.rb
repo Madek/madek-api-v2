@@ -16,7 +16,7 @@ end
 
 ### TEST ENDPOINTS AS PUBLIC-USER/ANONYMOUS #################################
 
-describe "Test status-code as public-user" do
+describe "1) Test status-code as public-user" do
   it "post responds with 403" do
     user_url = "/api-v2/admin/full_text/"
     response = plain_faraday_json_client.post(user_url) do |req|
@@ -29,48 +29,47 @@ describe "Test status-code as public-user" do
     expect(response.status).to be == 403
   end
 
-  # TODO: Fix logic to return 401 instead of 403
   context "revoking the token " do
     {
       "/api-v2/app-settings" => 200,
-      "/api-v2/context-keys/" => 200,
-      "/api-v2/contexts/" => 200,
-      "/api-v2/meta-keys/" => 200,
+      "/api-v2/context-keys" => 200,
+      "/api-v2/contexts" => 200,
+      "/api-v2/meta-keys" => 200,
       "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
-      "/api-v2/media-entries" => 200,
-      "/api-v2/roles/" => 200,
-      "/api-v2/vocabularies/" => 200,
-      "/api-v2/custom_urls/" => 200,
-      "/api-v2/full_texts/" => 200,
-      "/api-v2/usage-terms/" => 200,
-      "/api-v2/collections" => 200,
-      "/api-v2/keywords/?page=1&size=2" => 200,
-      "/api-v2/groups/" => 200,
+      "/api-v2/media-entries?page=1&size=1" => 200,
+      "/api-v2/roles?page=1&size=1" => 200,
+      "/api-v2/vocabularies" => 200,
+      "/api-v2/custom_urls" => 200,
+      "/api-v2/full_texts?page=1&size=1" => 200,
+      "/api-v2/usage-terms" => 200,
+      "/api-v2/collections?page=1&size=1" => 200,
+      "/api-v2/keywords?page=1&size=2" => 200,
+      "/api-v2/groups" => 200,
 
-      "/api-v2/workflows/" => 401,
+      "/api-v2/workflows" => 401,
       "/api-v2/auth-info" => 401,
-      "/api-v2/edit_sessions/" => 401,
+      "/api-v2/edit_sessions?page=1&size=1" => 401,
 
-      "/api-v2/admin/admins/" => 403,
+      "/api-v2/admin/admins" => 403,
       "/api-v2/admin/app-settings" => 403,
-      "/api-v2/admin/context-keys/" => 403,
-      "/api-v2/admin/contexts/" => 403,
-      "/api-v2/admin/delegations/" => 403,
-      "/api-v2/admin/delegation/users/" => 403,
-      "/api-v2/admin/delegation/groups/" => 403,
-      "/api-v2/admin/edit_sessions/" => 403,
-      "/api-v2/admin/favorite/collections/" => 403,
-      "/api-v2/admin/favorite/media-entries/" => 403,
-      "/api-v2/admin/groups/" => 403,
-      "/api-v2/admin/io_interfaces/" => 403,
-      "/api-v2/admin/keywords/" => 403,
-      "/api-v2/admin/meta-keys/" => 403,
-      "/api-v2/admin/people/" => 403,
-      "/api-v2/admin/roles/?page=1&count=1" => 403,
-      "/api-v2/admin/usage-terms/" => 403,
-      "/api-v2/admin/users/" => 403,
-      "/api-v2/admin/static-pages/" => 403,
-      "/api-v2/admin/vocabularies/" => 403
+      "/api-v2/admin/context-keys" => 403,
+      "/api-v2/admin/contexts" => 403,
+      "/api-v2/admin/delegations" => 403,
+      "/api-v2/admin/delegation/users" => 403,
+      "/api-v2/admin/delegation/groups" => 403,
+      "/api-v2/admin/edit_sessions" => 403,
+      "/api-v2/admin/favorite/collections" => 403,
+      "/api-v2/admin/favorite/media-entries" => 403,
+      "/api-v2/admin/groups" => 403,
+      "/api-v2/admin/io_interfaces" => 403,
+      "/api-v2/admin/keywords" => 403,
+      "/api-v2/admin/meta-keys" => 403,
+      "/api-v2/admin/people" => 403,
+      "/api-v2/admin/roles?page=1&size=1" => 403,
+      "/api-v2/admin/usage-terms" => 403,
+      "/api-v2/admin/users" => 403,
+      "/api-v2/admin/static-pages" => 403,
+      "/api-v2/admin/vocabularies" => 403
 
     }.each do |url, code|
       it "accessing #{url}    results in expected status-code" do
@@ -84,7 +83,7 @@ end
 ### TEST ENDPOINTS WITH MADEK-USER #################################
 
 shared_context :test_proper_basic_auth do
-  describe "Test status-code as madek-user " do
+  describe "2) Test status-code as madek-user " do
     it "against POST endpoints " do
       user_url = "/api-v2/admin/full_text/"
       response = plain_faraday_json_client.post(user_url) do |req|
@@ -97,48 +96,47 @@ shared_context :test_proper_basic_auth do
       expect(response.status).to be == 403
     end
 
-    # TODO: Fix logic to return 401 instead of 403
     context "against GET endpoints " do
       {
         "/api-v2/app-settings" => 200,
-        "/api-v2/context-keys/" => 200,
-        "/api-v2/contexts/" => 200,
-        "/api-v2/meta-keys/" => 200,
+        "/api-v2/context-keys" => 200,
+        "/api-v2/contexts" => 200,
+        "/api-v2/meta-keys" => 200,
         "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
-        "/api-v2/media-entries" => 200,
-        "/api-v2/roles/" => 200,
-        "/api-v2/vocabularies/" => 200,
-        "/api-v2/custom_urls/" => 200,
-        "/api-v2/full_texts/" => 200,
-        "/api-v2/usage-terms/" => 200,
-        "/api-v2/collections" => 200,
-        "/api-v2/keywords/?page=1&size=2" => 200,
-        "/api-v2/groups/" => 200,
+        "/api-v2/media-entries?page=1&size=1" => 200,
+        "/api-v2/roles?page=1&size=1" => 200,
+        "/api-v2/vocabularies" => 200,
+        "/api-v2/custom_urls" => 200,
+        "/api-v2/full_texts?page=1&size=1" => 200,
+        "/api-v2/usage-terms" => 200,
+        "/api-v2/collections?page=1&size=1" => 200,
+        "/api-v2/keywords?page=1&size=2" => 200, # FIXME
+        "/api-v2/groups" => 200,
 
-        "/api-v2/workflows/" => 200,
+        "/api-v2/workflows" => 200,
         "/api-v2/auth-info" => 200,
-        "/api-v2/edit_sessions/" => 200,
+        "/api-v2/edit_sessions?page=1&size=1" => 200,
 
-        "/api-v2/admin/admins/" => 403,
+        "/api-v2/admin/admins" => 403,
         "/api-v2/admin/app-settings" => 403,
-        "/api-v2/admin/context-keys/" => 403,
-        "/api-v2/admin/contexts/" => 403,
-        "/api-v2/admin/delegations/" => 403,
-        "/api-v2/admin/delegation/users/" => 403,
-        "/api-v2/admin/delegation/groups/" => 403,
-        "/api-v2/admin/edit_sessions/" => 403,
-        "/api-v2/admin/favorite/collections/" => 403,
-        "/api-v2/admin/favorite/media-entries/" => 403,
-        "/api-v2/admin/groups/" => 403,
-        "/api-v2/admin/io_interfaces/" => 403,
-        "/api-v2/admin/keywords/" => 403,
-        "/api-v2/admin/meta-keys/" => 403,
-        "/api-v2/admin/people/" => 403,
-        "/api-v2/admin/roles/?page=1&count=1" => 403,
-        "/api-v2/admin/usage-terms/" => 403,
-        "/api-v2/admin/users/" => 403,
-        "/api-v2/admin/static-pages/" => 403,
-        "/api-v2/admin/vocabularies/" => 403
+        "/api-v2/admin/context-keys" => 403,
+        "/api-v2/admin/contexts" => 403,
+        "/api-v2/admin/delegations" => 403,
+        "/api-v2/admin/delegation/users" => 403,
+        "/api-v2/admin/delegation/groups" => 403,
+        "/api-v2/admin/edit_sessions" => 403,
+        "/api-v2/admin/favorite/collections" => 403,
+        "/api-v2/admin/favorite/media-entries" => 403,
+        "/api-v2/admin/groups" => 403,
+        "/api-v2/admin/io_interfaces" => 403,
+        "/api-v2/admin/keywords" => 403,
+        "/api-v2/admin/meta-keys" => 403,
+        "/api-v2/admin/people" => 403,
+        "/api-v2/admin/roles?page=1&size=1" => 403,
+        "/api-v2/admin/usage-terms" => 403,
+        "/api-v2/admin/users" => 403,
+        "/api-v2/admin/static-pages" => 403,
+        "/api-v2/admin/vocabularies" => 403
 
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
@@ -170,7 +168,7 @@ end
 
 ## TEST ENDPOINTS AS MADEK-ADMIN #################################
 
-context "resource with admin auth" do
+context "3) resource with admin auth" do
   include_context :json_client_for_authenticated_admin_user do
     describe "Test status-code as madek-user " do
       it "against POST endpoints " do
@@ -186,48 +184,47 @@ context "resource with admin auth" do
         expect(response.status).to be == 403
       end
 
-      # TODO: Fix logic to return 401 instead of 403
       context "against GET endpoints " do
         {
           "/api-v2/app-settings" => 200,
-          "/api-v2/context-keys/" => 200,
-          "/api-v2/contexts/" => 200,
-          "/api-v2/meta-keys/" => 200,
+          "/api-v2/context-keys" => 200,
+          "/api-v2/contexts" => 200,
+          "/api-v2/meta-keys" => 200,
           "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
-          "/api-v2/media-entries" => 200,
-          "/api-v2/roles/" => 200,
-          "/api-v2/vocabularies/" => 200,
-          "/api-v2/custom_urls/" => 200,
-          "/api-v2/full_texts/" => 200,
-          "/api-v2/usage-terms/" => 200,
-          "/api-v2/collections" => 200,
-          "/api-v2/keywords/?page=1&size=2" => 200,
-          "/api-v2/groups/" => 200,
+          "/api-v2/media-entries?page=1&size=1" => 200,
+          "/api-v2/roles?page=1&size=1" => 200,
+          "/api-v2/vocabularies" => 200,
+          "/api-v2/custom_urls" => 200,
+          "/api-v2/full_texts?page=1&size=1" => 200,
+          "/api-v2/usage-terms" => 200,
+          "/api-v2/collections?page=1&size=1" => 200,
+          "/api-v2/keywords?page=1&size=2" => 200,
+          "/api-v2/groups" => 200,
 
-          "/api-v2/workflows/" => 200,
+          "/api-v2/workflows" => 200,
           "/api-v2/auth-info" => 200,
-          "/api-v2/edit_sessions/" => 200,
+          "/api-v2/edit_sessions?page=1&size=1" => 200,
 
-          "/api-v2/admin/admins/" => 200,
+          "/api-v2/admin/admins" => 200,
           "/api-v2/admin/app-settings" => 200,
-          "/api-v2/admin/context-keys/" => 200,
-          "/api-v2/admin/contexts/" => 200,
-          "/api-v2/admin/delegations/" => 200,
-          "/api-v2/admin/delegation/users/" => 200,
-          "/api-v2/admin/delegation/groups/" => 200,
-          "/api-v2/admin/edit_sessions/" => 200,
-          "/api-v2/admin/favorite/collections/" => 200,
-          "/api-v2/admin/favorite/media-entries/" => 200,
-          "/api-v2/admin/groups/" => 200,
-          "/api-v2/admin/io_interfaces/" => 200,
-          "/api-v2/admin/keywords/" => 200,
-          "/api-v2/admin/meta-keys/" => 200,
-          "/api-v2/admin/people/" => 200,
-          "/api-v2/admin/roles/?page=1&count=1" => 200,
-          "/api-v2/admin/usage-terms/" => 200,
-          "/api-v2/admin/users/" => 200,
-          "/api-v2/admin/static-pages/" => 200,
-          "/api-v2/admin/vocabularies/" => 200
+          "/api-v2/admin/context-keys" => 200,
+          "/api-v2/admin/contexts" => 200,
+          "/api-v2/admin/delegations" => 200,
+          "/api-v2/admin/delegation/users" => 200,
+          "/api-v2/admin/delegation/groups" => 200,
+          "/api-v2/admin/edit_sessions" => 200,
+          "/api-v2/admin/favorite/collections" => 200,
+          "/api-v2/admin/favorite/media-entries" => 200,
+          "/api-v2/admin/groups" => 200,
+          "/api-v2/admin/io_interfaces" => 200,
+          "/api-v2/admin/keywords" => 200,
+          "/api-v2/admin/meta-keys" => 200,
+          "/api-v2/admin/people" => 200,
+          "/api-v2/admin/roles?page=1&size=1" => 200,
+          "/api-v2/admin/usage-terms" => 200,
+          "/api-v2/admin/users" => 200,
+          "/api-v2/admin/static-pages" => 200,
+          "/api-v2/admin/vocabularies" => 200
 
         }.each do |url, code|
           it "accessing #{url}    results in expected status-code" do
@@ -242,7 +239,7 @@ end
 
 ## TEST ENDPOINTS AS MADEK-TODKEN-USER #################################
 
-context "resource with token-user auth" do
+context "4) resource with token-user auth" do
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
@@ -264,48 +261,47 @@ context "resource with token-user auth" do
       expect(response.status).to be == 403
     end
 
-    # TODO: Fix logic to return 401 instead of 403
     context "against GET endpoints " do
       {
         "/api-v2/app-settings" => 200,
-        "/api-v2/context-keys/" => 200,
-        "/api-v2/contexts/" => 200,
-        "/api-v2/meta-keys/" => 200,
+        "/api-v2/context-keys" => 200,
+        "/api-v2/contexts" => 200,
+        "/api-v2/meta-keys" => 200,
         "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
-        "/api-v2/media-entries" => 200,
-        "/api-v2/roles/" => 200,
-        "/api-v2/vocabularies/" => 200,
-        "/api-v2/custom_urls/" => 200,
-        "/api-v2/full_texts/" => 200,
-        "/api-v2/usage-terms/" => 200,
-        "/api-v2/collections" => 200,
-        "/api-v2/keywords/?page=1&size=2" => 200,
-        "/api-v2/groups/" => 200,
+        "/api-v2/media-entries?page=1&size=1" => 200,
+        "/api-v2/roles?page=1&size=1" => 200,
+        "/api-v2/vocabularies" => 200,
+        "/api-v2/custom_urls" => 200,
+        "/api-v2/full_texts?page=1&size=1" => 200,
+        "/api-v2/usage-terms" => 200,
+        "/api-v2/collections?page=1&size=1" => 200,
+        "/api-v2/keywords?page=1&size=2" => 200,
+        "/api-v2/groups" => 200,
 
-        "/api-v2/workflows/" => 200,
+        "/api-v2/workflows" => 200,
         "/api-v2/auth-info" => 200,
-        "/api-v2/edit_sessions/" => 200,
+        "/api-v2/edit_sessions?page=1&size=1" => 200,
 
-        "/api-v2/admin/admins/" => 403,
+        "/api-v2/admin/admins" => 403,
         "/api-v2/admin/app-settings" => 403,
-        "/api-v2/admin/context-keys/" => 403,
-        "/api-v2/admin/contexts/" => 403,
-        "/api-v2/admin/delegations/" => 403,
-        "/api-v2/admin/delegation/users/" => 403,
-        "/api-v2/admin/delegation/groups/" => 403,
-        "/api-v2/admin/edit_sessions/" => 403,
-        "/api-v2/admin/favorite/collections/" => 403,
-        "/api-v2/admin/favorite/media-entries/" => 403,
-        "/api-v2/admin/groups/" => 403,
-        "/api-v2/admin/io_interfaces/" => 403,
-        "/api-v2/admin/keywords/" => 403,
-        "/api-v2/admin/meta-keys/" => 403,
-        "/api-v2/admin/people/" => 403,
-        "/api-v2/admin/roles/?page=1&count=1" => 403,
-        "/api-v2/admin/usage-terms/" => 403,
-        "/api-v2/admin/users/" => 403,
-        "/api-v2/admin/static-pages/" => 403,
-        "/api-v2/admin/vocabularies/" => 403
+        "/api-v2/admin/context-keys" => 403,
+        "/api-v2/admin/contexts" => 403,
+        "/api-v2/admin/delegations" => 403,
+        "/api-v2/admin/delegation/users" => 403,
+        "/api-v2/admin/delegation/groups" => 403,
+        "/api-v2/admin/edit_sessions" => 403,
+        "/api-v2/admin/favorite/collections" => 403,
+        "/api-v2/admin/favorite/media-entries" => 403,
+        "/api-v2/admin/groups" => 403,
+        "/api-v2/admin/io_interfaces" => 403,
+        "/api-v2/admin/keywords" => 403,
+        "/api-v2/admin/meta-keys" => 403,
+        "/api-v2/admin/people" => 403,
+        "/api-v2/admin/roles?page=1&size=1" => 403,
+        "/api-v2/admin/usage-terms" => 403,
+        "/api-v2/admin/users" => 403,
+        "/api-v2/admin/static-pages" => 403,
+        "/api-v2/admin/vocabularies" => 403
 
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do

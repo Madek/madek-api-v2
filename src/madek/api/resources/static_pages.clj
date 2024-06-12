@@ -119,9 +119,9 @@
 ; TODO user and admin routes
 (def admin-routes
 
-  ["/static-pages"
+  ["/"
    {:swagger {:tags ["admin/static-pages"]}}
-   ["/"
+   ["static-pages"
     {:post {:summary (sd/sum_adm "Create static_page.")
             :handler handle_create-static_page
             :coercion reitit.coercion.schema/coercion
@@ -141,7 +141,7 @@
            :middleware [wrap-authorize-admin!]
            :parameters {:query {(s/optional-key :full_data) s/Bool}}}}]
 
-   ["/:id"
+   ["static-pages/:id"
     {:get {:summary (sd/sum_adm "Get static_pages by id.")
            :handler handle_get-static_page
            :middleware [wrap-authorize-admin!

@@ -236,9 +236,9 @@
                                         :meta_key send404))))
 
 (def admin-routes
-  ["/meta-keys"
+  ["/"
    {:swagger {:tags ["admin/meta-keys"] :security [{"auth" []}]}}
-   ["/"
+   ["meta-keys"
     {:get {:summary (sd/sum_adm "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_adm-query-meta-keys
@@ -271,7 +271,7 @@
                              :examples {"application/json" {:msg "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\")."}}}
                         406 {:body s/Any}}}}]
 
-   ["/:id"
+   ["meta-keys/:id"
     {:get {:summary (sd/sum_adm "Get meta-key by id")
            :description "Get meta-key by id. Returns 404, if no such meta-key exists."
            :content-type "application/json"
@@ -344,9 +344,9 @@
 
 ; TODO tests
 (def query-routes
-  ["/meta-keys"
+  ["/"
    {:swagger {:tags ["meta-keys"]}}
-   ["/"
+   ["meta-keys"
     {:get {:summary (sd/sum_usr_pub "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
@@ -359,7 +359,7 @@
            :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"
                             :body {:meta-keys [schema_export-meta-key-usr]}}}}}]
 
-   ["/:id"
+   ["meta-keys/:id"
     {:get {:summary (sd/sum_usr_pub (v "Get meta-key by id"))
            :description "Get meta-key by id. Returns 404, if no such meta-key exists."
            :content-type "application/json"

@@ -137,9 +137,9 @@
 ; TODO tests
 (def admin-routes
 
-  ["/contexts"
+  ["/"
    {:swagger {:tags ["admin/contexts"] :security [{"auth" []}]}}
-   ["/"
+   ["contexts"
     {:post {:summary (sd/sum_adm_todo "Create contexts.")
             :handler handle_create-contexts
             :middleware [wrap-authorize-admin!]
@@ -156,7 +156,7 @@
            :responses {200 {:body [schema_export_contexts_adm]}
                        406 {:body s/Any}}}}]
    ; edit context
-   ["/:id"
+   ["contexts/:id"
     {:get {:summary (sd/sum_adm "Get contexts by id.")
            :handler handle_adm-get-context
            :middleware [wrap-authorize-admin!
@@ -192,9 +192,9 @@
 ; TODO docu and tests
 (def user-routes
 
-  ["/contexts"
+  ["/"
    {:swagger {:tags ["contexts"]}}
-   ["/"
+   ["contexts"
     {:get {:summary (sd/sum_usr "List contexts.")
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion
@@ -202,7 +202,7 @@
            :responses {200 {:body [schema_export_contexts_usr]}
                        406 {:body s/Any}}}}]
    ; edit context
-   ["/:id"
+   ["contexts/:id"
     {:get {:summary (sd/sum_usr "Get contexts by id.")
            :handler handle_usr-get-context
            :middleware [(wwrap-find-context :id :id true)]

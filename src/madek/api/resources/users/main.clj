@@ -15,12 +15,12 @@
 ;### routes ###################################################################
 
 (def admin-routes
-  ["/users"
+  ["/"
    {:swagger {:tags ["admin/users"] :security [{"auth" []}]}}
-   ["/"
+   ["users"
     {:get index/route
      :post create-user/route}]
-   ["/:id"
+   ["users/:id"
     {:get get-user/route
      :delete delete-user/route
      :patch update-user/route}]])

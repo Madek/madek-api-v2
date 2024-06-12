@@ -10,7 +10,7 @@ context "admin io_interfaces" do
   end
 
   let :query_url do
-    "/api-v2/admin/io_interfaces/"
+    "/api-v2/admin/io_interfaces"
   end
 
   let :io_interface_url do

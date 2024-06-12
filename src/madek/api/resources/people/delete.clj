@@ -32,7 +32,7 @@
 
 (def route
   {:summary (sd/sum_adm "Delete person by id")
-   :description "Delete a person by id (the madek interal UUID). Returns 404, if no such person exists."
+   :description "Delete a person by id (the madek internal UUID). Returns 404, if no such person exists."
    :handler handler
    :middleware [wrap-authorize-admin!]
    :swagger {:produces "application/json"}

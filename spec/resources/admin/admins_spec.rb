@@ -7,7 +7,7 @@ context "admin users" do
   end
 
   let :query_url do
-    "/api-v2/admin/admins/"
+    "/api-v2/admin/admins"
   end
   let :admin_url do
     "/api-v2/admin/admins/#{@admin.id}"

@@ -7,21 +7,21 @@
    [madek.api.resources.people.update :as update-person]))
 
 (def user-routes
-  ["/people"
+  ["/"
    {:swagger {:tags ["people"]}}
-   ["/"
+   ["people"
     {;:get index/route
      }]
-   ["/:id"
+   ["people/:id"
     {:get get-person/route}]])
 
 (def admin-routes
-  ["/people"
+  ["/"
    {:swagger {:tags ["admin/people"] :security [{"auth" []}]}}
-   ["/"
+   ["people"
     {:get index/route
      :post create-person/route}]
-   ["/:id"
+   ["people/:id"
     {:get get-person/route
      :patch update-person/route
      :delete delete-person/route}]])

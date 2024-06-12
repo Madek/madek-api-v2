@@ -10,7 +10,7 @@ describe "roles" do
   include_context :authenticated_json_client do
     describe "get roles" do
       let :roles_result do
-        authenticated_json_client.get("/api-v2/roles/?count=100")
+        authenticated_json_client.get("/api-v2/roles?page=0&size=100")
       end
 
       it "responses with 200" do
