@@ -89,7 +89,7 @@
    ])
 (def admin-routes
   ; TODO use wrap admin
-  ["/api/admin" ;{:middleware [
+  ["/admin" ;{:middleware [
                 ;              authentication/wrap
                               ;wrap-authorize-admin!
                 ;              ]}
@@ -129,7 +129,7 @@
    vocabularies/admin-routes])
 
 (def user-routes
-  ["/api" {:middleware [authentication/wrap]}
+  ["" {:middleware [authentication/wrap]}
 
    app-settings/user-routes
    context_keys/user-routes

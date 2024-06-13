@@ -26,7 +26,7 @@
       {:status 401 :body {:msg "The management pages require basic password authentication."}})))
 
 (def api-routes
-  ["/api/management"
+  ["/management"
    ["/status" {:get {:middleware [mw-management-auth]
                      :handler get-status}}]
    ["/shutdown" {:post {:middleware [mw-management-auth]

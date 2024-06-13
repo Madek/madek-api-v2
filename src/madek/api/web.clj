@@ -95,7 +95,7 @@
 ;### routes ###################################################################
 
 (def auth-info-route
-  ["/api"
+  ["/api-v2"
    {:swagger {:tags ["api/auth-info"]}}
    ["/auth-info"
     {:get
@@ -114,7 +114,7 @@
                        :examples {"application/json" {:message "Not authorized"}}}}}}]])
 
 (def swagger-routes
-  [""
+  ["/api-v2"
    {:no-doc false
     :swagger {:info {:title "Madek API v2"
                      :description (mslurp (io/resource "md/api-description.md"))
@@ -130,17 +130,15 @@
                                     :in "header"}}]}}
 
    ["/swagger.json" {:no-doc true :get (swagger/create-swagger-handler)}]
-   ["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler)}]])
+   ["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler {:url "/api-v2/swagger.json"})}]])
 
 (def get-router-data-all
   (->>
-   [auth-info-route
-    madek.api.resources/user-routes
-    madek.api.resources/admin-routes
-    ;management/api-routes
-    ;test-routes
-    swagger-routes]
-   (filterv some?)))
+    [auth-info-route
+     (update-in madek.api.resources/user-routes [0] #(str "/api-v2" %))
+     (update-in madek.api.resources/admin-routes [0] #(str "/api-v2" %))
+     swagger-routes]
+    (filterv some?)))
 
 (def get-router-data-user
   (->>
