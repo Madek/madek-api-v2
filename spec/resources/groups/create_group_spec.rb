@@ -1,4 +1,6 @@
 require "spec_helper"
+# require "factories/users"
+# require "shared/clients"
 
 context "groups" do
   context "admin user" do
