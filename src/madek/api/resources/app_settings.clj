@@ -1,5 +1,6 @@
 (ns madek.api.resources.app-settings
   (:require
+   [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
@@ -164,7 +165,7 @@
       :put {:summary (sd/sum_adm "Update App Settings.")
             :handler handle_update-app-settings
             :middleware [wrap-authorize-admin!]
-            :description (mslurp "./md/admin-app-settings.md")
+            :description (mslurp (io/resource "md/admin-app-settings.md"))
             :swagger {:produces "application/json"
                       :consumes "application/json"}
             :content-type "application/json"

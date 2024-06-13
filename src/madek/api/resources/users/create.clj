@@ -1,5 +1,6 @@
 (ns madek.api.resources.users.create
   (:require
+   [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
@@ -50,7 +51,7 @@
    :coercion reitit.coercion.schema/coercion
    :content-type "application/json"
    ;:description "Create user."
-   :description (mslurp "./md/admin-users-post.md")
+   :description (mslurp (io/resource "md/admin-users-post.md"))
    :handler handle-create-user
    :middleware [wrap-authorize-admin!]
    :parameters {:body schema}

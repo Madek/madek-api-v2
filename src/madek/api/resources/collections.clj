@@ -1,5 +1,6 @@
 (ns madek.api.resources.collections
   (:require
+   [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
@@ -198,7 +199,7 @@
      {:summary (sd/sum_usr "Create collection")
 
       ;:description "CAUTION: Either :responsible_user_id OR :responsible_user_id has to be set - not both (db-constraint)"
-      :description (mslurp "./md/collections-post.md")
+      :description (mslurp (io/resource "md/collections-post.md"))
 
       :handler handle_create-collection
       :swagger {:produces "application/json"

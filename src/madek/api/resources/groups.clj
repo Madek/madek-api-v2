@@ -1,5 +1,6 @@
 (ns madek.api.resources.groups
   (:require [clj-uuid]
+            [clojure.java.io :as io]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.pagination :as pagination]
@@ -268,7 +269,7 @@
                   :accept "application/json"
                   :handler handle_update-group
                   ;:description "Get group by id. Returns 404, if no such group exists."
-                  :description (mslurp "./md/admin-groups-put.md")
+                  :description (mslurp (io/resource "md/admin-groups-put.md"))
                   :middleware [wrap-authorize-admin!]
                   :coercion reitit.coercion.schema/coercion
                   :parameters {:path {:id s/Uuid}

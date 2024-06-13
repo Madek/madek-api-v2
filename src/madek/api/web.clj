@@ -1,5 +1,6 @@
 (ns madek.api.web
   (:require
+   [clojure.java.io :as io]
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
    [madek.api.authentication :as authentication]
@@ -116,7 +117,7 @@
   [""
    {:no-doc false
     :swagger {:info {:title "Madek API v2"
-                     :description (mslurp "md/api-description.md")
+                     :description (mslurp (io/resource "md/api-description.md"))
                      :version "2.0.0"
                      :contact {:name "N/D"}}
               :securityDefinitions {:apiAuth {:type "apiKey"

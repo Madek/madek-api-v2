@@ -1,5 +1,6 @@
 (ns madek.api.resources.meta-keys
   (:require
+   [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.index :as mkindex]
@@ -256,7 +257,7 @@
             :handler handle_create_meta-key
             :middleware [wrap-authorize-admin!]
 
-            :description (mslurp "./md/meta-key-post.md")
+            :description (mslurp (io/resource "md/meta-key-post.md"))
 
             :parameters {:body schema_create-meta-key}
             :content-type "application/json"
@@ -300,7 +301,7 @@
            :content-type "application/json"
            :accept "application/json"
 
-           :description (mslurp "./md/meta-key-put.md")
+           :description (mslurp (io/resource "md/meta-key-put.md"))
 
            :middleware [wrap-authorize-admin!
                         (jqh/wrap-check-valid-meta-key-new :id)

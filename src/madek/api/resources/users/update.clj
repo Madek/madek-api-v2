@@ -1,5 +1,6 @@
 (ns madek.api.resources.users.update
   (:require
+   [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
@@ -50,7 +51,7 @@
    :coercion reitit.coercion.schema/coercion
 
    ;:description "Patch a user with id. Returns 404, if no such user exists."
-   :description (mslurp "./md/users-patch.md")
+   :description (mslurp (io/resource "md/users-patch.md"))
 
    :content-type "application/json"
    :accept "application/json"

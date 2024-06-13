@@ -1,5 +1,6 @@
 (ns madek.api.resources.vocabularies.put
   (:require
+   [clojure.java.io :as io]
    [clojure.string :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
@@ -54,7 +55,7 @@
                             :accept "application/json"
                             :coercion reitit.coercion.schema/coercion
 
-                            :description (mslurp "./md/vocabularies-put.md")
+                            :description (mslurp (io/resource "md/vocabularies-put.md"))
 
                             :swagger {:produces "application/json"
                                       :consumes "application/json"

@@ -1,5 +1,6 @@
 (ns madek.api.resources.vocabularies.post
   (:require
+   [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
@@ -34,7 +35,7 @@
                          :handler handle_create-vocab
                          :middleware [wrap-authorize-admin!]
 
-                         :description (mslurp "./md/vocabularies-post.md")
+                         :description (mslurp (io/resource "md/vocabularies-post.md"))
 
                          :content-type "application/json"
                          :accept "application/json"
