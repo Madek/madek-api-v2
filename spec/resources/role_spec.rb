@@ -6,7 +6,7 @@ context "Getting a role resource without authentication" do
   end
 
   let :plain_json_response do
-    plain_faraday_json_client.get("/api/roles/#{@role.id}")
+    plain_faraday_json_client.get("/api-v2/roles/#{@role.id}")
   end
 
   it "responds with 200" do

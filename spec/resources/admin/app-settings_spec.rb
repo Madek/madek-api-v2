@@ -7,7 +7,7 @@ context "app-settings admin" do
 
   context "resource without authentication" do
     let :plain_json_response do
-      plain_faraday_json_client.get("/api/admin/app-settings")
+      plain_faraday_json_client.get("/api-v2/admin/app-settings")
     end
 
     it "responds with 403" do
@@ -18,7 +18,7 @@ context "app-settings admin" do
   context "resource with user auth" do
     include_context :json_client_for_authenticated_user do
       it "responds with 403" do
-        expect(client.get("/api/admin/app-settings").status).to be == 403
+        expect(client.get("/api-v2/admin/app-settings").status).to be == 403
       end
     end
   end
@@ -27,7 +27,7 @@ context "app-settings admin" do
     include_context :json_client_for_authenticated_admin_user do
       context "read" do
         let :response do
-          client.get("/api/admin/app-settings")
+          client.get("/api-v2/admin/app-settings")
         end
 
         it "responds with 200" do
@@ -50,7 +50,7 @@ context "app-settings admin" do
         # TODO hstore and json data
 
         let :updated_settings do
-          client.put("/api/admin/app-settings") do |req|
+          client.put("/api-v2/admin/app-settings") do |req|
             req.body = {
               available_locales: ["de", "en"],
               brand_logo_url: "nourl",

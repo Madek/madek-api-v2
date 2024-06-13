@@ -4,7 +4,7 @@ context "users" do
   context "admin user" do
     include_context :json_client_for_authenticated_admin_user do
       before :each do
-        @person = client.post("/api/admin/people/") do |req|
+        @person = client.post("/api-v2/admin/people/") do |req|
           req.body = {last_name: "test",
                       subtype: "Person"}.to_json
           req.headers["Content-Type"] = "application/json"
@@ -14,7 +14,7 @@ context "users" do
       describe "creating" do
         describe "a user" do
           it "works" do
-            expect(client.post("/api/admin/users/") do |req|
+            expect(client.post("/api-v2/admin/users/") do |req|
               req.body = {login: "test",
                           person_id: @person[:id]}.to_json
               req.headers["Content-Type"] = "application/json"
@@ -25,7 +25,7 @@ context "users" do
 
       describe "a via post created user" do
         let :created_user do
-          client.post("/api/admin/users/") do |req|
+          client.post("/api-v2/admin/users/") do |req|
             req.body = {login: "test",
                         person_id: @person[:id]}.to_json
             req.headers["Content-Type"] = "application/json"

@@ -10,11 +10,11 @@ context "admin io_interfaces" do
   end
 
   let :query_url do
-    "/api/admin/io_interfaces/"
+    "/api-v2/admin/io_interfaces/"
   end
 
   let :io_interface_url do
-    "/api/admin/io_interfaces/#{@io_interface.id}"
+    "/api-v2/admin/io_interfaces/#{@io_interface.id}"
   end
 
   context "Responds not authorized without authentication" do
@@ -81,7 +81,7 @@ context "admin io_interfaces" do
       context "get" do
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
-          response = client.get("/api/admin/io_interfaces/#{badid}")
+          response = client.get("/api-v2/admin/io_interfaces/#{badid}")
           expect(response.status).to be == 404
         end
 

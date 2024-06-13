@@ -6,7 +6,7 @@ context "Getting a meta-key resource without authentication" do
   end
 
   let :plain_json_response do
-    plain_faraday_json_client.get("/api/meta-keys/#{@meta_key.id}")
+    plain_faraday_json_client.get("/api-v2/meta-keys/#{@meta_key.id}")
   end
 
   it "responds with 200" do

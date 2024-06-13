@@ -14,7 +14,7 @@ context "people" do
     include_context :json_client_for_authenticated_user do
       it "is forbidden to delete any person" do
         expect(
-          client.delete("/api/admin/people/#{@person.id}").status
+          client.delete("/api-v2/admin/people/#{@person.id}").status
         ).to be == 403
       end
     end
@@ -24,20 +24,20 @@ context "people" do
     include_context :json_client_for_authenticated_admin_user do
       context "deleting a standard person" do
         let :delete_person_result do
-          client.delete("/api/admin/people/#{@person.id}")
+          client.delete("/api-v2/admin/people/#{@person.id}")
         end
 
         it "returns the expected status code 200" do
           expect(delete_person_result.status).to be == 204
 
-          expect_audit_entries("DELETE /api/admin/people/#{@person.id}", expected_audit_entries, 204)
+          expect_audit_entries("DELETE /api-v2/admin/people/#{@person.id}", expected_audit_entries, 204)
         end
 
         it "effectively removes the person" do
           expect(delete_person_result.status).to be == 204
           expect(Person.find_by(id: @person.id)).not_to be
 
-          expect_audit_entries("DELETE /api/admin/people/#{@person.id}", expected_audit_entries, 204)
+          expect_audit_entries("DELETE /api-v2/admin/people/#{@person.id}", expected_audit_entries, 204)
         end
       end
     end

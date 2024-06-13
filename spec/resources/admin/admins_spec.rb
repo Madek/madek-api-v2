@@ -7,17 +7,17 @@ context "admin users" do
   end
 
   let :query_url do
-    "/api/admin/admins/"
+    "/api-v2/admin/admins/"
   end
   let :admin_url do
-    "/api/admin/admins/#{@admin.id}"
+    "/api-v2/admin/admins/#{@admin.id}"
   end
   let :admin_user_url do
-    "/api/admin/admins/#{@admin.user_id}/user"
+    "/api-v2/admin/admins/#{@admin.user_id}/user"
   end
 
   let :user_url do
-    "/api/admin/admins/#{@user.id}/user"
+    "/api-v2/admin/admins/#{@user.id}/user"
   end
 
   context "Responds not authorized without authentication" do
@@ -71,13 +71,13 @@ context "admin users" do
 
         it "responds 400 with bad formatted uuid" do
           badid = Faker::Internet.slug(words: nil, glue: "-")
-          response = client.get("/api/admin/admins/#{badid}")
+          response = client.get("/api-v2/admin/admins/#{badid}")
           expect(response.status).to be == 400
         end
 
         it "responds 404 with non-existing id" do
           # TODO build non-existent uuid
-          response = client.get("/api/admin/admins/#{user.id}")
+          response = client.get("/api-v2/admin/admins/#{user.id}")
           expect(response.status).to be == 404
         end
 

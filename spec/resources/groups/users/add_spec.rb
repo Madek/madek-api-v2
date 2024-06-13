@@ -15,20 +15,20 @@ context "adding a user to a group via put" do
       describe "adding the user to the group via put" do
         it "responds with 200" do
           expect(
-            client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
+            client.put("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
           ).to be == 200
         end
 
         it "effectively adds the user to the group" do
-          client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
+          client.put("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
           expect(@group.users.reload.map(&:id)).to include(@user[:id])
         end
 
         it "is indempotent" do
-          client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
+          client.put("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
           expect(@group.users.reload.map(&:id)).to include(@user[:id])
           expect(
-            client.put("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
+            client.put("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
           ).to be == 200
         end
       end

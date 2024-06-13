@@ -8,7 +8,7 @@ context "groups" do
       describe "creating" do
         describe "a group" do
           it "works" do
-            expect(client.post("/api/admin/groups/") do |req|
+            expect(client.post("/api-v2/admin/groups/") do |req|
               req.body = {name: "test"}.to_json
               req.headers["Content-Type"] = "application/json"
             end.status).to be == 201
@@ -17,7 +17,7 @@ context "groups" do
 
         describe "an institutional group" do
           it "works" do
-            expect(client.post("/api/admin/groups/") do |req|
+            expect(client.post("/api-v2/admin/groups/") do |req|
               req.body = {type: "InstitutionalGroup",
                           institutional_id: "12345_x",
                           name: "test"}.to_json
@@ -29,7 +29,7 @@ context "groups" do
 
       describe "a via post created group" do
         let :created_group do
-          client.post("/api/admin/groups/") do |req|
+          client.post("/api-v2/admin/groups/") do |req|
             req.body = {type: "InstitutionalGroup",
                         institutional_id: "12345/x",
                         name: "test"}.to_json

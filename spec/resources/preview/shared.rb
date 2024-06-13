@@ -19,7 +19,7 @@ end
 
 shared_context :preview_resource_via_plain_json do
   let :response do
-    plain_faraday_json_client.get("/api/previews/#{@preview.id}")
+    plain_faraday_json_client.get("/api-v2/previews/#{@preview.id}")
   end
 end
 
@@ -42,7 +42,7 @@ shared_context :auth_preview_resource_via_json do
     basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
   end
   let :response do
-    auth_client_for_preview.get("/api/previews/#{@preview.id}")
+    auth_client_for_preview.get("/api-v2/previews/#{@preview.id}")
   end
 end
 

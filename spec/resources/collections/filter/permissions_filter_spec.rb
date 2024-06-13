@@ -5,7 +5,7 @@ describe "filtering collections" do
   include_context :bunch_of_collections
 
   def get_collections(filter = nil)
-    client.get("/api/collections", filter)
+    client.get("/api-v2/collections", filter)
   end
 
   context "permission params checks" do

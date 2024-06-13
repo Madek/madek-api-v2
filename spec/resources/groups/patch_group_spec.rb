@@ -10,7 +10,7 @@ context "groups" do
       describe "patching/updating" do
         it "works" do
           expect(
-            client.put("/api/admin/groups/#{@group.id}") do |req|
+            client.put("/api-v2/admin/groups/#{@group.id}") do |req|
               req.body = {name: "new name"}.to_json
               req.headers["Content-Type"] = "application/json"
             end.status
@@ -19,7 +19,7 @@ context "groups" do
 
         it "works when we do no changes" do
           expect(
-            client.put("/api/admin/groups/#{@group.id}") do |req|
+            client.put("/api-v2/admin/groups/#{@group.id}") do |req|
               req.body = {name: @group.name}.to_json
               req.headers["Content-Type"] = "application/json"
             end.status
@@ -28,7 +28,7 @@ context "groups" do
 
         context "patch result" do
           let :patch_result do
-            client.put("/api/admin/groups/#{@group.id}") do |req|
+            client.put("/api-v2/admin/groups/#{@group.id}") do |req|
               req.body = {name: "new name"}.to_json
               req.headers["Content-Type"] = "application/json"
             end

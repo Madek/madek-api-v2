@@ -34,7 +34,7 @@
 ; extended debug logging; this will increase LOGGING OUTPUT IMMENSELY and might
 ; have other undesired effects; make sure this is never enabled in production
 
-(defonce ^:private DEBUG true)
+(defonce ^:private DEBUG false)
 
 ;### exception ################################################################
 
@@ -95,7 +95,7 @@
 ;### routes ###################################################################
 
 (def auth-info-route
-  ["/api"
+  ["/api-v2"
    {:swagger {:tags ["api/auth-info"]}}
    ["/auth-info"
     {:get
@@ -114,7 +114,7 @@
                        :examples {"application/json" {:message "Not authorized"}}}}}}]])
 
 (def swagger-routes
-  [""
+  ["/api-v2"
    {:no-doc false
     :swagger {:info {:title "Madek API v2"
                      :description (mslurp (io/resource "md/api-description.md"))
@@ -130,7 +130,8 @@
                                     :in "header"}}]}}
 
    ["/swagger.json" {:no-doc true :get (swagger/create-swagger-handler)}]
-   ["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler)}]])
+   ["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler
+                                      {:url "/api-v2/swagger.json"})}]])
 
 (def get-router-data-all
   (->>

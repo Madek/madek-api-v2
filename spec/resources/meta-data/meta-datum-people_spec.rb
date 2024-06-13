@@ -27,7 +27,7 @@ describe "generated runs" do
             end
             describe "the meta-data resource" do
               let :response do
-                authenticated_json_client.get("/api/meta-data/#{meta_datum_people.id}")
+                authenticated_json_client.get("/api-v2/meta-data/#{meta_datum_people.id}")
               end
 
               it "status, either 200 success or 403 forbidden, " \
@@ -58,17 +58,17 @@ describe "generated runs" do
                     end
 
                     meta_key_id = response.body["meta_key_id"]
-                    expect(authenticated_json_client.get("/api/meta-keys/#{meta_key_id}").status)
+                    expect(authenticated_json_client.get("/api-v2/meta-keys/#{meta_key_id}").status)
                       .to be == 200
 
                     if response.body["media_entry_id"] == media_resource.id
                       media_entry_id = response.body["media_entry_id"]
-                      expect(authenticated_json_client.get("/api/media-entry/#{media_entry_id}").status)
+                      expect(authenticated_json_client.get("/api-v2/media-entry/#{media_entry_id}").status)
                         .to be == 200
                     end
                     if response.body["collection_id"] == media_resource.id
                       collection_id = response.body["collection_id"]
-                      expect(authenticated_json_client.get("/api/collection/#{collection_id}").status)
+                      expect(authenticated_json_client.get("/api-v2/collection/#{collection_id}").status)
                         .to be == 200
                     end
                   end

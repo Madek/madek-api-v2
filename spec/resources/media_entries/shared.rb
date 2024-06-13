@@ -46,7 +46,7 @@ shared_examples "ordering by created_at" do |direction = nil|
 
   def media_entries_created_at(order = nil)
     # to_datetime.strftime('%Q').to_i => int with ms precision
-    client.get("/api/media-entries", {"order" => order})
+    client.get("/api-v2/media-entries", {"order" => order})
       .body.with_indifferent_access["media_entries"]
       .map { |me| MediaEntry.unscoped.find(me["id"]) }
       .map { |me| me.created_at.to_datetime.strftime("%Q").to_i }

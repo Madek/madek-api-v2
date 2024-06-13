@@ -18,11 +18,11 @@ context "admin vocabularies" do
   end
 
   let :query_url do
-    "/api/admin/vocabularies/"
+    "/api-v2/admin/vocabularies/"
   end
 
   let :vocabulary_url do
-    "/api/admin/vocabularies/#{@vocabulary.id}"
+    "/api-v2/admin/vocabularies/#{@vocabulary.id}"
   end
 
   context "Responds not authorized without authentication" do
@@ -93,7 +93,7 @@ context "admin vocabularies" do
       context "get" do
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
-          response = client.get("/api/admin/vocabularies/#{badid}")
+          response = client.get("/api-v2/admin/vocabularies/#{badid}")
           expect(response.status).to be == 404
         end
 

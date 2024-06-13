@@ -30,11 +30,11 @@ context "admin context-keys" do
   end
 
   let :query_url do
-    "/api/admin/context-keys/"
+    "/api-v2/admin/context-keys/"
   end
 
   let :context_key_url do
-    "/api/admin/context-keys/#{@context_key.id}"
+    "/api-v2/admin/context-keys/#{@context_key.id}"
   end
 
   context "Responds not authorized without authentication" do
@@ -105,7 +105,7 @@ context "admin context-keys" do
       context "get" do
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
-          response = client.get("/api/admin/context-keys/#{badid}")
+          response = client.get("/api-v2/admin/context-keys/#{badid}")
           expect(response.status).to be == 404
         end
 

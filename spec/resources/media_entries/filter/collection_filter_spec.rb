@@ -7,7 +7,7 @@ describe "filtering media entries" do
 
   def get_media_entries(filter = nil)
     # media_entries_relation.get(filter).data['media-entries']
-    client.get("/api/media-entries", filter).body["media_entries"]
+    client.get("/api-v2/media-entries", filter).body["media_entries"]
   end
 
   context "by collection_id" do

@@ -38,7 +38,7 @@ describe "Getting a random preview for a specific media-entry" do
         # end
         let :data_stream_resource_response do
           # data_stream_resource.response
-          plain_faraday_json_client.get("/api/previews/#{@preview.id}/data-stream")
+          plain_faraday_json_client.get("/api-v2/previews/#{@preview.id}/data-stream")
           # TODO json roa remove: test relation: preview data stream
         end
         let :content_type do

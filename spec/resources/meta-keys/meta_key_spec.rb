@@ -5,7 +5,7 @@ describe "meta-key" do
     def json_meta_key_resource(meta_key_id, params = {})
       query_params = URI.encode_www_form(params)
       query_params = "?" + query_params unless query_params.empty?
-      plain_faraday_json_client.get("/api/meta-keys/#{meta_key_id}#{query_params}")
+      plain_faraday_json_client.get("/api-v2/meta-keys/#{meta_key_id}#{query_params}")
     end
 
     it "should return 200 for an existing meta_key_id" do

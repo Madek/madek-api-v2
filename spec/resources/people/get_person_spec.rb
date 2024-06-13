@@ -12,7 +12,7 @@ context "people" do
     include_context :json_client_for_authenticated_admin_user do
       context "retriving a standard person" do
         let :get_person_result do
-          client.get("/api/people/#{@person.id}")
+          client.get("/api-v2/people/#{@person.id}")
         end
 
         it "works" do
@@ -21,7 +21,7 @@ context "people" do
           expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins"]
-          expect_audit_entries("GET /api/people/#{@person.id}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
+          expect_audit_entries("GET /api-v2/people/#{@person.id}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end
 
         it "has the proper data" do
@@ -42,7 +42,7 @@ context "people" do
             institutional_id: "https://fake-university.com/students/12345"
         end
 
-        url = "/api/people/" +
+        url = "/api-v2/people/" +
           CGI.escape(["fake-university.com", "https://fake-university.com/students/12345"].to_json)
         let :result do
           client.get(url)

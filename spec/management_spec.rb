@@ -2,7 +2,7 @@ require "spec_helper"
 
 # describe '/management/status' do
 #    let :url do
-#        "/api/management/status"
+#        "/api-v2/management/status"
 #    end
 #    context 'without authentication' do
 #        let :response do
@@ -34,7 +34,7 @@ require "spec_helper"
 
 # describe '/management/shutdown' do
 #    let :url do
-#        "/api/management/shutdown"
+#        "/api-v2/management/shutdown"
 #    end
 
 #    context 'without authentication' do

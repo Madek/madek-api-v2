@@ -16,12 +16,12 @@ context "removing a user from a group via DELETE" do
       describe "removing a user from the group via DELETE" do
         it "responds with 204" do
           expect(
-            client.delete("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
+            client.delete("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}").status
           ).to be == 200
         end
 
         it "effectively removes the user from the group" do
-          client.delete("/api/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
+          client.delete("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users/#{CGI.escape(@user.id)}")
           expect(@group.users.reload.map(&:id)).not_to include(@user[:id])
         end
       end

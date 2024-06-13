@@ -29,7 +29,7 @@ describe 'redirects for the research video project' do
       expect(response.status).to be== 302
 
       expect(redirect_url).to be==
-        "/api/media-files/#{media_entry.media_file.id}/data-stream"
+        "/api-v2/media-files/#{media_entry.media_file.id}/data-stream"
     end
 
 

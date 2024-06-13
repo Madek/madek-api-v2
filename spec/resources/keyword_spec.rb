@@ -6,7 +6,7 @@ context "Getting a keyword resource without authentication" do
   end
 
   let :plain_json_response do
-    plain_faraday_json_client.get("/api/keywords/#{@keyword.id}")
+    plain_faraday_json_client.get("/api-v2/keywords/#{@keyword.id}")
   end
 
   it "responds with 200" do

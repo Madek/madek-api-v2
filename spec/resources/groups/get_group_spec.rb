@@ -11,7 +11,7 @@ context "groups" do
     include_context :json_client_for_authenticated_user do
       it "is forbidden to retrieve any group" do
         expect(
-          client.get("/api/admin/groups/", {id: @group.id}).status
+          client.get("/api-v2/admin/groups/", {id: @group.id}).status
         ).to be == 403
       end
     end
@@ -21,7 +21,7 @@ context "groups" do
     include_context :json_client_for_authenticated_admin_user do
       context "retrieving a standard group" do
         let :get_group_result do
-          client.get("/api/admin/groups/#{@group.id}")
+          client.get("/api-v2/admin/groups/#{@group.id}")
         end
 
         it "works" do
@@ -45,10 +45,10 @@ context "groups" do
         end
         it "can be retrieved by the institutional_id" do
           expect(
-            client.get("/api/admin/groups/#{CGI.escape(@inst_group.institutional_id)}").status
+            client.get("/api-v2/admin/groups/#{CGI.escape(@inst_group.institutional_id)}").status
           ).to be == 200
           expect(
-            client.get("/api/admin/groups/#{CGI.escape(@inst_group.institutional_id)}").body["id"]
+            client.get("/api-v2/admin/groups/#{CGI.escape(@inst_group.institutional_id)}").body["id"]
           ).to be == @inst_group["id"]
         end
       end

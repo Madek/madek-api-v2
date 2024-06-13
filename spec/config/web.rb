@@ -5,7 +5,7 @@ def api_port
 end
 
 def api_base_url
-  @api_base_url ||= "http://localhost:#{api_port}/api"
+  @api_base_url ||= "http://localhost:#{api_port}/api-v2"
 end
 
 def json_roa_client(&)

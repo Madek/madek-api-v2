@@ -8,11 +8,11 @@ context "admin keywords" do
   end
 
   let :query_url do
-    "/api/admin/keywords/"
+    "/api-v2/admin/keywords/"
   end
 
   let :keyword_url do
-    "/api/admin/keywords/#{@keyword.id}"
+    "/api-v2/admin/keywords/#{@keyword.id}"
   end
 
   context "Responds not authorized without authentication" do
@@ -86,13 +86,13 @@ context "admin keywords" do
       context "get" do
         it "responds 400 with bad formatted uuid" do
           badid = Faker::Internet.slug(words: nil, glue: "-")
-          response = client.get("/api/admin/keywords/#{badid}")
+          response = client.get("/api-v2/admin/keywords/#{badid}")
           expect(response.status).to be == 400
         end
 
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
-          response = client.get("/api/admin/keywords/#{badid}")
+          response = client.get("/api-v2/admin/keywords/#{badid}")
           expect(response.status).to be == 404
         end
 

@@ -6,7 +6,7 @@ describe "filtering media entries" do
 
   def get_media_entries_response(filter = nil)
     # media_entries # force evaluation
-    client.get("/api/media-entries", filter)
+    client.get("/api-v2/media-entries", filter)
   end
 
   def get_media_entries(filter = nil)

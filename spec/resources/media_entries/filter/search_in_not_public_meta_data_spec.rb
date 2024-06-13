@@ -7,7 +7,7 @@ describe "search for media entries with meta data from not public vocabulary" do
   # end
 
   def get_media_entries(filter = nil)
-    plain_faraday_json_client.get("/api/media-entries", filter).body["media_entries"]
+    plain_faraday_json_client.get("/api-v2/media-entries", filter).body["media_entries"]
     # media_entries_relation.get(filter).data['media-entries']
   end
 

@@ -28,7 +28,7 @@ describe "generated runs" do
 
             describe "the meta-data resource" do
               let :response do
-                authenticated_json_client.get("/api/meta-data/#{meta_datum_text.id}")
+                authenticated_json_client.get("/api-v2/meta-data/#{meta_datum_text.id}")
               end
 
               it "status, either 200 success or 403 forbidden, " \
@@ -46,7 +46,7 @@ describe "generated runs" do
 
             describe "the meta-datum-data-stream resource" do
               let :response do
-                authenticated_json_client.get("/api/meta-data/#{meta_datum_text.id}/data-stream")
+                authenticated_json_client.get("/api-v2/meta-data/#{meta_datum_text.id}/data-stream")
               end
 
               it "status, either 200 success or 403 forbidden, " \

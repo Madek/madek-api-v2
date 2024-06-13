@@ -122,7 +122,7 @@ describe "Getting a media-entry resource with authentication" do
       end
       expect(create_perm.status).to be == 200
       readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api/media-entry/#{@media_entry.id}")
+        .get("/api-v2/media-entry/#{@media_entry.id}")
       expect(readok.status).to be == 200
 
       uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}/get_metadata_and_previews/false"
@@ -149,7 +149,7 @@ describe "Getting a media-entry resource with authentication" do
       end
       expect(create_perm.status).to be == 200
       readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api/media-entry/#{@media_entry.id}")
+        .get("/api-v2/media-entry/#{@media_entry.id}")
       expect(readok.status).to be == 200
 
       uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}"
@@ -207,7 +207,7 @@ describe "Getting a media-entry resource with authentication" do
       end
       expect(group_perm.status).to be == 200
       readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api/media-entry/#{@media_entry.id}")
+        .get("/api-v2/media-entry/#{@media_entry.id}")
       expect(readok.status).to be == 200
 
       uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}/get_metadata_and_previews/false"
@@ -239,7 +239,7 @@ describe "Getting a media-entry resource with authentication" do
       end
       expect(group_perm.status).to be == 200
       readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api/media-entry/#{@media_entry.id}")
+        .get("/api-v2/media-entry/#{@media_entry.id}")
       expect(readok.status).to be == 200
 
       uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}"

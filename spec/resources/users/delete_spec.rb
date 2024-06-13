@@ -9,7 +9,7 @@ context "users" do
     include_context :json_client_for_authenticated_user do
       it "is forbidden to delete any user" do
         expect(
-          client.delete("/api/admin/users/#{@user.id}").status
+          client.delete("/api-v2/admin/users/#{@user.id}").status
         ).to be == 403
       end
     end
@@ -19,7 +19,7 @@ context "users" do
     include_context :json_client_for_authenticated_admin_user do
       context "deleting a standard user" do
         let :delete_user_result do
-          client.delete("/api/admin/users/#{CGI.escape(@user.id)}")
+          client.delete("/api-v2/admin/users/#{CGI.escape(@user.id)}")
         end
 
         it "returns the expected status code 200" do

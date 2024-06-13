@@ -6,7 +6,7 @@ context "Getting a person resource without authentication" do
   end
 
   let :plain_json_response do
-    plain_faraday_json_client.get("/api/people/#{@person.id}")
+    plain_faraday_json_client.get("/api-v2/people/#{@person.id}")
   end
 
   it "responds with 200" do
