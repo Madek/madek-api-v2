@@ -85,18 +85,17 @@
 
 (defn ring-wrap-cors [handler]
   (-> handler
-    (cors-middleware/wrap-cors
-      :access-control-allow-origin [#".*"]
-      :access-control-allow-methods [:options :get :put :post :delete]
-      :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization", "Credentials" "Cookie"])
-    wrap-with-access-control-allow-credentials))
+      (cors-middleware/wrap-cors
+       :access-control-allow-origin [#".*"]
+       :access-control-allow-methods [:options :get :put :post :delete]
+       :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization", "Credentials" "Cookie"])
+      wrap-with-access-control-allow-credentials))
 
 ;### routes ###################################################################
 
 (def auth-info-route
   ["/api-v2"
    {:swagger {:tags ["api/auth-info"]}}
-
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."
@@ -123,8 +122,7 @@
               :securityDefinitions {:apiAuth {:type "apiKey"
                                               :name "Authorization"
                                               :in "header"}
-                                    :basicAuth {:type "basic"}
-                                    }
+                                    :basicAuth {:type "basic"}}
               :security [{:basicAuth [] "auth" []}
                          {:apiAuth {:type "apiKey"
                                     :name "Authorization"
@@ -143,21 +141,21 @@
 
 (def get-router-data-user
   (->>
-    [auth-info-route
-     madek.api.resources/user-routes
-     ;management/api-routes
-     ;test-routes
-     swagger-routes]
-    (filterv some?)))
+   [auth-info-route
+    madek.api.resources/user-routes
+    ;management/api-routes
+    ;test-routes
+    swagger-routes]
+   (filterv some?)))
 
 (def get-router-data-admin
   (->>
-    [auth-info-route
-     madek.api.resources/admin-routes
-     ;management/api-routes
-     ;test-routes
-     swagger-routes]
-    (filterv some?)))
+   [auth-info-route
+    madek.api.resources/admin-routes
+    ;management/api-routes
+    ;test-routes
+    swagger-routes]
+   (filterv some?)))
 
 (def ^:dynamic middlewares
   [swagger/swagger-feature
@@ -183,18 +181,18 @@
       (let [wrap-debug-level (or (:wrap-debug-level request) 0)]
         (try
           (debug "RING-LOGGING-WRAPPER"
-            {:wrap-debug-level wrap-debug-level
-             :request request})
+                 {:wrap-debug-level wrap-debug-level
+                  :request request})
           (let [response (handler
-                           (assoc request :wrap-debug-level (inc wrap-debug-level)))]
+                          (assoc request :wrap-debug-level (inc wrap-debug-level)))]
             (debug "RING-LOGGING-WRAPPER"
-              {:wrap-debug-level wrap-debug-level
-               :response response})
+                   {:wrap-debug-level wrap-debug-level
+                    :response response})
             response)
           (catch Exception ex
             (def ^:dynamic debug-last-ex ex)
             (error "RING-LOGGING-WRAPPER COUGHT EXCEPTION "
-              {:wrap-debug-level wrap-debug-level} (ex-message ex))
+                   {:wrap-debug-level wrap-debug-level} (ex-message ex))
             (error "RING-LOGGING-WRAPPER COUGHT EXCEPTION " (thrown/stringify ex))
             (throw ex))))))
   (let [mws middlewares]
@@ -208,36 +206,35 @@
 (def get-router-options
   {:validate rs/validate
    #_#_:compile coercion/compile-request-coercers
-   :data
-   {:middleware middlewares
-    :muuntaja m/instance}})
+   :data {:middleware middlewares
+          :muuntaja m/instance}})
 
 (def app-all
   (rr/ring-handler
-    (rr/router get-router-data-all get-router-options)
-    (rr/routes
-      (rr/redirect-trailing-slash-handler)
-      (rr/create-default-handler))))
+   (rr/router get-router-data-all get-router-options)
+   (rr/routes
+    (rr/redirect-trailing-slash-handler)
+    (rr/create-default-handler))))
 
 (def app-user
   (rr/ring-handler
-    (rr/router get-router-data-user get-router-options)
-    (rr/routes
-      (rr/redirect-trailing-slash-handler)
-      (rr/create-default-handler))))
+   (rr/router get-router-data-user get-router-options)
+   (rr/routes
+    (rr/redirect-trailing-slash-handler)
+    (rr/create-default-handler))))
 
 (def app-admin
   (rr/ring-handler
-    (rr/router get-router-data-admin get-router-options)
-    (rr/routes
-      (rr/redirect-trailing-slash-handler)
-      (rr/create-default-handler))))
+   (rr/router get-router-data-admin get-router-options)
+   (rr/routes
+    (rr/redirect-trailing-slash-handler)
+    (rr/create-default-handler))))
 
 (def api-defaults
   (-> ring-defaults/api-defaults
-    (assoc :cookies true)
-    #_(assoc-in [:params :urlencoded] false)
-    #_(assoc-in [:params :keywordize] false)))
+      (assoc :cookies true)
+      #_(assoc-in [:params :urlencoded] false)
+      #_(assoc-in [:params :keywordize] false)))
 
 (defn- wrap-defaults [handler]
   #_handler
@@ -254,12 +251,11 @@
 
 (def cli-options
   (concat http-server/cli-options
-    [[nil
-      (long-opt-for-key http-resources-scope-key)
-      "Either ALL, ADMIN or USER"
-      :default (or (some-> http-resources-scope-key env)
-                 "ALL")
-      :validate [#(some #{%} ["ALL" "ADMIN" "USER"]) "scope must be ALL, ADMIN or USER"]]]))
+          [[nil (long-opt-for-key http-resources-scope-key)
+            "Either ALL, ADMIN or USER"
+            :default (or (some-> http-resources-scope-key env)
+                         "ALL")
+            :validate [#(some #{%} ["ALL" "ADMIN" "USER"]) "scope must be ALL, ADMIN or USER"]]]))
 
 (defn initialize-all [http-conf is_reloadable]
   (if (true? is_reloadable)
