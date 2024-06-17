@@ -1,8 +1,6 @@
 (ns madek.api.resources.keywords
   (:require
-   [clojure.spec.alpha :as sa]
-   [honey.sql :refer [format]
-    :rename {format sql-format}]
+   [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.keywords.keyword :as kw]
@@ -10,8 +8,6 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [convert-map]]
    [madek.api.utils.helper :refer [d]]
-   [madek.api.utils.helper :refer [str-to-int]]
-   [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -28,7 +24,7 @@
 
 (def schema_update_keyword
   {;id
-  ;(s/optional-key :meta_key_id) s/Str
+   ;(s/optional-key :meta_key_id) s/Str
    (s/optional-key :term) s/Str
    (s/optional-key :description) (s/maybe s/Str)
    (s/optional-key :position) s/Int
@@ -63,7 +59,9 @@
    (s/optional-key :meta_key_id) s/Str
    (s/optional-key :term) s/Str
    (s/optional-key :description) s/Str
-   (s/optional-key :rdf_class) s/Str})
+   (s/optional-key :rdf_class) s/Str
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int})
 
 (defn user-export-keyword [keyword]
   (->
@@ -139,7 +137,7 @@
             upd-res (jdbc/execute-one! tx sql-query)]
 
         (if (= 1 (:next.jdbc/update-count upd-res))
-                              ;(sd/response_ok (adm-export-keyword (kw/db-keywords-get-one id)))
+          ;(sd/response_ok (adm-export-keyword (kw/db-keywords-get-one id)))
           (-> id (kw/db-keywords-get-one tx)
               adm-export-keyword
               sd/response_ok)
@@ -156,7 +154,7 @@
                           sql-format)
             del-res (jdbc/execute-one! (:tx req) sql-query)]
 
-                            ; logwrite
+        ; logwrite
         (if (= 1 (::jdbc/update-count del-res))
           (sd/response_ok (adm-export-keyword old-data))
           (sd/response_failed "Could not delete keyword." 406))))
@@ -164,30 +162,15 @@
 
 ;### routes ###################################################################
 
-(defn validate-scheme [schema]
-  (fn [handler]
-    (fn [request]
-      (let [p (println ">o> request=" request)
-
-            params (-> request :parameters :query)
-            [valid? errors] (s/validate schema params)]
-        (if valid?
-          (handler request)
-          (sd/response_failed (str "Invalid query parameters: " errors) 400))))))
-
-;(sa/def ::positive-number (sa/and number? #(>= % 0)))
-;(sa/def schema {:size ::positive-number :page ::positive-number})
-
 (defn wrap-find-keyword [handler]
-  (fn [request]
-    (sd/req-find-data request handler
-                      :id
-                      :keywords :id
-                      :keyword true)))
+  (fn [request] (sd/req-find-data request handler
+                                  :id
+                                  :keywords :id
+                                  :keyword true)))
 
 (s/defschema ItemQueryParams
-  {:page (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-   :size (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
+  {:page (s/constrained s/Int #(>= % 1) "Must be a positive integer")
+   :size2 (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
 
 ;; FIXME: broken endpoint to test doc
 (def query-routes
@@ -198,12 +181,33 @@
      {:summary (sd/sum_pub (d "Query / list keywords."))
       :handler handle_usr-query-keywords
       :coercion reitit.coercion.schema/coercion
-      :middleware [(pagination-handler ItemQueryParams)]
-      :swagger (swagger-ui-pagination)
+      :parameters {:query ItemQueryParams}
+
+      :swagger {:parameters [{:name "page1"
+                              :in "query"
+                              :description "Page number, defaults to 1"
+                              :required false
+                              :value 1
+                              :default 3
+                              :defaults 2
+                              ;:schema {:type "integer"
+                              ;         :format "int32"
+                              ;         :value 11
+                              ;         :defaults 22
+                              ;         :default 44}
+                              }
+                             {:name "size2"
+                              :in "query"
+                              :description "Number of items per page, defaults to 10"
+                              :required false
+                              :value 999
+                              :schema {:type "integer"
+                                       :format "int32"
+                                       :default 10}}]}
+
       :responses {200 {:body {:keywords [schema_export_keyword_usr]}}
                   202 {:description "Successful response, list of items."
-                       :schema {}
-                        ;; Define your response schema as needed
+                       :schema {} ;; Define your response schema as needed
                        :examples {"application/json" {:message "Here are your items."
                                                       :page 1
                                                       :size 2
@@ -228,9 +232,7 @@
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords
-      :middleware [wrap-authorize-admin!
-                   (pagination-handler (merge schema_query_keyword ItemQueryParams))]
-      :swagger (swagger-ui-pagination)
+      :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_query_keyword}
       :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}

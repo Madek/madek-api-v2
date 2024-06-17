@@ -9,7 +9,6 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.helper :refer [convert-groupid f mslurp]]
-            [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -176,9 +175,8 @@
    (s/optional-key :created_by_user_id) s/Uuid
    (s/optional-key :searchable) s/Str
    (s/optional-key :full_data) s/Bool
-;   (s/optional-key :page) s/Int
-;   (s/optional-key :count) s/Int
-   })
+   (s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int})
 
 (def user-routes
   [["/groups"
@@ -186,13 +184,8 @@
     ["/" {:get {:summary "Get all group ids"
                 :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                 :handler index
-;                :middleware [wrap-authorize-admin!]
-;                :swagger {:produces "application/json"}
+                :swagger {:produces "application/json"}
                 :content-type "application/json"
-
-                :swagger (swagger-ui-pagination)
-                :middleware [(pagination-handler)]
-
                 :parameters {:query schema_query-groups}
                 ;:accept "application/json"
                 :coercion reitit.coercion.schema/coercion
@@ -285,21 +278,16 @@
 
    ; groups-users/ring-routes
    ["/:group-id/users/" {:get {:summary "Get group users by id"
-                               :description "Get group users by id. (zero-based paging) TESTME"
-;                               :swagger {:produces "application/json"}
+                               :description "Get group users by id. (zero-based paging)"
+                               :swagger {:produces "application/json"}
                                :content-type "application/json"
 
                                :handler group-users/handle_get-group-users
-                               :middleware [wrap-authorize-admin!
-                                            (pagination-handler)]
+                               :middleware [wrap-authorize-admin!]
                                :coercion reitit.coercion.schema/coercion
-
-                               :swagger (swagger-ui-pagination)
-
                                :parameters {:path {:group-id s/Uuid}
-;                                            :query {(s/optional-key :page) s/Int
-;                                                    (s/optional-key :count) s/Int}
-                                            }
+                                            :query {(s/optional-key :page) s/Int
+                                                    (s/optional-key :count) s/Int}}
                                :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                 :schema {:body {:users [group-users/schema_export-group-user-simple]}}}}}
 

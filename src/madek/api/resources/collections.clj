@@ -9,7 +9,6 @@
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.helper :refer [convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
-   [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination pagination-optional-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -140,8 +139,8 @@
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
 (def schema_collection-query
-  {;  (s/optional-key :page) s/Int
-;   (s/optional-key :count) s/Int
+  {(s/optional-key :page) s/Int
+   (s/optional-key :count) s/Int
    (s/optional-key :full_data) s/Bool
    (s/optional-key :collection_id) s/Uuid
    (s/optional-key :order) s/Str
@@ -189,8 +188,7 @@
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
-      :middleware [(pagination-optional-handler)]
-      :swagger (swagger-ui-pagination)
+      :swagger {:produces ["application/json" "application/octet-stream"]}
       :parameters {:query schema_collection-query}
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [schema_collection-export]}}}}}]

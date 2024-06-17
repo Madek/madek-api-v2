@@ -147,54 +147,52 @@ describe "Access to public /api-endpoints by API-Token" do
   end
 
   let :response do
-    client.get("/api/vocabularies/?page=1&size=100")
+    client.get("/api/vocabularies/?page=1&count=100")
   end
 
-  context "revoking the token " do
-    context "initially unrevoked token " do
-      let :token do
-        ApiToken.create user: user, scope_read: true,
-          scope_write: true
-      end
+  context "using an authorized token " do
+    let :token do
+      ApiToken.create user: user, scope_read: true,
+        scope_write: true
+    end
 
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_plain_faraday_json_client(token.token, nil)
-        end
-        it "accessing auth-info results in 200" do
-          expect(response.status).to be == 200
-        end
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_plain_faraday_json_client(token.token, nil)
       end
-
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
-        end
-        it "accessing auth-info results in 200" do
-          expect(response.status).to be == 200
-        end
+      it "accessing auth-info results in 200" do
+        expect(response.status).to be == 200
       end
+    end
 
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
-        end
-        it "accessing auth-info results in 200" do
-          expect(response.status).to be == 200
-        end
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
       end
+      it "accessing auth-info results in 200" do
+        expect(response.status).to be == 200
+      end
+    end
 
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
-        end
-        it "accessing auth-info results in 200" do
-          expect(response.status).to be == 200
-        end
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
+      end
+      it "accessing auth-info results in 200" do
+        expect(response.status).to be == 200
+      end
+    end
+
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
+      end
+      it "accessing auth-info results in 200" do
+        expect(response.status).to be == 200
       end
     end
   end
@@ -206,54 +204,52 @@ describe "Access forbidden for /admin-endpoints by API-Token" do
   end
 
   let :response do
-    client.get("/api/admin/vocabularies/?page=1&size=100")
+    client.get("/api/admin/vocabularies/?page=1&count=100")
   end
 
-  context "revoking the token " do
-    context "initially unrevoked token " do
-      let :token do
-        ApiToken.create user: user, scope_read: true,
-          scope_write: true
-      end
+  context "using an authorized token " do
+    let :token do
+      ApiToken.create user: user, scope_read: true,
+        scope_write: true
+    end
 
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_plain_faraday_json_client(token.token, nil)
-        end
-        it "access forbidden auth-info results in 403" do
-          expect(response.status).to be == 403
-        end
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_plain_faraday_json_client(token.token, nil)
       end
-
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
-        end
-        it "access forbidden auth-info results in 403" do
-          expect(response.status).to be == 403
-        end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
       end
+    end
 
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
-        end
-        it "access forbidden auth-info results in 403" do
-          expect(response.status).to be == 403
-        end
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
       end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
+      end
+    end
 
-      context "used in basic auth" do
-        let :client do
-          puts "token.token = #{token.token}"
-          basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
-        end
-        it "access forbidden auth-info results in 403" do
-          expect(response.status).to be == 403
-        end
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
+      end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
+      end
+    end
+
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
+      end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
       end
     end
   end

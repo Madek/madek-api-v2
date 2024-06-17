@@ -7,7 +7,6 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-            [madek.api.utils.pagination :refer [pagination-handler swagger-ui-pagination]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -117,15 +116,11 @@
      {:get {:summary (sd/sum_usr "Query or list full_texts.")
             :handler handle_list-full_texts
             :coercion reitit.coercion.schema/coercion
-
-            :swagger (swagger-ui-pagination)
-            :middleware [(pagination-handler)]
             :parameters {:query {(s/optional-key :full_data) s/Bool
                                  (s/optional-key :media_resource_id) s/Uuid
                                  (s/optional-key :text) s/Str
-;                                 (s/optional-key :page) s/Int
-;                                 (s/optional-key :count) s/Int
-                                 }}}}]
+                                 (s/optional-key :page) s/Int
+                                 (s/optional-key :count) s/Int}}}}]
 
     ["/full_texts/:media_resource_id"
      {:get {:summary (sd/sum_usr "Get full_text.")
