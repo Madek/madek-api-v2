@@ -5,7 +5,7 @@
    [madek.api.authentication.session :as session-auth]
    [madek.api.authentication.token :as token-auth]
    [ring.util.request :as request]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [info debug]]))
 
 (defn- add-www-auth-header-if-401 [response]
   (case (:status response)
@@ -16,13 +16,13 @@
 
 (defn wrap-log [handler]
   (fn [request]
-    (info "wrap auth "
-          " - method: " (:request-method request)
-          " - path: " (request/path-info request)
-          " - auth-method: " (-> request :authentication-method)
-          " - type: " (-> request :authenticated-entity :type)
-          " - is_admin: " (:is_admin request)
-          " - auth-entity: " (-> request :authenticated-entity :id))
+    (debug "wrap auth "
+           " - method: " (:request-method request)
+           " - path: " (request/path-info request)
+           " - auth-method: " (-> request :authentication-method)
+           " - type: " (-> request :authenticated-entity :type)
+           " - is_admin: " (:is_admin request)
+           " - auth-entity: " (-> request :authenticated-entity :id))
     (handler request)))
 
 (defn wrap [handler]
