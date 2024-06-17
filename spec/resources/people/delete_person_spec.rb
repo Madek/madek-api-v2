@@ -13,8 +13,11 @@ context "people" do
   context "non admin user" do
     include_context :json_client_for_authenticated_user do
       it "is forbidden to delete any person" do
+          url="/api/admin/people/#{@person.id}"
+          puts ">> url= #{url}"
         expect(
-          client.delete("/api/admin/people/#{@person.id}").status
+
+          client.delete(url).status
         ).to be == 403
       end
     end

@@ -29,9 +29,10 @@ context "people" do
   context "admin user" do
     include_context :json_client_for_authenticated_admin_user do
       describe "get an unfiltered people list as an admin" do
-        url = "/api/admin/people/?count=100"
+        url = "/api/admin/people/?size=100"
         let :result do
           # client.get.relation('people').get()
+          puts ">> ur1l= #{url}"
           client.get(url)
         end
 
@@ -49,21 +50,23 @@ context "people" do
       end
 
       context "filter people by their institution" do
-        url = "/api/admin/people/?count=1000&institution=foo.com"
+        url = "/api/admin/people/?size=1000&institution=foo.com"
         let :result do
+          puts ">> url= #{url}"
           client.get(url)
         end
 
-        it "returns excaclty the people with the proper oraganization" do
+        it "returns excaclty the people with the proper organization" do
           expect(result.status).to be == 200
           expect(result.body["people"].count).to be == 3 * 77
 
+          puts ">> url= #{url}"
           expect_audit_entries("GET #{url}}", expected_audit_entries, 200, OPT_DISTINCT_CHANGE_AUDITS_ONLY)
         end
       end
 
       context "filter people by their subtype" do
-        url = "/api/admin/people/?count=100&subtype=Person&institution=foo.com"
+        url = "/api/admin/people/?size=100&subtype=Person&institution=foo.com"
         let :result do
           client.get(url)
         end

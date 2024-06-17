@@ -107,31 +107,59 @@
                                   {}
                                   m))
 
-               casted-vals (cast-fnc (-> request :params))
+               ;casted-vals (cast-fnc (-> request :params))
+               ;p (println ">o> casted-vals=" casted-vals)
+
                request (let [casted-vals (cast-fnc (-> request :params))]
                          (let [request (assoc-in request [:params] casted-vals)]
                            (assoc-in request [:parameters :query] casted-vals)))
+
+               p (println ">o> ph1.req.params" (get request :params))
+               p (println ">o> ph1.req.query" (get request :parameters :query))
+               p (println ">o> ph1.req.is_admin" (get request :is_admin))
+
                params (-> request :params)
-               _ (s/validate schema params)]
+
+
+               ;p (println ">o> params1=" params)
+               ;p (println ">o> params1=" params)
+
+               _ (s/validate schema params)
+
+
+                 p (println ">o> ph.req.params2" (get request :params))
+               ]
 
            (let [key-map {:size :count}
                  request (let [params-renamed (rename-keys-fnc params key-map)]
                            (let [request (assoc-in request [:params] params-renamed)]
-                             (assoc-in request [:parameters :query] params-renamed)))]
+                             (assoc-in request [:parameters :query] params-renamed)))
+
+                 p (println ">o> ph.req.params" (get request :params))
+                 p (println ">o> ph.req.query" (get request :parameters :query))
+                 p (println ">o> ph.req.is_admin" (get request :is_admin))
+                 ]
 
              (handler request)))
          (catch Exception ex
-           (sd/response_bad_request (str "Invalid query parameters: " (.getMessage ex)) (.getData ex))))))))
+           (sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) (.getData ex))))))))
 
 (defn pagination-optional-handler
   ([]
    (pagination-handler
-    {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})))
+    {(s/optional-key :page) s/Int
+     (s/optional-key :size)  s/Int })))
 
-(s/defschema ItemQueryParams
-  {:page (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-   :size (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
+;{(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+;     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})))
+
+;(s/defschema ItemQueryParams
+;  {:page (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+;   :size (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
+
+ (s/defschema ItemQueryParams
+  {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

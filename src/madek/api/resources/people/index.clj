@@ -9,6 +9,7 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [parse-specific-keys]]
    [madek.api.utils.pagination :as pagination]
+   [madek.api.utils.pagination :refer [ItemQueryParams pagination-handler]]
    [madek.api.utils.validation :refer [greater-equal-zero-validation greater-zero-validation]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -44,8 +45,8 @@
 (defn build-query [query-params]
   (-> common/base-query
       (sql/order-by [:people.last_name :asc]
-                    [:people.first_name :asc]
-                    [:people.id :asc])
+        [:people.first_name :asc]
+        [:people.id :asc])
       (pagination/sql-offset-and-limit query-params)
       (filter-query query-params)))
 
@@ -65,17 +66,42 @@
 (def query-schema
   {(s/optional-key :institution) s/Str
    (s/optional-key :subtype) s/Str
+   ;(s/optional-key :page) greater-equal-zero-validation
+   ;(s/optional-key :count) greater-zero-validation
+
+   })
+
+(def query-schema2
+  {(s/optional-key :institution) s/Str
+   (s/optional-key :subtype) s/Str
    (s/optional-key :page) greater-equal-zero-validation
-   (s/optional-key :count) greater-zero-validation})
+   (s/optional-key :size) greater-zero-validation
+   ;
+   })
 
 (def route
-  {:summary (sd/sum_adm "Get list of people ids.")
+  {:summary (sd/sum_adm "Get list of people ids. TESTME")
    :description "Get list of people ids."
-   :swagger {:produces "application/json"}
-   :parameters {:query query-schema}
+   ;   :swagger {:produces "application/json"}
+
+   ;:parameters {:query query-schema}
+   :parameters {:query query-schema2}
+
    :content-type "application/json"
+   ;:swagger (swagger-ui-pagination)
+
    :handler handler
-   :middleware [wrap-authorize-admin!]
+   :middleware [
+
+                wrap-authorize-admin!
+                (pagination-handler (merge ItemQueryParams {(s/optional-key :institution) s/Str
+                                                            (s/optional-key :subtype) s/Str
+                                                            }))
+
+                ;(pagination-optional-handler)
+
+                ]
+   ;                (pagination-handler (merge schema_query_keyword ItemQueryParams))]
    :coercion reitit.coercion.schema/coercion
    :responses {200 {:body {:people [get-person/schema]}}}})
 

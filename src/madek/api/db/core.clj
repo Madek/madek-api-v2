@@ -8,7 +8,10 @@
    [next.jdbc.result-set :as jdbc-rs]
    [taoensso.timbre :refer [debug info warn]])
   (:import
-   (com.zaxxer.hikari HikariDataSource)))
+   (com.zaxxer.hikari HikariDataSource)
+   (java.io ByteArrayInputStream)
+
+   ))
 
 (defonce ^:private ds* (atom nil))
 
@@ -65,12 +68,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+(defn print-byte-array-input-stream [input-stream]
+  (println (slurp input-stream)))
+
 (defn wrap-tx [handler]
   (fn [request]
     (jdbc/with-transaction [tx @ds*]
       (try
         (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)]
-          (let [resp (handler (assoc request :tx tx-with-opts))]
+          (let [resp (handler (assoc request :tx tx-with-opts))
+
+                ;; TODO: log this
+                ;p (println ">o> ???" (print-byte-array-input-stream(:body resp)))
+                ]
             (when-let [status (:status resp)]
               (when (>= status 400)
                 (warn "Rolling back transaction because error status " status)
