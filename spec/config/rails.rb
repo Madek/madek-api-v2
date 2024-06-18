@@ -5,7 +5,7 @@ module Madek
   class Application < Rails::Application
     config.eager_load = false
 
-    config.paths["config/initializers"] << \
+    config.paths["config/initializers"] <<
       Rails.root.join("datalayer", "initializers")
 
     config.autoload_paths += [

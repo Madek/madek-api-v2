@@ -16,7 +16,7 @@ describe "updating group-users" do
       FactoryBot.create :user, institutional_id: SecureRandom.uuid
     end
 
-    @update_users = \
+    @update_users =
       @current_group_users[0..(C / 2.floor)] + @current_non_group_users[0..(C / 2.floor)]
 
     @update_data = @update_users.map do |user|

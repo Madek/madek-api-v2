@@ -44,7 +44,7 @@ describe "Test status-code as public-user" do
       "/api-v2/full_texts/" => 200,
       "/api-v2/usage-terms/" => 200,
       "/api-v2/collections" => 200,
-      "/api-v2/keywords/?page=1&size=2" => 400, # FIXME
+      "/api-v2/keywords/?page=1&size=2" => 200,
       "/api-v2/groups/" => 200,
 
       "/api-v2/workflows/" => 401,
@@ -112,7 +112,7 @@ shared_context :test_proper_basic_auth do
         "/api-v2/full_texts/" => 200,
         "/api-v2/usage-terms/" => 200,
         "/api-v2/collections" => 200,
-        "/api-v2/keywords/?page=1&size=2" => 400, # FIXME
+        "/api-v2/keywords/?page=1&size=2" => 200,
         "/api-v2/groups/" => 200,
 
         "/api-v2/workflows/" => 200,
@@ -201,7 +201,7 @@ context "resource with admin auth" do
           "/api-v2/full_texts/" => 200,
           "/api-v2/usage-terms/" => 200,
           "/api-v2/collections" => 200,
-          "/api-v2/keywords/?page=1&size=2" => 400, # FIXME
+          "/api-v2/keywords/?page=1&size=2" => 200,
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows/" => 200,
@@ -279,7 +279,7 @@ context "resource with token-user auth" do
         "/api-v2/full_texts/" => 200,
         "/api-v2/usage-terms/" => 200,
         "/api-v2/collections" => 200,
-        "/api-v2/keywords/?page=1&size=2" => 400, # FIXME
+        "/api-v2/keywords/?page=1&size=2" => 200,
         "/api-v2/groups/" => 200,
 
         "/api-v2/workflows/" => 200,

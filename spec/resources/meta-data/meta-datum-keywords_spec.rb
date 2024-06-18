@@ -14,7 +14,7 @@ describe "generated runs" do
           include_context :authenticated_json_client
           after :each do |example|
             if example.exception
-              example.exception.message << \
+              example.exception.message <<
                 "\n  MediaResource: #{media_resource} " \
                 " #{media_resource.attributes}"
               example.exception.message << "\n  Client: #{client_entity} " \

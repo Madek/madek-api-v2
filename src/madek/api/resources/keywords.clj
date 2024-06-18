@@ -169,8 +169,8 @@
                                   :keyword true)))
 
 (s/defschema ItemQueryParams
-  {:page (s/constrained s/Int #(>= % 1) "Must be a positive integer")
-   :size2 (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
+  {(s/optional-key :page) (s/constrained s/Int #(>= % 1) "Must be a positive integer")
+   (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
 
 ;; FIXME: broken endpoint to test doc
 (def query-routes
@@ -183,27 +183,27 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:query ItemQueryParams}
 
-      :swagger {:parameters [{:name "page1"
-                              :in "query"
-                              :description "Page number, defaults to 1"
-                              :required false
-                              :value 1
-                              :default 3
-                              :defaults 2
-                              ;:schema {:type "integer"
-                              ;         :format "int32"
-                              ;         :value 11
-                              ;         :defaults 22
-                              ;         :default 44}
-                              }
-                             {:name "size2"
-                              :in "query"
-                              :description "Number of items per page, defaults to 10"
-                              :required false
-                              :value 999
-                              :schema {:type "integer"
-                                       :format "int32"
-                                       :default 10}}]}
+      ;:swagger {:parameters [{:name "page1"
+      ;                        :in "query"
+      ;                        :description "Page number, defaults to 1"
+      ;                        :required false
+      ;                        :value 1
+      ;                        :default 3
+      ;                        :defaults 2
+      ;                        ;:schema {:type "integer"
+      ;                        ;         :format "int32"
+      ;                        ;         :value 11
+      ;                        ;         :defaults 22
+      ;                        ;         :default 44}
+      ;                        }
+      ;                       {:name "size2"
+      ;                        :in "query"
+      ;                        :description "Number of items per page, defaults to 10"
+      ;                        :required false
+      ;                        :value 999
+      ;                        :schema {:type "integer"
+      ;                                 :format "int32"
+      ;                                 :default 10}}]}
 
       :responses {200 {:body {:keywords [schema_export_keyword_usr]}}
                   202 {:description "Successful response, list of items."

@@ -171,6 +171,7 @@
 
    (s/optional-key :default_context_id) (s/maybe s/Str)
 
+   (s/optional-key :deleted_at) s/Any
    (s/optional-key :created_at) s/Any
    (s/optional-key :updated_at) s/Any
    (s/optional-key :meta_data_updated_at) s/Any

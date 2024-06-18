@@ -1,5 +1,6 @@
 (ns madek.api.db.core
   (:require
+   [cheshire.core :as json]
    [environ.core :refer [env]]
    [madek.api.db.type-conversion]
    [madek.api.utils.cli :refer [long-opt-for-key]]
@@ -65,17 +66,37 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn extract-data-from-input-stream [input-stream]
+  (when (instance? java.io.ByteArrayInputStream input-stream)
+    (slurp input-stream)))
+
+(defn pretty-print-json [json-str]
+  (json/generate-string (json/parse-string json-str true) {:pretty true}))
+
+(defn fetch-data [m]
+  (some-> m :reitit.core/match :template))
+
+(defn contains-substrings? [s substrings]
+  (and s (every? #(re-find (re-pattern (java.util.regex.Pattern/quote %)) s) substrings)))
+
 (defn wrap-tx [handler]
   (fn [request]
     (jdbc/with-transaction [tx @ds*]
       (try
-        (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)]
-          (let [resp (handler (assoc request :tx tx-with-opts))]
-            (when-let [status (:status resp)]
-              (when (>= status 400)
-                (warn "Rolling back transaction because error status " status)
-                (.rollback tx)))
-            resp))
+        (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)
+              resp (handler (assoc request :tx tx-with-opts))
+              ext-data (when (and (:status resp) (>= (:status resp) 400) (:body resp))
+                         (warn "Rolling back transaction because error status " (:status resp))
+                         (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
+                         (.rollback tx)
+                         (let [ext-data (extract-data-from-input-stream (:body resp))]
+                           (when (contains-substrings? ext-data ["schema" "errors" "type" "coercion" "value" "in"])
+                             (warn (pretty-print-json ext-data)))
+                           ext-data))
+              resp (if ext-data
+                     (assoc resp :body ext-data)
+                     resp)]
+          resp)
         (catch Throwable th
           (warn "Rolling back transaction because of " (.getMessage th))
           (debug (.getMessage th))
