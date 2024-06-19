@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+TMPDIR="${TMPDIR:-/tmp}" # fallback to /tmp if TMPDIR is not set, as in Ubuntu e.g.
+
 JAR_PREFIX_NAME=madek-api-v2
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
-TMP_DIR="${TMPDIR:-$PROJECT_DIR/tmp}"
-mkdir -p $TMP_DIR
+BUILDCACHE_TMPDIR="${BUILDCACHE_TMPDIR:-$TMPDIR}"
+mkdir -p $BUILDCACHE_TMPDIR
 
 cd $PROJECT_DIR
 
@@ -19,16 +21,17 @@ function build {
 
 if [[ -n $(git status -s) ]]; then
     echo "WARNING uncommitted changes, (re)building from scratch, no linking"
+    git status -v
     build
 else
     echo "OK no uncommitted changes, building or using cache"
     DIGEST=$(git log -1 HEAD --pretty=format:%T)
-    CACHED_JAR="${TMP_DIR}/${JAR_PREFIX_NAME}_${DIGEST}.jar"
+    CACHED_JAR="${BUILDCACHE_TMPDIR}/${JAR_PREFIX_NAME}_${DIGEST}.jar"
     if [[ -f $CACHED_JAR ]]; then
         echo "Using cached jar: $CACHED_JAR"
         touch $CACHED_JAR
     else
-        echo "No cached jar found, building"
+        echo "No cached jar ${CACHED_JAR} found, building"
         build
         mv $JAR_PREFIX_NAME.jar $CACHED_JAR
     fi
@@ -37,4 +40,4 @@ else
 fi
 
 # Clean cached jars older than a week
-find $TMP_DIR -maxdepth 1 -name "${JAR_PREFIX_NAME}_*.jar" -type f -mtime +7 -delete
+find $BUILDCACHE_TMPDIR -maxdepth 1 -name "${JAR_PREFIX_NAME}_*.jar" -type f -mtime +7 -delete

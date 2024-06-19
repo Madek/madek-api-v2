@@ -1,4 +1,5 @@
 *.class
+.cider-ci_private/
 .clj-kondo
 .cpcache/
 .mux.yml
