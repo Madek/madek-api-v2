@@ -242,8 +242,8 @@
   ["/"
    {:swagger {:tags ["api/collection"]}}
    ["collections"
-    ;{:get
-    {:post
+    {:get
+    ;{:post
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
       ;:swagger {:produces ["application/json" "application/octet-stream"]}
@@ -254,8 +254,8 @@
 
       :middleware [
 
-                   ;(pagination-handler (merge ItemQueryParams schema_collection-query))
-                   (pagination-handler (merge ItemQueryParams schema_collection-query schema_test) )
+                   (pagination-handler (merge ItemQueryParams schema_collection-query))
+                   ;(pagination-handler (merge ItemQueryParams schema_collection-query schema_test) )
                    ;(pagination-handler (merge ItemQueryParams schema_collection-query schema_test) {:test-uuid '(to-uuid v v)})
 
 
@@ -266,7 +266,8 @@
                    ]
 
       :parameters {:query schema_collection-query
-                   :body schema_test}
+                   ;:body schema_test
+                   }
 
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [schema_collection-export]}}}}}]

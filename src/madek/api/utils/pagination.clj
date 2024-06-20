@@ -120,16 +120,17 @@
                                                  :required size-req
                                                  :value size-val}
 
-                                                {:name "test-uuid"
-                                                 :in "query"
-                                                 ;:description (str "Number of items per page, defaults to " size-val)
-                                                 :required size-req
-                                                 :value "123e4567-e89b-12d3-a456-426614174000"
-
-                                                 :type "string"
-                                                 :format "uuid"
-
-                                                 }
+                                                ;;; TODO: example how to declare uuid-type-formatting
+                                                ;{:name "test-uuid"
+                                                ; :in "query"
+                                                ; ;:description (str "Number of items per page, defaults to " size-val)
+                                                ; :required size-req
+                                                ; :value "123e4567-e89b-12d3-a456-426614174000"
+                                                ;
+                                                ; :type "string"
+                                                ; :format "uuid"
+                                                ;
+                                                ; }
 
                                                 ]
                                    :produces produces}
@@ -214,7 +215,7 @@
   ([schema ]
    (fn [handler]
      (fn [request]
-       (try
+       ;(try
          (let [
 
                cast-fnc (fn [m]
@@ -318,13 +319,15 @@
                  ]
 
              (handler request)))
-         (catch Exception ex
+       ;  (catch Exception ex
+       ;
+       ;
+       ;    ;(println ex)
+       ;    (sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) (.getData ex))))
+       ;    ;(sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) )))
+       ;)
 
-
-           (println ex)
-           ;(sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) (.getData ex))))
-           (sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) )))
-       ))))
+   ))))
 
 (defn pagination-optional-handler
   ([]

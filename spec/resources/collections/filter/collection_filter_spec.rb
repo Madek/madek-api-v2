@@ -4,8 +4,6 @@ describe "filtering collections" do
   def get_collections(filter = nil)
 
     resp = client.get("/api/collections", filter)
-
-    binding.pry
     resp.body.with_indifferent_access["collections"]
   end
 
@@ -41,8 +39,6 @@ describe "filtering collections" do
 
         response = get_collections("collection_id" => @collection.id,
           "me_get_metadata_and_previews" => true)
-        binding.pry
-
         expect(response.count).to be == 2
         response.each do |me|
           collection = Collection.unscoped.find(me["id"])

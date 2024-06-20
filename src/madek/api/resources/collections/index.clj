@@ -34,6 +34,9 @@
 ; TODO test query and paging
 (defn- build-query [request]
   (let [query-params (:query-params request)
+
+        p (println ">o> query-params=" query-params)
+
         authenticated-entity (:authenticated-entity request)
         full_data (= true (:full_data query-params))
         sql-query (-> (base-query full_data)
