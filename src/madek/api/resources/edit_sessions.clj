@@ -7,8 +7,16 @@
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+
+
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.pagination :refer [ItemQueryParams pagination-handler]]
+
+   [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
+
+
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -126,8 +134,8 @@
 
 (def schema_usr_query_edit_session
   {(s/optional-key :full_data) s/Bool
-   (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int
+   ;(s/optional-key :page) s/Int
+   ;(s/optional-key :count) s/Int
    (s/optional-key :id) s/Uuid
    (s/optional-key :media_entry_id) s/Uuid
    (s/optional-key :collection_id) s/Uuid})
@@ -135,8 +143,8 @@
 (def schema_adm_query_edit_session
 
   {(s/optional-key :full_data) s/Bool
-   (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int
+   ;(s/optional-key :page) s/Int
+   ;(s/optional-key :count) s/Int
    (s/optional-key :id) s/Uuid
    (s/optional-key :user_id) s/Uuid
    (s/optional-key :media_entry_id) s/Uuid
@@ -155,9 +163,17 @@
    ["/"
     {:get {:summary (sd/sum_adm "List edit_sessions.")
            :handler handle_adm_list-edit-sessions
-           :middleware [wrap-authorize-admin!]
+           :middleware [wrap-authorize-admin!
+                        (pagination-handler (merge schema_adm_query_edit_session ItemQueryParams))
+                        ]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query schema_adm_query_edit_session}}}]
+
+
+           :swagger (swagger-ui-pagination)
+           :parameters {:query schema_adm_query_edit_session}
+           ;:parameters {:query (merge schema_adm_query_edit_session ItemQueryParams)}
+
+           }}]
    ["/:id"
     {:get {:summary (sd/sum_adm "Get edit_session.")
            :handler handle_adm_get-edit-session
@@ -178,9 +194,22 @@
    ["/"
     {:get {:summary (sd/sum_usr "List authed users edit_sessions.")
            :handler handle_usr_list-edit-sessions
-           :middleware [authorization/wrap-authorized-user]
+
+
+           :middleware [authorization/wrap-authorized-user
+
+                        (pagination-handler (merge schema_usr_query_edit_session ItemQueryParams))
+                        ]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query schema_usr_query_edit_session}}}]
+
+           ;:parameters {:query schema_usr_query_edit_session}
+
+
+           ;:parameters {:query (merge schema_usr_query_edit_session ItemQueryParams)}
+           :swagger (swagger-ui-pagination)
+           :parameters {:query schema_usr_query_edit_session}
+
+           }}]
 
    ["/:id"
     {:get {:summary (sd/sum_usr "Get edit_session.")
