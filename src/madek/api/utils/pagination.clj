@@ -119,7 +119,20 @@
                                                      :in "query"
                                                      :description (str "Number of items per page, defaults to " size-val)
                                                      :required size-req
-                                                     :value size-val}]
+                                                     :value size-val}
+
+                                                    {:name "test-uuid"
+                                                     :in "query"
+                                                     :description (str "Number of items per page, defaults to " size-val)
+                                                     :required size-req
+                                                     :value size-val
+                                                     :schema {:type "string"
+                                                              :format "uuid"}
+
+                                                     }
+
+
+                                                    ]
                                        :produces produces}
                       additional-params)
          p (println ">o> merged=" merged)
@@ -171,22 +184,47 @@ merged
                                    {}
                                    m))
 
-               ;casted-vals (cast-fnc (-> request :params))
-               ;p (println ">o> casted-vals=" casted-vals)
 
-               request (let [casted-vals (cast-fnc (-> request :params))]
-                         (let [request (assoc-in request [:params] casted-vals)]
-                           (assoc-in request [:parameters :query] casted-vals)))
+
+               p (println ">o> params1.type!1!!!= params"  (-> request :params))
+               p (println ">o> params1.type!2!!! query="  (-> request :parameters :query))
+
+
+               p (println ">o> params1.type!1!!!= params" (type (:collection_id (-> request :params))))
+               p (println ">o> params1.type!2!!! query=" (type (:collection_id (-> request :parameters :query))))
+
+               p (println ">o> params1.type!1!!! pa= params" (type (:page (-> request :params))))
+               p (println ">o> params1.type!2!!! pa= query=" (type (:page (-> request :parameters :query))))
+
+               p (println ">o> params1.type!1!!! si= params" (type (:size (-> request :params))))
+               p (println ">o> params1.type!2!!! si= query=" (type (:size (-> request :parameters :query))))
+
+               ;; original
+               ;request (let [casted-vals (cast-fnc (-> request :params))]
+               ;          (let [request (assoc-in request [:params] casted-vals)]
+               ;            (assoc-in request [:parameters :query] casted-vals)))
+
+
+               request
+               ;(let [casted-vals (cast-fnc (-> request :params))]
+                         (let [request (assoc-in request [:params] (cast-fnc (-> request :params)))]
+                           (assoc-in request [:parameters :query] (cast-fnc (-> request :parameters :query))))
+           ;)
 
                p (println ">o> ph1.req.params" (get request :params))
                p (println ">o> ph1.req.query" (get request :parameters :query))
                p (println ">o> ph1.req.is_admin" (get request :is_admin))
 
-               params (-> request :params)
+               ;params (-> request :params)
+               ;params (-> request :parameters :query)       ;; this contains already casted data
+
+               ;; already casted data
+               params (merge (-> request :parameters :query)  (-> request :parameters :body) )
 
 
                ;p (println ">o> params1=" params)
-               ;p (println ">o> params1=" params)
+               p (println ">o> params1=" params)
+               p (println ">o> params1.type!!!!=" (type (:collection_id params)))
 
                _ (s/validate schema params)
 
@@ -199,6 +237,12 @@ merged
                            (let [request (assoc-in request [:params] params-renamed)]
                              (assoc-in request [:parameters :query] params-renamed)))
 
+             ;    request
+             ;    ;(let [params-renamed (rename-keys-fnc params key-map)]
+             ;              (let [request (assoc-in request [:params] params-renamed)]
+             ;                (assoc-in request [:parameters :query] params-renamed))
+             ;;)
+
                  p (println ">o> ph.req.params" (get request :params))
                  p (println ">o> ph.req.query" (get request :parameters :query))
                  p (println ">o> ph.req.is_admin" (get request :is_admin))
@@ -206,7 +250,8 @@ merged
 
              (handler request)))
          (catch Exception ex
-           (sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) (.getData ex))))))))
+           (sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) (.getData ex))))
+       ))))
 
 (defn pagination-optional-handler
   ([]
@@ -223,7 +268,11 @@ merged
 
 (s/defschema ItemQueryParams
   {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-   (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
+   (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")
+
+   (s/optional-key :test-uuid) s/Uuid}
+
+  )
 
 (s/defschema ItemQueryParams-required
   {(s/required-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")

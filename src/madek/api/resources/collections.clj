@@ -7,11 +7,10 @@
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.helper :refer [convert-map-if-exist]]
    ;[madek.api.utils.pagination :refer [ItemQueryParams pagination-handler]]
    [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
 
-   [madek.api.utils.helper :refer [mslurp]]
+   [madek.api.utils.helper :refer [mslurp to-uuid convert-map-if-exist]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -147,13 +146,46 @@
    :is_master (s/maybe s/Bool)
    :sorting (s/maybe schema_sorting_types)})
 
+
+
+(defn valid-greater-zero? [value]
+  (let [
+        p (println ">o> value=" value)
+        p (println ">o> value.cl=" (class value))
+
+
+
+
+        value (to-uuid value)
+        p (println ">o> 2value=" value)
+        p (println ">o> 2value.cl=" (class value))
+
+        res (and (not (nil? value)) )
+        p (println ">o> res=" res)
+        ]
+    res))
+
+; [madek.api.utils.validation :refer [greater-zero-validation greater-equal-zero-validation]]
+(def valid-uuid
+  (s/constrained s/Uuid valid-greater-zero? "Invalid Uuid, FUCK"))
+
+
+
+
+
+
 (def schema_collection-query
 ;(merge ItemQueryParams
   {
   ; (s/optional-key :page) s/Int
   ; (s/optional-key :count) s/Int
    (s/optional-key :full_data) s/Bool
+
    (s/optional-key :collection_id) s/Uuid
+   ;(s/optional-key :collection_id) valid-uuid
+
+   ;(s/optional-key :collection_id) (s/->Either [s/Uuid s/Str])
+
    (s/optional-key :order) s/Str
 
    (s/optional-key :creator_id) s/Uuid
@@ -171,7 +203,13 @@
    (s/optional-key :me_edit_permission) s/Bool
    (s/optional-key :me_edit_metadata_and_relations) s/Bool})
 
-  ;)
+(def schema_test
+;(merge ItemQueryParams
+  {
+   (s/optional-key :my_collection_id) s/Uuid
+   (s/optional-key :my_public_get_metadata_and_previews) s/Bool
+
+   })
 
 (def schema_collection-export
   {:id s/Uuid
@@ -202,7 +240,8 @@
   ["/"
    {:swagger {:tags ["api/collection"]}}
    ["collections"
-    {:get
+    ;{:get
+    {:post
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
       ;:swagger {:produces ["application/json" "application/octet-stream"]}
@@ -213,14 +252,18 @@
 
       :middleware [
 
-                   (pagination-handler (merge ItemQueryParams schema_collection-query))
+                   ;(pagination-handler (merge ItemQueryParams schema_collection-query))
+                   (pagination-handler (merge ItemQueryParams schema_collection-query schema_test))
+
+
                    ;(pagination-handler schema_collection-query)
 
                    ;(pagination-optional-handler)
 
                    ]
 
-      :parameters {:query schema_collection-query }
+      :parameters {:query schema_collection-query
+                   :body schema_test}
 
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [schema_collection-export]}}}}}]
@@ -263,6 +306,7 @@
            :swagger {:produces "application/json"
                      :consumes "application/json"}
            :coercion reitit.coercion.schema/coercion
+           ;:parameters {:path {:collection_id s/Str}
            :parameters {:path {:collection_id s/Uuid}
                         :body schema_collection-update}
            :responses {;200 {:body schema_collection-export} ;; TODO: fixme
