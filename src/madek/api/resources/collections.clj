@@ -193,6 +193,8 @@
 
                          ;(s/optional-key :grouped_params) schema-layout
 
+   (s/optional-key :test-uuid) s/Uuid
+
 
    (s/optional-key :clipboard_user_id) s/Uuid
    (s/optional-key :workflow_id) s/Uuid
@@ -253,7 +255,8 @@
       :middleware [
 
                    ;(pagination-handler (merge ItemQueryParams schema_collection-query))
-                   (pagination-handler (merge ItemQueryParams schema_collection-query schema_test))
+                   (pagination-handler (merge ItemQueryParams schema_collection-query schema_test) )
+                   ;(pagination-handler (merge ItemQueryParams schema_collection-query schema_test) {:test-uuid '(to-uuid v v)})
 
 
                    ;(pagination-handler schema_collection-query)

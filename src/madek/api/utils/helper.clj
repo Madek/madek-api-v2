@@ -35,6 +35,7 @@
 ; [madek.api.utils.helper :refer [to-uuid]]
 (defn to-uuid
   ([value]
+   (println ">o> to-uuid[value]")
    (try
      (let [result (if (instance? String value) (UUID/fromString value) value)]
        result)
@@ -43,6 +44,7 @@
        value)))
 
   ([value key]
+   (println ">o> to-uuid[value key]")
    (def keys-to-cast-to-uuid #{:user_id :id :group_id :person_id :collection_id :media_entry_id :accepted_usage_terms_id :delegation_id
                                :uploader_id :created_by_id
                                :keyword_id})
