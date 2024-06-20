@@ -1,6 +1,5 @@
 (ns madek.api.utils.pagination
   (:require
-   [clojure.spec.alpha :as sa]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
@@ -40,33 +39,98 @@
 
 ;### Debug ####################################################################
 
+
+
+
+
+
+(defn create-swagger-ui-param
+
+  "Returns a map with the swagger-ui parameters.
+
+ Map-Attributes:
+ - :name :in :description :required :value
+"
+
+  ([]
+   (create-swagger-ui-param {}))
+  ([config]
+   (let [default-config {:name "default-name"
+                         :in "query"
+                         :description "default description"
+                         :required false
+                         :value "default-value"}
+         final-config (merge default-config config)
+         p (println ">o> final-config=" final-config)
+         ]
+
+     {:name (get final-config :name)
+      :in (get final-config :in)
+      :description (get final-config :description)
+      :required (get final-config :required)
+      :value (get final-config :value)}
+
+     )))
+
+
+
+
+
+
+(defn append-parameter [data new-param]
+  (update data :parameters conj new-param))
+
+
+(defn merge-parameters [data new-parameters]
+  (update data :parameters into new-parameters))
+
 (defn swagger-ui-pagination
   "Returns a map with the swagger-ui parameters for pagination.
 
    Map-Attributes:
-   - :page-val.
-   - :size-val
+   - :page-val / page-req
+   - :size-val / size-req
+   - :produces
   "
 
   ([]
    (swagger-ui-pagination {}))
 
+
   ([config]
+   (swagger-ui-pagination config [])
+   )
+
+  ([config additional-params]
    (let [page-val (str (get config :page-val "0"))
          size-val (str (get config :size-val "5"))
          page-req (get config :size-val false)
-         size-req (get config :size-val false)]
-     {:parameters [{:name "page"
-                    :in "query"
-                    :description (str "Page number, defaults to " page-val)
-                    :required page-req
-                    :value page-val}
-                   {:name "size"
-                    :in "query"
-                    :description (str "Number of items per page, defaults to " size-val)
-                    :required size-req
-                    :value size-val}]
-      :produces "application/json"})))
+         size-req (get config :size-val false)
+         produces (get config :produces "application/json")
+
+         p (println ">o> additional-params=" additional-params)
+
+         merged     (merge-parameters {:parameters [{:name "page"
+                                                     :in "query"
+                                                     :description (str "Page number, defaults to " page-val)
+                                                     :required page-req
+                                                     :value page-val}
+                                                    {:name "size"
+                                                     :in "query"
+                                                     :description (str "Number of items per page, defaults to " size-val)
+                                                     :required size-req
+                                                     :value size-val}]
+                                       :produces produces}
+                      additional-params)
+         p (println ">o> merged=" merged)
+         ]
+merged
+
+
+
+     ))
+
+  )
 
 (defn pagination-handler
   "Required query-fields: page & size
@@ -79,8 +143,8 @@
 
   ([]
    (pagination-handler
-    {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")}))
+     {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+      (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")}))
 
   ([schema]
    (fn [handler]
@@ -89,23 +153,23 @@
          (let [cast-fnc (fn [m]
                           (println ">o> [cast]" m)
                           (reduce-kv
-                           (fn [acc k v]
-                             (assoc acc k
-                                    (cond
-                                      (= k :page) (str-to-int v v)
-                                      (= k :size) (str-to-int v v)
-                                      :else v)))
-                           {}
-                           m))
+                            (fn [acc k v]
+                              (assoc acc k
+                                     (cond
+                                       (= k :page) (str-to-int v v)
+                                       (= k :size) (str-to-int v v)
+                                       :else v)))
+                            {}
+                            m))
 
                rename-keys-fnc (fn [m key-map]
                                  (println ">o> [rename]" m key-map)
                                  (reduce-kv
-                                  (fn [acc k v]
-                                    (let [new-key (get key-map k k)]
-                                      (assoc acc new-key v)))
-                                  {}
-                                  m))
+                                   (fn [acc k v]
+                                     (let [new-key (get key-map k k)]
+                                       (assoc acc new-key v)))
+                                   {}
+                                   m))
 
                ;casted-vals (cast-fnc (-> request :params))
                ;p (println ">o> casted-vals=" casted-vals)
@@ -127,7 +191,7 @@
                _ (s/validate schema params)
 
 
-                 p (println ">o> ph.req.params2" (get request :params))
+               p (println ">o> ph.req.params2" (get request :params))
                ]
 
            (let [key-map {:size :count}
@@ -147,8 +211,8 @@
 (defn pagination-optional-handler
   ([]
    (pagination-handler
-    {(s/optional-key :page) s/Int
-     (s/optional-key :size)  s/Int })))
+     {(s/optional-key :page) s/Int
+      (s/optional-key :size) s/Int})))
 
 ;{(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
 ;     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})))
@@ -157,9 +221,13 @@
 ;  {:page (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
 ;   :size (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
 
- (s/defschema ItemQueryParams
+(s/defschema ItemQueryParams
   {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
+   (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
+
+(s/defschema ItemQueryParams-required
+  {(s/required-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+   (s/required-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

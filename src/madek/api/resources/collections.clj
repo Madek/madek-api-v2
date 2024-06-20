@@ -8,6 +8,9 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.helper :refer [convert-map-if-exist]]
+   ;[madek.api.utils.pagination :refer [ItemQueryParams pagination-handler]]
+   [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
+
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -138,15 +141,26 @@
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
+
+(def schema-layout
+  {:layout (s/maybe schema_layout_types)
+   :is_master (s/maybe s/Bool)
+   :sorting (s/maybe schema_sorting_types)})
+
 (def schema_collection-query
-  {(s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int
+;(merge ItemQueryParams
+  {
+  ; (s/optional-key :page) s/Int
+  ; (s/optional-key :count) s/Int
    (s/optional-key :full_data) s/Bool
    (s/optional-key :collection_id) s/Uuid
    (s/optional-key :order) s/Str
 
    (s/optional-key :creator_id) s/Uuid
    (s/optional-key :responsible_user_id) s/Uuid
+
+                         ;(s/optional-key :grouped_params) schema-layout
+
 
    (s/optional-key :clipboard_user_id) s/Uuid
    (s/optional-key :workflow_id) s/Uuid
@@ -156,6 +170,8 @@
    (s/optional-key :me_get_metadata_and_previews) s/Bool
    (s/optional-key :me_edit_permission) s/Bool
    (s/optional-key :me_edit_metadata_and_relations) s/Bool})
+
+  ;)
 
 (def schema_collection-export
   {:id s/Uuid
@@ -189,12 +205,27 @@
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
-      :swagger {:produces ["application/json" "application/octet-stream"]}
-      :parameters {:query schema_collection-query}
+      ;:swagger {:produces ["application/json" "application/octet-stream"]}
+
+      ;:swagger (swagger-ui-pagination {:produces ["application/json" "application/octet-stream"]} [(create-swagger-ui-param {:required true})])
+      :swagger (swagger-ui-pagination {:produces ["application/json" "application/octet-stream"]} )
+
+
+      :middleware [
+
+                   (pagination-handler (merge ItemQueryParams schema_collection-query))
+                   ;(pagination-handler schema_collection-query)
+
+                   ;(pagination-optional-handler)
+
+                   ]
+
+      :parameters {:query schema_collection-query }
+
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:body {:collections [schema_collection-export]}}}}}]
 
-   
+
 
    ["collection"
     {:post
