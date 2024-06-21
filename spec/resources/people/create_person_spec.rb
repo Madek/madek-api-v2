@@ -31,7 +31,7 @@ context "people" do
               req.headers["Content-Type"] = "application/json"
             end.status).to be == 201
 
-            expect_audit_entries("POST /api/admin/people/", expected_audit_entries, 201)
+            expect_audit_entries("POST /api/admin/people", expected_audit_entries, 201)
           end
         end
       end
@@ -52,7 +52,7 @@ context "people" do
           it "has the proper institutional_id" do
             expect(created_person.body["institutional_id"]).to be == "12345/x"
 
-            expect_audit_entries("POST /api/admin/people/", expected_audit_entries, 201)
+            expect_audit_entries("POST /api/admin/people", expected_audit_entries, 201)
           end
         end
       end
