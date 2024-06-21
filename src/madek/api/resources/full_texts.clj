@@ -5,11 +5,11 @@
             [madek.api.pagination :as pagination]
             [madek.api.resources.shared.core :as sd]
 
-            [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
-
             [madek.api.resources.shared.db_helper :as dbh]
+
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.pagination :refer [ItemQueryParams pagination-handler swagger-ui-pagination]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -44,9 +44,9 @@
     (catcher/with-logging {}
       (let [rdata (-> req :parameters :body)
             mr-id (or (:media_resource_id rdata)
-                      (-> req :parameters :path :media_resource_id)
-                      (-> req :parameters :path :collection_id)
-                      (-> req :parameters :path :media_entry_id))
+                    (-> req :parameters :path :media_resource_id)
+                    (-> req :parameters :path :collection_id)
+                    (-> req :parameters :path :media_entry_id))
             ins-data (assoc rdata :media_resource_id mr-id)
             sql-query (-> (sql/insert-into :full_texts)
                           (sql/values [ins-data])
@@ -67,9 +67,9 @@
     (catcher/with-logging {}
       (let [data (-> req :parameters :body)
             mr-id (or (:media_resource_id data)
-                      (-> req :parameters :path :media_resource_id)
-                      (-> req :parameters :path :collection_id)
-                      (-> req :parameters :path :media_entry_id))
+                    (-> req :parameters :path :media_resource_id)
+                    (-> req :parameters :path :collection_id)
+                    (-> req :parameters :path :media_entry_id))
             dwid (assoc data :media_resource_id mr-id)
             sql-query (-> (sql/update :full_texts)
                           (sql/set dwid)
@@ -107,8 +107,8 @@
 (defn wrap-find-full_text [param send404]
   (fn [handler]
     (fn [request] (sd/req-find-data request handler param
-                                    :full_texts :media_resource_id
-                                    :full_text send404))))
+                    :full_texts :media_resource_id
+                    :full_text send404))))
 
 
 
@@ -117,34 +117,38 @@
                    (s/optional-key :text) s/Str
                    ;(s/optional-key :page) s/Int
                    ;(s/optional-key :count) s/Int
-                   } )
+                   })
 
 ; TODO tests
 ; TODO howto access control or full_texts is public meta data
 (def query-routes
-  [["/full_texts"
-    {:swagger {:tags ["full_texts"]}}
-    ["/"
-     {:get {:summary (sd/sum_usr "Query or list full_texts.")
-            :handler handle_list-full_texts
-            :coercion reitit.coercion.schema/coercion
+  ["/"
+   {:swagger {:tags ["full_texts"]}}
+   ["full_texts"
+    ;["/"
+    {:get {:summary (sd/sum_usr "Query or list full_texts.")
+           :handler handle_list-full_texts
+           :coercion reitit.coercion.schema/coercion
 
-            :middleware [
-                         ;; TODO: contains complete map that should be validated
-                         (pagination-handler (merge ItemQueryParams schema-query))
-                         ]
+           :middleware [
+                        ;; TODO: contains complete map that should be validated
+                        (pagination-handler (merge ItemQueryParams schema-query))
+                        ]
 
-            :swagger (swagger-ui-pagination)
+           :swagger (swagger-ui-pagination)
 
-            :parameters {:query schema-query
-                         }}}]
+           :parameters {:query schema-query
+                        }}}
+    ]
 
-    ["/full_texts/:media_resource_id"
+    ["full_texts/:media_resource_id"
      {:get {:summary (sd/sum_usr "Get full_text.")
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_resource_id s/Uuid}}
-            :middleware [(wrap-find-full_text :media_resource_id true)]}}]]])
+            :middleware [(wrap-find-full_text :media_resource_id true)]}}]]
+;]
+)
 
 ; TODO tests
 ; TODO Frage: siehe web-app: ??

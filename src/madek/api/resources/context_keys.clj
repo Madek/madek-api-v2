@@ -214,9 +214,9 @@
 ; TODO docu
 ; TODO tests
 (def admin-routes
-  ["/context-keys"
+  ["/"
    {:swagger {:tags ["admin/context-keys"] :security [{"auth" []}]}}
-   ["/"
+   ["context-keys"
     {:post
      {:summary (sd/sum_adm "Post context_key by id.")
       :swagger {:security [{"auth" []}]}
@@ -246,7 +246,7 @@
       :responses {200 {:body [schema_export_context_key_admin]}
                   406 {:body s/Any}}}}]
    ; edit context_key
-   ["/:id"
+   ["context-keys/:id"
     {:get
      {:summary (sd/sum_adm "Get context_key by id.")
       :handler handle_adm-get-context_key
@@ -283,9 +283,9 @@
 
 ; TODO docu
 (def user-routes
-  ["/context-keys"
+  ["/"
    {:swagger {:tags ["context-keys"] :security []}}
-   ["/"
+   ["context-keys"
     {:get
      {:summary (sd/sum_pub "Query / List context_keys.")
       :handler handle_usr-list-context_keys
@@ -297,7 +297,7 @@
       :responses {200 {:body [schema_export_context_key]}
                   406 {:body s/Any}}}}]
 
-   ["/:id"
+   ["context-keys/:id"
     {:get
      {:summary (sd/sum_pub "Get context_key by id.")
       :handler handle_usr-get-context_key

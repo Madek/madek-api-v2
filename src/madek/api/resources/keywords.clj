@@ -179,9 +179,9 @@
 
 ;; FIXME: broken endpoint to test doc
 (def query-routes
-  ["/keywords"
+  ["/"
    {:swagger {:tags ["keywords"] :security []}}
-   ["/"
+   ["keywords"
     {:get
      {:summary (sd/sum_pub (d "Query / list keywords."))
       :handler handle_usr-query-keywords
@@ -199,7 +199,7 @@
                                                       :items [{:id 1, :name "Item 1"}
                                                               {:id 2, :name "Item 2"}]}}}}}}]
 
-   ["/:id"
+   ["keywords/:id"
     {:get
      {:summary (sd/sum_pub "Get keyword for id.")
       :handler handle_usr-get-keyword
@@ -211,9 +211,9 @@
       :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
 
 (def admin-routes
-  ["/keywords"
+  ["/"
    {:swagger {:tags ["admin/keywords"] :security [{"auth" []}]}}
-   ["/"
+   ["keywords"
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords
@@ -241,7 +241,7 @@
       :parameters {:body schema_create_keyword}
       :responses {200 {:body schema_export_keyword_adm}
                   406 {:body s/Any}}}}]
-   ["/:id"
+   ["keywords/:id"
     {:get
      {:summary (sd/sum_adm "Get keyword for id")
       :handler handle_adm-get-keyword
