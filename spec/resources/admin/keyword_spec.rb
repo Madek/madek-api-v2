@@ -8,7 +8,7 @@ context "admin keywords" do
   end
 
   let :query_url do
-    "/api/admin/keywords/"
+    "/api/admin/keywords"
   end
 
   let :keyword_url do

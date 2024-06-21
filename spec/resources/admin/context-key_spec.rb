@@ -30,7 +30,7 @@ context "admin context-keys" do
   end
 
   let :query_url do
-    "/api/admin/context-keys/"
+    "/api/admin/context-keys"
   end
 
   let :context_key_url do

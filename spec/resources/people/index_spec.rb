@@ -29,7 +29,7 @@ context "people" do
   context "admin user" do
     include_context :json_client_for_authenticated_admin_user do
       describe "get an unfiltered people list as an admin" do
-        url = "/api/admin/people/?size=100"
+        url = "/api/admin/people?page=0&size=100"
         let :result do
           # client.get.relation('people').get()
           puts ">> ur1l= #{url}"
@@ -50,7 +50,7 @@ context "people" do
       end
 
       context "filter people by their institution" do
-        url = "/api/admin/people/?size=1000&institution=foo.com"
+        url = "/api/admin/people?page=0&size=1000&institution=foo.com"
         let :result do
           puts ">> url= #{url}"
           client.get(url)
@@ -66,7 +66,7 @@ context "people" do
       end
 
       context "filter people by their subtype" do
-        url = "/api/admin/people/?size=100&subtype=Person&institution=foo.com"
+        url = "/api/admin/people?page=0&size=100&subtype=Person&institution=foo.com"
         let :result do
           client.get(url)
         end
