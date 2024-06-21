@@ -6,6 +6,7 @@
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -141,6 +142,13 @@
    (s/optional-key :order) s/Num
    (s/optional-key :position) s/Int})
 
+(def schema_collection-query
+{(s/optional-key :child_id) s/Uuid
+ (s/optional-key :parent_id) s/Uuid
+ ;(s/optional-key :page) s/Int
+ ;(s/optional-key :count) s/Int
+ })
+
 ; TODO add permission checks
 (def ring-routes
   ["/collection-collection-arcs"
@@ -149,12 +157,17 @@
     {:get
      {:summary "Query collection collection arcs."
       :handler handle_query-arcs
-      :swagger {:produces "application/json"}
+      ;:swagger {:produces "application/json"}
+
+      :swagger (swagger-ui-pagination)
+
+      :middleware [
+                   ;; contains complete map that should be validated
+                   (pagination-handler (merge ItemQueryParams schema_collection-query))
+                   ]
+
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :child_id) s/Uuid
-                           (s/optional-key :parent_id) s/Uuid
-                           (s/optional-key :page) s/Int
-                           (s/optional-key :count) s/Int}}
+      :parameters {:query schema_collection-query}
       :responses {200 {:body s/Any}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id

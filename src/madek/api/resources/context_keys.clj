@@ -5,6 +5,8 @@
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
+
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
@@ -194,7 +196,20 @@
 
    :admin_comment (s/maybe s/Str)
    :updated_at s/Any
-   :created_at s/Any})
+   :created_at s/Any}  )
+
+
+(def schema_query
+  {(s/optional-key :changed_after) s/Inst
+   (s/optional-key :created_after) s/Inst
+   (s/optional-key :updated_after) s/Inst
+   ;(s/optional-key :page) s/Int
+   ;(s/optional-key :count) s/Int
+   (s/optional-key :id) s/Uuid
+   (s/optional-key :context_id) s/Str
+   (s/optional-key :meta_key_id) s/Str
+   (s/optional-key :is_required) s/Bool}
+  )
 
 ; TODO docu
 ; TODO tests
@@ -218,17 +233,16 @@
      :get
      {:summary (sd/sum_adm "Query context_keys.")
       :handler handle_adm-list-context_keys
-      :middleware [wrap-authorize-admin!]
+      :middleware [wrap-authorize-admin!
+                   (pagination-handler (merge ItemQueryParams schema_query))
+                   ]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :changed_after) s/Inst
-                           (s/optional-key :created_after) s/Inst
-                           (s/optional-key :updated_after) s/Inst
-                           (s/optional-key :page) s/Int
-                           (s/optional-key :count) s/Int
-                           (s/optional-key :id) s/Uuid
-                           (s/optional-key :context_id) s/Str
-                           (s/optional-key :meta_key_id) s/Str
-                           (s/optional-key :is_required) s/Bool}}
+      :swagger (swagger-ui-pagination)
+
+      :parameters {:query schema_query}
+
+
+
       :responses {200 {:body [schema_export_context_key_admin]}
                   406 {:body s/Any}}}}]
    ; edit context_key

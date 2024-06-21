@@ -7,7 +7,6 @@
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   ;[madek.api.utils.pagination :refer [ItemQueryParams pagination-handler]]
    [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
 
    [madek.api.utils.helper :refer [mslurp to-uuid convert-map-if-exist]]

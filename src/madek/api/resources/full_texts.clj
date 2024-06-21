@@ -4,6 +4,9 @@
             [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
             [madek.api.resources.shared.core :as sd]
+
+            [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
+
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -107,6 +110,15 @@
                                     :full_texts :media_resource_id
                                     :full_text send404))))
 
+
+
+(def schema-query {(s/optional-key :full_data) s/Bool
+                   (s/optional-key :media_resource_id) s/Uuid
+                   (s/optional-key :text) s/Str
+                   ;(s/optional-key :page) s/Int
+                   ;(s/optional-key :count) s/Int
+                   } )
+
 ; TODO tests
 ; TODO howto access control or full_texts is public meta data
 (def query-routes
@@ -116,11 +128,16 @@
      {:get {:summary (sd/sum_usr "Query or list full_texts.")
             :handler handle_list-full_texts
             :coercion reitit.coercion.schema/coercion
-            :parameters {:query {(s/optional-key :full_data) s/Bool
-                                 (s/optional-key :media_resource_id) s/Uuid
-                                 (s/optional-key :text) s/Str
-                                 (s/optional-key :page) s/Int
-                                 (s/optional-key :count) s/Int}}}}]
+
+            :middleware [
+                         ;; TODO: contains complete map that should be validated
+                         (pagination-handler (merge ItemQueryParams schema-query))
+                         ]
+
+            :swagger (swagger-ui-pagination)
+
+            :parameters {:query schema-query
+                         }}}]
 
     ["/full_texts/:media_resource_id"
      {:get {:summary (sd/sum_usr "Get full_text.")
