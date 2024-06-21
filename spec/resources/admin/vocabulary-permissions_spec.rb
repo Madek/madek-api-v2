@@ -34,7 +34,7 @@ context "vocabulary permission" do
                         position: 20,
                         labels: @labels,
                         descriptions: @labels}
-        create_response = client.post("#{api_base_url}/admin/vocabularies/") do |req|
+        create_response = client.post("#{api_base_url}/admin/vocabularies") do |req|
           req.body = @create_data.to_json
           req.headers["Content-Type"] = "application/json"
         end
@@ -55,7 +55,7 @@ context "vocabulary permission" do
                         position: 20,
                         labels: @labels,
                         descriptions: @labels}
-        create_response = client.post("#{api_base_url}/admin/vocabularies/") do |req|
+        create_response = client.post("#{api_base_url}/admin/vocabularies") do |req|
           req.body = @create_data.to_json
           req.headers["Content-Type"] = "application/json"
         end

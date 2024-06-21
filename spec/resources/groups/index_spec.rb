@@ -9,7 +9,7 @@ context "groups" do
     include_context :json_client_for_authenticated_user do
       it "is forbidden to retrieve groups" do
         expect(
-          client.get("/api/admin/groups/").status
+          client.get("/api/admin/groups").status
         ).to be == 403
       end
     end
@@ -19,7 +19,7 @@ context "groups" do
     include_context :json_client_for_authenticated_admin_user do
       describe "get groups" do
         let :groups_result do
-          client.get("/api/admin/groups/?size=100")
+          client.get("/api/admin/groups?page=0&size=100")
         end
 
         it "responses with 200" do

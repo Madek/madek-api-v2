@@ -11,7 +11,7 @@ context "groups" do
     include_context :json_client_for_authenticated_user do
       it "is forbidden to retrieve any group" do
         expect(
-          client.get("/api/admin/groups/", {id: @group.id}).status
+          client.get("/api/admin/groups", {id: @group.id}).status
         ).to be == 403
       end
     end

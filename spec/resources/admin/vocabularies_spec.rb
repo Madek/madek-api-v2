@@ -18,7 +18,7 @@ context "admin vocabularies" do
   end
 
   let :query_url do
-    "/api/admin/vocabularies/"
+    "/api/admin/vocabularies"
   end
 
   let :vocabulary_url do

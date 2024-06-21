@@ -6,6 +6,8 @@
             [madek.api.resources.groups.shared :as groups]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
+            [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
+
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.helper :refer [convert-groupid f mslurp]]
@@ -191,7 +193,12 @@
                 :content-type "application/json"
 
                 :swagger (swagger-ui-pagination)
-                :middleware [(pagination-handler)]
+                :middleware [
+                             ;(pagination-handler)
+
+                             (pagination-handler (merge ItemQueryParams schema_query-groups))
+
+                             ]
 
                 :parameters {:query schema_query-groups}
                 ;:accept "application/json"
@@ -214,10 +221,19 @@
    ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
                :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                :handler index
-               :middleware [wrap-authorize-admin!]
-               :swagger {:produces "application/json"}
+               :middleware [wrap-authorize-admin!
+                            (pagination-handler (merge ItemQueryParams schema_query-groups))
+
+                            ]
+
+                    :swagger (swagger-ui-pagination  )
+
+
+                    ;:swagger {:produces "application/json"}
+
                :parameters {:query schema_query-groups}
-               :content-type "application/json"
+
+                    :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
                :responses {200 {:body {:groups [schema_export-group]}}}}
 
