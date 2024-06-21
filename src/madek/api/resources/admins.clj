@@ -83,9 +83,9 @@
 
 ; TODO docu
 (def ring-routes
-  ["/admins"
+  ["/"
    {:swagger {:tags ["admin/admins"] :security [{"auth" []}]}}
-   ["/"
+   ["admins"
     {:get
      {:summary (sd/sum_adm "List admin users.")
       :handler handle_list-admin
@@ -94,7 +94,7 @@
       :parameters {:query {(s/optional-key :full_data) s/Bool}}
       :responses {200 {:body {:admins [schema_export-admin]}}}}}]
    ; edit admin
-   ["/:id"
+   ["admins/:id"
     {:get
      {:summary (sd/sum_adm "Get admin by id.")
       :handler handle_get-admin
@@ -117,7 +117,7 @@
                   406 {:body s/Any}}}}]
 
    ; access via user
-   ["/:user_id/user"
+   ["admins/:user_id/user"
     {:post
      {:summary (sd/sum_adm "Create admin for user with id.")
       :handler handle_create-admin

@@ -139,9 +139,9 @@
 
 ;; TODO: no usage??
 (def user-routes
-  ["/delegation/:delegation_id/user"
+  ["/delegation/:delegation_id/"
    {:swagger {:tags ["delegation/users"]}}
-   ["/"
+   ["user"
     {:post {:summary (sd/sum_cnv "Create delegations_user for authed user and media-entry.")
             :handler handle_create-delegations_user
             :middleware [(wwrap-find-delegation :delegation_id)
@@ -174,9 +174,9 @@
                           406 {:body s/Any}}}}]])
 
 (def admin-routes
-  [["/delegation/users"
+  [["/delegation/"
     {:swagger {:tags ["admin/delegation/users"]}}
-    ["/"
+    ["users"
      {:get
       {:summary (sd/sum_adm "Query delegations_users.")
        :handler handle_list-delegations_users
@@ -185,7 +185,7 @@
        :parameters {:query {(s/optional-key :user_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid
                             (s/optional-key :full-data) s/Bool}}}}]
-    ["/:delegation_id/:user_id"
+    ["users/:delegation_id/:user_id"
      {:post
       {:summary (sd/sum_adm "Create delegations_user for user and delegation.")
        :handler handle_create-delegations_user

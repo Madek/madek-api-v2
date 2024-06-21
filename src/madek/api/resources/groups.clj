@@ -181,9 +181,9 @@
    })
 
 (def user-routes
-  [["/groups"
+  [["/"
     {:swagger {:tags ["groups"]}}
-    ["/" {:get {:summary "Get all group ids"
+    ["groups" {:get {:summary "Get all group ids"
                 :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                 :handler index
 ;                :middleware [wrap-authorize-admin!]
@@ -197,7 +197,7 @@
                 ;:accept "application/json"
                 :coercion reitit.coercion.schema/coercion
                 :responses {200 {:body {:groups [schema_export-group]}}}}}]
-    ["/:id" {:get {:summary "Get group by id"
+    ["groups/:id" {:get {:summary "Get group by id"
                    :description "Get group by id. Returns 404, if no such group exists."
                    :swagger {:produces "application/json"}
                    :content-type "application/json"
@@ -209,9 +209,9 @@
                                404 {:body s/Any}}}}]]])
 
 (def ring-routes
-  ["/groups"
+  ["/"
    {:swagger {:tags ["admin/groups"] :security [{"auth" []}]}}
-   ["/" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
+   ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
                :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                :handler index
                :middleware [wrap-authorize-admin!]
@@ -240,7 +240,7 @@
                                  :examples {"application/json" {:message "Entry already exists"}}}
                             500 {:body s/Any}}}}]
 
-   ["/:id" {:get {:summary "Get group by id OR institutional-id"
+   ["groups/:id" {:get {:summary "Get group by id OR institutional-id"
                   :description "CAUTION: Get group by id OR institutional-id. Returns 404, if no such group exists."
                   :swagger {:produces "application/json"}
                   :content-type "application/json"
@@ -284,7 +284,7 @@
                               404 {:body s/Any}}}}] ; TODO error handling
 
    ; groups-users/ring-routes
-   ["/:group-id/users/" {:get {:summary "Get group users by id"
+   ["groups/:group-id/users/" {:get {:summary "Get group users by id"
                                :description "Get group users by id. (zero-based paging) TESTME"
 ;                               :swagger {:produces "application/json"}
                                :content-type "application/json"
@@ -318,7 +318,7 @@
                                :responses {200 {:body s/Any} ;groups/schema_export-group}
                                            404 {:body s/Str}}}}]
 
-   ["/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
+   ["groups/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
                                        :description "gid= uuid/institutional_id\n
                                        user_id= uuid|email\n
                                        Get group user by group-id and user-id."

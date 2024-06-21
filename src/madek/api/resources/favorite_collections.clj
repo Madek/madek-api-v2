@@ -160,9 +160,9 @@
 
 ; TODO tests
 (def admin-routes
-  [["/favorite/collections"
+  [["/favorite/"
     {:swagger {:tags ["admin/favorite/collections"] :security [{"auth" []}]}}
-    ["/"
+    ["collections"
      {:get
       {:summary (sd/sum_adm (f "List favorite_collection users." " TODO: pagination?"))
        :handler handle_list-favorite_collection
@@ -174,7 +174,7 @@
                             (s/optional-key :full_data) s/Bool}}
        :responses {200 {:body [schema_favorite_collection_export]}}}}]
     ; edit favorite collections for other users
-    ["/favorite/collections/:collection_id/:user_id"
+    ["collections/favorite/collections/:collection_id/:user_id"
      {:post {:summary (sd/sum_adm "Create favorite_collection for user and collection.")
              :handler handle_create-favorite_collection
 

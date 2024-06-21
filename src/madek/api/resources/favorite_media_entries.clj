@@ -174,16 +174,16 @@
                          406 {:body s/Any}}}}])
 
 (def admin-routes
-  [["/favorite/media-entries"
+  [["/favorite/"
     {:swagger {:tags ["admin/favorite/media-entries"] :security [{"auth" []}]}}
-    ["/"
+    ["media-entries"
      {:get
       {:summary (sd/sum_adm "Query favorite_media_entries.")
        :handler handle_list-favorite_media_entries
        :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion}}]
 
-    ["/favorite/media_entries/:media_entry_id/:user_id"
+    ["media-entries/favorite/media_entries/:media_entry_id/:user_id"
      {:post
       {:summary (sd/sum_adm "Create favorite_media-entry for user and media-entry.")
        :handler handle_create-favorite_media_entry

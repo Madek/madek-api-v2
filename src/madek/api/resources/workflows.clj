@@ -124,10 +124,10 @@
 ; TODO tests
 (def user-routes
 
-  ["/workflows"
+  ["/"
 ;   {:swagger {:tags ["admin/workflows"] :security [{"auth" []}]}}
    {:swagger {:tags ["admin/workflows"]}}
-   ["/"
+   ["workflows"
     {:post {:summary (sd/sum_auth "Create workflow.")
             :handler handle_create-workflow
             :middleware [authorization/wrap-authorized-user]
@@ -145,7 +145,7 @@
            :responses {200 {:body [schema_export_workflow]}
                        406 {:body s/Any}}}}]
 
-   ["/:id"
+   ["workflows/:id"
     {:get {:summary (sd/sum_auth "Get workflow by id.")
            :handler handle_get-workflow
            :middleware [authorization/wrap-authorized-user
