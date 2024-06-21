@@ -64,8 +64,9 @@
    (s/optional-key :term) s/Str
    (s/optional-key :description) s/Str
    (s/optional-key :rdf_class) s/Str
-   (s/optional-key :page) s/Int
-   (s/optional-key :count) s/Int})
+   ;(s/optional-key :page) s/Int
+   ;(s/optional-key :count) s/Int
+    }  )
 
 (defn user-export-keyword [keyword]
   (->
@@ -216,9 +217,19 @@
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords
-      :middleware [wrap-authorize-admin!]
+      ;:middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
+
+      :swagger (swagger-ui-pagination  )
+
+      :middleware [wrap-authorize-admin!
+                   (pagination-handler (merge ItemQueryParams schema_query_keyword))
+                   ]
+
       :parameters {:query schema_query_keyword}
+
+
+
       :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 

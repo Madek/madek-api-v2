@@ -329,11 +329,11 @@
 
    ))))
 
-(defn pagination-optional-handler
-  ([]
-   (pagination-handler
-     {(s/optional-key :page) s/Int
-      (s/optional-key :size) s/Int})))
+;(defn pagination-optional-handler
+;  ([]
+;   (pagination-handler
+;     {(s/optional-key :page) s/Int
+;      (s/optional-key :size) s/Int})))
 
 ;{(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
 ;     (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")})))
