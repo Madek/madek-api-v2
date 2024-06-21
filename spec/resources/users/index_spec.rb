@@ -24,11 +24,26 @@ context "users" do
         end
 
         it "returns some data but less than created because we paginate" do
+          # binding.pry
           expect(
             users_result.body["users"].count
           ).to be < @users.count
         end
       end
+
+      # test required pagination
+      # describe "get users without pagination" do
+      #   let :users_result do
+      #     client.get("/api/admin/users")
+      #   end
+      #
+      #   it "responses with 500" do
+      #     binding.pry
+      #
+      #     expect(users_result.status).to be == 500
+      #     expect(users_result.body).to be == {"msg"=>"Value does not match schema: {:page missing-required-key, :size missing-required-key}"}
+      #   end
+      # end
     end
   end
 end

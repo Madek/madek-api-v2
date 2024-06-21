@@ -2,8 +2,8 @@
   (:require
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [parse-specific-keys str-to-int to-uuid]]
+   [madek.api.utils.helper :refer [parse-specific-keys str-to-int]]
+   [madek.api.utils.helper :refer [to-uuid]]
    [schema.core :as s]))
 
 (def DEFAULT_LIMIT 1000)
@@ -21,7 +21,11 @@
 
 (defn sql-offset-and-limit [query params]
   "Caution: zero-based page numbers"
-  (let [defaults {:page 0 :count DEFAULT_LIMIT}
+  (let [
+        p (println ">o> >>> query=" query)
+        p (println ">o> >>> params=" params)
+
+        defaults {:page 0 :count DEFAULT_LIMIT}
         params (merge defaults params)
         params (parse-specific-keys params defaults)
         off (compute-offset params)
@@ -101,13 +105,18 @@
    )
 
   ([config additional-params]
-   (let [page-val (str (get config :page-val "0"))
+   (let [
+         p (println ">o> config=" config)
+         p (println ">o> additional-params=" additional-params)
+
+
+
+         page-val (str (get config :page-val "0"))
          size-val (str (get config :size-val "5"))
          page-req (get config :size-val false)
          size-req (get config :size-val false)
          produces (get config :produces "application/json")
 
-         p (println ">o> additional-params=" additional-params)
 
          merged (merge-parameters {:parameters [{:name "page"
                                                  :in "query"
@@ -123,18 +132,18 @@
                                                 ;;; TODO: example how to declare uuid-type-formatting
                                                 ;{:name "test-uuid"
                                                 ; :in "query"
-                                                ; ;:description (str "Number of items per page, defaults to " size-val)
+                                                ; :description (str "Number of items per page, defaults to " size-val)
                                                 ; :required size-req
                                                 ; :value "123e4567-e89b-12d3-a456-426614174000"
                                                 ;
                                                 ; :type "string"
                                                 ; :format "uuid"
-                                                ;
                                                 ; }
 
                                                 ]
                                    :produces produces}
                   additional-params)
+
          p (println ">o> merged=" merged)
          ]
      merged
@@ -178,6 +187,11 @@
 ;  )
 
 
+(defn get-types [m]
+  (into {} (map (fn [[k v]] [k (type v)]) m)))
+
+
+
 
 (defn pagination-handler
   "Required query-fields: page & size
@@ -204,121 +218,149 @@
 
   ([]
    ;(let [my-map (if (nil? my-map) {} my-map)]
-     (pagination-handler
-       {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-        (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")}
-       ))
-  ;)
+   (pagination-handler
+     {(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+      (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")}
+     ) {})
+
+  ([schema]
+   ;(let [my-map (if (nil? my-map) {} my-map)]
+   (pagination-handler schema {}))
 
 
 
-  ([schema ]
+
+  ([schema casting-map]
    (fn [handler]
      (fn [request]
        ;(try
-         (let [
+       (let [
 
-               cast-fnc (fn [m]
-                          (println ">o> [cast]" m)
-                          (reduce-kv
-                            (fn [acc k v]
-                              (assoc acc k
-                                     (cond
-                                       (= k :page) (str-to-int v v)
-                                       (= k :size) (str-to-int v v)
-                                       :else v)))
-                            {}
-                            m))
+             p (println ">o> START: -----------------------------------")
+             p (println ">o> ph.req.params" (-> request :params))
+             p (println ">o> ph.req.params.types" (get-types (-> request :params)))
 
+             p (println ">o> ph.req.query" (-> request :parameters :query))
+             p (println ">o> ph.req.body" (-> request :parameters :body))
+             p (println ">o> -------------------------------------------------")
 
+             cast-value (fn [k v casting-map]
 
-               rename-keys-fnc (fn [m key-map]
-                                 (println ">o> [rename]" m key-map)
-                                 (reduce-kv
-                                   (fn [acc k v]
-                                     (let [new-key (get key-map k k)]
-                                       (assoc acc new-key v)))
-                                   {}
-                                   m))
+                          ;(if (contains? casting-map k)
+                          ;  (to-uuid v)
+                          ;  v
 
 
+                          (cond (not (contains? casting-map k)) v
+                                ;(cond (contains? casting-map k) (to-uuid v)
+                                (= (get casting-map k) "uuid") (to-uuid v)
+                                :else v
 
-               p (println ">o> params1.type!1!!!= params" (-> request :params))
-               p (println ">o> params1.type!2!!! query=" (-> request :parameters :query))
-               p (println ">o> params1.type!2!!! query=" (-> request :parameters :body))
+                                )
 
-               p (println ">o> -------------------------------\n\n")
+                          )
 
-               p (println ">o> params1.type!1!!! H col-id params" (type (:collection_id (-> request :params)))) ;; not converted
-               p (println ">o> params1.type!2!!! H col-id query=" (type (:collection_id (-> request :parameters :query)))) ;; converted
-               p (println ">o> params1.type!3!!! H uuid query=" (type (:test-uuid (-> request :parameters :query)))) ;; converted
-               p (println ">o> params1.type!4!!! B my_coll body=" (type (:my_collection_id (-> request :parameters :body)))) ;; converted
-               p (println ">o> params1.type!5!!! B my_publ body=" (type (:my_public_get_metadata_and_previews (-> request :parameters :body)))) ;; converted
+             cast-fnc (fn [m]
+                        (println ">o> [cast]" m casting-map)
+                        (reduce-kv
+                          (fn [acc k v]
+                            (assoc acc k
+                                   (cond
+                                     (= k :page) (str-to-int v v)
+                                     (= k :size) (str-to-int v v)
+                                     ;(contains? casting-map k ) (cast-value v casting-map)
+                                     ;:else v)))
+                                     :else (cast-value k v casting-map))))
+                          {}
+                          m))
 
-               ;p (println ">o> -------------------------------\n\n")
-               ;p (println ">o> params1.type!1!!! pa= params" (type (:page (-> request :params))))
-               ;p (println ">o> params1.type!2!!! pa= query=" (type (:page (-> request :parameters :query))))
+
+
+             rename-keys-fnc (fn [m key-map]
+                               (println ">o> [rename]" m key-map)
+                               (reduce-kv
+                                 (fn [acc k v]
+                                   (let [new-key (get key-map k k)]
+                                     (assoc acc new-key v)))
+                                 {}
+                                 m))
+
+
+
+
+
+             ;; original
+             ;request (let [casted-vals (cast-fnc (-> request :params))]
+             ;          (let [request (assoc-in request [:params] casted-vals)]
+             ;            (assoc-in request [:parameters :query] casted-vals)))
+
+
+             ;request
+             ;(let [request (assoc-in request [:params] (cast-fnc (-> request :params) my-map))]
+             ;  (assoc-in request [:parameters :query] (cast-fnc (-> request :parameters :query) my-map)))
+
+             request
+             (let [request (assoc-in request [:params] (cast-fnc (-> request :params)))]
+               (assoc-in request [:parameters :query] (cast-fnc (-> request :parameters :query))))
+
+
+             p (println ">o> AFTER CAST: -----------------------------------")
+             p (println ">o> ph.req.params" (-> request :params))
+             p (println ">o> ph.req.params.types" (get-types (-> request :params)))
+             p (println ">o> ph.req.query" (-> request :parameters :query))
+             p (println ">o> ph.req.body" (-> request :parameters :body))
+             p (println ">o> -------------------------------------------------")
+
+             ;; already casted data
+             params (merge (-> request :parameters :query) (-> request :parameters :body))
+
+             _ (s/validate schema params)
+
+             ]
+
+         (let [key-map {:size :count}
+               request (let [params-renamed (rename-keys-fnc params key-map)]
+                         (let [request (assoc-in request [:params] params-renamed)]
+                           (assoc-in request [:parameters :query] params-renamed)))
+
+
+
+               p (println ">o> AFTER RENAME: -----------------------------------")
+               p (println ">o> ph.req.params" (-> request :params))
+               p (println ">o> ph.req.params.types" (get-types (-> request :params)))
+
+               p (println ">o> ph.req.query" (-> request :parameters :query))
+               p (println ">o> ph.req.body" (-> request :parameters :body))
+               p (println ">o> -------------------------------------------------")
+
+
+               ;    request
+               ;    ;(let [params-renamed (rename-keys-fnc params key-map)]
+               ;              (let [request (assoc-in request [:params] params-renamed)]
+               ;                (assoc-in request [:parameters :query] params-renamed))
+               ;;)
+
+               ;p (println ">o> FINAL RESULT: -----------------------------------")
+               ;p (println ">o> ph.req.params" (-> request :params))
+               ;p (println ">o> ph.req.params.types" (get-types(-> request :params)))
                ;
-               ;p (println ">o> -------------------------------\n\n")
-               ;p (println ">o> params1.type!1!!! si= params" (type (:size (-> request :params))))
-               ;p (println ">o> params1.type!2!!! si= query=" (type (:size (-> request :parameters :query))))
-
-               p (println ">o> -------------------------------\n\n")
-
-
-               ;; original
-               ;request (let [casted-vals (cast-fnc (-> request :params))]
-               ;          (let [request (assoc-in request [:params] casted-vals)]
-               ;            (assoc-in request [:parameters :query] casted-vals)))
+               ;p (println ">o> ph.req.query" (-> request :parameters :query))
+               ;p (println ">o> ph.req.body" (-> request :parameters :body))
+               ;p (println ">o> -------------------------------------------------")
+               request (assoc-in request [:parameters :query] (merge (-> request :parameters :query) (-> request :params)))
 
 
-               ;request
-               ;(let [request (assoc-in request [:params] (cast-fnc (-> request :params) my-map))]
-               ;  (assoc-in request [:parameters :query] (cast-fnc (-> request :parameters :query) my-map)))
 
-               request
-               (let [request (assoc-in request [:params] (cast-fnc (-> request :params) ))]
-                 (assoc-in request [:parameters :query] (cast-fnc (-> request :parameters :query) )))
+               p (println ">o> FINAL RESULT: -----------------------------------")
+               p (println ">o> ph.req.params" (-> request :params))
+               p (println ">o> ph.req.params.types" (get-types (-> request :params)))
 
-
-               p (println ">o> ph1.req.params" (get request :params))
-               p (println ">o> ph1.req.query" (get request :parameters :query))
-               p (println ">o> ph1.req.is_admin" (get request :is_admin))
-
-               ;params (-> request :params)
-               ;params (-> request :parameters :query)       ;; this contains already casted data
-
-               ;; already casted data
-               params (merge (-> request :parameters :query) (-> request :parameters :body))
-
-
-               ;p (println ">o> params1=" params)
-               p (println ">o> params1=" params)
-               p (println ">o> params1.type!!!!=" (type (:collection_id params)))
-
-               _ (s/validate schema params)
-
-
-               p (println ">o> ph.req.params2" (get request :params))
+               p (println ">o> ph.req.query" (-> request :parameters :query))
+               p (println ">o> ph.req.body" (-> request :parameters :body))
+               p (println ">o> -------------------------------------------------")
                ]
 
-           (let [key-map {:size :count}
-                 request (let [params-renamed (rename-keys-fnc params key-map)]
-                           (let [request (assoc-in request [:params] params-renamed)]
-                             (assoc-in request [:parameters :query] params-renamed)))
-
-                 ;    request
-                 ;    ;(let [params-renamed (rename-keys-fnc params key-map)]
-                 ;              (let [request (assoc-in request [:params] params-renamed)]
-                 ;                (assoc-in request [:parameters :query] params-renamed))
-                 ;;)
-
-                 p (println ">o> ph.req.params" (get request :params))
-                 p (println ">o> ph.req.query" (get request :parameters :query))
-                 p (println ">o> ph.req.is_admin" (get request :is_admin))
-                 ]
-
-             (handler request)))
+           (handler request)))
        ;  (catch Exception ex
        ;
        ;
@@ -327,7 +369,7 @@
        ;    ;(sd/response_bad_request (str ">o> Invalid query parameters: " (.getMessage ex)) )))
        ;)
 
-   ))))
+       ))))
 
 ;(defn pagination-optional-handler
 ;  ([]
@@ -346,11 +388,11 @@
   {
 
    ;; TODO: switch to test endpoint-changes
-   ; :page (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-   ;:size (s/constrained s/Int #(>= % 1) "Must be a positive integer")
+   :page (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+   :size (s/constrained s/Int #(>= % 1) "Must be a positive integer")
 
-   (s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
-   (s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")
+   ;(s/optional-key :page) (s/constrained s/Int #(>= % 0) "Must be >=0 integer")
+   ;(s/optional-key :size) (s/constrained s/Int #(>= % 1) "Must be a positive integer")
 
    }
 

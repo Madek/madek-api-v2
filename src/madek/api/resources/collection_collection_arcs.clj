@@ -6,7 +6,7 @@
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
+   [madek.api.utils.pagination :refer [ItemQueryParams pagination-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -82,9 +82,9 @@
 
         (if (= 1 (first result))
           (sd/response_ok (dbh/query-eq-find-one
-                           :collection_collection_arcs
-                           :parent_id parent-id
-                           :child_id child-id tx))
+                            :collection_collection_arcs
+                            :parent_id parent-id
+                            :child_id child-id tx))
           (sd/response_failed "Could not update collection collection arc." 406))))
     (catch Exception e (sd/response_exception e))))
 
@@ -96,10 +96,10 @@
             tx (:tx req)
             ;; TODO: fetch old data by delete-query
             olddata (dbh/query-eq-find-one
-                     :collection_collection_arcs
-                     :parent_id parent-id
-                     :child_id child-id
-                     tx)
+                      :collection_collection_arcs
+                      :parent_id parent-id
+                      :child_id child-id
+                      tx)
             tx (:tx req)
             query (-> (sql/delete :collection_collection_arcs)
                       (sql/where [:= :parent_id parent-id
@@ -143,11 +143,11 @@
    (s/optional-key :position) s/Int})
 
 (def schema_collection-query
-{(s/optional-key :child_id) s/Uuid
- (s/optional-key :parent_id) s/Uuid
- ;(s/optional-key :page) s/Int
- ;(s/optional-key :count) s/Int
- })
+  {(s/optional-key :child_id) s/Uuid
+   (s/optional-key :parent_id) s/Uuid
+   ;(s/optional-key :page) s/Int
+   ;(s/optional-key :count) s/Int
+   })
 
 ; TODO add permission checks
 (def ring-routes
@@ -168,7 +168,7 @@
 
       :coercion reitit.coercion.schema/coercion
       :parameters {:query schema_collection-query}
-      :responses {200 {:body s/Any}} ; TODO response coercion
+      :responses {200 {:body s/Any}}                        ; TODO response coercion
       }}]
    ; TODO rename param to collection_id
    ; TODO add permission checks
@@ -180,7 +180,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}}
       :responses {200 {:body s/Any}
-                  404 {:body s/Any}} ; TODO response coercion
+                  404 {:body s/Any}}                        ; TODO response coercion
       }}]])
 ; TODO rename param use middleware for permissions
 (def collection-routes
@@ -218,7 +218,7 @@
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}}
       :responses {200 {:body s/Any}
-                  404 {:body s/Any}} ; TODO response coercion
+                  404 {:body s/Any}}                        ; TODO response coercion
       }
 
      ; TODO col col arc update tests
