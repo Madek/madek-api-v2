@@ -66,42 +66,25 @@
 (def query-schema
   {(s/optional-key :institution) s/Str
    (s/optional-key :subtype) s/Str
-   ;(s/optional-key :page) greater-equal-zero-validation
-   ;(s/optional-key :count) greater-zero-validation
-
    })
 
-(def query-schema2
-  {(s/optional-key :institution) s/Str
-   (s/optional-key :subtype) s/Str
-   (s/optional-key :page) greater-equal-zero-validation
-   (s/optional-key :size) greater-zero-validation
-   ;
-   })
+
 
 (def route
   {:summary (sd/sum_adm "Get list of people ids. TESTME")
    :description "Get list of people ids."
-   ;   :swagger {:produces "application/json"}
 
-   ;:parameters {:query query-schema}
-   :parameters {:query query-schema2}
+   :parameters {:query query-schema}
 
    :content-type "application/json"
-   ;:swagger (swagger-ui-pagination)
 
    :handler handler
    :middleware [
 
                 wrap-authorize-admin!
-                (pagination-handler (merge ItemQueryParams {(s/optional-key :institution) s/Str
-                                                            (s/optional-key :subtype) s/Str
-                                                            }))
-
-                ;(pagination-optional-handler)
+                (pagination-handler (merge ItemQueryParams query-schema))
 
                 ]
-   ;                (pagination-handler (merge schema_query_keyword ItemQueryParams))]
    :coercion reitit.coercion.schema/coercion
    :responses {200 {:body {:people [get-person/schema]}}}})
 

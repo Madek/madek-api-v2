@@ -249,11 +249,11 @@
 
                p (println ">o> -------------------------------\n\n")
 
-               p (println ">o> params1.type!1!!! H col-id params" (type (:collection_id (-> request :params))))
-               p (println ">o> params1.type!2!!! H col-id query=" (type (:collection_id (-> request :parameters :query))))
-               p (println ">o> params1.type!3!!! H uuid query=" (type (:test-uuid (-> request :parameters :query))))
-               p (println ">o> params1.type!4!!! B my_coll body=" (type (:my_collection_id (-> request :parameters :body))))
-               p (println ">o> params1.type!5!!! B my_publ body=" (type (:my_public_get_metadata_and_previews (-> request :parameters :body))))
+               p (println ">o> params1.type!1!!! H col-id params" (type (:collection_id (-> request :params)))) ;; not converted
+               p (println ">o> params1.type!2!!! H col-id query=" (type (:collection_id (-> request :parameters :query)))) ;; converted
+               p (println ">o> params1.type!3!!! H uuid query=" (type (:test-uuid (-> request :parameters :query)))) ;; converted
+               p (println ">o> params1.type!4!!! B my_coll body=" (type (:my_collection_id (-> request :parameters :body)))) ;; converted
+               p (println ">o> params1.type!5!!! B my_publ body=" (type (:my_public_get_metadata_and_previews (-> request :parameters :body)))) ;; converted
 
                ;p (println ">o> -------------------------------\n\n")
                ;p (println ">o> params1.type!1!!! pa= params" (type (:page (-> request :params))))
