@@ -2,6 +2,9 @@
   (:require
    [madek.api.resources.roles.role :as role]
    [madek.api.resources.shared.core :as sd]
+
+   [madek.api.utils.pagination :refer [pagination-handler ItemQueryParams swagger-ui-pagination create-swagger-ui-param]]
+
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.validation :refer [positive-number-0-to-100-validation positive-number-1-to-1000-validation]]
    [reitit.coercion.schema]
@@ -40,11 +43,20 @@
    ["/" {:get {:summary "Get list of roles."
                :description "Get list of roles."
                :handler role/get-index
-               :swagger {:produces "application/json"}
+               ;:swagger {:produces "application/json"}
 
                ;; TODO: use swagger-definition with preset values & infos
-               :parameters {:query {(s/optional-key :page) s/Int
-                                    (s/optional-key :count) s/Int}}
+               ;:parameters {:query {(s/optional-key :page) s/Int
+               ;                     (s/optional-key :count) s/Int}}
+
+
+               :middleware [
+                            (pagination-handler ItemQueryParams)
+                            ]
+
+               :swagger (swagger-ui-pagination)
+
+
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion}
          :responses {200 {:body {:roles [schema_export-role]}}}}]
@@ -64,18 +76,24 @@
 ; TODO tests
 (def admin-routes
   ["/roles"
-;   {:swagger {:tags ["admin/roles"] :security [{"auth" []}]}}
+   ;   {:swagger {:tags ["admin/roles"] :security [{"auth" []}]}}
    {:swagger {:tags ["admin/roles"]}}
    ["/" {:get {:summary (sd/sum_adm "Get list of roles.")
                :description "Get list of roles."
                :handler role/get-index
-               :swagger {:produces "application/json"}
-               :middleware [wrap-authorize-admin!]
 
-               ;; TODO: use swagger-definition with preset values & infos
-               ;; Main problem: no validation within swagger-ui, no additional infos
-               :parameters {:query {(s/required-key :page) positive-number-0-to-100-validation
-                                    (s/required-key :count) positive-number-1-to-1000-validation}}
+               ;;; TODO: use swagger-definition with preset values & infos
+               ;;; Main problem: no validation within swagger-ui, no additional infos
+               ;:parameters {:query {(s/required-key :page) positive-number-0-to-100-validation
+               ;                     (s/required-key :count) positive-number-1-to-1000-validation}}
+
+
+               :middleware [
+                            wrap-authorize-admin!
+                            (pagination-handler ItemQueryParams)
+                            ]
+
+               :swagger (swagger-ui-pagination)
 
                :content-type "application/json"
                :coercion reitit.coercion.schema/coercion
