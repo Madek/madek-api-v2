@@ -7,5 +7,6 @@ ASDF_PLUGIN_URL=https://github.com/asdf-community/asdf-clojure.git
 
 source $PROJECT_DIR/bin/env/asdf-helper.bash
 asdf-update-plugin
+asdf install clojure
 
 # vi: ft=sh

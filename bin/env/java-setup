@@ -7,5 +7,6 @@ ASDF_PLUGIN_URL=https://github.com/halcyon/asdf-java.git
 
 source $PROJECT_DIR/bin/env/asdf-helper.bash
 asdf-update-plugin
+asdf install java
 
 # vi: ft=sh
