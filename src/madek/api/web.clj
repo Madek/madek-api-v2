@@ -221,10 +221,14 @@
 (def get-router-options
   {:validate rs/validate
    #_#_:compile coercion/compile-request-coercers
+
+   ;; TODO: old-version
    ;:data {:middleware middlewares
    ;       :muuntaja m/instance}
 
 
+   ;; TODO: mr/swagger-ui-by-spec-alpha
+   ;; TODO: new-version
    :data {:coercion reitit.coercion.spec/coercion
           :muuntaja m/instance
           :middleware [;; swagger feature
@@ -244,9 +248,9 @@
                        ;; coercing request parameters
                        coercion/coerce-request-middleware
                        ;; multipart
-                       multipart/multipart-middleware]}
-
-
+                       multipart/multipart-middleware
+                       ]
+          }
    })
 ;
 ;(def app-all
