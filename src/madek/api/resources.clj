@@ -35,6 +35,7 @@
    [madek.api.resources.usage-terms :as usage-terms]
    [madek.api.resources.users.main :as users]
    [madek.api.resources.vocabularies :as vocabularies]
+   [madek.api.resources.test :as test]
    [madek.api.resources.workflows :as workflows]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -95,38 +96,40 @@
                 ;              ]}
    {:swagger {:security [{:basicAuth [] "auth" []}]}}
 
-   admins/ring-routes
-   app-settings/admin-routes
-
-   context_keys/admin-routes
-   contexts/admin-routes
-
-   ; TODO Frage: wird das noch gebraucht
-   delegations/ring-routes
-   delegations_users/admin-routes
-   delegations_groups/admin-routes
-
-   edit-sessions/admin-routes
-   favorite-collections/admin-routes
-   favorite-media-entries/admin-routes
-
-   full-texts/edit-routes
-
-   groups/ring-routes
-   io-interfaces/admin-routes
-   ;io-mappings/admin-routes
-   keywords/admin-routes
-
-   meta-keys/admin-routes
-
-   people/admin-routes
-   roles/admin-routes
-   usage-terms/admin-routes
-
-   users/admin-routes
-   ; TODO static pages
-   static-pages/admin-routes
-   vocabularies/admin-routes])
+   ;admins/ring-routes
+   ;app-settings/admin-routes
+   ;
+   ;context_keys/admin-routes
+   ;contexts/admin-routes
+   ;
+   ;; TODO Frage: wird das noch gebraucht
+   ;delegations/ring-routes
+   ;delegations_users/admin-routes
+   ;delegations_groups/admin-routes
+   ;
+   ;edit-sessions/admin-routes
+   ;favorite-collections/admin-routes
+   ;favorite-media-entries/admin-routes
+   ;
+   ;full-texts/edit-routes
+   ;
+   ;groups/ring-routes
+   test/test
+   ;io-interfaces/admin-routes
+   ;;io-mappings/admin-routes
+   ;keywords/admin-routes
+   ;
+   ;meta-keys/admin-routes
+   ;
+   ;people/admin-routes
+   ;roles/admin-routes
+   ;usage-terms/admin-routes
+   ;
+   ;users/admin-routes
+   ;; TODO static pages
+   ;static-pages/admin-routes
+   ;vocabularies/admin-routes
+   ])
 
 (def user-routes
   ["/api" {:middleware [authentication/wrap]}

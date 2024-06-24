@@ -15,6 +15,19 @@
    [reitit.coercion.schema]
    [reitit.coercion.spec]
    [reitit.ring :as rr]
+
+
+   [madek.api.resources.test :as test]
+
+
+   [reitit.swagger :as swagger]
+   [reitit.swagger-ui :as swagger-ui]
+   [reitit.ring.coercion :as coercion]
+   [reitit.ring.middleware.muuntaja :as muuntaja]
+   [reitit.ring.middleware.exception :as exception]
+   [reitit.ring.middleware.multipart :as multipart]
+   [reitit.ring.middleware.parameters :as parameters]
+
    [reitit.ring.coercion :as rrc]
    [reitit.ring.middleware.multipart :as multipart]
    [reitit.ring.middleware.muuntaja :as muuntaja]
@@ -208,22 +221,48 @@
 (def get-router-options
   {:validate rs/validate
    #_#_:compile coercion/compile-request-coercers
-   :data {:middleware middlewares
-          :muuntaja m/instance}})
+   ;:data {:middleware middlewares
+   ;       :muuntaja m/instance}
 
-(def app-all
-  (rr/ring-handler
-   (rr/router get-router-data-all get-router-options)
-   (rr/routes
-    (rr/redirect-trailing-slash-handler)
-    (rr/create-default-handler))))
 
-(def app-user
-  (rr/ring-handler
-   (rr/router get-router-data-user get-router-options)
-   (rr/routes
-    (rr/redirect-trailing-slash-handler)
-    (rr/create-default-handler))))
+   :data {:coercion reitit.coercion.spec/coercion
+          :muuntaja m/instance
+          :middleware [;; swagger feature
+                       swagger/swagger-feature
+                       ;; query-params & form-params
+                       parameters/parameters-middleware
+                       ;; content-negotiation
+                       muuntaja/format-negotiate-middleware
+                       ;; encoding response body
+                       muuntaja/format-response-middleware
+                       ;; exception handling
+                       exception/exception-middleware
+                       ;; decoding request body
+                       muuntaja/format-request-middleware
+                       ;; coercing response bodys
+                       coercion/coerce-response-middleware
+                       ;; coercing request parameters
+                       coercion/coerce-request-middleware
+                       ;; multipart
+                       multipart/multipart-middleware]}
+
+
+   })
+;
+;(def app-all
+;  (rr/ring-handler
+;   ;(rr/router get-router-data-all get-router-options)
+;   (rr/router test/test)
+;   (rr/routes
+;    (rr/redirect-trailing-slash-handler)
+;    (rr/create-default-handler))))
+;
+;(def app-user
+;  (rr/ring-handler
+;   (rr/router get-router-data-user get-router-options)
+;   (rr/routes
+;    (rr/redirect-trailing-slash-handler)
+;    (rr/create-default-handler))))
 
 (def app-admin
   (rr/ring-handler
@@ -259,26 +298,31 @@
                          "ALL")
             :validate [#(some #{%} ["ALL" "ADMIN" "USER"]) "scope must be ALL, ADMIN or USER"]]]))
 
-(defn initialize-all [http-conf is_reloadable]
-  (if (true? is_reloadable)
-    (http-server/start http-conf (middleware (wrap-reload #'app-all)))
-    (http-server/start http-conf (middleware app-all))))
+;(defn initialize-all [http-conf is_reloadable]
+;  (if (true? is_reloadable)
+;    (http-server/start http-conf (middleware (wrap-reload #'app-all)))
+;    (http-server/start http-conf (middleware app-all))))
 
-(defn initialize-adm [http-conf is_reloadable]
-  (if (true? is_reloadable)
-    (http-server/start http-conf (middleware (wrap-reload #'app-admin)))
-    (http-server/start http-conf (middleware app-admin))))
-
-(defn initialize-user [http-conf is_reloadable]
-  (if (true? is_reloadable)
-    (http-server/start http-conf (middleware (wrap-reload #'app-user)))
-    (http-server/start http-conf (middleware app-user))))
+;(defn initialize-adm [http-conf is_reloadable]
+;  (if (true? is_reloadable)
+;    (http-server/start http-conf (middleware (wrap-reload #'app-admin)))
+;    (http-server/start http-conf (middleware app-admin))))
+;
+;(defn initialize-user [http-conf is_reloadable]
+;  (if (true? is_reloadable)
+;    (http-server/start http-conf (middleware (wrap-reload #'app-user)))
+;    (http-server/start http-conf (middleware app-user))))
 
 (defn initialize [options]
-  (let [handler (case (http-resources-scope-key options)
-                  "ALL" (middleware (wrap-reload app-all))
-                  "ADMIN" (middleware app-admin)
-                  "USER" (middleware app-user))]
+  (let [
+        ;handler (case (http-resources-scope-key options)
+        ;          ;"ALL" (middleware (wrap-reload app-all))
+        ;          "ADMIN" (middleware app-admin)
+        ;          ;"USER" (middleware app-user))
+        ;           )
+
+        handler (middleware app-admin)
+        ]
     (http-server/start handler options)))
 
 ;### Debug ####################################################################
