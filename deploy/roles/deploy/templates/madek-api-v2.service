@@ -1,0 +1,32 @@
+[Unit]
+Description=Madek API Service
+After=syslog.target
+After=network.target
+
+BindsTo=madek-datalayer.service
+After=madek-datalayer.service
+PartOf=madek-datalayer.service
+
+StartLimitIntervalSec=180
+StartLimitBurst=6
+
+
+[Service]
+WorkingDirectory={{madek_api_v2_dir}}
+User={{madek_api_v2_user}}
+Group={{madek_api_v2_user}}
+
+Restart=on-failure
+Restart=always
+RestartSec=5
+
+EnvironmentFile=/etc/madek/pg.env
+Environment=TMPDIR={{madek_tmp_dir}}
+Environment=HTTP_SERVER_PORT={{madek_api_v2_port}}
+ExecStart=/usr/bin/env java "-Xmx{{ madek_api_v2_service_xmx }}m" \
+  -jar madek-api-v2.jar server
+
+[Install]
+WantedBy=multi-user.target
+
+# vi: ft=systemd

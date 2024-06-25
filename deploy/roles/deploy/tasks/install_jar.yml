@@ -1,0 +1,22 @@
+- name: apt unzip
+  apt:
+    name: unzip
+    state: present
+
+- name: setup directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: 0755
+  loop:
+    - { path: "{{madek_api_v2_dir}}", owner: root }
+
+- name: copy jar
+  copy:
+    src: "{{role_path}}/../../../madek-api-v2.jar"
+    dest: "{{madek_api_v2_dir}}/madek-api-v2.jar"
+    owner: root
+    mode: 0644
+

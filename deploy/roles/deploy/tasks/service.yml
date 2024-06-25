@@ -1,0 +1,21 @@
+- name: install service from template
+  template:
+    src: madek-api-v2.service
+    dest: /etc/systemd/system/madek-api-v2.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+  failed_when: false
+
+- name: (re)start api-v2-service
+  service:
+    name: madek-api-v2
+    state: restarted
+  register: api_v2_service_details
+  until: api_v2_service_details.status.ActiveState == "active"
+  retries: 3
+  delay: 15
