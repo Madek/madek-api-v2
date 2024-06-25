@@ -149,11 +149,10 @@
   (->>
    [auth-info-route
     madek.api.resources/user-routes
-    ;madek.api.resources/admin-routes
+    madek.api.resources/admin-routes
     ;management/api-routes
     ;test-routes
-    ;swagger-routes
-    ]
+    swagger-routes]
    (filterv some?)))
 
 (def get-router-data-user
