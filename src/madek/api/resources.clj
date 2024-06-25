@@ -22,13 +22,13 @@
    [madek.api.resources.groups :as groups]
    [madek.api.resources.io-interfaces :as io-interfaces]
 
-   [madek.api.resources.myperson :as myperson]
    [madek.api.resources.keywords :as keywords]
-
    [madek.api.resources.media-entries :as media-entries]
+
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.meta-data :as meta-data]
    [madek.api.resources.meta-keys :as meta-keys]
+   [madek.api.resources.myperson :as myperson]
    [madek.api.resources.people.main :as people]
    [madek.api.resources.permissions :as permissions]
    [madek.api.resources.previews :as previews]
@@ -200,8 +200,6 @@
    ;
    ;vocabularies/user-routes
    ;workflows/user-routes
-
    ])
-
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -1,14 +1,5 @@
 (ns madek.api.web
   (:require
-
-   ;[reitit.ring.coercion :as coercion]
-   ;[reitit.ring.middleware.muuntaja :as muuntaja]
-   ;[reitit.ring.middleware.exception :as exception]
-   ;[reitit.ring.middleware.multipart :as multipart]
-   ;[reitit.ring.middleware.parameters :as parameters]
-   [reitit.dev.pretty :as pretty]
-
-   [reitit.ring.middleware.exception :as exception]
    [clojure.java.io :as io]
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
@@ -24,8 +15,6 @@
    [muuntaja.core :as m]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
-
-
 
    [reitit.ring :as rr]
    [reitit.ring.coercion :as rrc]
@@ -221,12 +210,12 @@
 
 (def get-router-options
   {:validate rs/validate
-   ;:exception pretty/exception
    #_#_:compile coercion/compile-request-coercers
-   :data {:coercion reitit.coercion.spec/coercion
+   :data {;:coercion reitit.coercion.spec/coercion
           :middleware middlewares
-          :muuntaja m/instance}})
-
+          :muuntaja m/instance}
+   :conflicts nil ;; TODO: FYI _> Ignore route conflicts
+   })
 (def app-all
   (rr/ring-handler
    (rr/router get-router-data-all get-router-options)
