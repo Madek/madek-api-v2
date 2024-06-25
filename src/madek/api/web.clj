@@ -1,5 +1,14 @@
 (ns madek.api.web
   (:require
+
+   ;[reitit.ring.coercion :as coercion]
+   ;[reitit.ring.middleware.muuntaja :as muuntaja]
+   ;[reitit.ring.middleware.exception :as exception]
+   ;[reitit.ring.middleware.multipart :as multipart]
+   ;[reitit.ring.middleware.parameters :as parameters]
+   [reitit.dev.pretty :as pretty]
+
+   [reitit.ring.middleware.exception :as exception]
    [clojure.java.io :as io]
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
@@ -15,6 +24,9 @@
    [muuntaja.core :as m]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
+
+
+
    [reitit.ring :as rr]
    [reitit.ring.coercion :as rrc]
    [reitit.ring.middleware.multipart :as multipart]
@@ -137,10 +149,11 @@
   (->>
    [auth-info-route
     madek.api.resources/user-routes
-    madek.api.resources/admin-routes
+    ;madek.api.resources/admin-routes
     ;management/api-routes
     ;test-routes
-    swagger-routes]
+    ;swagger-routes
+    ]
    (filterv some?)))
 
 (def get-router-data-user
@@ -209,8 +222,10 @@
 
 (def get-router-options
   {:validate rs/validate
+   ;:exception pretty/exception
    #_#_:compile coercion/compile-request-coercers
-   :data {:middleware middlewares
+   :data {:coercion reitit.coercion.spec/coercion
+          :middleware middlewares
           :muuntaja m/instance}})
 
 (def app-all

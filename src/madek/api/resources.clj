@@ -21,7 +21,10 @@
    [madek.api.resources.full-texts :as full-texts]
    [madek.api.resources.groups :as groups]
    [madek.api.resources.io-interfaces :as io-interfaces]
+
+   [madek.api.resources.myperson :as myperson]
    [madek.api.resources.keywords :as keywords]
+
    [madek.api.resources.media-entries :as media-entries]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.meta-data :as meta-data]
@@ -95,105 +98,110 @@
                 ;              ]}
    {:swagger {:security [{:basicAuth [] "auth" []}]}}
 
-   admins/ring-routes
-   app-settings/admin-routes
-
-   context_keys/admin-routes
-   contexts/admin-routes
-
-   ; TODO Frage: wird das noch gebraucht
-   delegations/ring-routes
-   delegations_users/admin-routes
-   delegations_groups/admin-routes
-
-   edit-sessions/admin-routes
-   favorite-collections/admin-routes
-   favorite-media-entries/admin-routes
-
-   full-texts/edit-routes
-
-   groups/ring-routes
-   io-interfaces/admin-routes
-   ;io-mappings/admin-routes
-   keywords/admin-routes
-
-   meta-keys/admin-routes
-
-   people/admin-routes
-   roles/admin-routes
-   usage-terms/admin-routes
-
-   users/admin-routes
-   ; TODO static pages
-   static-pages/admin-routes
-   vocabularies/admin-routes])
+   ;admins/ring-routes
+   ;app-settings/admin-routes
+   ;
+   ;context_keys/admin-routes
+   ;contexts/admin-routes
+   ;
+   ;; TODO Frage: wird das noch gebraucht
+   ;delegations/ring-routes
+   ;delegations_users/admin-routes
+   ;delegations_groups/admin-routes
+   ;
+   ;edit-sessions/admin-routes
+   ;favorite-collections/admin-routes
+   ;favorite-media-entries/admin-routes
+   ;
+   ;full-texts/edit-routes
+   ;
+   ;groups/ring-routes
+   ;io-interfaces/admin-routes
+   ;;io-mappings/admin-routes
+   ;keywords/admin-routes
+   ;
+   ;meta-keys/admin-routes
+   ;
+   ;people/admin-routes
+   ;roles/admin-routes
+   ;usage-terms/admin-routes
+   ;
+   ;users/admin-routes
+   ;; TODO static pages
+   ;static-pages/admin-routes
+   ;vocabularies/admin-routes
+   ])
 
 (def user-routes
   ["/api-v2" {:middleware [authentication/wrap]}
 
-   app-settings/user-routes
-   context_keys/user-routes
-   contexts/user-routes
-   keywords/query-routes
-   meta-keys/query-routes
-   people/user-routes
+   ;app-settings/user-routes
+   ;context_keys/user-routes
+   ;contexts/user-routes
+   ;keywords/query-routes
+   ;meta-keys/query-routes
+   ;people/user-routes
+   ;
+   ;; collections
+   ;collections/ring-routes
+   ;meta-data/collection-routes
+   ;;media-entries/collection-routes
+   ;custom-urls/collection-routes
+   ;edit-sessions/collection-routes
+   ;favorite-collections/collection-routes
+   ;
+   ;permissions/collection-routes
+   ;
+   ;collection-media-entry-arcs/collection-routes
+   ;collection-collection-arcs/collection-routes
+   ;
+   ;collection-media-entry-arcs/ring-routes
+   ;collection-collection-arcs/ring-routes
+   ;
+   ;full-texts/collection-routes
+   ;confidential-links/user-col-routes
+   ;custom-urls/query-routes
+   ;
+   ;edit-sessions/query-routes
+   ;
+   ;; favorites
+   ;favorite-media-entries/favorite-routes
+   ;favorite-collections/favorite-routes
+   ;
+   ;full-texts/query-routes
+   ;;media_entries
+   ;media-entries/ring-routes
+   ;media-entries/media-entry-routes
+   ;previews/media-entry-routes
+   ;meta-data/media-entry-routes
+   ;confidential-links/user-me-routes
+   ;custom-urls/media-entry-routes
+   ;edit-sessions/media-entry-routes
+   ;favorite-media-entries/media-entry-routes
+   ;media-files/media-entry-routes
+   ;permissions/media-entry-routes
+   ;full-texts/entry-routes
+   ;;media_files
+   ;media-files/media-file-routes
+   ;
+   ;;meta_data
+   ;meta-data/meta-data-routes
+   ;meta-data/role-routes
+   ;
+   ;previews/preview-routes
+   ;
+   ;roles/user-routes
 
-   ; collections
-   collections/ring-routes
-   meta-data/collection-routes
-   ;media-entries/collection-routes
-   custom-urls/collection-routes
-   edit-sessions/collection-routes
-   favorite-collections/collection-routes
+   myperson/person-routes
 
-   permissions/collection-routes
+   ;;users/user-routes
+   ;groups/user-routes
+   ;usage-terms/user-routes
+   ;
+   ;vocabularies/user-routes
+   ;workflows/user-routes
 
-   collection-media-entry-arcs/collection-routes
-   collection-collection-arcs/collection-routes
-
-   collection-media-entry-arcs/ring-routes
-   collection-collection-arcs/ring-routes
-
-   full-texts/collection-routes
-   confidential-links/user-col-routes
-   custom-urls/query-routes
-
-   edit-sessions/query-routes
-
-   ; favorites
-   favorite-media-entries/favorite-routes
-   favorite-collections/favorite-routes
-
-   full-texts/query-routes
-   ;media_entries
-   media-entries/ring-routes
-   media-entries/media-entry-routes
-   previews/media-entry-routes
-   meta-data/media-entry-routes
-   confidential-links/user-me-routes
-   custom-urls/media-entry-routes
-   edit-sessions/media-entry-routes
-   favorite-media-entries/media-entry-routes
-   media-files/media-entry-routes
-   permissions/media-entry-routes
-   full-texts/entry-routes
-   ;media_files
-   media-files/media-file-routes
-
-   ;meta_data
-   meta-data/meta-data-routes
-   meta-data/role-routes
-
-   previews/preview-routes
-
-   roles/user-routes
-
-   ;users/user-routes
-   groups/user-routes
-   usage-terms/user-routes
-
-   vocabularies/user-routes
-   workflows/user-routes])
+   ])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
