@@ -189,7 +189,7 @@
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params authenticated-entity)
                       (advanced-filter/filter-by filter-by tx)
-                      (pagination/add-offset-for-honeysql query-params))
+                      (pagination/sql-offset-and-limit query-params))
         query-res (-> query-res sql-format)]
 
     ;    (info "build-query"

@@ -75,7 +75,7 @@
      (dbh/build-query-param-like query-params :first_name)
      (dbh/build-query-param-like query-params :last_name)
      (dbh/build-query-param query-params :subtype)
-     (pagination/add-offset-for-honeysql query-params)
+     (pagination/sql-offset-and-limit query-params)
      sql-format)))
 
 ;; TODO: not in use?

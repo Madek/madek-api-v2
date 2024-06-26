@@ -1,5 +1,4 @@
 require "spec_helper"
-require "set"
 require Pathname(File.expand_path("..", __FILE__)).join("media-entry", "shared")
 
 shared_examples :check_data_includes_excatly_the_keys do |keys|

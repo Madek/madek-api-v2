@@ -1,16 +1,20 @@
 (ns madek.api.resources.keywords
   (:require
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [convert-map d]]
-   [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-   [schema.core :as s]))
+   [reitit.coercion.spec :as spec]
+   [schema.core :as s]
+   [spec-tools.core :as st]))
 
 ;### swagger io schema ####################################################################
 
@@ -40,26 +44,6 @@
    :external_uris [s/Any]
    :external_uri (s/maybe s/Str)
    :rdf_class s/Str})
-
-(def schema_export_keyword_adm
-  {:id s/Uuid
-   :meta_key_id s/Str
-   :term s/Str
-   :description (s/maybe s/Str)
-   :position (s/maybe s/Int)
-   :external_uris [s/Any]
-   :external_uri (s/maybe s/Str)
-   :rdf_class s/Str
-   :creator_id (s/maybe s/Uuid)
-   :created_at s/Any
-   :updated_at s/Any})
-
-(def schema_query_keyword
-  {(s/optional-key :id) s/Uuid
-   (s/optional-key :meta_key_id) s/Str
-   (s/optional-key :term) s/Str
-   (s/optional-key :description) s/Str
-   (s/optional-key :rdf_class) s/Str})
 
 (defn user-export-keyword [keyword]
   (->
@@ -166,6 +150,32 @@
                                   :keywords :id
                                   :keyword true)))
 
+(sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class]))
+
+(def schema_export_keyword_adm
+  {:id s/Uuid
+   :meta_key_id s/Str
+   :term s/Str
+   :description (s/maybe s/Str)
+   :position (s/maybe s/Int)
+   :external_uris [s/Any]
+   :external_uri (s/maybe s/Str)
+   :rdf_class s/Str
+   :creator_id (s/maybe s/Uuid)
+   :created_at s/Any
+   :updated_at s/Any})
+
+(sa/def :usr/person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class]))
+(sa/def :usr/keywords (st/spec {:spec (sa/coll-of :usr/person)
+                                :description "A list of persons"}))
+(sa/def ::response-body (sa/keys :req-un [:usr/keywords]))
+
+(sa/def :adm/person-admin (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class ::sp/creator_id ::sp/created_at ::sp/updated_at]))
+
+(sa/def :adm/keywords (st/spec {:spec (sa/coll-of :adm/person-admin)
+                                :description "A list of persons"}))
+(sa/def ::response-body-adm (sa/keys :req-un [:adm/keywords]))
+
 ;; FIXME: broken endpoint to test doc
 (def query-routes
   ["/"
@@ -174,13 +184,11 @@
     {:get
      {:summary (sd/sum_pub (d "Query / list keywords."))
       :handler handle_usr-query-keywords
-      :coercion reitit.coercion.schema/coercion
-      :swagger (swagger-ui-pagination)
-      :middleware [(pagination-validation-handler)]
-      :parameters {:query {}}
-      :responses {200 {:body {:keywords [schema_export_keyword_usr]}}
+      :coercion spec/coercion
+      :parameters {:query sp/schema_pagination_opt}
+      :responses {200 {:body ::response-body}
                   202 {:description "Successful response, list of items."
-                       :schema {} ;; Define your response schema as needed
+                       :schema {}
                        :examples {"application/json" {:message "Here are your items."
                                                       :page 1
                                                       :size 2
@@ -205,12 +213,10 @@
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords
-      :coercion reitit.coercion.schema/coercion
-      :swagger (swagger-ui-pagination)
-      :middleware [wrap-authorize-admin!
-                   (pagination-validation-handler (merge optional-pagination-params schema_query_keyword))]
-      :parameters {:query schema_query_keyword}
-      :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+      :coercion spec/coercion
+      :middleware [wrap-authorize-admin!]
+      :parameters {:query ::person-opt}
+      :responses {200 {:body ::response-body-adm}}
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 
      :post

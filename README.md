@@ -21,8 +21,11 @@ The madek-api2 is a JSON API for Madek.
 
     * incomplete and too unspecific in many places
 
-    * verbose and hard to maintain: is there a way to automatize this by
-      generating it from the db schema?
+    * There are 2 ways of defining schema (see [COERCION.md](src/madek/api/utils/coercion/COERCION.md))
+      1. **reitit.coercion.schema** (simple description of types)
+      2. **reitit.coercion.spec** (more options to define swagger-ui-fields concerning default-values/description/..)
+
+    * ⚠️ WARNING: Keep in mind to use request.parameters/body/path, not request.params (attributes won't be casted)
 
 
 * Permissions:

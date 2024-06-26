@@ -12,14 +12,17 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
-            [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
-            [reitit.coercion.spec]
+            [reitit.coercion.spec :as spec]
             [reitit.ring.middleware.multipart :as multipart]
             [schema.core :as s]
+            [spec-tools.core :as st]
             [taoensso.timbre :refer [info]]))
+
 (defn handle_query_media_entry [req]
   (get-index req))
 
@@ -218,47 +221,18 @@
         (sd/response_failed "Not authed" 406)
         (create-media_entry file auth mime collection-id tx)))))
 
-(def schema_query_media_entries
-  {(s/optional-key :collection_id) s/Uuid
-   ; TODO order enum docu
-   ;(s/optional-key :order) (s/enum "desc" "asc" "title_asc" "title_desc" "last_change" "manual_asc" "manual_desc" "stored_in_collection")
-   (s/optional-key :order) s/Any
-   ; TODO filterby json docu
-   (s/optional-key :filter_by) s/Str
-   ;(s/optional-key :filter_by)
-   ; {
-   ;  (s/optional-key :media_entry) {:is_published s/Bool
-   ;                                 :creator_id s/Uuid
-   ;                                 :responsible_user_id s/Uuid
-   ;                                 }
-   ;  (s/optional-key :media_files) {:keys :values}
-   ;  (s/optional-key :permissions) {(s/optional-key :public) s/Bool
-   ;                                 (s/optional-key :responsible_user) s/Uuid
-   ;                                 (s/optional-key :entrusted_to_user) s/Uuid
-   ; TODO
-   ;                                 (s/optional-key :view_to_user) s/Uuid
-   ;                                 (s/optional-key :download_to_user) s/Uuid
-   ;                                 (s/optional-key :edit_md_to_user) s/Uuid
-   ;                                 (s/optional-key :edit_perms_to_user) s/Uuid
-   ;                                 (s/optional-key :entrusted_to_group) s/Uuid
-   ;                                }
-   ;  (s/optional-key :meta_data) [{(s/optional-key :type) s/Str
-   ;                               (s/optional-key :key) s/Str
-   ;                               (s/optional-key :match) s/Str
-   ;                               (s/optional-key :value) s/Str}]
-   ; TODO docu
-   ;  (s/optional-key :search) s/Str
-   ;  }
+(sa/def ::media-entries-def (sa/keys :opt-un [::sp/collection_id ::sp/order ::sp/filter_by
+                                              ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
+                                              ::sp/me_edit_metadata ::sp/me_edit_permissions
+                                              ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
+                                              ::sp/full_data
+                                              ::sp/page ::sp/size]))
 
-   (s/optional-key :me_get_metadata_and_previews) s/Bool
-   (s/optional-key :me_get_full_size) s/Bool
-
-   (s/optional-key :me_edit_metadata) s/Bool
-   (s/optional-key :me_edit_permissions) s/Bool
-
-   (s/optional-key :public_get_metadata_and_previews) s/Bool
-   (s/optional-key :public_get_full_size) s/Bool
-   (s/optional-key :full_data) s/Bool})
+(sa/def ::media-entry-def (sa/keys :req-un [::sp/id]
+                                   :opt-un [::sp/creator_id ::sp/responsible_user_id ::sp/get_full_size ::sp/get_metadata_and_previews
+                                            ::sp/is_published ::sp/created_at ::sp/updated_at ::sp/edit_session_updated_at ::sp/meta_data_updated_at
+                                            ::sp-nil/responsible_delegation_id
+                                            ::sp/page ::sp/size]))
 
 (def schema_export_media_entry
   {:id s/Uuid
@@ -276,70 +250,18 @@
 
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
 
-(def schema_export_col_arc
-  {:media_entry_id s/Uuid
-   :id s/Uuid
-   :order (s/maybe s/Num)
-   :position (s/maybe s/Int)
-   :created_at s/Any
-   :updated_at s/Any})
+(sa/def ::media-entry-response-def (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
+                                            :opt-un [::sp/col_arcs ::sp/col_meta_data]))
 
-(def schema_query_media_entries_result
-  {:media_entries [schema_export_media_entry]
-   (s/optional-key :col_arcs) [schema_export_col_arc]})
+(sa/def ::media-entries-resp-def (sa/keys :opt-un [::sp/responsible_user_id ::sp/get_full_size ::sp/creator_id ::sp/updated_at
+                                                   ::sp/edit_session_updated_at ::sp/is_published ::sp/get_metadata_and_previews ::sp/meta_data_updated_at
+                                                   ::sp/created_at]
+                                          :req-un [::sp/id]))
 
-(def schema_export_media_file
-  {:id s/Uuid
-   :media_entry_id s/Uuid
-   :conversion_profiles [s/Any]
-   :media_type (s/maybe s/Str) ; TODO enum
-   :width (s/maybe s/Int)
-   :height (s/maybe s/Int)
-   :meta_data (s/maybe s/Str)
-   :size s/Int
-   :uploader_id s/Uuid
-   :content_type s/Str
-   :access_hash s/Str
-   :extension s/Str
-   :filename s/Str
-   :guid s/Str
-   :updated_at s/Any
-   :created_at s/Any})
+(sa/def :media-entry-list/media_entries (st/spec {:spec (sa/coll-of ::media-entries-resp-def)
+                                                  :description "A list of media-entries"}))
 
-(def schema_export_preview
-  {:id s/Uuid
-   :media_file_id s/Uuid
-   :media_type s/Str
-   :content_type s/Str
-   ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
-   :thumbnail s/Str
-   :width (s/maybe s/Int)
-   :height (s/maybe s/Int)
-   :filename s/Str
-   :conversion_profile (s/maybe s/Str)
-   :updated_at s/Any
-   :created_at s/Any})
-
-(def schema_export_meta_data
-  {:id s/Uuid
-   :media_entry_id (s/maybe s/Uuid)
-   :collection_id (s/maybe s/Uuid)
-
-   :type s/Str
-   :meta_key_id s/Str
-   :string (s/maybe s/Str)
-   :json (s/maybe s/Str)
-
-   :meta_data_updated_at s/Any
-   :other_media_entry_id (s/maybe s/Uuid)})
-
-(def schema_query_media_entries_related_result
-  {:media_entries [schema_export_media_entry]
-   :meta_data [[schema_export_meta_data]]
-   :media_files [(s/maybe schema_export_media_file)]
-   :previews [[(s/maybe schema_export_preview)]]
-   (s/optional-key :col_arcs) [schema_export_col_arc]
-   (s/optional-key :col_meta_data) [schema_export_meta_data]})
+(sa/def ::media-entries-body-resp-def (sa/keys :req-un [:media-entry-list/media_entries])) ;TODO: not in use?
 
 (def schema_publish_failed
   {:message {:is_publishable s/Bool
@@ -352,24 +274,20 @@
    ["media-entries"
     {:get
      {:summary "Query media-entries."
-      :swagger (swagger-ui-pagination)
       :handler handle_query_media_entry
-      :middleware [jqh/ring-wrap-parse-json-query-parameters
-                   (pagination-validation-handler (merge optional-pagination-params schema_query_media_entries))]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}
-      :responses {200 {:body s/Any}
-                  422 {:body s/Any}}}}]
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
+      :coercion spec/coercion
+      :parameters {:query ::media-entries-def}
+      :responses {200 {:body ::media-entries-body-resp-def}
+                  422 {:body any?}}}}]
    ["media-entries-related-data"
     {:get
      {:summary "Query media-entries with all related data."
-      :swagger (swagger-ui-pagination)
       :handler handle_query_media_entry-related-data
-      :middleware [jqh/ring-wrap-parse-json-query-parameters
-                   (pagination-validation-handler (merge optional-pagination-params schema_query_media_entries))]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}
-      :responses {200 {:body schema_query_media_entries_related_result}}}}]])
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
+      :coercion spec/coercion
+      :parameters {:query ::media-entries-def}
+      :responses {200 {:body ::media-entry-response-def}}}}]])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)

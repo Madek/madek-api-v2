@@ -1,4 +1,5 @@
 require "spec_helper"
+require "shared/audit-validator"
 
 context "Getting a keyword resource without authentication" do
   before :each do
@@ -19,8 +20,29 @@ context "Getting a keyword resource without authentication" do
       keyword.except("created_at", "updated_at")
     ).to eq(
       @keyword.attributes.with_indifferent_access
-        .except(:creator_id, :created_at, :updated_at)
-        .merge(external_uri: keyword["external_uris"].first)
+              .except(:creator_id, :created_at, :updated_at)
+              .merge(external_uri: keyword["external_uris"].first)
     )
+  end
+end
+
+context "Getting keywords by pagination" do
+  before :each do
+    @keywords = []
+    10.times do
+      @keywords << FactoryBot.create(:keyword, external_uris: ["http://example.com"])
+    end
+  end
+
+  it "responses with 200" do
+    resp1 = plain_faraday_json_client.get("/api-v2/keywords?page=0&size=5")
+    expect(resp1.status).to be == 200
+    expect(resp1.body["keywords"].count).to be 5
+
+    resp2 = plain_faraday_json_client.get("/api-v2/keywords?page=1&size=5")
+    expect(resp2.status).to be == 200
+    expect(resp2.body["keywords"].count).to be 5
+
+    expect(lists_of_maps_different?(resp1.body["keywords"], resp2.body["keywords"])).to eq true
   end
 end

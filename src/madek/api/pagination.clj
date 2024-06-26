@@ -16,20 +16,18 @@
 (defn compute-offset [params]
   (* (page-count params) (page-number params)))
 
-(defn add-offset-for-honeysql [query params]
-  (let [defaults {:page 0 :count 100}
+(defn sql-offset-and-limit [query params]
+  (let [params (if (contains? params :size)
+                 (assoc params :count (:size params))
+                 params)
+
+        defaults {:page 0 :count 100}
         params (merge defaults params)
         off (compute-offset params)
         limit (page-count params)]
     (-> query
         (sql/limit limit)
         (sql/offset off))))
-
-(defn next-page-query-query-params [query-params]
-  (let [query-params (keywordize-keys query-params)
-        i-page (page-number query-params)]
-    (assoc query-params
-           :page (+ i-page 1))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

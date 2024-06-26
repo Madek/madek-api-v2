@@ -1,5 +1,6 @@
 (ns madek.api.resources.context-keys
   (:require
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
@@ -7,11 +8,15 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
-   [madek.api.utils.pagination :refer [pagination-validation-handler optional-pagination-params swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
    [schema.core :as s]
+   [spec-tools.core :as st]
    [taoensso.timbre :refer [error]]))
 
 (defn context_key_transform_ml [context_key]
@@ -36,7 +41,7 @@
                      (dbh/build-query-ts-after req-query :created_after "created_at")
                      (dbh/build-query-ts-after req-query :updated_after "updated_at")
 
-                     (pagination/add-offset-for-honeysql req-query)
+                     (pagination/sql-offset-and-limit req-query)
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
         tf (map context_key_transform_ml db-result)]
@@ -178,6 +183,10 @@
 
    :documentation_urls (s/maybe sd/schema_ml_list)})
 
+(sa/def :adm/context-keys (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/context_id ::sp/is_required ::sp/changed_after
+                                            ::sp/created_after ::sp/updated_after
+                                            ::sp/page ::sp/size]))
+
 (def schema_export_context_key_admin
   {:id s/Uuid
    :context_id s/Str
@@ -197,14 +206,16 @@
    :updated_at s/Any
    :created_at s/Any})
 
-(def schema_query
-  {(s/optional-key :changed_after) s/Inst
-   (s/optional-key :created_after) s/Inst
-   (s/optional-key :updated_after) s/Inst
-   (s/optional-key :id) s/Uuid
-   (s/optional-key :context_id) s/Str
-   (s/optional-key :meta_key_id) s/Str
-   (s/optional-key :is_required) s/Bool})
+(sa/def :adm/context-key-response (sa/keys
+                                   :req-un [::sp/id ::sp/context_id ::sp/meta_key_id
+                                            ::sp/is_required ::sp-nil/length_max ::sp-nil/length_min ::sp/position
+                                            ::sp-map/labels ::sp-map/descriptions ::sp-map/hints
+                                            ::sp-map/documentation_urls
+                                            ::sp-nil/admin_comment
+                                            ::sp/updated_at ::sp/created_at]))
+
+(sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key-response)
+                                             :description "A list of context-keys"}))
 
 ; TODO docu
 ; TODO tests
@@ -228,13 +239,11 @@
      :get
      {:summary (sd/sum_adm "Query context_keys.")
       :handler handle_adm-list-context_keys
-      :middleware [wrap-authorize-admin!
-                   (pagination-validation-handler (merge optional-pagination-params schema_query))]
-      :coercion reitit.coercion.schema/coercion
-      :swagger (swagger-ui-pagination)
-      :parameters {:query schema_query}
-      :responses {200 {:body [schema_export_context_key_admin]}
-                  406 {:body s/Any}}}}]
+      :middleware [wrap-authorize-admin!]
+      :parameters {:query :adm/context-keys}
+      :coercion spec/coercion
+      :responses {200 {:body :adm/context-keys-response}
+                  406 {:body any?}}}}]
    ; edit context_key
    ["context-keys/:id"
     {:get

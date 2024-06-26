@@ -62,6 +62,20 @@ context "people" do
         end
       end
 
+      describe "get admin/people with pagination" do
+        it "responses with 200" do
+          resp1 = client.get("/api-v2/admin/people?page=0&size=5")
+          expect(resp1.status).to be == 200
+          expect(resp1.body["people"].count).to be 5
+
+          resp2 = client.get("/api-v2/admin/people?page=1&size=5")
+          expect(resp2.status).to be == 200
+          expect(resp2.body["people"].count).to be 5
+
+          expect(lists_of_maps_different?(resp1.body["people"], resp2.body["people"])).to eq true
+        end
+      end
+
       context "filter people by their subtype" do
         url = "/api-v2/admin/people?page=0&size=100&subtype=Person&institution=foo.com"
         let :result do

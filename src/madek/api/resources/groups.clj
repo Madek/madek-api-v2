@@ -1,6 +1,7 @@
 (ns madek.api.resources.groups
   (:require [clj-uuid]
             [clojure.java.io :as io]
+            [clojure.spec.alpha :as sa]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.pagination :as pagination]
@@ -9,12 +10,15 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.helper :refer [convert-groupid f mslurp]]
-            [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
+            [reitit.coercion.spec :as spec]
             [schema.core :as s]
+            [spec-tools.core :as st]
             [taoensso.timbre :refer [error info]]))
 
 ;### create group #############################################################
@@ -91,7 +95,7 @@
         (dbh/build-query-param-like query-params :institutional_name)
         (dbh/build-query-param-like query-params :institution)
         (dbh/build-query-param-like query-params :searchable)
-        (pagination/add-offset-for-honeysql query-params)
+        (pagination/sql-offset-and-limit query-params)
         sql-format)))
 
 (defn index [req]
@@ -178,17 +182,40 @@
    (s/optional-key :searchable) s/Str
    (s/optional-key :full_data) s/Bool})
 
+(def schema_export-group
+  {:id s/Uuid
+   (s/optional-key :name) s/Str
+   (s/optional-key :type) s/Str ; TODO enum
+   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
+   (s/optional-key :created_at) s/Any
+   (s/optional-key :updated_at) s/Any
+   (s/optional-key :institutional_id) (s/maybe s/Str)
+   (s/optional-key :institutional_name) (s/maybe s/Str)
+   (s/optional-key :institution) (s/maybe s/Str)
+   (s/optional-key :searchable) s/Str})
+
+(sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
+(sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
+(sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
+                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
+                                            ::sp/full_data ::sp/page ::sp/size]))
+
+(sa/def :usr/groups (sa/keys :req-un [::sp/id] :opt-un [::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
+                                                        ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable]))
+(sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
+                                          :description "A list of persons"}))
+
+(sa/def ::response-groups-body (sa/keys :req-un [:usr-groups-list/groups]))
+
 (def user-routes
   [["/"
     {:swagger {:tags ["groups"]}}
     ["groups" {:get {:summary "Get all group ids"
                      :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                      :handler index
-                     :swagger (swagger-ui-pagination)
-                     :middleware [(pagination-validation-handler (merge optional-pagination-params schema_query-groups))]
-                     :parameters {:query schema_query-groups}
-                     :coercion reitit.coercion.schema/coercion
-                     :responses {200 {:body {:groups [schema_export-group]}}}}}]
+                     :parameters {:query ::group-query-def}
+                     :coercion spec/coercion
+                     :responses {200 {:body ::response-groups-body}}}}]
 
     ["groups/:id" {:get {:summary "Get group by id"
                          :description "Get group by id. Returns 404, if no such group exists."
@@ -207,12 +234,10 @@
    ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
                     :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                     :handler index
-                    :middleware [wrap-authorize-admin!
-                                 (pagination-validation-handler (merge optional-pagination-params schema_query-groups))]
-                    :swagger (swagger-ui-pagination)
-                    :parameters {:query schema_query-groups}
-                    :coercion reitit.coercion.schema/coercion
-                    :responses {200 {:body {:groups [schema_export-group]}}}}
+                    :middleware [wrap-authorize-admin!]
+                    :parameters {:query ::group-query-def}
+                    :coercion spec/coercion
+                    :responses {200 {:body {:groups [(st/spec {:spec :usr/groups})]}}}} ;;ok
 
               :post {:summary (f "Create a group" "groups::person_id-not-exists")
                      :description "Create a group."
@@ -240,9 +265,7 @@
                         :handler handle_get-group
                         :middleware [wrap-authorize-admin!]
                         :coercion reitit.coercion.schema/coercion
-
-                        ;:parameters {:path {:id s/Uuid}}
-                        :parameters {:path {:id s/Any}}
+                        :parameters {:path {:id (s/->Either [s/Uuid s/Str])}}
                         ;; can be uuid (group-id) or string (institutional-id)
                         ;; http://localhost:3104/api/admin/groups/%3Fthis%23id%2Fneeds%2Fto%2Fbe%2Furl%26encoded>,
 
@@ -280,13 +303,12 @@
                                     :description "Get group users by id. (zero-based paging)"
                                     :content-type "application/json"
                                     :handler group-users/handle_get-group-users
-                                    :middleware [wrap-authorize-admin!
-                                                 (pagination-validation-handler)]
-                                    :coercion reitit.coercion.schema/coercion
-                                    :swagger (swagger-ui-pagination)
-                                    :parameters {:path {:group-id s/Uuid}}
+                                    :coercion spec/coercion
+                                    :middleware [wrap-authorize-admin!]
+                                    :parameters {:query sp/schema_pagination_opt
+                                                 :path {:group-id uuid?}}
                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                     :schema {:body {:users [group-users/schema_export-group-user-simple]}}}}}
+                                                     :schema {:body ::group-id-resp-def}}}}
 
                               ; TODO works with tests, but not with the swagger ui
                               ; TODO: broken test / duplicate key issue

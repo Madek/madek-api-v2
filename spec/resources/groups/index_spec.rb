@@ -1,4 +1,5 @@
 require "spec_helper"
+require "shared/audit-validator"
 
 context "groups" do
   before :each do
@@ -11,6 +12,38 @@ context "groups" do
         expect(
           client.get("/api-v2/admin/groups").status
         ).to be == 403
+      end
+    end
+  end
+
+  context "Getting groups with pagination for admin" do
+    include_context :json_client_for_authenticated_admin_user do
+      it "responses with 200" do
+        resp1 = client.get("/api-v2/admin/groups?page=0&size=5")
+        expect(resp1.status).to be == 200
+        expect(resp1.body["groups"].count).to be 5
+
+        resp2 = client.get("/api-v2/admin/groups?page=1&size=5")
+        expect(resp2.status).to be == 200
+        expect(resp2.body["groups"].count).to be 5
+
+        expect(lists_of_maps_different?(resp1.body["groups"], resp2.body["groups"])).to eq true
+      end
+    end
+  end
+
+  context "Getting groups with pagination for user" do
+    include_context :json_client_for_authenticated_admin_user do
+      it "responses with 200" do
+        resp1 = client.get("/api-v2/groups?page=0&size=5")
+        expect(resp1.status).to be == 200
+        expect(resp1.body["groups"].count).to be 5
+
+        resp2 = client.get("/api-v2/groups?page=1&size=5")
+        expect(resp2.status).to be == 200
+        expect(resp2.body["groups"].count).to be 5
+
+        expect(lists_of_maps_different?(resp1.body, resp2.body)).to eq true
       end
     end
   end

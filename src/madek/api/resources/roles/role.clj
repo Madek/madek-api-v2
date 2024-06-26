@@ -21,7 +21,7 @@
   [query-params]
   (-> (sql/select :roles.*)
       (sql/from :roles)
-      (pagination/add-offset-for-honeysql query-params)
+      (pagination/sql-offset-and-limit query-params)
       (sql-format)))
 
 (defn get-index

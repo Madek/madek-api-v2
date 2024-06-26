@@ -1,17 +1,18 @@
 (ns madek.api.resources.people.index
   (:require
+   [clojure.spec.alpha :as sa]
    [cuerdas.core :refer [empty-or-nil?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.pagination :as pagination]
    [madek.api.resources.people.common :as common]
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [parse-specific-keys]]
-   [madek.api.utils.pagination :as pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-   [schema.core :as s]
+   [reitit.coercion.spec :as spec]
    [taoensso.timbre :refer [debug]]))
 
 (defn subtype-filter [query {subtype :subtype}]
@@ -50,31 +51,25 @@
 
 (defn handler
   "Get an index of the people. Query parameters are pending to be implemented."
-  [{{query :query} :parameters params :params tx :tx :as req}]
-  (debug 'query query)
-  (let [defaults {:page 0 :count 1000}
-        params (parse-specific-keys params defaults)
-        query (-> (build-query query)
+  [{{params :query} :parameters tx :tx :as req}]
+  (debug 'params params)
+  (let [query (-> (build-query params)
                   (pagination/sql-offset-and-limit params)
                   sql-format)
         people (jdbc/execute! tx query)]
     (debug 'people people)
     {:status 200, :body {:people people}}))
 
-(def query-schema
-  {(s/optional-key :institution) s/Str
-   (s/optional-key :subtype) s/Str})
+(sa/def ::people-query-def (sa/keys :opt-un [::sp/institution ::sp/subtype ::sp/page ::sp/size]))
 
 (def route
   {:summary (sd/sum_adm "Get list of people ids.")
    :description "Get list of people ids."
-   :parameters {:query query-schema}
    :handler handler
-   :middleware [wrap-authorize-admin!
-                (pagination-validation-handler (merge optional-pagination-params query-schema))]
-   :swagger (swagger-ui-pagination)
-   :coercion reitit.coercion.schema/coercion
-   :responses {200 {:body {:people [get-person/schema]}}}})
+   :parameters {:query ::people-query-def}
+   :middleware [wrap-authorize-admin!]
+   :responses {200 {:body ::get-person/response-people-body}}
+   :coercion spec/coercion})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -1,29 +1,29 @@
 (ns madek.api.resources.roles
   (:require
+   [clojure.spec.alpha :as sa]
    [madek.api.resources.roles.role :as role]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.pagination :refer [pagination-validation-handler swagger-ui-pagination]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [reitit.coercion.schema]
-   [schema.core :as s]))
+   [reitit.coercion.spec :as spec]
+   [schema.core :as s]
+   [spec-tools.core :as st]))
 
 (def schema_create-role
-  {;:id s/Uuid
-   :meta_key_id s/Str
-   :labels sd/schema_ml_list
-   ;:creator_id s/Uuid
-   ;:created_at s/Any
-   ;:updated_at s/Any
-   })
+  {:meta_key_id s/Str
+   :labels sd/schema_ml_list})
 
 (def schema_update-role
-  {;:id s/Uuid
-   ;:meta_key_id s/Str
-   :labels sd/schema_ml_list
-   ;:creator_id s/Uuid
-   ;:created_at s/Any
-   ;:updated_at s/Any
-   })
+  {:labels sd/schema_ml_list})
+
+(sa/def :roles-resp-def/role (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels]
+                                      :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at]))
+
+(sa/def :roles-resp-def/roles (st/spec {:spec (sa/coll-of :roles-resp-def/role)
+                                        :description "A list of roles"}))
+(sa/def ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
+
 (def schema_export-role
   {:id s/Uuid
    :meta_key_id s/Str
@@ -40,11 +40,9 @@
    ["roles" {:get {:summary "Get list of roles."
                    :description "Get list of roles."
                    :handler role/get-index
-                   :middleware [(pagination-validation-handler)]
-                   :swagger (swagger-ui-pagination)
-                   :parameters {:query {}}
-                   :coercion reitit.coercion.schema/coercion}
-             :responses {200 {:body {:roles [schema_export-role]}}}}]
+                   :coercion spec/coercion
+                   :parameters {:query sp/schema_pagination_opt}
+                   :responses {200 {:body ::response-roles-body}}}}]
 
    ["roles/:id"
     {:get {:summary "Get role by id"
@@ -66,12 +64,10 @@
     {:get {:summary (sd/sum_adm "Get list of roles.")
            :description "Get list of roles."
            :handler role/get-index
-           :middleware [wrap-authorize-admin!
-                        (pagination-validation-handler)]
-           :swagger (swagger-ui-pagination)
-           :parameters {:query {}}
-           :coercion reitit.coercion.schema/coercion
-           :responses {200 {:body {:roles [schema_export-role]}}}}
+           :middleware [wrap-authorize-admin!]
+           :coercion spec/coercion
+           :parameters {:query sp/schema_pagination_opt}
+           :responses {200 {:body ::response-roles-body}}}
 
      :post {:summary (sd/sum_adm "Create role.")
             :handler role/handle_create-role

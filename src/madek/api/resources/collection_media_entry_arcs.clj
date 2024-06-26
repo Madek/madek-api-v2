@@ -31,7 +31,7 @@
       (sql/from :collection_media_entry_arcs)
       (dbh/build-query-param query-params :collection_id)
       (dbh/build-query-param query-params :media_entry_id)
-      (pagination/add-offset-for-honeysql query-params)
+      (pagination/sql-offset-and-limit query-params)
       sql-format))
 
 (defn arcs [req]

@@ -1,12 +1,24 @@
 (ns madek.api.resources.people.get
   (:require
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [madek.api.resources.people.common :refer [person-query]]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
+   [spec-tools.core :as st]
    [taoensso.timbre :refer [debug]]))
+
+(sa/def :usr/people (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/description ::sp/external_uris ::sp-nil/first_name
+                                      ::sp/institution ::sp-nil/institutional_id ::sp-nil/last_name ::sp-nil/admin_comment ::sp-nil/pseudonym ::sp/subtype ::sp/updated_at]))
+
+(sa/def :usr-people-list/people (st/spec {:spec (sa/coll-of :usr/people)
+                                          :description "A list of persons"}))
+
+(sa/def ::response-people-body (sa/keys :req-un [:usr-people-list/people]))
 
 (def schema
   {:created_at s/Any

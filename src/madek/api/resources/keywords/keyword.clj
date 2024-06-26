@@ -18,7 +18,7 @@
              (dbh/build-query-param-like query :meta_key_id)
              (dbh/build-query-param-like query :term)
              (dbh/build-query-param-like query :description)
-             (pagination/add-offset-for-honeysql query)
+             (pagination/sql-offset-and-limit query)
              sql-format)]
     ; (info "db-keywords-query" dbq)
     (jdbc/execute! tx dbq)))

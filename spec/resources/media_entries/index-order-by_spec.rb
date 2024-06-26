@@ -1,5 +1,6 @@
 require "spec_helper"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
+require "shared/audit-validator"
 
 describe "ordering media entries" do
   include_context :bunch_of_media_entries
@@ -54,6 +55,20 @@ describe "ordering media entries" do
 
         it "returns 30 media entries for descending order" do
           expect(titles("desc").size).to eq(30)
+        end
+      end
+
+      describe "get media-entries with pagination" do
+        it "responses with 200" do
+          resp1 = client.get("/api-v2/media-entries?page=0&size=5")
+          expect(resp1.status).to be == 200
+          expect(resp1.body["media_entries"].count).to be 5
+
+          resp2 = client.get("/api-v2/media-entries?page=1&size=5")
+          expect(resp2.status).to be == 200
+          expect(resp2.body["media_entries"].count).to be 5
+
+          expect(lists_of_maps_different?(resp1.body["media_entries"], resp2.body["media_entries"])).to eq true
         end
       end
 

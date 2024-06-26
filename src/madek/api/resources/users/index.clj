@@ -1,17 +1,18 @@
 (ns madek.api.resources.users.index
   (:require
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.common :as common]
    [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.helper :refer [f]]
-   [madek.api.utils.pagination :as pagination
-    :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-   [schema.core :as s]))
+   [reitit.coercion.spec :as spec]))
 
 (defn handle-email-clause [thread-obj params]
   (if-let [email (:email params)]
@@ -21,7 +22,7 @@
 
 (defn handler
   "Get an index of the users. Query parameters are pending to be implemented."
-  [{params :params tx :tx :as req}]
+  [{{params :query} :parameters tx :tx :as req}]
   (let [query (-> common/base-query
                   (pagination/sql-offset-and-limit params)
                   (handle-email-clause params)
@@ -32,16 +33,13 @@
         res (sd/transform_ml_map res)]
     (sd/response_ok res)))
 
-(def query-schema
-  {(s/optional-key :email) s/Str})
+(sa/def ::users-query-def (sa/keys :opt-un [::sp/email ::sp/page ::sp/size]))
 
 (def route
   {:summary (sd/sum_adm (f "Get list of users ids." "no-list"))
    :description "Get list of users ids."
    :handler handler
-   :middleware [wrap-authorize-admin!
-                (pagination-validation-handler (merge optional-pagination-params query-schema))]
-   :swagger (swagger-ui-pagination)
-   :parameters {:query query-schema}
-   :coercion reitit.coercion.schema/coercion
-   :responses {200 {:body {:users [get-user/schema]}}}})
+   :middleware [wrap-authorize-admin!]
+   :parameters {:query ::users-query-def}
+   :coercion spec/coercion
+   :responses {200 {:body ::get-user/users-body-resp-def}}})

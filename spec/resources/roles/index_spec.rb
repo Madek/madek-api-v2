@@ -1,4 +1,5 @@
 require "spec_helper"
+require "shared/audit-validator"
 
 describe "roles" do
   before :each do
@@ -8,6 +9,20 @@ describe "roles" do
   end
 
   include_context :authenticated_json_client do
+    describe "get roles with pagination" do
+      it "responses with 200" do
+        resp1 = authenticated_json_client.get("/api-v2/roles?page=0&size=5")
+        expect(resp1.status).to be == 200
+        expect(resp1.body["roles"].count).to be 5
+
+        resp2 = authenticated_json_client.get("/api-v2/roles?page=1&size=5")
+        expect(resp2.status).to be == 200
+        expect(resp2.body["roles"].count).to be 5
+
+        expect(lists_of_maps_different?(resp1.body["roles"], resp2.body["roles"])).to eq true
+      end
+    end
+
     describe "get roles" do
       let :roles_result do
         authenticated_json_client.get("/api-v2/roles?page=0&size=100")

@@ -1,5 +1,6 @@
 (ns madek.api.resources.full-texts
-  (:require [honey.sql :refer [format] :rename {format sql-format}]
+  (:require [clojure.spec.alpha :as sa]
+            [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
@@ -7,9 +8,10 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-            [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
+            [reitit.coercion.spec :as spec]
             [schema.core :as s]
             [taoensso.timbre :refer [error info]]))
 
@@ -24,7 +26,7 @@
                      (sql/from :full_texts)
                      (dbh/build-query-param query-params :media_resource_id)
                      (dbh/build-query-param-like query-params :text)
-                     (pagination/add-offset-for-honeysql query-params)
+                     (pagination/sql-offset-and-limit query-params)
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)]
 
@@ -108,9 +110,7 @@
                                     :full_texts :media_resource_id
                                     :full_text send404))))
 
-(def schema-query {(s/optional-key :full_data) s/Bool
-                   (s/optional-key :media_resource_id) s/Uuid
-                   (s/optional-key :text) s/Str})
+(sa/def :ft-query/schema-query-def (sa/keys :opt-un [::sp/full_data ::sp/media_resource_id ::sp/text ::sp/page ::sp/size]))
 
 ; TODO tests
 ; TODO howto access control or full_texts is public meta data
@@ -120,10 +120,8 @@
    ["full_texts"
     {:get {:summary (sd/sum_usr "Query or list full_texts.")
            :handler handle_list-full_texts
-           :coercion reitit.coercion.schema/coercion
-           :middleware [(pagination-validation-handler (merge optional-pagination-params schema-query))]
-           :swagger (swagger-ui-pagination)
-           :parameters {:query schema-query}}}]
+           :coercion spec/coercion
+           :parameters {:query :ft-query/schema-query-def}}}]
 
    ["full_texts/:media_resource_id"
     {:get {:summary (sd/sum_usr "Get full_text.")

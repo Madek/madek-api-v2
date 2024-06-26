@@ -4,7 +4,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.pagination :refer [add-offset-for-honeysql]]
+   [madek.api.pagination :refer [sql-offset-and-limit]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
@@ -23,7 +23,7 @@
    (-> (sql/select :*)
        (sql/from :vocabularies)
        (sql/where (where-clause user-id tx))
-       (add-offset-for-honeysql query-params)
+       (sql-offset-and-limit query-params)
        sql-format))
 
   ([user-id query-params request tx]
@@ -34,7 +34,7 @@
      (-> select
          (sql/from :vocabularies)
          (sql/where (where-clause user-id tx))
-         (add-offset-for-honeysql query-params)
+         (sql-offset-and-limit query-params)
          sql-format))))
 
 (defn- query-index-resources [request]

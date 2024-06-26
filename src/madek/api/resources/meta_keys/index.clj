@@ -3,7 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.pagination :refer [add-offset-for-honeysql]]
+   [madek.api.pagination :refer [sql-offset-and-limit]]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]
@@ -52,7 +52,7 @@
         (dbh/build-query-param qparams :is_enabled_for_collections)
         (dbh/build-query-param qparams :is_enabled_for_media_entries)
         (sql/order-by :meta_keys.id)
-        (add-offset-for-honeysql pagination-params)
+        (sql-offset-and-limit pagination-params)
         sql-format)))
 
 (defn db-query-meta-keys [request]

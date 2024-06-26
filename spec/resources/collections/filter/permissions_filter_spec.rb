@@ -1,5 +1,6 @@
 require "spec_helper"
 require Pathname(File.expand_path("../../", __FILE__)).join("shared")
+require "shared/audit-validator"
 
 describe "filtering collections" do
   include_context :bunch_of_collections
@@ -95,6 +96,30 @@ describe "filtering collections" do
             collection = Collection.unscoped.find(c["id"])
             expect(user.groups)
               .to include collection.group_permissions.first.group
+          end
+        end
+
+        describe "get collections with pagination" do
+          it "responses with 200" do
+            10.times do
+              g = FactoryBot.create(:group)
+              user.groups << g
+              FactoryBot.create \
+                :collection_group_permission,
+                collection: FactoryBot.create(:collection,
+                  get_metadata_and_previews: false),
+                group: g
+            end
+
+            resp1 = client.get("/api-v2/collections?page=0&size=5")
+            expect(resp1.status).to be == 200
+            expect(resp1.body["collections"].count).to be 5
+
+            resp2 = client.get("/api-v2/collections?page=1&size=5")
+            expect(resp2.status).to be == 200
+            expect(resp2.body["collections"].count).to be 5
+
+            expect(lists_of_maps_different?(resp1.body["collections"], resp2.body["collections"])).to eq true
           end
         end
       end

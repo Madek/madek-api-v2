@@ -1,4 +1,5 @@
 require "spec_helper"
+require "shared/audit-validator"
 
 context "admin context-keys" do
   before :each do
@@ -27,6 +28,29 @@ context "admin context-keys" do
       is_required: true,
       position: 1
     }
+  end
+
+  context "Getting context-keys with pagination" do
+    include_context :json_client_for_authenticated_admin_user do
+      before :each do
+        @keywords = []
+        10.times do
+          @keywords << FactoryBot.create(:context_key)
+        end
+      end
+
+      it "responses with 200" do
+        resp1 = client.get("/api-v2/admin/context-keys?page=0&size=5")
+        expect(resp1.status).to be == 200
+        expect(resp1.body.count).to be 5
+
+        resp2 = client.get("/api-v2/admin/context-keys?page=1&size=5")
+        expect(resp2.status).to be == 200
+        expect(resp2.body.count).to be 5
+
+        expect(lists_of_maps_different?(resp1.body, resp2.body)).to eq true
+      end
+    end
   end
 
   let :query_url do

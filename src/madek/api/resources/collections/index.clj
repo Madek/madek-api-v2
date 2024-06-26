@@ -43,7 +43,7 @@
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params
                                                           authenticated-entity)
-                      (pagination/add-offset-for-honeysql query-params)
+                      (pagination/sql-offset-and-limit query-params)
                       sql-format)]
     ;(logging/info "build-query"
     ;              "\nquery\n" query-params

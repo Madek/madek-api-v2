@@ -1,14 +1,17 @@
 (ns madek.api.resources.collection-collection-arcs
   (:require
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
    [schema.core :as s]))
 
 (defn arc-query [request]
@@ -43,7 +46,7 @@
       (sql/from :collection_collection_arcs)
       (dbh/build-query-param query-params :child_id)
       (dbh/build-query-param query-params :parent_id)
-      (pagination/add-offset-for-honeysql query-params)
+      (pagination/sql-offset-and-limit query-params)
       sql-format))
 
 (defn handle_query-arcs [req]
@@ -146,6 +149,10 @@
   {(s/optional-key :child_id) s/Uuid
    (s/optional-key :parent_id) s/Uuid})
 
+(sa/def ::group-id-query-def (sa/keys :opt-un [::sp/child_id ::sp/parent_id ::sp/page ::sp/size]))
+(sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/child_id ::sp/parent_id ::sp/highlight]
+                                     :opt-un [::sp-nil/order ::sp-nil/created_at ::sp-nil/updated_at ::sp-nil/position]))
+
 ; TODO add permission checks
 (def ring-routes
   ["/collection-collection-arcs"
@@ -154,11 +161,9 @@
     {:get
      {:summary "Query collection collection arcs."
       :handler handle_query-arcs
-      :swagger (swagger-ui-pagination)
-      :middleware [(pagination-validation-handler (merge optional-pagination-params schema_collection-query))]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_collection-query}
-      :responses {200 {:body s/Any}} ; TODO response coercion
+      :coercion spec/coercion
+      :parameters {:query ::group-id-query-def}
+      :responses {200 {:body any?}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id
    ; TODO add permission checks

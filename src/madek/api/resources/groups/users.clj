@@ -75,7 +75,7 @@
       (sql/join :groups [:= :groups.id :groups_users.group_id])
       (sql/order-by [:users.id :asc])
       (groups/sql-merge-where-id group-id)
-      (pagination/add-offset-for-honeysql (-> request :parameters :query))
+      (pagination/sql-offset-and-limit (-> request :parameters :query))
       sql-format))
 
 (defn group-users [group-id request]
