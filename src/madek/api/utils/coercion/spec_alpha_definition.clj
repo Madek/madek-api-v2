@@ -25,6 +25,7 @@
 (sa/def ::id (st/spec {:spec uuid?}))
 (sa/def ::meta_key_id (st/spec {:spec string?}))
 (sa/def ::term (st/spec {:spec string?}))
+(sa/def ::description (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))

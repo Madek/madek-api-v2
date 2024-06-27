@@ -240,7 +240,18 @@
 ;(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
 ;                            :description "A list of persons"}))
 
-;(sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
+
+
+
+
+
+
+
+(sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class]))
+
+
+
+
 
 (sa/def ::person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class]))
 
@@ -290,12 +301,20 @@
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords
-      :coercion reitit.coercion.schema/coercion
-      :swagger (swagger-ui-pagination)
+
+      :coercion spec/coercion
+
+      ;:coercion reitit.coercion.schema/coercion
+      ;:swagger (swagger-ui-pagination)
       :middleware [wrap-authorize-admin!
-                   (pagination-validation-handler (merge optional-pagination-params schema_query_keyword))]
-      :parameters {:query schema_query_keyword}
-      :responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+                   ;(pagination-validation-handler (merge optional-pagination-params schema_query_keyword))
+                   ]
+
+      ;:responses {200 {:body ::response-body}
+      ;:parameters {:query schema_query_keyword}
+      :parameters {:query ::person-opt}
+      ;:responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
+      ;:responses {200 {:body s/Any}}
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 
      :post
