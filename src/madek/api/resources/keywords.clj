@@ -18,7 +18,8 @@
    [reitit.coercion.spec :as spec]
 
    [schema.core :as s]
-   [spec-tools.core :as st]))
+   [spec-tools.core :as st]
+   ))
 
 ;### swagger io schema ####################################################################
 
@@ -278,7 +279,7 @@
       :handler handle_usr-query-keywords
 
       :coercion spec/coercion
-      :parameters {:query schema_query_pagination_only}
+      :parameters {:query sp/schema_pagination_opt}
       ;:responses {200 {:body (sa/keys :req-un [::keywords])}
       ;:responses {200 {:body {:keywords ::response-body}}
       :responses {200 {:body ::response-body}

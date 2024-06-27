@@ -31,6 +31,18 @@
 (sa/def ::created_at (st/spec {:spec any?}))
 (sa/def ::updated_at (st/spec {:spec any?}))
 
+
+(sa/def ::changed_after (st/spec {:spec instance?}))
+(sa/def ::created_after (st/spec {:spec instance?}))
+(sa/def ::updated_after (st/spec {:spec instance?}))
+
+(sa/def ::context_id (st/spec {:spec string?}))
+(sa/def ::is_required (st/spec {:spec boolean?}))
+
+
+
+
+
 (sa/def ::position (st/spec {:spec int?}))
 
 (sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
