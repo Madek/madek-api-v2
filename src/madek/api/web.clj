@@ -107,7 +107,12 @@
                               :id s/Uuid
                               :login s/Str
                               :created_at s/Any
-                              :email_address s/Str
+                              :email s/Str
+                              :first_name s/Str
+                              :last_name s/Str
+                              :person_id s/Uuid
+                              :institutional_id s/Str
+                              (s/optional-key :session-expires-at) s/Any
                               (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
                        :schema s/Str
@@ -278,7 +283,7 @@
 
 (defn initialize [options]
   (let [handler (case (http-resources-scope-key options)
-                  "ALL" (middleware (wrap-reload app-all))
+                  "ALL" (middleware app-all)
                   "ADMIN" (middleware app-admin)
                   "USER" (middleware app-user))]
     (http-server/start handler options)))

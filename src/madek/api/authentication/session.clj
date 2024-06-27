@@ -116,7 +116,7 @@
     (let [token-hash (token-hash cookie-value)
           tx (:tx request)]
       (if-let [user-session (first (user-session token-hash tx))]
-        (let [user-id (:users/user_id user-session)
+        (let [user-id (:user_id user-session)
               expires-at (:session_expires_at user-session)
               user (assoc (dbh/query-eq-find-one :users :id user-id tx) :type "User")]
           #_(info "handle session: "
