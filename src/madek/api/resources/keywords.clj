@@ -10,21 +10,16 @@
    [madek.api.utils.helper :refer [convert-map d]]
    [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
 
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+
    [next.jdbc :as jdbc]
 
-   ;[madek.api.resources.coercion-spec2 :as sp ]
-   [madek.api.utils.coercion-spec :as sp ]
-
-
-   [reitit.coercion.spec :as spec]
-   [spec-tools.core :as st]
-
    [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
+
    [schema.core :as s]
-
-
-
-   ))
+   [spec-tools.core :as st]))
 
 ;### swagger io schema ####################################################################
 
@@ -92,13 +87,13 @@
    ; [:id :meta_key_id :term :description :external_uris :rdf_class
    ;  :created_at])
    (dissoc :creator_id :created_at :updated_at)
-   (assoc                                                   ; support old (singular) version of field
+   (assoc ; support old (singular) version of field
     :external_uri (first (keyword :external_uris)))))
 
 (defn adm-export-keyword [keyword]
   (->
    keyword
-   (assoc                                                   ; support old (singular) version of field
+   (assoc ; support old (singular) version of field
     :external_uri (first (keyword :external_uris)))))
 
 ;### handlers get and query ####################################################################
@@ -186,16 +181,9 @@
 
 (defn wrap-find-keyword [handler]
   (fn [request] (sd/req-find-data request handler
-                  :id
-                  :keywords :id
-                  :keyword true)))
-
-
-
-
-
-
-
+                                  :id
+                                  :keywords :id
+                                  :keyword true)))
 
 ;(sa/def ::page (st/spec {:spec pos-int?
 ;                         :description "Page number"
@@ -225,17 +213,6 @@
 ;
 ;(sa/def ::rdf_class (st/spec {:spec string?}))
 
-
-
-
-
-
-
-
-
-
-
-
 ;(sa/def ::basic (st/spec {:spec (sa/coll-of any?)
 ;                                  :description "An array of any types"}))
 ;
@@ -243,11 +220,9 @@
 ;  (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
 ;
 
-
-
 (def schema_query_pagination_only
   (sa/keys
-    :opt-un [::sp/page ::sp/size]))
+   :opt-un [::sp/page ::sp/size]))
 
 ;(def schema_query_pagination
 ;  (sa/keys
@@ -260,41 +235,19 @@
    (s/optional-key :description) s/Str
    (s/optional-key :rdf_class) s/Str})
 
-
-
-
 ;(sa/def ::response-body (sa/keys :req-un [::keywords]))
 ;
 ;(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
 ;                            :description "A list of persons"}))
 
-
-
-
-
-
-
-
-
-
-
 ;(sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
 
-(sa/def ::person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/position ::sp/external_uris ::sp/external_uri ::sp/rdf_class]))
-
+(sa/def ::person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class]))
 
 (sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
                              :description "A list of persons"}))
 
 (sa/def ::response-body (sa/keys :req-un [::keywords]))
-
-
-
-
-
-
-
-
 
 ;; FIXME: broken endpoint to test doc
 (def query-routes

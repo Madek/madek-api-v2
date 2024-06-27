@@ -2,12 +2,7 @@
   (:require
    [clojure.spec.alpha :as sa]
    ;[reitit.coercion.schema]
-   [spec-tools.core :as st]
-
-   ))
-
-
-
+   [spec-tools.core :as st]))
 
 (sa/def ::page (st/spec {:spec pos-int?
                          :description "Page number"
@@ -19,8 +14,6 @@
 
 ;### required fields ####################################################################
 
-
-
 (sa/def ::id (st/spec {:spec uuid?}))
 (sa/def ::meta_key_id (st/spec {:spec string?}))
 (sa/def ::term (st/spec {:spec string?}))
@@ -30,33 +23,14 @@
 
 ;(sa/def ::description (st/spec {:spec string?}))
 
-
-
-
-
-
-
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))
 (sa/def ::updated_at (st/spec {:spec any?}))
-
-
-
-
-
-
-
-
-
-
-
-
 
 (sa/def ::position-nil
   (sa/or :nil nil? :int int?))
 
 (sa/def ::position (st/spec {:spec int?}))
-
 
 (sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
                                   :description "An array of any types"}))
@@ -66,10 +40,8 @@
 
 (sa/def ::rdf_class (st/spec {:spec string?}))
 
-
 ;(sa/def ::basic (st/spec {:spec (sa/coll-of any?)
 ;                                  :description "An array of any types"}))
-
 
 ;(def schema_export_keyword_usr
 ;  {:id s/Uuid
@@ -81,20 +53,15 @@
 ;   :external_uri (s/maybe s/Str)
 ;   :rdf_class s/Str})
 
-
 ;(sa/def ::person (s/keys :opt-un [::id ::meta_key_id ::term ::description ::rdf_class]))
 (sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
-
 
 (def schema_query_pagination2
   (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
 
-
-
-
 (def schema_pagination
   (sa/keys
-    :opt-un [::page ::size]))
+   :opt-un [::page ::size]))
 
 ;(def schema_query_pagination
 ;  (sa/keys
@@ -108,8 +75,6 @@
 ;   (s/optional-key :rdf_class) s/Str})
 ;
 
-
-
 ;(sa/def ::response-body (sa/keys :req-un [::keywords]))
 ;
 ;(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
@@ -117,13 +82,6 @@
 ;
 ;
 ;
-
-
-
-
-
-
-
 
 ;
 ;(sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
@@ -133,13 +91,6 @@
 ;(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
 ;                             :description "A list of persons"}))
 ;
-
-
-
-
-
-
-
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
