@@ -151,6 +151,7 @@
    (s/optional-key :workflow_id) s/Uuid
    (s/optional-key :responsible_delegation_id) s/Uuid
 
+   (s/optional-key :filter_by) s/Str
    (s/optional-key :public_get_metadata_and_previews) s/Bool
    (s/optional-key :me_get_metadata_and_previews) s/Bool
    (s/optional-key :me_edit_permission) s/Bool

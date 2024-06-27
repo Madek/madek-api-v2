@@ -1,11 +1,14 @@
 (ns madek.api.resources.collections.index
   (:require
+   [cheshire.core :as json]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.collections.advanced-filter.meta-data :as advanced-filter]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [next.jdbc :as jdbc]))
 
 ;### collection_id ############################################################
@@ -34,6 +37,8 @@
 ; TODO test query and paging
 (defn- build-query [request]
   (let [query-params (:query-params request)
+        ; TODO or throw error if invalid json which is now ignored
+        filter-by (jqh/try-as-json (:filter_by query-params))
         authenticated-entity (:authenticated-entity request)
         full_data (= true (:full_data query-params))
         sql-query (-> (base-query full_data)
@@ -43,11 +48,12 @@
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params
                                                           authenticated-entity)
+                      (advanced-filter/filter-by filter-by)
                       (pagination/add-offset-for-honeysql query-params)
                       sql-format)]
-    ;(logging/info "build-query"
-    ;              "\nquery\n" query-params
-    ;              "\nsql query:\n" sql-query)
+    #_(logging/info "build-query"
+                  "\nquery\n" query-params
+                  "\nsql query:\n" sql-query)
     sql-query))
 
 (defn- query-index-resources [request]
