@@ -250,6 +250,12 @@
    ;  (s/optional-key :search) s/Str
    ;  }
 
+   ; optional related data
+   (s/optional-key :related_meta_data) s/Bool
+   (s/optional-key :related_previews) s/Bool
+   (s/optional-key :related_files) s/Bool
+   ;(s/optional-key :related_collections) s/Bool
+
    (s/optional-key :me_get_metadata_and_previews) s/Bool
    (s/optional-key :me_get_full_size) s/Bool
 
@@ -309,6 +315,7 @@
 (def schema_export_preview
   {:id s/Uuid
    :media_file_id s/Uuid
+   :media_entry_id s/Uuid
    :media_type s/Str
    :content_type s/Str
    ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
@@ -333,11 +340,25 @@
    :meta_data_updated_at s/Any
    :other_media_entry_id (s/maybe s/Uuid)})
 
+#_(def schema_export_col_me_arcs
+  {:id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id (s/maybe s/Uuid)
+
+   :highlight (s/maybe s/Bool)
+   :cover (s/maybe s/Bool)
+   :position (s/maybe s/Int)
+   :order (s/maybe s/Num)
+   :updated_at s/Any
+   :created_at s/Any})
+
 (def schema_query_media_entries_related_result
   {:media_entries [schema_export_media_entry]
-   :meta_data [[schema_export_meta_data]]
-   :media_files [(s/maybe schema_export_media_file)]
-   :previews [[(s/maybe schema_export_preview)]]
+   (s/optional-key :meta_data) [[schema_export_meta_data]]
+   (s/optional-key :media_files) [(s/maybe schema_export_media_file)]
+   (s/optional-key :previews) [[(s/maybe schema_export_preview)]]
+   ;(s/optional-key :col_me_arcs) [[(s/maybe schema_export_col_me_arcs)]]
+   ;(s/optional-key :col_me_arc_meta_data) s/Any
    (s/optional-key :col_arcs) [schema_export_col_arc]
    (s/optional-key :col_meta_data) [schema_export_meta_data]})
 
