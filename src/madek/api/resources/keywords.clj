@@ -12,7 +12,8 @@
 
    [next.jdbc :as jdbc]
 
-   [madek.api.resources.coercion-spec2 :as sp ]              ;;ecial-symbol?:refer [::id ::meta_key_id ::term ::description-nil ::position-nil ::external_uris ::external_uri-nil ::rdf_class ::creator_id ::created_at ::updated_at]]
+   ;[madek.api.resources.coercion-spec2 :as sp ]
+   [madek.api.utils.coercion-spec :as sp ]
 
 
    [reitit.coercion.spec :as spec]
