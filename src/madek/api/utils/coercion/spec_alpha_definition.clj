@@ -14,11 +14,11 @@
 
 (def schema_pagination_opt
   (sa/keys
-    :opt-un [::page ::size]))
+   :opt-un [::page ::size]))
 
 (def schema_pagination_req
   (sa/keys
-    :opt-un [::page ::size]))
+   :opt-un [::page ::size]))
 
 ;### required fields ####################################################################
 
@@ -45,8 +45,6 @@
 ;
 ;(def schema_query_pagination2
 ;  (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
-
-
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -1,5 +1,6 @@
 (ns madek.api.resources.keywords
   (:require
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
@@ -7,17 +8,16 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
+
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-
    [madek.api.utils.helper :refer [convert-map d]]
-   [next.jdbc :as jdbc]
 
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+
    [reitit.coercion.spec :as spec]
 
    [schema.core :as s]
-
-   [clojure.spec.alpha :as sa]
    [spec-tools.core :as st]))
 
 ;### swagger io schema ####################################################################
@@ -86,13 +86,13 @@
    ; [:id :meta_key_id :term :description :external_uris :rdf_class
    ;  :created_at])
    (dissoc :creator_id :created_at :updated_at)
-   (assoc                                                   ; support old (singular) version of field
+   (assoc ; support old (singular) version of field
     :external_uri (first (keyword :external_uris)))))
 
 (defn adm-export-keyword [keyword]
   (->
    keyword
-   (assoc                                                   ; support old (singular) version of field
+   (assoc ; support old (singular) version of field
     :external_uri (first (keyword :external_uris)))))
 
 ;### handlers get and query ####################################################################
@@ -180,9 +180,9 @@
 
 (defn wrap-find-keyword [handler]
   (fn [request] (sd/req-find-data request handler
-                  :id
-                  :keywords :id
-                  :keyword true)))
+                                  :id
+                                  :keywords :id
+                                  :keyword true)))
 
 ;(sa/def ::page (st/spec {:spec pos-int?
 ;                         :description "Page number"
@@ -221,7 +221,7 @@
 
 (def schema_query_pagination_only
   (sa/keys
-    :opt-un [::sp/page ::sp/size]))
+   :opt-un [::sp/page ::sp/size]))
 
 ;(def schema_query_pagination
 ;  (sa/keys
@@ -239,15 +239,7 @@
 ;(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
 ;                            :description "A list of persons"}))
 
-
-
-
-
-
-
-
 (sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class]))
-
 
 (def schema_export_keyword_adm
   {:id s/Uuid
@@ -262,23 +254,19 @@
    :created_at s/Any
    :updated_at s/Any})
 
-
 (sa/def :usr/person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class]))
 (sa/def :usr/keywords (st/spec {:spec (sa/coll-of :usr/person)
-                             :description "A list of persons"}))
+                                :description "A list of persons"}))
 (sa/def ::response-body (sa/keys :req-un [:usr/keywords]))
-
 
 (sa/def :adm/person-admin (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class ::sp/creator_id ::sp/created_at ::sp/updated_at]))
 
 (sa/def :adm/keywords (st/spec {:spec (sa/coll-of :adm/person-admin)
-                             :description "A list of persons"
-                             :title "keywords"
-                             :name "keywords"
-                             :json-schema/title "keywords"
-                             }))
+                                :description "A list of persons"
+                                :title "keywords"
+                                :name "keywords"
+                                :json-schema/title "keywords"}))
 (sa/def ::response-body-adm (sa/keys :req-un [:adm/keywords]))
-
 
 ;; FIXME: broken endpoint to test doc
 (def query-routes
