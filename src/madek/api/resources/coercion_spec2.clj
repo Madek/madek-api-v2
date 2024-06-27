@@ -25,10 +25,10 @@
 (sa/def ::meta_key_id (st/spec {:spec string?}))
 (sa/def ::term (st/spec {:spec string?}))
 
-(sa/def ::description-nil
+(sa/def ::description
   (sa/or :nil nil? :string string?))
 
-(sa/def ::description (st/spec {:spec string?}))
+;(sa/def ::description (st/spec {:spec string?}))
 
 
 
@@ -55,10 +55,13 @@
 (sa/def ::position-nil
   (sa/or :nil nil? :int int?))
 
-(sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
-                                 :description "An array of any types"}))
+(sa/def ::position (st/spec {:spec int?}))
 
-(sa/def ::external_uri-nil
+
+(sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
+                                  :description "An array of any types"}))
+
+(sa/def ::external_uri
   (sa/or :nil nil? :string string?))
 
 (sa/def ::rdf_class (st/spec {:spec string?}))

@@ -12,6 +12,8 @@
 
    [next.jdbc :as jdbc]
 
+   [madek.api.resources.coercion-spec2 :as sp ]              ;;ecial-symbol?:refer [::id ::meta_key_id ::term ::description-nil ::position-nil ::external_uris ::external_uri-nil ::rdf_class ::creator_id ::created_at ::updated_at]]
+
 
    [reitit.coercion.spec :as spec]
    [spec-tools.core :as st]
@@ -188,33 +190,49 @@
                   :keyword true)))
 
 
-(sa/def ::page (st/spec {:spec pos-int?
-                         :description "Page number"
-                         :json-schema/default 1}))
-
-(sa/def ::size (st/spec {:spec pos-int?
-                         :description "Number of items per page"
-                         :json-schema/default 10}))
 
 
-(sa/def ::id (st/spec {:spec uuid?}))
-(sa/def ::meta_key_id (st/spec {:spec string?}))
-(sa/def ::term (st/spec {:spec string?}))
-;(sa/def ::description (st/spec {:spec string?}))
 
-(sa/def ::description
-  (sa/or :nil nil? :string string?))
 
-(sa/def ::position
-  (sa/or :nil nil? :int int?))
 
-(sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
-                                 :description "An array of any types"}))
 
-(sa/def ::external_uri
-  (sa/or :nil nil? :string string?))
+;(sa/def ::page (st/spec {:spec pos-int?
+;                         :description "Page number"
+;                         :json-schema/default 1}))
+;
+;(sa/def ::size (st/spec {:spec pos-int?
+;                         :description "Number of items per page"
+;                         :json-schema/default 10}))
+;
+;
+;(sa/def ::id (st/spec {:spec uuid?}))
+;(sa/def ::meta_key_id (st/spec {:spec string?}))
+;(sa/def ::term (st/spec {:spec string?}))
+;;(sa/def ::description (st/spec {:spec string?}))
+;
+;(sa/def ::description
+;  (sa/or :nil nil? :string string?))
+;
+;(sa/def ::position
+;  (sa/or :nil nil? :int int?))
+;
+;(sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
+;                                 :description "An array of any types"}))
+;
+;(sa/def ::external_uri
+;  (sa/or :nil nil? :string string?))
+;
+;(sa/def ::rdf_class (st/spec {:spec string?}))
 
-(sa/def ::rdf_class (st/spec {:spec string?}))
+
+
+
+
+
+
+
+
+
 
 
 ;(sa/def ::basic (st/spec {:spec (sa/coll-of any?)
@@ -228,11 +246,11 @@
 
 (def schema_query_pagination_only
   (sa/keys
-    :opt-un [::page ::size]))
+    :opt-un [::sp/page ::sp/size]))
 
-(def schema_query_pagination
-  (sa/keys
-    :opt-un [::id ::meta_key_id ::term ::description ::rdf_class ::page ::size]))
+;(def schema_query_pagination
+;  (sa/keys
+;    :opt-un [::id ::meta_key_id ::term ::description ::rdf_class ::page ::size]))
 
 (def schema_query_keyword
   {(s/optional-key :id) s/Uuid
@@ -261,13 +279,13 @@
 
 ;(sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
 
-(sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
+(sa/def ::person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/position ::sp/external_uris ::sp/external_uri ::sp/rdf_class]))
 
-;(sa/def ::response-body (sa/keys :req-un [::keywords]))
 
 (sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
                              :description "A list of persons"}))
 
+(sa/def ::response-body (sa/keys :req-un [::keywords]))
 
 
 
@@ -288,8 +306,9 @@
 
       :coercion spec/coercion
       :parameters {:query schema_query_pagination_only}
-      :responses {200 {:body (sa/keys :req-un [::keywords])}
-      ;:responses {200 {:body ::response-body}
+      ;:responses {200 {:body (sa/keys :req-un [::keywords])}
+      ;:responses {200 {:body {:keywords ::response-body}}
+      :responses {200 {:body ::response-body}
 
                   202 {:description "Successful response, list of items."
                        :schema {}
