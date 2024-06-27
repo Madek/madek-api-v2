@@ -19,20 +19,25 @@
        (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
        (handler (assoc request :preview preview))))))
 
+(def DEFAULT_PREVIEW_SIZE "small")
+
+(defn get-request-query-size [req]
+  (or (-> req :parameters :query :size) DEFAULT_PREVIEW_SIZE))
+
 (defn handle_get-preview
   [req]
   (let [media-file (-> req :media-file)
         id (:id media-file)
-        size (or (-> req :parameters :query :size) "small")]
+        size (get-request-query-size req)]
     (if-let [preview (dbh/query-eq-find-one :previews :media_file_id id :thumbnail size (:tx req))]
       (sd/response_ok preview)
       (sd/response_not_found "No such preview file"))
     ;(info "handle_get-preview" "\nid\n" id "\nmf\n" media-file "\npreviews\n" preview)
     ))
 (defn add-preview-for-media-file [handler request]
-  (let [media-file (-> request :media-file)
-        id (:id media-file)
-        previews (dbh/query-eq-find-all :previews :media_file_id id (:tx request))
+  (let [id (-> request :media-file :id)
+        size (get-request-query-size request)
+        previews (dbh/query-eq-find-all :previews :media_file_id id :thumbnail size (:tx request))
         pfirst (first previews)]
     (handler (assoc request :preview pfirst))))
 
