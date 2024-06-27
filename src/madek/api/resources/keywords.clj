@@ -217,28 +217,12 @@
 (sa/def ::rdf_class (st/spec {:spec string?}))
 
 
-(sa/def ::basic (st/spec {:spec (sa/coll-of any?)
-                                  :description "An array of any types"}))
-
-
-;(def schema_export_keyword_usr
-;  {:id s/Uuid
-;   :meta_key_id s/Str
-;   :term s/Str
-;   :description (s/maybe s/Str)
-;   :position (s/maybe s/Int)
-;   :external_uris [s/Any]
-;   :external_uri (s/maybe s/Str)
-;   :rdf_class s/Str})
-
-
-;(sa/def ::person (s/keys :opt-un [::id ::meta_key_id ::term ::description ::rdf_class]))
-(sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
-
-
-(def schema_query_pagination2
-  (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
-
+;(sa/def ::basic (st/spec {:spec (sa/coll-of any?)
+;                                  :description "An array of any types"}))
+;
+;(def schema_query_pagination2
+;  (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
+;
 
 
 
@@ -260,12 +244,10 @@
 
 
 
-(sa/def ::response-body (sa/keys :req-un [::keywords]))
-
-(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
-                            :description "A list of persons"}))
-
-
+;(sa/def ::response-body (sa/keys :req-un [::keywords]))
+;
+;(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
+;                            :description "A list of persons"}))
 
 
 
@@ -275,10 +257,13 @@
 
 
 
+
+
+;(sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
 
 (sa/def ::person (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
 
-(sa/def ::response-body (sa/keys :req-un [::keywords]))
+;(sa/def ::response-body (sa/keys :req-un [::keywords]))
 
 (sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
                              :description "A list of persons"}))
