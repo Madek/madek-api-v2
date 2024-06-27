@@ -48,11 +48,15 @@
                              :media_entry_id
                              :arc_order
                              :arc_position
+                             :arc_highlight
+                             :arc_cover
                              :arc_created_at
                              :arc_updated_at]))
        (map #(rename-keys % {:arc_id :id
                              :arc_order :order
                              :arc_position :position
+                             :arc_highlight :highlight
+                             :arc_cover :cover
                              :arc_created_at :created_at
                              :arc_updated_at :updated_at}))))
 

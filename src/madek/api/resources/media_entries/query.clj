@@ -28,6 +28,8 @@
          [:arcs.created_at :arc_created_at]
          [:arcs.order :arc_order]
          [:arcs.position :arc_position]
+         [:arcs.highlight :arc_highlight]
+         [:arcs.cover :arc_cover]
          [:arcs.created_at :arc_created_at]
          [:arcs.updated_at :arc_updated_at]
          [:arcs.id :arc_id]))))
@@ -53,11 +55,11 @@
         creator-id (:creator_id me-query)
         where2 (if (blank? creator-id) ; or not uuid
                  where1
-                 (sql/where where1 [:= :media_entries.creator_id creator-id]))
+                 (sql/where where1 [:= :media_entries.creator_id (to-uuid creator-id)]))
         ru-id (:responsible_user_id me-query)
         where3 (if (blank? ru-id) ; or not uuid
                  where2
-                 (sql/where where2 [:= :media_entries.responsible_user_id ru-id]))
+                 (sql/where where2 [:= :media_entries.responsible_user_id (to-uuid ru-id)]))
 
         ; TODO updated/created after
         from (sql/from where3 :media_entries)
