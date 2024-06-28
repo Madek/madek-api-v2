@@ -41,6 +41,9 @@
 (sa/def ::workflow_id (st/spec {:spec uuid?}))
 (sa/def ::responsible_delegation_id (st/spec {:spec uuid?}))
 
+(sa/def ::child_id (st/spec {:spec uuid?}))
+(sa/def ::parent_id (st/spec {:spec uuid?}))
+
 (sa/def ::email (st/spec {:spec string?}))
 (sa/def ::name (st/spec {:spec string?}))
 (sa/def ::type (st/spec {:spec string?}))

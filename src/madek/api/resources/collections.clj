@@ -9,7 +9,6 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.helper :refer [convert-map-if-exist mslurp]]
-   [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
 
    [madek.api.utils.coercion.spec-alpha-definition :as sp]

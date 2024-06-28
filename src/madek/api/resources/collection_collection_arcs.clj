@@ -9,6 +9,20 @@
    [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [clojure.spec.alpha :as sa]
+
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+
+   [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+   [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
+   [next.jdbc :as jdbc]
+
+   [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
+   [schema.core :as s]
+   [spec-tools.core :as st]
+
    [schema.core :as s]))
 
 (defn arc-query [request]
@@ -146,6 +160,9 @@
   {(s/optional-key :child_id) s/Uuid
    (s/optional-key :parent_id) s/Uuid})
 
+
+(sa/def ::group-id-resp-def (sa/keys :opt-un [::sp/child_id ::sp/parent_id ::sp/page ::sp/size]))
+
 ; TODO add permission checks
 (def ring-routes
   ["/collection-collection-arcs"
@@ -154,11 +171,21 @@
     {:get
      {:summary "Query collection collection arcs."
       :handler handle_query-arcs
-      :swagger (swagger-ui-pagination)
-      :middleware [(pagination-validation-handler (merge optional-pagination-params schema_collection-query))]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_collection-query}
-      :responses {200 {:body s/Any}} ; TODO response coercion
+
+
+      ;:swagger (swagger-ui-pagination)
+      ;:middleware [(pagination-validation-handler (merge optional-pagination-params schema_collection-query))]
+      ;:coercion reitit.coercion.schema/coercion
+
+
+      :coercion spec/coercion
+
+      ;:parameters {:query schema_collection-query}
+      :parameters {:query ::group-id-resp-def}
+
+
+      ;:responses {200 {:body s/Any}} ; TODO response coercion
+      :responses {200 {:body any?}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id
    ; TODO add permission checks
