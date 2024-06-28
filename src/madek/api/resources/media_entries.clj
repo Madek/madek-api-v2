@@ -19,6 +19,31 @@
             [reitit.coercion.spec]
             [reitit.ring.middleware.multipart :as multipart]
             [schema.core :as s]
+
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+
+            [clojure.spec.alpha :as sa]
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [madek.api.pagination :as pagination]
+            [madek.api.resources.groups.shared :as groups]
+            [madek.api.resources.groups.users :as group-users]
+            [madek.api.resources.shared.core :as sd]
+            [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+
+            [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+            [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
+            [next.jdbc :as jdbc]
+
+            [reitit.coercion.schema]
+            [reitit.coercion.spec :as spec]
+            [schema.core :as s]
+            [spec-tools.core :as st]
+            
             [taoensso.timbre :refer [info]]))
 (defn handle_query_media_entry [req]
   (get-index req))
@@ -218,6 +243,8 @@
         (sd/response_failed "Not authed" 406)
         (create-media_entry file auth mime collection-id tx)))))
 
+
+(sa/def ::media-entries-def (sa/keys :opt-un [::sp/collection_id ::sp/order ::sp/filter_by ]))
 (def schema_query_media_entries
   {(s/optional-key :collection_id) s/Uuid
    ; TODO order enum docu
@@ -259,6 +286,13 @@
    (s/optional-key :public_get_metadata_and_previews) s/Bool
    (s/optional-key :public_get_full_size) s/Bool
    (s/optional-key :full_data) s/Bool})
+
+
+(sa/def ::media-entry-def (sa/keys :req-un [::sp/id ]
+                            :opt-un [::sp/creator_id ::sp/responsible_user_id ::sp/get_full_size ::sp/get_metadata_and_previews
+                                      ::sp/is_published ::sp/created_at ::sp/updated_at ::sp/edit_session_updated_at ::sp/meta_data_updated_at
+                                     ::sp-nil/responsible_delegation_id]))
+
 
 (def schema_export_media_entry
   {:id s/Uuid
@@ -333,6 +367,10 @@
    :meta_data_updated_at s/Any
    :other_media_entry_id (s/maybe s/Uuid)})
 
+
+(sa/def ::query-media-entry-def (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
+                                  :opt-un [::sp/col_arcs ::sp/col_meta_data]))
+
 (def schema_query_media_entries_related_result
   {:media_entries [schema_export_media_entry]
    :meta_data [[schema_export_meta_data]]
@@ -354,22 +392,36 @@
      {:summary "Query media-entries."
       :swagger (swagger-ui-pagination)
       :handler handle_query_media_entry
+      
       :middleware [jqh/ring-wrap-parse-json-query-parameters
-                   (pagination-validation-handler (merge optional-pagination-params schema_query_media_entries))]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}
-      :responses {200 {:body s/Any}
-                  422 {:body s/Any}}}}]
+                   ;(pagination-validation-handler (merge optional-pagination-params schema_query_media_entries))
+                   ]
+      ;:coercion reitit.coercion.schema/coercion
+      ;:parameters {:query schema_query_media_entries}
+
+
+      :coercion spec/coercion
+      :parameters {:query ::media-entries-def}
+
+
+      :responses {200 {:body any?}
+                  422 {:body any?}}}}]
    ["media-entries-related-data"
     {:get
      {:summary "Query media-entries with all related data."
-      :swagger (swagger-ui-pagination)
+      ;:swagger (swagger-ui-pagination)
       :handler handle_query_media_entry-related-data
+      
       :middleware [jqh/ring-wrap-parse-json-query-parameters
-                   (pagination-validation-handler (merge optional-pagination-params schema_query_media_entries))]
-      :coercion reitit.coercion.schema/coercion
-      :parameters {:query schema_query_media_entries}
-      :responses {200 {:body schema_query_media_entries_related_result}}}}]])
+                   ;(pagination-validation-handler (merge optional-pagination-params schema_query_media_entries))
+                   ]
+      ;:coercion reitit.coercion.schema/coercion
+      :coercion spec/coercion
+
+      
+      :parameters {:query ::media-entries-def}
+      ;:responses {200 {:body schema_query_media_entries_related_result}}}}]])
+      :responses {200 {:body ::query-media-entry-def}}}}]])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)

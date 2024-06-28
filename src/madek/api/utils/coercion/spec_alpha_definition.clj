@@ -55,6 +55,7 @@
 (sa/def ::description (st/spec {:spec string?}))
 (sa/def ::searchable (st/spec {:spec string?}))
 (sa/def ::order (st/spec {:spec string?}))
+(sa/def ::filter_by (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))
@@ -76,11 +77,13 @@
 (sa/def ::is_required (st/spec {:spec boolean?}))
 (sa/def ::full_data (st/spec {:spec boolean?}))
 (sa/def ::is_master (st/spec {:spec boolean?}))
+(sa/def ::get_full_size (st/spec {:spec boolean?}))
 (sa/def ::public_get_metadata_and_previews (st/spec {:spec boolean?}))
 (sa/def ::me_get_metadata_and_previews (st/spec {:spec boolean?}))
 (sa/def ::me_edit_permission (st/spec {:spec boolean?}))
 (sa/def ::me_edit_metadata_and_relations (st/spec {:spec boolean?}))
 (sa/def ::get_metadata_and_previews (st/spec {:spec boolean?}))
+(sa/def ::is_published (st/spec {:spec boolean?}))
 
 (sa/def ::position (st/spec {:spec int?}))
 
@@ -98,6 +101,15 @@
 (sa/def ::layout (st/spec {:spec any?}))
 (sa/def ::sorting (st/spec {:spec any?}))
 (sa/def ::default_resource_type (st/spec {:spec any?}))
+
+
+
+(sa/def ::media_entries (st/spec {:spec any?}))
+(sa/def ::meta_data (st/spec {:spec any?}))
+(sa/def ::media_files (st/spec {:spec any?}))
+(sa/def ::previews (st/spec {:spec any?}))
+(sa/def ::col_arcs (st/spec {:spec any?}))
+(sa/def ::col_meta_data (st/spec {:spec any?}))
 
 
 

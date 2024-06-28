@@ -52,6 +52,9 @@
 (sa/def ::responsible_user_id
   (sa/or :nil nil? :string uuid?))
 
+(sa/def ::responsible_delegation_id
+  (sa/or :nil nil? :string uuid?))
+
 (sa/def ::hints
   (sa/or :nil nil? :any any?)) ;; TODO: MAP OF EN/DE
 
