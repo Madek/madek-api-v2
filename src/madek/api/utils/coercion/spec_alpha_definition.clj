@@ -32,9 +32,13 @@
 (sa/def ::updated_at (st/spec {:spec any?}))
 
 
-(sa/def ::changed_after (st/spec {:spec instance?}))
-(sa/def ::created_after (st/spec {:spec instance?}))
-(sa/def ::updated_after (st/spec {:spec instance?}))
+;(sa/def ::changed_after (st/spec {:spec instance?}))
+;(sa/def ::created_after (st/spec {:spec instance?}))
+;(sa/def ::updated_after (st/spec {:spec instance?}))
+
+(sa/def ::changed_after (st/spec {:spec any?}))
+(sa/def ::created_after (st/spec {:spec any?}))
+(sa/def ::updated_after (st/spec {:spec any?}))
 
 (sa/def ::context_id (st/spec {:spec string?}))
 (sa/def ::is_required (st/spec {:spec boolean?}))

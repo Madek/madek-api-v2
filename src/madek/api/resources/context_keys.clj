@@ -18,10 +18,7 @@
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [reitit.coercion.spec :as spec]
 
-   [schema.core :as s]
-   [spec-tools.core :as st]
    [clojure.spec.alpha :as sa]
-   [schema.core :as s]
    [spec-tools.core :as st]
    [taoensso.timbre :refer [error]]))
 
@@ -219,6 +216,12 @@
 
 
 
+
+;;; Define specs
+;(sa/def ::sp/id string?)
+;(sa/def ::sp/context_id string?)
+;(sa/def ::sp/meta_key_id string?)
+
 (sa/def :adm/context-keys (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/context_id ::sp/is_required ::sp/changed_after ::sp/created_after
                                             ::sp/updated_after
 
@@ -226,11 +229,40 @@
                                             ]))
 
 
-(sa/def :adm/context-key (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/context_id ::sp/is_required
 
+
+;(def schema_export_context_key_admin
+;  {:id s/Uuid
+;   :context_id s/Str
+;   :meta_key_id s/Str
+;   :is_required s/Bool
+;   :length_max (s/maybe s/Int)
+;   :length_min (s/maybe s/Int)
+;   :position s/Int
+;
+;   :labels (s/maybe sd/schema_ml_list)
+;   :descriptions (s/maybe sd/schema_ml_list)
+;   :hints (s/maybe sd/schema_ml_list)
+;
+;   :documentation_urls (s/maybe sd/schema_ml_list)
+;
+;   :admin_comment (s/maybe s/Str)
+;   :updated_at s/Any
+;   :created_at s/Any})
+
+;(sa/def :adm/context-key (sa/keys :req-un [
+
+;(sa/def :adm/context-key any?)
+  (sa/def :adm/context-key (sa/keys :opt-un [
+
+
+                                           ;::sp/id
+                                           ::sp/id ::sp/context_id ::sp/meta_key_id
+
+                                           ::sp/is_required
 
                                                      ::sp-nil/length_max ::sp-nil/length_min ::sp/position
-                                                     ::sp-nil/labels ::sp-nil/description ::sp-nil/hints
+                                                     ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints
                                                      ::sp-nil/documentation_urls ::sp-nil/admin_comment
 
                                                      ::sp/updated_at ::sp/created_at
@@ -240,12 +272,17 @@
                                                      ]))
 
 
+;(sa/def :adm/context-keys-response (st/spec {:spec any?}))
+;(sa/def :adm/context-keys-response (st/spec any?))
 (sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key)
                                 :description "A list of persons"
-                                ;:title "keywords"
-                                ;:name "keywords"
-                                ;:json-schema/title "keywords"
                                  })  )
+
+
+
+;(sa/def ::adm/context-keys-response (sa/keys :opt-un [:usr/keywords]))
+;(sa/def ::context-keys-response2 (sa/keys :opt-un [::sp/id]))
+
 
 
 ;(def schema_export_context_key_admin
@@ -315,9 +352,11 @@
       :coercion spec/coercion
 
       ;:responses {200 {:body [schema_export_context_key_admin]}
-
       :responses {200 {:body :adm/context-keys-response}    ;;broken
-                  406 {:body s/Any}}
+      ;:responses {200 {:body s/Any}    ;;broken
+      ;:responses {200 {}    ;;broken
+      ;            406 {:body s/Any}
+                  }
 
       }}]
    ; edit context_key

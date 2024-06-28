@@ -14,6 +14,9 @@
 ;   :external_uri (s/maybe s/Str)
 ;   :rdf_class s/Str})
 
+(sa/def ::descriptions
+  (sa/or :nil nil? :string string?))
+
 (sa/def ::description
   (sa/or :nil nil? :string string?))
 
@@ -35,10 +38,10 @@
   (sa/or :nil nil? :any any?))
 
 (sa/def ::hints
-  (sa/or :nil nil? :any string?))
+  (sa/or :nil nil? :any any?))                              ;; TODO: MAP OF EN/DE
 
 (sa/def ::admin_comment
-  (sa/or :nil nil? :any string?))                           ;;TODO
+  (sa/or :nil nil? :string string?))                           ;;TODO
 
 ;(def schema_ml_list
 ;  {(s/optional-key :de) (s/maybe s/Str)
