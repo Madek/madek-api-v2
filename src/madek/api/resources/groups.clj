@@ -185,9 +185,27 @@
    (s/optional-key :full_data) s/Bool})
 
 
+(def schema_export-group
+  {:id s/Uuid
+   (s/optional-key :name) s/Str
+   (s/optional-key :type) s/Str ; TODO enum
+   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
+   (s/optional-key :created_at) s/Any
+   (s/optional-key :updated_at) s/Any
+   (s/optional-key :institutional_id) (s/maybe s/Str)
+   (s/optional-key :institutional_name) (s/maybe s/Str)
+   (s/optional-key :institution) (s/maybe s/Str)
+   (s/optional-key :searchable) s/Str})
+
+
 (sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
 (sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
+(sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
+                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/full_data]))
 
+(sa/def :usr/groups (sa/keys :req-un [::sp/id]  :opt-un [ ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
+                                            ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable ]))
+(sa/def ::response-groups-body (sa/keys :req-un [:usr/groups]))
 
 ;(def schema_export-group-user-simple
 ;  {:id s/Uuid
@@ -224,12 +242,20 @@
    ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
                     :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                     :handler index
+
                     :middleware [wrap-authorize-admin!
-                                 (pagination-validation-handler (merge optional-pagination-params schema_query-groups))]
-                    :swagger (swagger-ui-pagination)
-                    :parameters {:query schema_query-groups}
-                    :coercion reitit.coercion.schema/coercion
-                    :responses {200 {:body {:groups [schema_export-group]}}}}
+                                 ;(pagination-validation-handler (merge optional-pagination-params schema_query-groups))
+                                  ]
+                    ;:swagger (swagger-ui-pagination)
+                    ;:parameters {:query schema_query-groups}
+
+                    :parameters {:query ::group-query-def}
+
+                    :coercion spec/coercion
+
+                    ;:coercion reitit.coercion.schema/coercion
+                    ;:responses {200 {:body {:groups [schema_export-group]}}}}
+                    :responses {200 {:body ::response-groups-body}}}
 
               :post {:summary (f "Create a group" "groups::person_id-not-exists")
                      :description "Create a group."

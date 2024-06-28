@@ -25,12 +25,18 @@
 (sa/def ::id (st/spec {:spec uuid?}))
 (sa/def ::group-id (st/spec {:spec uuid?}))
 (sa/def ::person_id (st/spec {:spec uuid?}))
+(sa/def ::created_by_user_id (st/spec {:spec uuid?}))
 
 (sa/def ::email (st/spec {:spec string?}))
+(sa/def ::name (st/spec {:spec string?}))
+(sa/def ::type (st/spec {:spec string?}))
 (sa/def ::institutional_id (st/spec {:spec string?}))
+(sa/def ::institutional_name (st/spec {:spec string?}))
+(sa/def ::institution (st/spec {:spec string?}))
 (sa/def ::meta_key_id (st/spec {:spec string?}))
 (sa/def ::term (st/spec {:spec string?}))
 (sa/def ::description (st/spec {:spec string?}))
+(sa/def ::searchable (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))
@@ -46,6 +52,7 @@
 
 (sa/def ::context_id (st/spec {:spec string?}))
 (sa/def ::is_required (st/spec {:spec boolean?}))
+(sa/def ::full_data (st/spec {:spec boolean?}))
 
 (sa/def ::position (st/spec {:spec int?}))
 

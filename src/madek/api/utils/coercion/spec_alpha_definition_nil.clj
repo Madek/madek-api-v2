@@ -20,6 +20,17 @@
 (sa/def ::description
   (sa/or :nil nil? :string string?))
 
+(sa/def ::institutional_id
+  (sa/or :nil nil? :string string?))
+
+(sa/def ::institutional_name
+  (sa/or :nil nil? :string string?))
+
+(sa/def ::institution
+  (sa/or :nil nil? :string string?))
+(sa/def ::created_by_user_id
+  (sa/or :nil nil? :string string?))
+
 (sa/def ::position
   (sa/or :nil nil? :int int?))
 
