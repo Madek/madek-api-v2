@@ -4,9 +4,19 @@
    ;[reitit.coercion.schema]
    [spec-tools.core :as st]))
 
-(sa/def ::page (st/spec {:spec pos-int?
+
+(sa/def ::page (st/spec {:spec int?
                          :description "Page number"
-                         :json-schema/default 1}))
+                         :json-schema/default 0}))
+
+;; TODO: pos-int? breaks tests
+;(defn pos-int? [x]
+;  (and (integer? x) (pos? x)))
+;
+;(sa/def ::page (sa/spec
+;                 {:spec (sa/or :pos-int pos-int? :zero? #(= 0 %))
+;                  :description "Page number"
+;                  :json-schema/default 0}))
 
 (sa/def ::size (st/spec {:spec pos-int?
                          :description "Number of items per page"
@@ -14,11 +24,11 @@
 
 (def schema_pagination_opt
   (sa/keys
-   :opt-un [::page ::size]))
+    :opt-un [::page ::size]))
 
 (def schema_pagination_req
   (sa/keys
-   :opt-un [::page ::size]))
+    :opt-un [::page ::size]))
 
 ;### required fields ####################################################################
 

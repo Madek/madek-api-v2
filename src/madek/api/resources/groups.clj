@@ -201,7 +201,7 @@
 (sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
 (sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
-                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/full_data]))
+                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/full_data  ::sp-nil/page ::sp-nil/size]))
 
 (sa/def :usr/groups (sa/keys :req-un [::sp/id]  :opt-un [ ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
                                             ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable ]))
@@ -332,8 +332,12 @@
 
                                     :coercion spec/coercion
                                     :middleware [wrap-authorize-admin!]
-                                    :parameters {:query sp/schema_pagination_opt
-                                                 :path ::group-id-def}
+                                    :parameters {
+                                                 ;:query sp/schema_pagination_opt
+                                                 ;:query {:size any? :page any?}
+                                                 :query {:size int? :page int?}
+                                                 ;:path ::group-id-def}
+                                                 :path {:group-id uuid?}}
 
                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                      :schema {:body ::group-id-resp-def}}}
