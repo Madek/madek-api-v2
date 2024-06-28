@@ -18,7 +18,6 @@
             [reitit.coercion.schema]
 
             [clojure.spec.alpha :as sa]
-            [schema.core :as s]
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
             [spec-tools.core :as st]
@@ -261,7 +260,7 @@
 
                         ;:parameters {:path {:id s/Uuid}}
                         ;:parameters {:path {:id s/Any}}
-                        :parameters {:path {:id s/->Either s/Uuid s/Str}}
+                        :parameters {:path {:id (s/->Either [s/Uuid s/Str])}}
                         ;; can be uuid (group-id) or string (institutional-id)
                         ;; http://localhost:3104/api/admin/groups/%3Fthis%23id%2Fneeds%2Fto%2Fbe%2Furl%26encoded>,
 
