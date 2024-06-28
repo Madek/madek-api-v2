@@ -333,9 +333,9 @@
                                     :coercion spec/coercion
                                     :middleware [wrap-authorize-admin!]
                                     :parameters {
-                                                 ;:query sp/schema_pagination_opt
+                                                 :query sp/schema_pagination_opt
                                                  ;:query {:size any? :page any?}
-                                                 :query {:size int? :page int?}
+                                                 ;:query {:size int? :page int?}
                                                  ;:path ::group-id-def}
                                                  :path {:group-id uuid?}}
 
