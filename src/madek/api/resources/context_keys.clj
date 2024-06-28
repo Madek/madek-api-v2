@@ -251,7 +251,7 @@
       :parameters {:query :adm/context-keys}
       :coercion spec/coercion
       :responses {200 {:body :adm/context-keys-response}
-                  406 {:body s/Any}}}}]
+                  406 {:body any?}}}}]
 ; edit context_key
    ["context-keys/:id"
     {:get
