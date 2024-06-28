@@ -18,7 +18,7 @@
 ;                  :description "Page number"
 ;                  :json-schema/default 0}))
 
-(sa/def ::size (st/spec {:spec pos-int?
+(sa/def ::size (st/spec {:spec int?
                          :description "Number of items per page"
                          :json-schema/default 10}))
 
