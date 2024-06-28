@@ -1,48 +1,48 @@
 (ns madek.api.resources.collection-collection-arcs
   (:require
+   [clojure.spec.alpha :as sa]
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared.core :as sd]
-   [madek.api.resources.shared.db_helper :as dbh]
-   [next.jdbc :as jdbc]
-   [reitit.coercion.schema]
-   [clojure.spec.alpha :as sa]
-
-   [madek.api.utils.coercion.spec-alpha-definition :as sp]
-   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-
-   [madek.api.utils.helper :refer [convert-groupid f mslurp]]
-   [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
-   [next.jdbc :as jdbc]
-
-   [clojure.spec.alpha :as sa]
-   [honey.sql :refer [format] :rename {format sql-format}]
-   [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
+
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.groups.users :as group-users]
+
    [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
+
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+   [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+   [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]
 
+   [next.jdbc :as jdbc]
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+
+   [reitit.coercion.schema]
+   [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
    [reitit.coercion.spec :as spec]
    [schema.core :as s]
-   [spec-tools.core :as st]
-   [reitit.coercion.schema]
-   [reitit.coercion.spec :as spec]
+   [schema.core :as s]
    [schema.core :as s]
    [spec-tools.core :as st]
 
-   [schema.core :as s]))
+   [spec-tools.core :as st]))
 
 (defn arc-query [request]
   (-> (sql/select :*)
@@ -179,7 +179,6 @@
   {(s/optional-key :child_id) s/Uuid
    (s/optional-key :parent_id) s/Uuid})
 
-
 (sa/def ::group-id-resp-def (sa/keys :opt-un [::sp/child_id ::sp/parent_id ::sp/page ::sp/size]))
 
 ; TODO add permission checks
@@ -191,19 +190,16 @@
      {:summary "Query collection collection arcs."
       :handler handle_query-arcs
 
-
-      ;:swagger (swagger-ui-pagination)
+;:swagger (swagger-ui-pagination)
       ;:middleware [(pagination-validation-handler (merge optional-pagination-params schema_collection-query))]
       ;:coercion reitit.coercion.schema/coercion
-
 
       :coercion spec/coercion
 
       ;:parameters {:query schema_collection-query}
       :parameters {:query ::group-id-resp-def}
 
-
-      ;:responses {200 {:body s/Any}} ; TODO response coercion
+;:responses {200 {:body s/Any}} ; TODO response coercion
       :responses {200 {:body any?}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id

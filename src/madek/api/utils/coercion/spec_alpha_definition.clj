@@ -23,11 +23,11 @@
 
 (def schema_pagination_opt
   (sa/keys
-    :opt-un [::page ::size]))
+   :opt-un [::page ::size]))
 
 (def schema_pagination_req
   (sa/keys
-    :opt-un [::page ::size]))
+   :opt-un [::page ::size]))
 
 ;### required fields ####################################################################
 
@@ -94,19 +94,12 @@
 
 (sa/def ::rdf_class (st/spec {:spec string?}))
 
-
-
-
-
-
 ;; TODO: enum
 (sa/def ::layout (st/spec {:spec any?}))
 (sa/def ::sorting (st/spec {:spec any?}))
 (sa/def ::default_resource_type (st/spec {:spec any?}))
 
 (sa/def ::settings (st/spec {:spec any?}))
-
-
 
 (sa/def ::media_entries (st/spec {:spec any?}))
 (sa/def ::meta_data (st/spec {:spec any?}))
@@ -115,12 +108,6 @@
 (sa/def ::col_arcs (st/spec {:spec any?}))
 (sa/def ::col_meta_data (st/spec {:spec any?}))
 (sa/def ::labels (st/spec {:spec any?}))
-
-
-
-
-
-
 
 ;
 ;;(sa/def ::person (s/keys :opt-un [::id ::meta_key_id ::term ::description ::rdf_class]))

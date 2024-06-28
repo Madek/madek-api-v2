@@ -1,6 +1,7 @@
 (ns madek.api.resources.collections
   (:require
    [clojure.java.io :as io]
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
@@ -8,19 +9,18 @@
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.helper :refer [convert-map-if-exist mslurp]]
-   [next.jdbc :as jdbc]
-
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
-   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
 
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.helper :refer [convert-map-if-exist mslurp]]
+
+   [next.jdbc :as jdbc]
+   [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
    [schema.core :as s]
-   [spec-tools.core :as st]
-   [clojure.spec.alpha :as sa]
 
-   [reitit.coercion.schema]
    [schema.core :as s]
+   [spec-tools.core :as st]
    [taoensso.timbre :refer [info]]))
 
 (defn handle_get-collection [request]
@@ -168,10 +168,7 @@
                                                       ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
                                                       ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                       ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
-                                                      ::sp/me_edit_metadata_and_relations
-                                                      ]))
-
-
+                                                      ::sp/me_edit_metadata_and_relations]))
 
 (def schema_collection-export
   {:id s/Uuid
@@ -198,22 +195,16 @@
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
+(sa/def :usr/collections (sa/keys :req-un [::sp/id] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
+                                                             ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
+                                                             ::sp/deleted_at ::sp/created_at ::sp/updated_at ::sp/meta_data_updated_at
+                                                             ::sp/edit_session_updated_at ::sp/clipboard_user_id ::sp/workflow_id
+                                                             ::sp/responsible_delegation_id ::sp/default_resource_type]))
 
-(sa/def :usr/collections (sa/keys :req-un [::sp/id] :opt-un [
-                                    ::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
-                                    ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
-                                    ::sp/deleted_at ::sp/created_at ::sp/updated_at ::sp/meta_data_updated_at
-                                    ::sp/edit_session_updated_at ::sp/clipboard_user_id ::sp/workflow_id
-                                    ::sp/responsible_delegation_id ::sp/default_resource_type
-
-
-                                                             ]))
 (sa/def :usr-collection-list/groups (st/spec {:spec (sa/coll-of :usr/collections)
-                                          :description "A list of persons"}))
+                                              :description "A list of persons"}))
 
 (sa/def ::response-collections-body (sa/keys :req-un [:usr-collection-list/groups]))
-
-
 
 (def ring-routes
   ["/"
@@ -230,9 +221,7 @@
       ;:coercion reitit.coercion.schema/coercion
 
       ;:responses {200 {:body {:collections [schema_collection-export]}}}
-      :responses {200 {:body ::response-collections-body}}
-
-      }}]
+      :responses {200 {:body ::response-collections-body}}}}]
 
    ["collection"
     {:post

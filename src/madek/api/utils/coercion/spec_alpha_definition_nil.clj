@@ -56,7 +56,6 @@
 (sa/def ::last_signed_in_at
   (sa/or :nil nil? :any any?))
 
-
 (sa/def ::responsible_user_id
   (sa/or :nil nil? :string uuid?))
 
@@ -71,15 +70,13 @@
 (sa/def ::login
   (sa/or :nil nil? :string string?)) ;;TODO
 
-
-
 (sa/def ::admin_comment
   (sa/or :nil nil? :string string?)) ;;TODO
 
 (sa/def ::notes
   (sa/or :nil nil? :string string?)) ;;TODO
 
-  (sa/def ::pseudonym
+(sa/def ::pseudonym
   (sa/or :nil nil? :string string?)) ;;TODO
 
 (sa/def ::default_context_id

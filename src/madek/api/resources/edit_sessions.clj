@@ -1,40 +1,40 @@
 (ns madek.api.resources.edit-sessions
   (:require
+   [clojure.java.io :as io]
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
    [madek.api.pagination :as pagination]
-   [madek.api.resources.shared.core :as sd]
-   [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [next.jdbc :as jdbc]
-
-   [clojure.java.io :as io]
-   [clojure.spec.alpha :as sa]
-   [honey.sql :refer [format] :rename {format sql-format}]
-   [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
+
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.groups.users :as group-users]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-
    [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
+   [next.jdbc :as jdbc]
    [next.jdbc :as jdbc]
 
    [reitit.coercion.schema]
+   [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
    [schema.core :as s]
-   [spec-tools.core :as st]
 
-   [reitit.coercion.schema]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [spec-tools.core :as st]))
 
 (defn build-query [query-params]
   (let [col-sel (if (true? (-> query-params :full_data))
@@ -147,18 +147,12 @@
           (sd/response_failed (str "No such edit_session : " id) 404))))
     (catch Exception ex (sd/parsed_response_exception ex))))
 
-
-
-
 (sa/def ::query-usr-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
 (def schema_usr_query_edit_session
   {(s/optional-key :full_data) s/Bool
    (s/optional-key :id) s/Uuid
    (s/optional-key :media_entry_id) s/Uuid
    (s/optional-key :collection_id) s/Uuid})
-
-
-
 
 (sa/def ::query-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/user_id ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
 
@@ -187,16 +181,12 @@
            :middleware [wrap-authorize-admin!
                         ;(pagination-validation-handler (merge schema_adm_query_edit_session optional-pagination-params))
                         ]
-
-
            :coercion spec/coercion
-           
+
            ;:coercion reitit.coercion.schema/coercion
            ;:swagger (swagger-ui-pagination)
            ;:parameters {:query schema_adm_query_edit_session}
-           :parameters {:query ::query-def}
-
-           }}]
+           :parameters {:query ::query-def}}}]
 
    ["edit_sessions/id"
     {:get {:summary (sd/sum_adm "Get edit_session.")
@@ -224,9 +214,7 @@
            ;:coercion reitit.coercion.schema/coercion
            ;:swagger (swagger-ui-pagination)
 
-
            :coercion spec/coercion
-
 
            :parameters {:query ::query-usr-def}}}]
            ;:parameters {:query schema_usr_query_edit_session}}}]

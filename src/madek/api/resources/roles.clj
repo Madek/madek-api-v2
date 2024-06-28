@@ -1,33 +1,32 @@
 (ns madek.api.resources.roles
   (:require
-   [madek.api.resources.roles.role :as role]
-   [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [reitit.coercion.schema]
-
-
    [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
+
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.groups.users :as group-users]
+   [madek.api.resources.roles.role :as role]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-
    [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]
+   [reitit.coercion.schema]
 
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
    [schema.core :as s]
-   [spec-tools.core :as st]
-   
-   [schema.core :as s]))
+   [schema.core :as s]
+
+   [spec-tools.core :as st]))
 
 (def schema_create-role
   {;:id s/Uuid
@@ -46,8 +45,6 @@
    ;:created_at s/Any
    ;:updated_at s/Any
    })
-
-
 (sa/def :roles-resp-def/roles (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels] :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at]))
 
 (sa/def ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
@@ -68,18 +65,17 @@
    ["roles" {:get {:summary "Get list of roles."
                    :description "Get list of roles."
                    :handler role/get-index
-                   
+
                    ;:middleware [(pagination-validation-handler)]
                    ;:swagger (swagger-ui-pagination)
                    ;:coercion reitit.coercion.schema/coercion}
 
                    :coercion spec/coercion
 
-
-                   ;:parameters {:query {}}
+;:parameters {:query {}}
                    :parameters {:query sp/schema_pagination_opt}
              ;:responses {200 {:body {:roles [schema_export-role]}}}}]
-             :responses {200 {:body ::response-roles-body}}}}]
+                   :responses {200 {:body ::response-roles-body}}}}]
 
    ["roles/id"
     {:get {:summary "Get role by id"
@@ -108,14 +104,12 @@
            ;:swagger (swagger-ui-pagination)
            ;:parameters {:query {}}
 
-
            :parameters {:query sp/schema_pagination_opt}
            ;:responses {200 {:body {:roles [schema_export-role]}}}}]
            :responses {200 {:body ::response-roles-body}}}
      ;}
 
-
-           ;:coercion reitit.coercion.schema/coercion
+;:coercion reitit.coercion.schema/coercion
            ;:responses {200 {:body {:roles [schema_export-role]}}}}
 
      :post {:summary (sd/sum_adm "Create role.")

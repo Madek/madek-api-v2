@@ -4,8 +4,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
-   [reitit.coercion.schema]
-   [reitit.coercion.spec :as spec]
    [madek.api.resources.users.common :as common]
    [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -14,6 +12,8 @@
    [madek.api.utils.pagination :as pagination]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
 
    [schema.core :as s]))
 
@@ -31,24 +31,20 @@
                   (handle-email-clause params)
                   (sql-format :inline false))
         res (->> query
-              (jdbc/execute! tx)
-              (assoc {} :users))
+                 (jdbc/execute! tx)
+                 (assoc {} :users))
         res (sd/transform_ml_map res)]
     (sd/response_ok res)))
 
-
 (sa/def ::users-query-def (sa/keys :opt-un [::sp/email ::sp/page ::sp/size]))
-
 
 (def query-schema
   {(s/optional-key :email) s/Str})
-
 
 (def route
   {:summary (sd/sum_adm (f "Get list of users ids." "no-list"))
    :description "Get list of users ids."
    :handler handler
-
 
    :middleware [wrap-authorize-admin!
                 ;(pagination-validation-handler (merge optional-pagination-params query-schema))

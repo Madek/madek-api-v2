@@ -1,46 +1,43 @@
 (ns madek.api.resources.people.get
   (:require
-   [honey.sql :refer [format] :rename {format sql-format}]
-   [madek.api.resources.people.common :refer [person-query]]
-   [madek.api.resources.shared.core :as sd]
-   [next.jdbc :as jdbc]
-   [reitit.coercion.schema]
-   [schema.core :as s]
-
    [clojure.java.io :as io]
    [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
+
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.groups.users :as group-users]
+   [madek.api.resources.people.common :refer [person-query]]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-
    [madek.api.utils.helper :refer [convert-groupid f mslurp]]
    [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]
 
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [reitit.coercion.schema]
+
    [reitit.coercion.spec :as spec]
+   [schema.core :as s]
    [schema.core :as s]
    [spec-tools.core :as st]
 
    [taoensso.timbre :refer [debug]]))
 
-
-
 (sa/def :usr/people (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/description ::sp/external_uris ::sp-nil/first_name
-                                       ::sp/institution ::sp-nil/institutional_id ::sp-nil/last_name ::sp-nil/admin_comment ::sp-nil/pseudonym ::sp/subtype ::sp/updated_at]))
+                                      ::sp/institution ::sp-nil/institutional_id ::sp-nil/last_name ::sp-nil/admin_comment ::sp-nil/pseudonym ::sp/subtype ::sp/updated_at]))
 
 (sa/def :usr-people-list/people (st/spec {:spec (sa/coll-of :usr/people)
                                           :description "A list of persons"}))
 
 (sa/def ::response-people-body (sa/keys :req-un [:usr-people-list/people]))
-
 
 (def schema
   {:created_at s/Any

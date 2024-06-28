@@ -6,8 +6,6 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.people.common :as common]
 
-
-
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -69,7 +67,6 @@
     (debug 'people people)
     {:status 200, :body {:people people}}))
 
-
 (sa/def ::people-query-def (sa/keys :opt-un [::sp/institution ::sp/subtype ::sp/page ::sp/size]))
 
 (def query-schema
@@ -93,11 +90,7 @@
    ;:responses {200 {:body {:people [get-person/schema]}}}
    :responses {200 {:body ::get-person/response-people-body}}
 
-
-   :coercion spec/coercion
-
-
-   })
+   :coercion spec/coercion})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
