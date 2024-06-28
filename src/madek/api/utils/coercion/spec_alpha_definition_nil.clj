@@ -20,6 +20,9 @@
 (sa/def ::description
   (sa/or :nil nil? :string string?))
 
+(sa/def ::first_name
+  (sa/or :nil nil? :string string?))
+
 (sa/def ::institutional_id
   (sa/or :nil nil? :string string?))
 
@@ -58,7 +61,12 @@
 (sa/def ::hints
   (sa/or :nil nil? :any any?)) ;; TODO: MAP OF EN/DE
 
+(sa/def ::last_name
+  (sa/or :nil nil? :string string?)) ;;TODO
 (sa/def ::admin_comment
+  (sa/or :nil nil? :string string?)) ;;TODO
+
+  (sa/def ::pseudonym
   (sa/or :nil nil? :string string?)) ;;TODO
 
 (sa/def ::default_context_id

@@ -56,6 +56,7 @@
 (sa/def ::searchable (st/spec {:spec string?}))
 (sa/def ::order (st/spec {:spec string?}))
 (sa/def ::filter_by (st/spec {:spec string?}))
+(sa/def ::subtype (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))

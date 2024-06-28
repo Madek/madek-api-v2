@@ -1,17 +1,25 @@
 (ns madek.api.resources.people.index
   (:require
+   [clojure.spec.alpha :as sa]
    [cuerdas.core :refer [empty-or-nil?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.people.common :as common]
+
+
+
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.helper :refer [parse-specific-keys]]
-   [madek.api.utils.pagination :as pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
+   [madek.api.utils.pagination :as pagination]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+
+   [reitit.coercion.spec :as spec]
    [schema.core :as s]
+
    [taoensso.timbre :refer [debug]]))
 
 (defn subtype-filter [query {subtype :subtype}]
@@ -61,6 +69,9 @@
     (debug 'people people)
     {:status 200, :body {:people people}}))
 
+
+(sa/def ::people-query-def (sa/keys :opt-un [::sp/institution ::sp/subtype ::sp/page ::sp/size]))
+
 (def query-schema
   {(s/optional-key :institution) s/Str
    (s/optional-key :subtype) s/Str})
@@ -68,13 +79,25 @@
 (def route
   {:summary (sd/sum_adm "Get list of people ids.")
    :description "Get list of people ids."
-   :parameters {:query query-schema}
    :handler handler
+
+   ;:parameters {:query query-schema}
+   :parameters {:query ::people-query-def}
    :middleware [wrap-authorize-admin!
-                (pagination-validation-handler (merge optional-pagination-params query-schema))]
-   :swagger (swagger-ui-pagination)
-   :coercion reitit.coercion.schema/coercion
-   :responses {200 {:body {:people [get-person/schema]}}}})
+                ;(pagination-validation-handler (merge optional-pagination-params query-schema))
+                ]
+   ;:swagger (swagger-ui-pagination)
+   ;:coercion reitit.coercion.schema/coercion
+   ;:responses {200 {:body {:people [get-person/schema]}}}
+
+   ;:responses {200 {:body {:people [get-person/schema]}}}
+   :responses {200 {:body ::get-person/response-people-body}}
+
+
+   :coercion spec/coercion
+
+
+   })
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
