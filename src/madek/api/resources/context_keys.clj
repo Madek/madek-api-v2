@@ -11,7 +11,6 @@
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
-   [madek.api.utils.pagination :refer [pagination-validation-handler optional-pagination-params swagger-ui-pagination]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]

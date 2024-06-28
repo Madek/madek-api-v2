@@ -9,12 +9,19 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.helper :refer [convert-groupid f mslurp]]
             [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
+
+            [clojure.spec.alpha :as sa]
             [schema.core :as s]
+            [reitit.coercion.spec :as spec]
+            [schema.core :as s]
+            [spec-tools.core :as st]
             [taoensso.timbre :refer [error info]]))
 
 ;### create group #############################################################
@@ -178,6 +185,9 @@
    (s/optional-key :searchable) s/Str
    (s/optional-key :full_data) s/Bool})
 
+
+(sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
+
 (def user-routes
   [["/"
     {:swagger {:tags ["groups"]}}
@@ -280,13 +290,22 @@
                                     :description "Get group users by id. (zero-based paging)"
                                     :content-type "application/json"
                                     :handler group-users/handle_get-group-users
+
+                                    :coercion spec/coercion
                                     :middleware [wrap-authorize-admin!
-                                                 (pagination-validation-handler)]
-                                    :coercion reitit.coercion.schema/coercion
-                                    :swagger (swagger-ui-pagination)
-                                    :parameters {:path {:group-id s/Uuid}}
-                                    :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                     :schema {:body {:users [group-users/schema_export-group-user-simple]}}}}}
+                                                 ;(pagination-validation-handler)
+                                                 ]
+                                    ;:coercion reitit.coercion.schema/coercion
+                                    ;:swagger (swagger-ui-pagination)
+                                    :parameters {:query sp/schema_pagination_opt
+                                                 :path ::group-id-def}
+
+                                    ;:parameters {:path {:group-id s/Uuid}}
+
+                                    ;:responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                    ;                 :schema {:body {:users [group-users/schema_export-group-user-simple]}}}}
+                                    ;
+                                    }
 
                               ; TODO works with tests, but not with the swagger ui
                               ; TODO: broken test / duplicate key issue

@@ -23,6 +23,8 @@
 ;### required fields ####################################################################
 
 (sa/def ::id (st/spec {:spec uuid?}))
+(sa/def ::group-id (st/spec {:spec uuid?}))
+
 (sa/def ::meta_key_id (st/spec {:spec string?}))
 (sa/def ::term (st/spec {:spec string?}))
 (sa/def ::description (st/spec {:spec string?}))
