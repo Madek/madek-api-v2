@@ -193,10 +193,7 @@
 (sa/def :adm/person-admin (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class ::sp/creator_id ::sp/created_at ::sp/updated_at]))
 
 (sa/def :adm/keywords (st/spec {:spec (sa/coll-of :adm/person-admin)
-                                :description "A list of persons"
-                                :title "keywords"
-                                :name "keywords"
-                                :json-schema/title "keywords"}))
+                                :description "A list of persons"}))
 (sa/def ::response-body-adm (sa/keys :req-un [:adm/keywords]))
 
 ;; FIXME: broken endpoint to test doc

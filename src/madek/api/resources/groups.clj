@@ -201,11 +201,14 @@
 (sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
 (sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
-                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/full_data  ::sp-nil/page ::sp-nil/size]))
+                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/full_data  ::sp/page ::sp/size]))
 
 (sa/def :usr/groups (sa/keys :req-un [::sp/id]  :opt-un [ ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
                                             ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable ]))
-(sa/def ::response-groups-body (sa/keys :req-un [:usr/groups]))
+(sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
+                                :description "A list of persons"}))
+
+(sa/def ::response-groups-body (sa/keys :req-un [:usr-groups-list/groups]))
 
 ;(def schema_export-group-user-simple
 ;  {:id s/Uuid
@@ -259,8 +262,9 @@
                     :coercion spec/coercion
 
                     ;:coercion reitit.coercion.schema/coercion
+                    :responses {200 {:body {:groups [(st/spec {:spec :usr/groups})]}}}}
                     ;:responses {200 {:body {:groups [schema_export-group]}}}}
-                    :responses {200 {:body ::response-groups-body}}}
+                    ;:responses {200 {:body ::response-groups-body}}}
 
               :post {:summary (f "Create a group" "groups::person_id-not-exists")
                      :description "Create a group."
