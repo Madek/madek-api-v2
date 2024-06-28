@@ -187,6 +187,14 @@
 
 
 (sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
+(sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
+
+
+;(def schema_export-group-user-simple
+;  {:id s/Uuid
+;   :email (s/maybe s/Str)
+;   :institutional_id (s/maybe s/Str)
+;   :person_id (s/maybe s/Uuid)})
 
 (def user-routes
   [["/"
@@ -252,7 +260,8 @@
                         :coercion reitit.coercion.schema/coercion
 
                         ;:parameters {:path {:id s/Uuid}}
-                        :parameters {:path {:id s/Any}}
+                        ;:parameters {:path {:id s/Any}}
+                        :parameters {:path {:id s/->Either s/Uuid s/Str}}
                         ;; can be uuid (group-id) or string (institutional-id)
                         ;; http://localhost:3104/api/admin/groups/%3Fthis%23id%2Fneeds%2Fto%2Fbe%2Furl%26encoded>,
 
@@ -292,19 +301,12 @@
                                     :handler group-users/handle_get-group-users
 
                                     :coercion spec/coercion
-                                    :middleware [wrap-authorize-admin!
-                                                 ;(pagination-validation-handler)
-                                                 ]
-                                    ;:coercion reitit.coercion.schema/coercion
-                                    ;:swagger (swagger-ui-pagination)
+                                    :middleware [wrap-authorize-admin!]
                                     :parameters {:query sp/schema_pagination_opt
                                                  :path ::group-id-def}
 
-                                    ;:parameters {:path {:group-id s/Uuid}}
-
-                                    ;:responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                    ;                 :schema {:body {:users [group-users/schema_export-group-user-simple]}}}}
-                                    ;
+                                    :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                     :schema {:body ::group-id-resp-def}}}
                                     }
 
                               ; TODO works with tests, but not with the swagger ui
