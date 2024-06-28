@@ -6,11 +6,21 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+            [clojure.spec.alpha :as sa]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
+
+            [reitit.coercion.schema]
+            [reitit.coercion.spec :as spec]
+            [schema.core :as s]
+            [spec-tools.core :as st]
+
             [taoensso.timbre :refer [error info]]))
 
 (defn handle_list-full_texts

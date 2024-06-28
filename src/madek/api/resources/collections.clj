@@ -11,6 +11,15 @@
    [madek.api.utils.helper :refer [convert-map-if-exist mslurp]]
    [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
+
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+
+   [reitit.coercion.spec :as spec]
+   [schema.core :as s]
+   [spec-tools.core :as st]
+   [clojure.spec.alpha :as sa]
+
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -156,6 +165,15 @@
    (s/optional-key :me_edit_permission) s/Bool
    (s/optional-key :me_edit_metadata_and_relations) s/Bool})
 
+(sa/def :collection-query/query-def (sa/keys :opt-un [::sp/full_data ::sp/collection_id ::sp/order ::sp/creator_id
+                                                      ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
+                                                      ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
+                                                      ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
+                                                      ::sp/me_edit_metadata_and_relations
+                                                      ]))
+
+
+
 (def schema_collection-export
   {:id s/Uuid
    (s/optional-key :get_metadata_and_previews) s/Bool
@@ -181,6 +199,23 @@
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
+
+(sa/def :usr/collections (sa/keys :req-un [::sp/id] :opt-un [
+                                    ::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
+                                    ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
+                                    ::sp/deleted_at ::sp/created_at ::sp/updated_at ::sp/meta_data_updated_at
+                                    ::sp/edit_session_updated_at ::sp/clipboard_user_id ::sp/workflow_id
+                                    ::sp/responsible_delegation_id ::sp/default_resource_type
+
+
+                                                             ]))
+(sa/def :usr-collection-list/groups (st/spec {:spec (sa/coll-of :usr/collections)
+                                          :description "A list of persons"}))
+
+(sa/def ::response-collections-body (sa/keys :req-un [:usr-collection-list/groups]))
+
+
+
 (def ring-routes
   ["/"
    {:swagger {:tags ["api/collection"]}}
@@ -188,11 +223,17 @@
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
       :handler handle_get-index
-      :swagger (swagger-ui-pagination {:produces ["application/json" "application/octet-stream"]})
-      :middleware [(pagination-validation-handler (merge optional-pagination-params schema_collection-query))]
-      :parameters {:query schema_collection-query}
-      :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body {:collections [schema_collection-export]}}}}}]
+      :coercion spec/coercion
+
+      ;:swagger (swagger-ui-pagination {:produces ["application/json" "application/octet-stream"]})
+      ;:middleware [(pagination-validation-handler (merge optional-pagination-params schema_collection-query))]
+      :parameters {:query :collection-query/query-def}
+      ;:coercion reitit.coercion.schema/coercion
+
+      ;:responses {200 {:body {:collections [schema_collection-export]}}}
+      :responses {200 {:body ::response-collections-body}}
+
+      }}]
 
    ["collection"
     {:post

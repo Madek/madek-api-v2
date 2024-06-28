@@ -23,11 +23,11 @@
 
 (def schema_pagination_opt
   (sa/keys
-   :opt-un [::page ::size]))
+    :opt-un [::page ::size]))
 
 (def schema_pagination_req
   (sa/keys
-   :opt-un [::page ::size]))
+    :opt-un [::page ::size]))
 
 ;### required fields ####################################################################
 
@@ -35,6 +35,11 @@
 (sa/def ::group-id (st/spec {:spec uuid?}))
 (sa/def ::person_id (st/spec {:spec uuid?}))
 (sa/def ::created_by_user_id (st/spec {:spec uuid?}))
+(sa/def ::collection_id (st/spec {:spec uuid?}))
+(sa/def ::responsible_user_id (st/spec {:spec uuid?}))
+(sa/def ::clipboard_user_id (st/spec {:spec uuid?}))
+(sa/def ::workflow_id (st/spec {:spec uuid?}))
+(sa/def ::responsible_delegation_id (st/spec {:spec uuid?}))
 
 (sa/def ::email (st/spec {:spec string?}))
 (sa/def ::name (st/spec {:spec string?}))
@@ -46,10 +51,15 @@
 (sa/def ::term (st/spec {:spec string?}))
 (sa/def ::description (st/spec {:spec string?}))
 (sa/def ::searchable (st/spec {:spec string?}))
+(sa/def ::order (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))
 (sa/def ::updated_at (st/spec {:spec any?}))
+(sa/def ::deleted_at (st/spec {:spec any?}))
+
+(sa/def ::meta_data_updated_at (st/spec {:spec any?}))
+(sa/def ::edit_session_updated_at (st/spec {:spec any?}))
 
 ;(sa/def ::changed_after (st/spec {:spec instance?}))
 ;(sa/def ::created_after (st/spec {:spec instance?}))
@@ -62,6 +72,12 @@
 (sa/def ::context_id (st/spec {:spec string?}))
 (sa/def ::is_required (st/spec {:spec boolean?}))
 (sa/def ::full_data (st/spec {:spec boolean?}))
+(sa/def ::is_master (st/spec {:spec boolean?}))
+(sa/def ::public_get_metadata_and_previews (st/spec {:spec boolean?}))
+(sa/def ::me_get_metadata_and_previews (st/spec {:spec boolean?}))
+(sa/def ::me_edit_permission (st/spec {:spec boolean?}))
+(sa/def ::me_edit_metadata_and_relations (st/spec {:spec boolean?}))
+(sa/def ::get_metadata_and_previews (st/spec {:spec boolean?}))
 
 (sa/def ::position (st/spec {:spec int?}))
 
@@ -69,6 +85,22 @@
                                   :description "An array of any types"}))
 
 (sa/def ::rdf_class (st/spec {:spec string?}))
+
+
+
+
+
+
+;; TODO: enum
+(sa/def ::layout (st/spec {:spec any?}))
+(sa/def ::sorting (st/spec {:spec any?}))
+(sa/def ::default_resource_type (st/spec {:spec any?}))
+
+
+
+
+
+
 
 ;
 ;;(sa/def ::person (s/keys :opt-un [::id ::meta_key_id ::term ::description ::rdf_class]))
