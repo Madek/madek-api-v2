@@ -18,8 +18,7 @@
    [reitit.coercion.spec :as spec]
 
    [schema.core :as s]
-   [spec-tools.core :as st]
-   ))
+   [spec-tools.core :as st]))
 
 ;### swagger io schema ####################################################################
 

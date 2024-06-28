@@ -17,8 +17,7 @@
   (* (page-count params) (page-number params)))
 
 (defn add-offset-for-honeysql [query params]
-  (let [
-        p (println ">o> query=" query)
+  (let [p (println ">o> query=" query)
         p (println ">o> params=" params)
         p (println ">o> params=" (type (:page params)))
         p (println ">o> params=" (type (:count params)))

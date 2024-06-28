@@ -38,10 +38,10 @@
   (sa/or :nil nil? :any any?))
 
 (sa/def ::hints
-  (sa/or :nil nil? :any any?))                              ;; TODO: MAP OF EN/DE
+  (sa/or :nil nil? :any any?)) ;; TODO: MAP OF EN/DE
 
 (sa/def ::admin_comment
-  (sa/or :nil nil? :string string?))                           ;;TODO
+  (sa/or :nil nil? :string string?)) ;;TODO
 
 ;(def schema_ml_list
 ;  {(s/optional-key :de) (s/maybe s/Str)
