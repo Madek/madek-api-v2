@@ -1,6 +1,7 @@
 (ns madek.api.resources.groups
   (:require [clj-uuid]
             [clojure.java.io :as io]
+            [clojure.spec.alpha :as sa]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.pagination :as pagination]
@@ -11,13 +12,12 @@
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-            [madek.api.utils.helper :refer [convert-groupid f mslurp]]
 
+            [madek.api.utils.helper :refer [convert-groupid f mslurp]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
-            [reitit.coercion.schema]
 
-            [clojure.spec.alpha :as sa]
+            [reitit.coercion.schema]
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
             [spec-tools.core :as st]
@@ -184,7 +184,6 @@
    (s/optional-key :searchable) s/Str
    (s/optional-key :full_data) s/Bool})
 
-
 (def schema_export-group
   {:id s/Uuid
    (s/optional-key :name) s/Str
@@ -197,16 +196,15 @@
    (s/optional-key :institution) (s/maybe s/Str)
    (s/optional-key :searchable) s/Str})
 
-
 (sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
 (sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
-                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/full_data  ::sp/page ::sp/size]))
+                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/full_data ::sp/page ::sp/size]))
 
-(sa/def :usr/groups (sa/keys :req-un [::sp/id]  :opt-un [ ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
-                                            ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable ]))
+(sa/def :usr/groups (sa/keys :req-un [::sp/id] :opt-un [::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
+                                                        ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable]))
 (sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
-                                :description "A list of persons"}))
+                                          :description "A list of persons"}))
 
 (sa/def ::response-groups-body (sa/keys :req-un [:usr-groups-list/groups]))
 
@@ -253,7 +251,7 @@
 
                     :middleware [wrap-authorize-admin!
                                  ;(pagination-validation-handler (merge optional-pagination-params schema_query-groups))
-                                  ]
+                                 ]
                     ;:swagger (swagger-ui-pagination)
                     ;:parameters {:query schema_query-groups}
 
@@ -262,7 +260,9 @@
                     :coercion spec/coercion
 
                     ;:coercion reitit.coercion.schema/coercion
-                    :responses {200 {:body {:groups [(st/spec {:spec :usr/groups})]}}}}
+                    :responses {200 {:body {:groups [(st/spec {:spec :usr/groups})]}}}} ;;ok
+
+                    ;:responses {200 {:body (st/spec {:spec (sa/coll-of :usr/groups)})  }}} ;;err
                     ;:responses {200 {:body {:groups [schema_export-group]}}}}
                     ;:responses {200 {:body ::response-groups-body}}}
 
@@ -336,18 +336,16 @@
 
                                     :coercion spec/coercion
                                     :middleware [wrap-authorize-admin!]
-                                    :parameters {
-                                                 :query sp/schema_pagination_opt
+                                    :parameters {:query sp/schema_pagination_opt
                                                  ;:query {:size any? :page any?}
                                                  ;:query {:size int? :page int?}
                                                  ;:path ::group-id-def}
                                                  :path {:group-id uuid?}}
 
                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                     :schema {:body ::group-id-resp-def}}}
-                                    }
+                                                     :schema {:body ::group-id-resp-def}}}}
 
-                              ; TODO works with tests, but not with the swagger ui
+; TODO works with tests, but not with the swagger ui
                               ; TODO: broken test / duplicate key issue
                               :put {:summary "Update group users by group-id and list of users."
                                     :description "Update group users by group-id and list of users."

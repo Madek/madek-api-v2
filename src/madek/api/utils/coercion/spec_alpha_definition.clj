@@ -4,7 +4,6 @@
    ;[reitit.coercion.schema]
    [spec-tools.core :as st]))
 
-
 (sa/def ::page (st/spec {:spec int?
                          :description "Page number"
                          :json-schema/default 0}))
@@ -24,11 +23,11 @@
 
 (def schema_pagination_opt
   (sa/keys
-    :opt-un [::page ::size]))
+   :opt-un [::page ::size]))
 
 (def schema_pagination_req
   (sa/keys
-    :opt-un [::page ::size]))
+   :opt-un [::page ::size]))
 
 ;### required fields ####################################################################
 

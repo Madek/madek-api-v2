@@ -121,12 +121,9 @@
     {:get {:summary (sd/sum_usr "Query or list full_texts.")
            :handler handle_list-full_texts
 
-
            :coercion reitit.coercion.schema/coercion
            :middleware [(pagination-validation-handler (merge optional-pagination-params schema-query))]
            :swagger (swagger-ui-pagination)
-
-
 
            :parameters {:query schema-query}}}]
 
