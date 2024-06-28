@@ -219,11 +219,16 @@
     ["groups" {:get {:summary "Get all group ids"
                      :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                      :handler index
-                     :swagger (swagger-ui-pagination)
-                     :middleware [(pagination-validation-handler (merge optional-pagination-params schema_query-groups))]
-                     :parameters {:query schema_query-groups}
-                     :coercion reitit.coercion.schema/coercion
-                     :responses {200 {:body {:groups [schema_export-group]}}}}}]
+
+                     ;:swagger (swagger-ui-pagination)
+                     ;:middleware [(pagination-validation-handler (merge optional-pagination-params schema_query-groups))]
+                     ;:parameters {:query schema_query-groups}
+                     :parameters {:query ::group-query-def}
+                     ;:coercion reitit.coercion.schema/coercion
+                     :coercion spec/coercion
+
+                     ;:responses {200 {:body {:groups [schema_export-group]}}}}}]
+                     :responses {200 {:body ::response-groups-body}}}}]
 
     ["groups/:id" {:get {:summary "Get group by id"
                          :description "Get group by id. Returns 404, if no such group exists."
