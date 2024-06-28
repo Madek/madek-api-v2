@@ -3,7 +3,6 @@
    [madek.api.resources.roles.role :as role]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.pagination :refer [pagination-validation-handler swagger-ui-pagination]]
    [reitit.coercion.schema]
 
 
@@ -102,12 +101,22 @@
     {:get {:summary (sd/sum_adm "Get list of roles.")
            :description "Get list of roles."
            :handler role/get-index
+
            :middleware [wrap-authorize-admin!
-                        (pagination-validation-handler)]
-           :swagger (swagger-ui-pagination)
-           :parameters {:query {}}
-           :coercion reitit.coercion.schema/coercion
-           :responses {200 {:body {:roles [schema_export-role]}}}}
+                        ;(pagination-validation-handler)
+                        ]
+           ;:swagger (swagger-ui-pagination)
+           ;:parameters {:query {}}
+
+
+           :parameters {:query sp/schema_pagination_opt}
+           ;:responses {200 {:body {:roles [schema_export-role]}}}}]
+           :responses {200 {:body ::response-roles-body}}}
+     ;}
+
+
+           ;:coercion reitit.coercion.schema/coercion
+           ;:responses {200 {:body {:roles [schema_export-role]}}}}
 
      :post {:summary (sd/sum_adm "Create role.")
             :handler role/handle_create-role

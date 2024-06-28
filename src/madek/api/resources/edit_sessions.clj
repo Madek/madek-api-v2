@@ -11,6 +11,29 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
    [next.jdbc :as jdbc]
+
+   [clojure.java.io :as io]
+   [clojure.spec.alpha :as sa]
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
+   [madek.api.pagination :as pagination]
+   [madek.api.resources.groups.shared :as groups]
+   [madek.api.resources.groups.users :as group-users]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+
+   [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+   [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
+   [next.jdbc :as jdbc]
+
+   [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
+   [schema.core :as s]
+   [spec-tools.core :as st]
+
    [reitit.coercion.schema]
    [schema.core :as s]))
 
@@ -152,8 +175,10 @@
    ["edit_sessions"
     {:get {:summary (sd/sum_adm "List edit_sessions.")
            :handler handle_adm_list-edit-sessions
+
            :middleware [wrap-authorize-admin!
-                        (pagination-validation-handler (merge schema_adm_query_edit_session optional-pagination-params))]
+                        (pagination-validation-handler (merge schema_adm_query_edit_session optional-pagination-params))
+                        ]
            :coercion reitit.coercion.schema/coercion
            :swagger (swagger-ui-pagination)
            :parameters {:query schema_adm_query_edit_session}}}]
