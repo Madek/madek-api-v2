@@ -29,6 +29,9 @@
 (sa/def ::institutional_name
   (sa/or :nil nil? :string string?))
 
+(sa/def ::accepted_usage_terms_id
+  (sa/or :nil nil? :string uuid?))
+
 (sa/def ::institution
   (sa/or :nil nil? :string string?))
 (sa/def ::created_by_user_id
@@ -50,6 +53,8 @@
 
 (sa/def ::documentation_urls
   (sa/or :nil nil? :any any?))
+(sa/def ::last_signed_in_at
+  (sa/or :nil nil? :any any?))
 
 
 (sa/def ::responsible_user_id
@@ -63,7 +68,15 @@
 
 (sa/def ::last_name
   (sa/or :nil nil? :string string?)) ;;TODO
+(sa/def ::login
+  (sa/or :nil nil? :string string?)) ;;TODO
+
+
+
 (sa/def ::admin_comment
+  (sa/or :nil nil? :string string?)) ;;TODO
+
+(sa/def ::notes
   (sa/or :nil nil? :string string?)) ;;TODO
 
   (sa/def ::pseudonym

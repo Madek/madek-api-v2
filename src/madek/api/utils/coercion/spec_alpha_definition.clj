@@ -79,6 +79,7 @@
 (sa/def ::full_data (st/spec {:spec boolean?}))
 (sa/def ::is_master (st/spec {:spec boolean?}))
 (sa/def ::get_full_size (st/spec {:spec boolean?}))
+(sa/def ::is_admin (st/spec {:spec boolean?}))
 (sa/def ::public_get_metadata_and_previews (st/spec {:spec boolean?}))
 (sa/def ::me_get_metadata_and_previews (st/spec {:spec boolean?}))
 (sa/def ::me_edit_permission (st/spec {:spec boolean?}))
@@ -102,6 +103,8 @@
 (sa/def ::layout (st/spec {:spec any?}))
 (sa/def ::sorting (st/spec {:spec any?}))
 (sa/def ::default_resource_type (st/spec {:spec any?}))
+
+(sa/def ::settings (st/spec {:spec any?}))
 
 
 
