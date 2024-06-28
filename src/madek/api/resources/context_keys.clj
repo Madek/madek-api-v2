@@ -12,12 +12,9 @@
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
    [madek.api.utils.pagination :refer [pagination-validation-handler optional-pagination-params swagger-ui-pagination]]
-
    [next.jdbc :as jdbc]
-
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
-
    [schema.core :as s]
    [spec-tools.core :as st]
    [taoensso.timbre :refer [error]]))
@@ -214,75 +211,19 @@
    (s/optional-key :meta_key_id) s/Str
    (s/optional-key :is_required) s/Bool})
 
-;;; Define specs
-;(sa/def ::sp/id string?)
-;(sa/def ::sp/context_id string?)
-;(sa/def ::sp/meta_key_id string?)
-
 (sa/def :adm/context-keys (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/context_id ::sp/is_required ::sp/changed_after ::sp/created_after
                                             ::sp/updated_after
-
                                             ::sp/page ::sp/size]))
 
-;(def schema_export_context_key_admin
-;  {:id s/Uuid
-;   :context_id s/Str
-;   :meta_key_id s/Str
-;   :is_required s/Bool
-;   :length_max (s/maybe s/Int)
-;   :length_min (s/maybe s/Int)
-;   :position s/Int
-;
-;   :labels (s/maybe sd/schema_ml_list)
-;   :descriptions (s/maybe sd/schema_ml_list)
-;   :hints (s/maybe sd/schema_ml_list)
-;
-;   :documentation_urls (s/maybe sd/schema_ml_list)
-;
-;   :admin_comment (s/maybe s/Str)
-;   :updated_at s/Any
-;   :created_at s/Any})
-
-;(sa/def :adm/context-key (sa/keys :req-un [
-
-;(sa/def :adm/context-key any?)
-(sa/def :adm/context-key (sa/keys :opt-un [;::sp/id
-                                           ::sp/id ::sp/context_id ::sp/meta_key_id
-
+(sa/def :adm/context-key (sa/keys :opt-un [::sp/id ::sp/context_id ::sp/meta_key_id
                                            ::sp/is_required
-
                                            ::sp-nil/length_max ::sp-nil/length_min ::sp/position
                                            ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints
                                            ::sp-nil/documentation_urls ::sp-nil/admin_comment
-
                                            ::sp/updated_at ::sp/created_at]))
 
-;(sa/def :adm/context-keys-response (st/spec {:spec any?}))
-;(sa/def :adm/context-keys-response (st/spec any?))
 (sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key)
                                              :description "A list of persons"}))
-
-;(sa/def ::adm/context-keys-response (sa/keys :opt-un [:usr/keywords]))
-;(sa/def ::context-keys-response2 (sa/keys :opt-un [::sp/id]))
-
-;(def schema_export_context_key_admin
-;  {:id s/Uuid
-;   :context_id s/Str
-;   :meta_key_id s/Str
-;   :is_required s/Bool
-;   :length_max (s/maybe s/Int)
-;   :length_min (s/maybe s/Int)
-;   :position s/Int
-;
-;   :labels (s/maybe sd/schema_ml_list)
-;   :descriptions (s/maybe sd/schema_ml_list)
-;   :hints (s/maybe sd/schema_ml_list)
-;
-;   :documentation_urls (s/maybe sd/schema_ml_list)
-;
-;   :admin_comment (s/maybe s/Str)
-;   :updated_at s/Any
-;   :created_at s/Any})
 
 ; TODO docu
 ; TODO tests
@@ -306,32 +247,11 @@
      :get
      {:summary (sd/sum_adm "Query context_keys.")
       :handler handle_adm-list-context_keys
-
-      :middleware [wrap-authorize-admin!
-                   ;(pagination-validation-handler (merge optional-pagination-params schema_query))
-                   ]
-;(def schema_query
-      ;  {(s/optional-key :changed_after) s/Inst
-      ;   (s/optional-key :created_after) s/Inst
-      ;   (s/optional-key :updated_after) s/Inst
-      ;   (s/optional-key :id) s/Uuid
-      ;   (s/optional-key :context_id) s/Str
-      ;   (s/optional-key :meta_key_id) s/Str
-      ;   (s/optional-key :is_required) s/Bool})
-
-;:coercion reitit.coercion.schema/coercion
-      ;:swagger (swagger-ui-pagination)
-      ;:parameters {:query schema_query}
+      :middleware [wrap-authorize-admin!]
       :parameters {:query :adm/context-keys}
-
       :coercion spec/coercion
-
-      ;:responses {200 {:body [schema_export_context_key_admin]}
-      :responses {200 {:body :adm/context-keys-response} ;;broken
-      ;:responses {200 {:body s/Any}    ;;broken
-      ;:responses {200 {}    ;;broken
-      ;            406 {:body s/Any}
-                  }}}]
+      :responses {200 {:body :adm/context-keys-response}
+                  406 {:body s/Any}}}}]
 ; edit context_key
    ["context-keys/:id"
     {:get

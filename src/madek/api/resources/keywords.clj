@@ -8,15 +8,11 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
-
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [convert-map d]]
-
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-
    [reitit.coercion.spec :as spec]
-
    [schema.core :as s]
    [spec-tools.core :as st]))
 
@@ -48,16 +44,6 @@
    :external_uris [s/Any]
    :external_uri (s/maybe s/Str)
    :rdf_class s/Str})
-
-;(def schema_export_keyword_usr
-;  {:id s/Uuid
-;   :meta_key_id s/Str
-;   :term s/Str
-;   :description  s/Str
-;   :position  s/Int
-;   :external_uris [s/Any]
-;   :external_uri  s/Str
-;   :rdf_class s/Str})
 
 (def schema_export_keyword_adm
   {:id s/Uuid
@@ -184,61 +170,6 @@
                                   :keywords :id
                                   :keyword true)))
 
-;(sa/def ::page (st/spec {:spec pos-int?
-;                         :description "Page number"
-;                         :json-schema/default 1}))
-;
-;(sa/def ::size (st/spec {:spec pos-int?
-;                         :description "Number of items per page"
-;                         :json-schema/default 10}))
-;
-;
-;(sa/def ::id (st/spec {:spec uuid?}))
-;(sa/def ::meta_key_id (st/spec {:spec string?}))
-;(sa/def ::term (st/spec {:spec string?}))
-;;(sa/def ::description (st/spec {:spec string?}))
-;
-;(sa/def ::description
-;  (sa/or :nil nil? :string string?))
-;
-;(sa/def ::position
-;  (sa/or :nil nil? :int int?))
-;
-;(sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
-;                                 :description "An array of any types"}))
-;
-;(sa/def ::external_uri
-;  (sa/or :nil nil? :string string?))
-;
-;(sa/def ::rdf_class (st/spec {:spec string?}))
-
-;(sa/def ::basic (st/spec {:spec (sa/coll-of any?)
-;                                  :description "An array of any types"}))
-;
-;(def schema_query_pagination2
-;  (sa/keys :req-un [::id ::meta_key_id ::term ::description ::position ::external_uris ::external_uri ::rdf_class]))
-;
-
-(def schema_query_pagination_only
-  (sa/keys
-   :opt-un [::sp/page ::sp/size]))
-
-;(def schema_query_pagination
-;  (sa/keys
-;    :opt-un [::id ::meta_key_id ::term ::description ::rdf_class ::page ::size]))
-
-(def schema_query_keyword
-  {(s/optional-key :id) s/Uuid
-   (s/optional-key :meta_key_id) s/Str
-   (s/optional-key :term) s/Str
-   (s/optional-key :description) s/Str
-   (s/optional-key :rdf_class) s/Str})
-
-;(sa/def ::response-body (sa/keys :req-un [::keywords]))
-;
-;(sa/def ::keywords (st/spec {:spec (sa/coll-of ::person)
-;                            :description "A list of persons"}))
-
 (sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class]))
 
 (def schema_export_keyword_adm
@@ -276,14 +207,9 @@
     {:get
      {:summary (sd/sum_pub (d "Query / list keywords."))
       :handler handle_usr-query-keywords
-
       :coercion spec/coercion
       :parameters {:query sp/schema_pagination_opt}
-      ;:responses {200 {:body (sa/keys :req-un [::keywords])}
-      ;:responses {200 {:body {:keywords ::response-body}}
       :responses {200 {:body ::response-body}
-      ;:responses {200 {:body (sa/keys :req-un [::keywords])}
-
                   202 {:description "Successful response, list of items."
                        :schema {}
                        :examples {"application/json" {:message "Here are your items."
@@ -310,23 +236,10 @@
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords
-
       :coercion spec/coercion
-
-      ;:coercion reitit.coercion.schema/coercion
-      ;:swagger (swagger-ui-pagination)
-      :middleware [wrap-authorize-admin!
-                   ;(pagination-validation-handler (merge optional-pagination-params schema_query_keyword))
-                   ]
-
-      ;:responses {200 {:body ::response-body}
-      ;:parameters {:query schema_query_keyword}
+      :middleware [wrap-authorize-admin!]
       :parameters {:query ::person-opt}
-      ;:responses {200 {:body {:keywords [schema_export_keyword_adm]}}}
-      ;:responses {200 {:body (sa/keys :req-un [::keywords-adm])}}
       :responses {200 {:body ::response-body-adm}}
-
-      ;:responses {200 {:body s/Any}}
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 
      :post
