@@ -13,7 +13,6 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
-            [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
@@ -390,7 +389,7 @@
    ["media-entries"
     {:get
      {:summary "Query media-entries."
-      :swagger (swagger-ui-pagination)
+      ;:swagger (swagger-ui-pagination)
       :handler handle_query_media_entry
       
       :middleware [jqh/ring-wrap-parse-json-query-parameters
