@@ -1,25 +1,25 @@
 (ns madek.api.resources.full-texts
   (:require [clojure.spec.alpha :as sa]
+            [clojure.spec.alpha :as sa]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
             [madek.api.resources.shared.core :as sd]
+
             [madek.api.resources.shared.db_helper :as dbh]
 
-            [madek.api.utils.coercion.spec-alpha-definition :as sp]
-
-            [clojure.spec.alpha :as sa]
-            [reitit.coercion.spec :as spec]
-
-            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.schema]
+            [reitit.coercion.spec :as spec]
 
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
