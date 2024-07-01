@@ -25,9 +25,7 @@ The madek-api2 is a JSON API for Madek.
       1. **reitit.coercion.schema** (simple description of types)
       2. **reitit.coercion.spec** (more options to define swagger-ui-fields concerning default-values/description/..)
 
-    * Keep in mind to use :parameters, not :params (attr will not be casted)
-      * 
-
+    * ⚠️ WARNING: Keep in mind to use request.parameters/body/path, not request.params (attributes won't be casted)
 
 
 * Permissions:
