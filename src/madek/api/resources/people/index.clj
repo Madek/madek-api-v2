@@ -61,6 +61,9 @@
   [{{query :query} :parameters tx :tx :as req}]
   (debug 'query query)
   (let [
+
+        ;p (println ">o> parameters=" params)
+
         ;_ (doseq [k (keys params)]
         ;    ;; print count of params
         ;
