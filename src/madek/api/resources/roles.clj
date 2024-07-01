@@ -45,7 +45,7 @@
    ;:created_at s/Any
    ;:updated_at s/Any
    })
-(sa/def :roles-resp-def/roles (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels] :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at]))
+(sa/def :roles-resp-def/roles (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels] :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at ::sp/page ::sp/size]))
 
 (sa/def ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
 
@@ -77,7 +77,7 @@
              ;:responses {200 {:body {:roles [schema_export-role]}}}}]
                    :responses {200 {:body ::response-roles-body}}}}]
 
-   ["roles/id"
+   ["roles/:id"
     {:get {:summary "Get role by id"
            :description "Get a role by id. Returns 404, if no such role exists."
            :swagger {:produces "application/json"}
@@ -103,6 +103,8 @@
                         ]
            ;:swagger (swagger-ui-pagination)
            ;:parameters {:query {}}
+
+           :coercion spec/coercion
 
            :parameters {:query sp/schema_pagination_opt}
            ;:responses {200 {:body {:roles [schema_export-role]}}}}]
@@ -130,7 +132,7 @@
                              :schema s/Str
                              :examples {"application/json" {:message "Could not create role."}}}}}}]
 
-   ["roles/id"
+   ["roles/:id"
     {:get {:summary (sd/sum_adm "Get role by id")
            :description "Get a role by id. Returns 404, if no such role exists."
            :swagger {:produces "application/json"}
