@@ -58,8 +58,8 @@
 (defn handler
   "Get an index of the people. Query parameters are pending to be implemented."
   ;[{{query :query} :parameters params :params tx :tx :as req}]
-  [{{query :query} :parameters tx :tx :as req}]
-  (debug 'query query)
+  [{{params :query} :parameters tx :tx :as req}]
+  (debug 'params params)
   (let [
 
         ;p (println ">o> parameters=" params)
@@ -74,18 +74,18 @@
 
 
         p (println ">o> >> -------- already casted params" )
-        _ (doseq [k (keys query)]
+        _ (doseq [k (keys params)]
 
-            (println "Count of map keys:" (count (keys query)))
+            (println "Count of map keys:" (count (keys params)))
 
-            (println (str k " " (type (get query k))))
+            (println (str k " " (type (get params k))))
             )
 
         ;defaults {:page 0 :count 1000}
         ;params (parse-specific-keys params defaults)
-        query (-> (build-query query)
+        query (-> (build-query params)
                   ;(pagination/sql-offset-and-limit params)
-                  (pagination/add-offset-for-honeysql query)
+                  (pagination/add-offset-for-honeysql params)
                   sql-format)
         people (jdbc/execute! tx query)]
     (debug 'people people)

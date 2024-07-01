@@ -25,19 +25,21 @@
 
 (defn handler
   "Get an index of the users. Query parameters are pending to be implemented."
-  [{params :params parameters :parameters tx :tx :as req}]
+  ;[{params :params parameters :parameters tx :tx :as req}]
+  [{{params :query} :parameters tx :tx :as req}]
+
   (let [
-        ;; iterate through params and print type
-        _ (doseq [k (keys params)]
-          (println (str k " " (type (get params k))))
-        )
-
-
-        p (println ">o> >> -------- already casted params" )
-        _ (doseq [k (keys parameters)]
-          (println (str k " " (type (get params k))))
-        )
-
+        ;;; iterate through params and print type
+        ;_ (doseq [k (keys params)]
+        ;  (println (str k " " (type (get params k))))
+        ;)
+        ;
+        ;
+        ;p (println ">o> >> -------- already casted params" )
+        ;_ (doseq [k (keys params)]
+        ;  (println (str k " " (type (get params k))))
+        ;)
+        ;
 
 
 
