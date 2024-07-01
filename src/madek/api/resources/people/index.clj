@@ -4,14 +4,14 @@
    [cuerdas.core :refer [empty-or-nil?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.people.common :as common]
+   [madek.api.pagination :as pagination]
 
+   [madek.api.resources.people.common :as common]
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.helper :refer [parse-specific-keys]]
-   [madek.api.pagination :as pagination]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
 
@@ -60,9 +60,7 @@
   ;[{{query :query} :parameters params :params tx :tx :as req}]
   [{{params :query} :parameters tx :tx :as req}]
   (debug 'params params)
-  (let [
-
-        ;p (println ">o> parameters=" params)
+  (let [;p (println ">o> parameters=" params)
 
         ;_ (doseq [k (keys params)]
         ;    ;; print count of params
@@ -72,16 +70,14 @@
         ;    (println (str k " " (type (get params k))))
         ;    )
 
-
-        p (println ">o> >> -------- already casted params" )
+        p (println ">o> >> -------- already casted params")
         _ (doseq [k (keys params)]
 
             (println "Count of map keys:" (count (keys params)))
 
-            (println (str k " " (type (get params k))))
-            )
+            (println (str k " " (type (get params k)))))
 
-        ;defaults {:page 0 :count 1000}
+;defaults {:page 0 :count 1000}
         ;params (parse-specific-keys params defaults)
         query (-> (build-query params)
                   ;(pagination/sql-offset-and-limit params)

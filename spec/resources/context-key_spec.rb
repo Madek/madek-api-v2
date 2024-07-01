@@ -30,7 +30,6 @@ context "public context-key" do
   end
 end
 
-
 # context "Getting context-keys with pagination" do
 #   before :each do
 #     @keywords = []

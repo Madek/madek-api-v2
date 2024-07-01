@@ -40,10 +40,6 @@ describe "ordering media entries" do
         expect(media_entries_created_at("desc").size).to eq(30)
       end
 
-
-
-
-
       specify "ascending order by default" do
         media_entries_created_at.each_cons(2) do |ca_pair|
           expect(ca_pair.first < ca_pair.second).to be true
@@ -77,7 +73,6 @@ describe "ordering media entries" do
           expect(lists_of_maps_different?(resp1.body["media_entries"], resp2.body["media_entries"])).to eq true
         end
       end
-
 
       context "last_change" do
         include_examples "ordering by last_change"
@@ -194,17 +189,11 @@ describe "ordering media entries" do
           end
 
           it "arcs are ordered by creation date ascending" do
-
             binding.pry
 
             expect(arcs).to be == arcs.sort_by { |arc| arc[:created_at] }
           end
-
         end
-
-
-
-
       end
 
       context "a title for each of the entries" do

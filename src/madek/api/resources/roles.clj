@@ -47,11 +47,11 @@
    })
 
 (sa/def :roles-resp-def/role (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels]
-                                :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at]))
+                                      :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at]))
 
 (sa/def :roles-resp-def/roles (st/spec {:spec (sa/coll-of :roles-resp-def/role)
-                                :description "A list of roles"}))
-(sa/def      ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
+                                        :description "A list of roles"}))
+(sa/def ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
 
 (def schema_export-role
   {:id s/Uuid

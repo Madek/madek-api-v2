@@ -25,7 +25,6 @@ context "users" do
         end
 
         it "returns some data but less than created because we paginate" do
-
           puts ">> #{users_result.body["users"].count}"
           expect(
             users_result.body["users"].count

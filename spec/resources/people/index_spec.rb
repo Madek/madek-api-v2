@@ -62,7 +62,6 @@ context "people" do
         end
       end
 
-
       describe "get admin/people with pagination" do
         it "responses with 200" do
           resp1 = client.get("/api-v2/admin/people?page=0&size=5")

@@ -19,10 +19,10 @@ context "Getting a keyword resource without authentication" do
     expect(
       keyword.except("created_at", "updated_at")
     ).to eq(
-           @keyword.attributes.with_indifferent_access
-                   .except(:creator_id, :created_at, :updated_at)
-                   .merge(external_uri: keyword["external_uris"].first)
-         )
+      @keyword.attributes.with_indifferent_access
+              .except(:creator_id, :created_at, :updated_at)
+              .merge(external_uri: keyword["external_uris"].first)
+    )
   end
 end
 

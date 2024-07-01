@@ -3,13 +3,13 @@
    [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.common :as common]
    [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.helper :refer [f]]
-   [madek.api.pagination :as pagination]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.schema]
@@ -28,8 +28,7 @@
   ;[{params :params parameters :parameters tx :tx :as req}]
   [{{params :query} :parameters tx :tx :as req}]
 
-  (let [
-        ;;; iterate through params and print type
+  (let [;;; iterate through params and print type
         ;_ (doseq [k (keys params)]
         ;  (println (str k " " (type (get params k))))
         ;)
@@ -40,8 +39,6 @@
         ;  (println (str k " " (type (get params k))))
         ;)
         ;
-
-
 
         query (-> common/base-query
                   ;(pagination/sql-offset-and-limit params)

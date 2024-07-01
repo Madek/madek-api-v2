@@ -4,12 +4,11 @@ require "shared/audit-validator"
 describe "roles" do
   before :each do
     @roles = 201.times.map do |i|
-      FactoryBot.create :role, labels: { de: "Role #{i}" }
+      FactoryBot.create :role, labels: {de: "Role #{i}"}
     end
   end
 
   include_context :authenticated_json_client do
-
     describe "get roles with pagination" do
       it "responses with 200" do
         resp1 = authenticated_json_client.get("/api-v2/roles?page=0&size=5")

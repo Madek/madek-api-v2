@@ -215,14 +215,14 @@
                                             ::sp/page ::sp/size]))
 
 (sa/def :adm/context-key-response (sa/keys :opt-un [::sp/id ::sp/context_id ::sp/meta_key_id
-                                           ::sp/is_required
-                                           ::sp-nil/length_max ::sp-nil/length_min ::sp/position
-                                           ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints
-                                           ::sp-nil/documentation_urls ::sp-nil/admin_comment
-                                           ::sp/updated_at ::sp/created_at
+                                                    ::sp/is_required
+                                                    ::sp-nil/length_max ::sp-nil/length_min ::sp/position
+                                                    ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints
+                                                    ::sp-nil/documentation_urls ::sp-nil/admin_comment
+                                                    ::sp/updated_at ::sp/created_at
 
                                            ;::sp/page ::sp/size
-                                           ]))
+                                                    ]))
 
 (sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key-response)
 ;(sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key)
