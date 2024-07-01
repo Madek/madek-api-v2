@@ -111,7 +111,7 @@
 (sa/def ::previews (st/spec {:spec any?}))
 (sa/def ::col_arcs (st/spec {:spec any?}))
 (sa/def ::col_meta_data (st/spec {:spec any?}))
-(sa/def ::labels (st/spec {:spec any?}))
+(sa/def ::labels (st/spec {:spec map?}))
 
 ;
 ;;(sa/def ::person (s/keys :opt-un [::id ::meta_key_id ::term ::description ::rdf_class]))

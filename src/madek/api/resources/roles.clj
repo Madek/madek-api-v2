@@ -45,9 +45,13 @@
    ;:created_at s/Any
    ;:updated_at s/Any
    })
-(sa/def :roles-resp-def/roles (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels] :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at ::sp/page ::sp/size]))
 
-(sa/def ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
+(sa/def :roles-resp-def/role (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels]
+                                :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at]))
+
+(sa/def :roles-resp-def/roles (st/spec {:spec (sa/coll-of :roles-resp-def/role)
+                                :description "A list of roles"}))
+(sa/def      ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
 
 (def schema_export-role
   {:id s/Uuid
@@ -75,7 +79,9 @@
 ;:parameters {:query {}}
                    :parameters {:query sp/schema_pagination_opt}
              ;:responses {200 {:body {:roles [schema_export-role]}}}}]
+
                    :responses {200 {:body ::response-roles-body}}}}]
+                   ;:responses {200 {:body any?}}}}]
 
    ["roles/:id"
     {:get {:summary "Get role by id"
