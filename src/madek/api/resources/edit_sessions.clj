@@ -1,18 +1,40 @@
 (ns madek.api.resources.edit-sessions
   (:require
+   [clojure.java.io :as io]
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
    [madek.api.pagination :as pagination]
+   [madek.api.pagination :as pagination]
+
+   [madek.api.resources.groups.shared :as groups]
+   [madek.api.resources.groups.users :as group-users]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.pagination :refer [optional-pagination-params pagination-validation-handler swagger-ui-pagination]]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+
+   [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
    [next.jdbc :as jdbc]
+   [next.jdbc :as jdbc]
+
    [reitit.coercion.schema]
-   [schema.core :as s]))
+   [reitit.coercion.schema]
+   [reitit.coercion.spec :as spec]
+   [schema.core :as s]
+
+   [schema.core :as s]
+   [spec-tools.core :as st]))
 
 (defn build-query [query-params]
   (let [col-sel (if (true? (-> query-params :full_data))
@@ -125,11 +147,14 @@
           (sd/response_failed (str "No such edit_session : " id) 404))))
     (catch Exception ex (sd/parsed_response_exception ex))))
 
+(sa/def ::query-usr-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
 (def schema_usr_query_edit_session
   {(s/optional-key :full_data) s/Bool
    (s/optional-key :id) s/Uuid
    (s/optional-key :media_entry_id) s/Uuid
    (s/optional-key :collection_id) s/Uuid})
+
+(sa/def ::query-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/user_id ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
 
 (def schema_adm_query_edit_session
 
@@ -152,13 +177,18 @@
    ["edit_sessions"
     {:get {:summary (sd/sum_adm "List edit_sessions.")
            :handler handle_adm_list-edit-sessions
-           :middleware [wrap-authorize-admin!
-                        (pagination-validation-handler (merge schema_adm_query_edit_session optional-pagination-params))]
-           :coercion reitit.coercion.schema/coercion
-           :swagger (swagger-ui-pagination)
-           :parameters {:query schema_adm_query_edit_session}}}]
 
-   ["edit_sessions/:id"
+           :middleware [wrap-authorize-admin!
+                        ;(pagination-validation-handler (merge schema_adm_query_edit_session optional-pagination-params))
+                        ]
+           :coercion spec/coercion
+
+           ;:coercion reitit.coercion.schema/coercion
+           ;:swagger (swagger-ui-pagination)
+           ;:parameters {:query schema_adm_query_edit_session}
+           :parameters {:query ::query-def}}}]
+
+   ["edit_sessions/id"
     {:get {:summary (sd/sum_adm "Get edit_session.")
            :handler handle_adm_get-edit-session
            :middleware [wrap-authorize-admin!]
@@ -179,12 +209,17 @@
     {:get {:summary (sd/sum_usr "List authed users edit_sessions.")
            :handler handle_usr_list-edit-sessions
            :middleware [authorization/wrap-authorized-user
-                        (pagination-validation-handler (merge schema_usr_query_edit_session optional-pagination-params))]
-           :coercion reitit.coercion.schema/coercion
-           :swagger (swagger-ui-pagination)
-           :parameters {:query schema_usr_query_edit_session}}}]
+                        ;(pagination-validation-handler (merge schema_usr_query_edit_session optional-pagination-params))
+                        ]
+           ;:coercion reitit.coercion.schema/coercion
+           ;:swagger (swagger-ui-pagination)
 
-   ["edit_sessions/:id"
+           :coercion spec/coercion
+
+           :parameters {:query ::query-usr-def}}}]
+           ;:parameters {:query schema_usr_query_edit_session}}}]
+
+   ["edit_sessions/id"
     {:get {:summary (sd/sum_usr "Get edit_session.")
            :handler handle_usr_get-edit-session
            :middleware [authorization/wrap-authorized-user]
@@ -192,7 +227,7 @@
            :parameters {:path {:id s/Uuid}}}}]])
 
 (def media-entry-routes
-  ["/media-entry/:media_entry_id/edit_sessions"
+  ["/media-entry/media_entry_id/edit_sessions"
    {:swagger {:tags ["api/media-entry"]}}
    {:get {:summary (sd/sum_usr_pub "Get edit_session list for media entry.")
           :handler handle_get-edit-sessions
@@ -213,7 +248,7 @@
                        404 {:body s/Any}}}}])
 
 (def collection-routes
-  ["/collection/:collection_id/edit_sessions"
+  ["/collection/collection_id/edit_sessions"
    {:swagger {:tags ["api/collection"]}}
    {:get {:summary (sd/sum_usr_pub "Get edit_session list for collection.")
           :handler handle_get-edit-sessions
