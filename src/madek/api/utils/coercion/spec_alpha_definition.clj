@@ -34,6 +34,8 @@
 (sa/def ::id (st/spec {:spec uuid?}))
 (sa/def ::group-id (st/spec {:spec uuid?}))
 (sa/def ::person_id (st/spec {:spec uuid?}))
+(sa/def ::media_entry_id (st/spec {:spec uuid?}))
+(sa/def ::user_id (st/spec {:spec uuid?}))
 (sa/def ::created_by_user_id (st/spec {:spec uuid?}))
 (sa/def ::collection_id (st/spec {:spec uuid?}))
 (sa/def ::responsible_user_id (st/spec {:spec uuid?}))
@@ -43,6 +45,7 @@
 
 (sa/def ::child_id (st/spec {:spec uuid?}))
 (sa/def ::parent_id (st/spec {:spec uuid?}))
+(sa/def ::media_resource_id (st/spec {:spec uuid?}))
 
 (sa/def ::email (st/spec {:spec string?}))
 (sa/def ::name (st/spec {:spec string?}))
@@ -57,6 +60,7 @@
 (sa/def ::order (st/spec {:spec string?}))
 (sa/def ::filter_by (st/spec {:spec string?}))
 (sa/def ::subtype (st/spec {:spec string?}))
+(sa/def ::text (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))
