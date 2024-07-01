@@ -1,6 +1,7 @@
 - name: stop api-service
   service:
-    name: madek-api
+    name: madek-api-v2
+    enabled: false
     state: stopped
   failed_when: false
 
@@ -11,5 +12,16 @@
     shell: /bin/false
     system: yes
     state: present
+
+- name: setup directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: 0755
+  loop:
+    - { path: "{{madek_api_v2_dir}}", owner: root }
+
 
 

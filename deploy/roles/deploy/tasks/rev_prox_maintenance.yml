@@ -1,0 +1,22 @@
+- name: api-v2 directory
+  file:
+    path: /var/www/madek-api-v2
+    state: directory
+    mode: 0755
+
+- name: maintenance page HTML
+  template:
+    src: maintenance.html
+    dest: /var/www/madek-api-v2/503.html
+    mode: 0644
+
+- name: maintenance page config
+  template:
+    src: maintenance.conf
+    dest: /etc/apache2/madek/conf.d/madek_800_api_v2.conf
+    mode: 0644
+
+- name: reload reverse-proxy
+  service:
+    name: apache2
+    state: reloaded

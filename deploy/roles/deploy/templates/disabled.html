@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Madek API-V2 Disabled </title>
+  <style>
+    body {
+      background: #f7f7f7;
+      text-align: center;
+      font-size: 1.5rem;
+      line-height: 1.35;
+      color: rgba(0, 0, 0, 0.8);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
+
+    main { height: 100vh; width: 100%; display: table; }
+    article { padding: 2rem; display: table-cell; vertical-align: middle; }
+
+    h1 { font-size: 3rem; margin: 0; }
+    hr { color: inherit; background-color: currentColor; border: 0; opacity: .2; margin: 2rem auto; height: 1px; width: 75%; }
+    p.details { font-size: 1.125rem }
+  </style>
+</head>
+<body>
+
+<main>
+  <article>
+    <h1> Madek API-V2 Disabled</h1>
+
+    <p> The Madek api-v2 service is disabled on <em>{{madek_external_hostname}}</em>. </p>
+
+    <p> This page was updated at: {{ ansible_date_time.iso8601 }} </p>
+
+    <hr>
+  </article>
+</main>
+
+</body>
+</html>
+
+

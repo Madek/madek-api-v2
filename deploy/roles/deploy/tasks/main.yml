@@ -1,14 +1,27 @@
+- name: rp_maintenance
+  include_tasks: rev_prox_maintenance.yml
+  when: api_v2 == true
+
+- name: rp_off
+  include_tasks: rev_prox_disabled.yml
+  when: api_v2 == false
+
 - name: prepare
   include_tasks: prepare.yml
 
 - name: build
   include_tasks: build.yml
+  when: api_v2 == true
 
 - name: install jar
   include_tasks: install_jar.yml
+  when: api_v2 == true
 
 - name: systemd service
   include_tasks: service.yml
+  when: api_v2 == true
 
 - name: reverse-proxy
   include_tasks: reverse-proxy.yml
+  when: api_v2 == true
+
