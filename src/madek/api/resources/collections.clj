@@ -168,7 +168,9 @@
                                                       ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
                                                       ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                       ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
-                                                      ::sp/me_edit_metadata_and_relations]))
+                                                      ::sp/me_edit_metadata_and_relations
+                                                      ::sp/page ::sp/size
+                                                      ]))
 
 (def schema_collection-export
   {:id s/Uuid

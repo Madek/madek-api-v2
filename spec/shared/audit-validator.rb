@@ -35,3 +35,14 @@ def expect_audit_entries(expected_auditedrequest_info, expected_auditchange_list
     expect(all_response_audits.first.status).to eq(expected_auditedresponse_status)
   end
 end
+
+def lists_of_maps_different?(list1, list2)
+  return true unless list1.length == list2.length
+
+  list1.each_with_index do |map1, index|
+    map2 = list2[index]
+    return true unless map1 == map2
+  end
+
+  false
+end

@@ -229,8 +229,7 @@
                                             ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
                                             ::sp/me_edit_metadata ::sp/me_edit_permissions
                                             ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
-                                            ::sp/full_data
-                                              ]))
+                                            ::sp/full_data                                              ]))
 (def schema_query_media_entries
   {(s/optional-key :collection_id) s/Uuid
    ; TODO order enum docu
