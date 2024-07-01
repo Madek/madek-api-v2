@@ -9,7 +9,7 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.helper :refer [f]]
-   [madek.api.utils.pagination :as pagination]
+   [madek.api.pagination :as pagination]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.schema]
@@ -25,9 +25,25 @@
 
 (defn handler
   "Get an index of the users. Query parameters are pending to be implemented."
-  [{params :params tx :tx :as req}]
-  (let [query (-> common/base-query
-                  (pagination/sql-offset-and-limit params)
+  [{params :params parameters :parameters tx :tx :as req}]
+  (let [
+        ;; iterate through params and print type
+        _ (doseq [k (keys params)]
+          (println (str k " " (type (get params k))))
+        )
+
+
+        p (println ">o> >> -------- already casted params" )
+        _ (doseq [k (keys parameters)]
+          (println (str k " " (type (get params k))))
+        )
+
+
+
+
+        query (-> common/base-query
+                  ;(pagination/sql-offset-and-limit params)
+                  (pagination/add-offset-for-honeysql params)
                   (handle-email-clause params)
                   (sql-format :inline false))
         res (->> query

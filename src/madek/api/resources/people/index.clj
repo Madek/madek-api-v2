@@ -11,7 +11,7 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.helper :refer [parse-specific-keys]]
-   [madek.api.utils.pagination :as pagination]
+   [madek.api.pagination :as pagination]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
 
@@ -51,17 +51,38 @@
       (sql/order-by [:people.last_name :asc]
                     [:people.first_name :asc]
                     [:people.id :asc])
-      (pagination/sql-offset-and-limit query-params)
+      ;(pagination/sql-offset-and-limit query-params)
+      (pagination/add-offset-for-honeysql query-params)
       (filter-query query-params)))
 
 (defn handler
   "Get an index of the people. Query parameters are pending to be implemented."
-  [{{query :query} :parameters params :params tx :tx :as req}]
+  ;[{{query :query} :parameters params :params tx :tx :as req}]
+  [{{query :query} :parameters tx :tx :as req}]
   (debug 'query query)
-  (let [defaults {:page 0 :count 1000}
-        params (parse-specific-keys params defaults)
+  (let [
+        ;_ (doseq [k (keys params)]
+        ;    ;; print count of params
+        ;
+        ;    (println "Count of map keys:" (count (keys params)))
+        ;
+        ;    (println (str k " " (type (get params k))))
+        ;    )
+
+
+        p (println ">o> >> -------- already casted params" )
+        _ (doseq [k (keys query)]
+
+            (println "Count of map keys:" (count (keys query)))
+
+            (println (str k " " (type (get query k))))
+            )
+
+        ;defaults {:page 0 :count 1000}
+        ;params (parse-specific-keys params defaults)
         query (-> (build-query query)
-                  (pagination/sql-offset-and-limit params)
+                  ;(pagination/sql-offset-and-limit params)
+                  (pagination/add-offset-for-honeysql query)
                   sql-format)
         people (jdbc/execute! tx query)]
     (debug 'people people)

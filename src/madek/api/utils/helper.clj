@@ -212,7 +212,7 @@
       default-value)))
 
 ; [madek.api.utils.helper :refer [parse-specific-keys]]
-(defn parse-specific-keys [params defaults]
+(defn ^:deprecated parse-specific-keys [params defaults]
   (into {}
         (map (fn [[k v]]
                [k (if (contains? defaults k)

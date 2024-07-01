@@ -7,18 +7,19 @@
 
 (def DEFAULT_LIMIT 1000)
 
-(defn page-number [params]
+(defn- page-number [params]
   (let [page (or (-> params :page) 0)]
     (if (> page 0) page 0)))
 
-(defn page-count [params]
+(defn- page-count [params]
   (let [count (or (-> params :count) DEFAULT_LIMIT)]
     (if (> count 0) count DEFAULT_LIMIT)))
 
-(defn compute-offset [params]
+(defn- compute-offset [params]
   (* (page-count params) (page-number params)))
 
-(defn sql-offset-and-limit [query params] "Caution: zero-based page numbers"
+;; TODO: use madek.api.pagination instead
+(defn ^:deprecated sql-offset-and-limit [query params] "Caution: zero-based page numbers"
   (let [defaults {:page 0 :count DEFAULT_LIMIT}
         params (merge defaults params)
         params (parse-specific-keys params defaults)

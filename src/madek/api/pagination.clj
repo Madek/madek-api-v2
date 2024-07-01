@@ -27,6 +27,10 @@
                  (assoc params :count (:size params))
                  params)
 
+        ;;; cast count and size to int
+        ;params (assoc params :count (Integer/parseInt (str (:count params))))
+        ;params (assoc params :size (Integer/parseInt (str (:size params))))
+
         defaults {:page 0 :count 100}
         params (merge defaults params)
         off (compute-offset params)
