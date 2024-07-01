@@ -1,5 +1,6 @@
 require "spec_helper"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
+require "shared/audit-validator"
 
 describe "a bunch of media entries with different properties" do
   include_context :bunch_of_media_entries

@@ -1,5 +1,6 @@
 require "spec_helper"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
+require "shared/audit-validator"
 
 describe "ordering media entries" do
   include_context :bunch_of_media_entries
@@ -39,6 +40,10 @@ describe "ordering media entries" do
         expect(media_entries_created_at("desc").size).to eq(30)
       end
 
+
+
+
+
       specify "ascending order by default" do
         media_entries_created_at.each_cons(2) do |ca_pair|
           expect(ca_pair.first < ca_pair.second).to be true
@@ -56,6 +61,23 @@ describe "ordering media entries" do
           expect(titles("desc").size).to eq(30)
         end
       end
+
+      describe "get media-entries with pagination" do
+        it "responses with 200" do
+          resp1 = client.get("/api-v2/media-entries?page=0&size=5")
+          binding.pry
+          expect(resp1.status).to be == 200
+          expect(resp1.body["media_entries"].count).to be 5
+
+          resp2 = client.get("/api-v2/media-entries?page=1&size=5")
+          binding.pry
+          expect(resp2.status).to be == 200
+          expect(resp2.body["media_entries"].count).to be 5
+
+          expect(lists_of_maps_different?(resp1.body["media_entries"], resp2.body["media_entries"])).to eq true
+        end
+      end
+
 
       context "last_change" do
         include_examples "ordering by last_change"
@@ -172,9 +194,17 @@ describe "ordering media entries" do
           end
 
           it "arcs are ordered by creation date ascending" do
+
+            binding.pry
+
             expect(arcs).to be == arcs.sort_by { |arc| arc[:created_at] }
           end
+
         end
+
+
+
+
       end
 
       context "a title for each of the entries" do

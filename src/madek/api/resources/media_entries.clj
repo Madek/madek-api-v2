@@ -53,16 +53,16 @@
         dresult (jdbc/execute! tx sql-query-entries)]
 
     (info "handle_delete_media_entry"
-          "\n eid: \n" eid
-          "\n fresult: \n" fresult
-          "\n dresult: \n" dresult)
+      "\n eid: \n" eid
+      "\n fresult: \n" fresult
+      "\n dresult: \n" dresult)
     (if (= 1 (first dresult))
       (sd/response_ok {:deleted mr})
       (sd/response_failed {:message "Failed to delete media entry"} 406))))
 
 (defn- get-context-keys-4-context [contextId tx]
   (map :meta_key_id
-       (dbh/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
+    (dbh/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
 
 (defn- check-has-meta-data-for-context-key [meId mkId tx]
   (let [md (dbh/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId tx)
@@ -86,12 +86,12 @@
         publishable (reduce (fn [tfresult tfval] (and tfresult (first tfval))) [true] tf)]
 
     (info "handle_try-publish-media-entry"
-          "\n eid: \n" eid
-          "\n validationContexts: \n" validationContexts
-          "\n contextKeys: \n" contextKeys
-          "\n hasMetaData: \n" hasMetaData
-          "\n tf: \n" tf
-          "\n publishable: \n" publishable)
+      "\n eid: \n" eid
+      "\n validationContexts: \n" validationContexts
+      "\n contextKeys: \n" contextKeys
+      "\n hasMetaData: \n" hasMetaData
+      "\n tf: \n" tf
+      "\n publishable: \n" publishable)
     (if (true? publishable)
       (let [data {:is_published true}
             eid (to-uuid eid)
@@ -102,8 +102,8 @@
             dresult (jdbc/execute-one! tx sql-query)]
 
         (info "handle_try-publish-media-entry"
-              "\n published: entry_id: \n" eid
-              "\n dresult: \n" dresult)
+          "\n published: entry_id: \n" eid
+          "\n dresult: \n" dresult)
 
         (if (= 1 (::jdbc/update-count dresult))
           (sd/response_ok (dbh/query-eq-find-one :media_entries :id eid tx))
@@ -210,12 +210,12 @@
         auth (-> req :authenticated-entity)]
 
     (info "handle_create-media-entry"
-          "\nauth\n" (:id auth)
-          "\ncopy_md\n" copy-md-id
-          "\ncollection-id\n" collection-id
-          "\nfile\n" file
-          "\n content: " file-content-type
-          "\ntemppath\n" temppath)
+      "\nauth\n" (:id auth)
+      "\ncopy_md\n" copy-md-id
+      "\ncollection-id\n" collection-id
+      "\nfile\n" file
+      "\n content: " file-content-type
+      "\ntemppath\n" temppath)
 
     (let [;mime (or file-content-type (mime-type-of temppath) )
           mime file-content-type]
@@ -226,10 +226,12 @@
         (create-media_entry file auth mime collection-id tx)))))
 
 (sa/def ::media-entries-def (sa/keys :opt-un [::sp/collection_id ::sp/order ::sp/filter_by
-                                            ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
-                                            ::sp/me_edit_metadata ::sp/me_edit_permissions
-                                            ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
-                                            ::sp/full_data                                              ]))
+                                              ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
+                                              ::sp/me_edit_metadata ::sp/me_edit_permissions
+                                              ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
+                                              ::sp/full_data
+                                              ::sp/page ::sp/size
+                                              ]))
 (def schema_query_media_entries
   {(s/optional-key :collection_id) s/Uuid
    ; TODO order enum docu
@@ -273,9 +275,11 @@
    (s/optional-key :full_data) s/Bool})
 
 (sa/def ::media-entry-def (sa/keys :req-un [::sp/id]
-                                   :opt-un [::sp/creator_id ::sp/responsible_user_id ::sp/get_full_size ::sp/get_metadata_and_previews
-                                            ::sp/is_published ::sp/created_at ::sp/updated_at ::sp/edit_session_updated_at ::sp/meta_data_updated_at
-                                            ::sp-nil/responsible_delegation_id]))
+                            :opt-un [::sp/creator_id ::sp/responsible_user_id ::sp/get_full_size ::sp/get_metadata_and_previews
+                                     ::sp/is_published ::sp/created_at ::sp/updated_at ::sp/edit_session_updated_at ::sp/meta_data_updated_at
+                                     ::sp-nil/responsible_delegation_id
+                                     ::sp/page ::sp/size
+                                     ]))
 
 (def schema_export_media_entry
   {:id s/Uuid
@@ -309,7 +313,7 @@
   {:id s/Uuid
    :media_entry_id s/Uuid
    :conversion_profiles [s/Any]
-   :media_type (s/maybe s/Str) ; TODO enum
+   :media_type (s/maybe s/Str)                              ; TODO enum
    :width (s/maybe s/Int)
    :height (s/maybe s/Int)
    :meta_data (s/maybe s/Str)
@@ -350,8 +354,8 @@
    :meta_data_updated_at s/Any
    :other_media_entry_id (s/maybe s/Uuid)})
 
-(sa/def ::query-media-entry-def (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
-                                         :opt-un [::sp/col_arcs ::sp/col_meta_data]))
+(sa/def ::media-entry-response-def (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
+                                     :opt-un [::sp/col_arcs ::sp/col_meta_data]))
 
 (def schema_query_media_entries_related_result
   {:media_entries [schema_export_media_entry]
@@ -384,7 +388,7 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
 
-      :responses {200 {:body any?}
+      :responses {200 {:body any?}                          ;;TODO
                   422 {:body any?}}}}]
    ["media-entries-related-data"
     {:get
@@ -400,7 +404,7 @@
 
       :parameters {:query ::media-entries-def}
       ;:responses {200 {:body schema_query_media_entries_related_result}}}}]])
-      :responses {200 {:body ::query-media-entry-def}}}}]])
+      :responses {200 {:body ::media-entry-response-def}}}}]])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)

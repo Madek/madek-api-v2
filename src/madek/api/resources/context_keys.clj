@@ -214,14 +214,18 @@
                                             ::sp/updated_after
                                             ::sp/page ::sp/size]))
 
-(sa/def :adm/context-key (sa/keys :opt-un [::sp/id ::sp/context_id ::sp/meta_key_id
+(sa/def :adm/context-key-response (sa/keys :opt-un [::sp/id ::sp/context_id ::sp/meta_key_id
                                            ::sp/is_required
                                            ::sp-nil/length_max ::sp-nil/length_min ::sp/position
                                            ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints
                                            ::sp-nil/documentation_urls ::sp-nil/admin_comment
-                                           ::sp/updated_at ::sp/created_at]))
+                                           ::sp/updated_at ::sp/created_at
 
-(sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key)
+                                           ;::sp/page ::sp/size
+                                           ]))
+
+(sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key-response)
+;(sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key)
                                              :description "A list of persons"}))
 
 ; TODO docu
@@ -249,7 +253,9 @@
       :middleware [wrap-authorize-admin!]
       :parameters {:query :adm/context-keys}
       :coercion spec/coercion
-      :responses {200 {:body :adm/context-keys-response}
+      ;:responses {200 {:body :adm/context-keys-response}
+      ;:responses {200 {:body :adm/context-keys-response}
+      :responses {200 {:body any?}
                   406 {:body any?}}}}]
 ; edit context_key
    ["context-keys/:id"
@@ -299,7 +305,10 @@
       :parameters {:query {(s/optional-key :id) s/Uuid
                            (s/optional-key :context_id) s/Str
                            (s/optional-key :meta_key_id) s/Str
-                           (s/optional-key :is_required) s/Bool}}
+                           (s/optional-key :is_required) s/Bool
+                           ;(s/optional-key :page) s/Int
+                           ;(s/optional-key :size) s/Int
+                           }}
       :responses {200 {:body [schema_export_context_key]}
                   406 {:body s/Any}}}}]
 
