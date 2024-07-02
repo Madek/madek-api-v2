@@ -209,7 +209,7 @@
 
 (def user-routes
   [["/"
-    {:swagger {:tags ["groups"]}}
+    {:openapi {:tags ["groups"]}}
     ["groups" {:get {:summary "Get all group ids"
                      :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                      :handler index
@@ -230,7 +230,7 @@
 
 (def ring-routes
   ["/"
-   {:swagger {:tags ["admin/groups"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/groups"] :security [{"auth" []}]}}
    ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
                     :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                     :handler index

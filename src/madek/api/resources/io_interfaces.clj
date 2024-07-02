@@ -114,7 +114,7 @@
 ; TODO docu
 (def admin-routes
   ["/"
-   {:swagger {:tags ["admin/io_interfaces"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/io_interfaces"] :security [{"auth" []}]}}
    ["io_interfaces"
     {:post
      {:summary (sd/sum_adm "Create io_interfaces.")

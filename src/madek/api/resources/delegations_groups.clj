@@ -128,7 +128,7 @@
 ; group self edit favorites 
 (def query-routes
   ["/delegation/groups"
-   {:swagger {:tags ["delegation/groups"]}}
+   {:openapi {:tags ["delegation/groups"]}}
    {:get
     {:summary (sd/sum_adm "Query delegation groups.")
      :handler handle_list-delegations_groups-by-group
@@ -141,7 +141,7 @@
 
 (def admin-routes
   [["/delegation/"
-    {:swagger {:tags ["admin/delegation/groups"]}}
+    {:openapi {:tags ["admin/delegation/groups"]}}
     ["groups"
      {:get
       {:summary (sd/sum_adm "Query delegations_groups.")

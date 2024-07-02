@@ -221,7 +221,7 @@
 ; TODO tests
 (def admin-routes
   ["/"
-   {:swagger {:tags ["admin/context-keys"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/context-keys"] :security [{"auth" []}]}}
    ["context-keys"
     {:post
      {:summary (sd/sum_adm "Post context_key by id.")
@@ -283,7 +283,7 @@
 ; TODO docu
 (def user-routes
   ["/"
-   {:swagger {:tags ["context-keys"] :security []}}
+   {:openapi {:tags ["context-keys"] :security []}}
    ["context-keys"
     {:get
      {:summary (sd/sum_pub "Query / List context_keys.")

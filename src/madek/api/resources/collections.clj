@@ -205,7 +205,7 @@
 
 (def ring-routes
   ["/"
-   {:swagger {:tags ["api/collection"]}}
+   {:openapi {:tags ["api/collection"]}}
    ["collections"
     {:get
      {:summary (sd/sum_usr "Query/List collections.")

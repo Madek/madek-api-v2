@@ -122,7 +122,7 @@
 ; TODO tests
 (def favorite-routes
   ["/favorite/collections"
-   {:swagger {:tags ["api/favorite"]}}
+   {:openapi {:tags ["api/favorite"]}}
    {:get
     {:summary (sd/sum_usr "List users favorite_collections.")
      :handler handle_list-favorite_collection-by-user
@@ -135,7 +135,7 @@
 ; TODO tests
 (def collection-routes
   ["/collection/:collection_id/favorite"
-   {:swagger {:tags ["api/collection"]}}
+   {:openapi {:tags ["api/collection"]}}
    {:post {:summary (sd/sum_usr "Create favorite_collection for authed user and collection.")
            :handler handle_create-favorite_collection
            :middleware [authorization/wrap-authorized-user
@@ -161,7 +161,7 @@
 ; TODO tests
 (def admin-routes
   [["/favorite/"
-    {:swagger {:tags ["admin/favorite/collections"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/favorite/collections"] :security [{"auth" []}]}}
     ["collections"
      {:get
       {:summary (sd/sum_adm (f "List favorite_collection users." " TODO: pagination?"))

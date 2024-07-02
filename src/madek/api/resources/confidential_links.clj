@@ -158,7 +158,7 @@
 ; TODO check can edit permissions
 (def user-me-routes
   ["/media-entry/:media_entry_id"
-   {:swagger {:tags ["api/media-entry"] :security [{"auth" []}]}}
+   {:openapi {:tags ["api/media-entry"] :security [{"auth" []}]}}
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link
@@ -216,7 +216,7 @@
 ; TODO check can edit permissions
 (def user-col-routes
   ["/collection/:collection_id"
-   {:swagger {:tags ["api/collection/conf-links"]}}
+   {:openapi {:tags ["api/collection/conf-links"]}}
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link

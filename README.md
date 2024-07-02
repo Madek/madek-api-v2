@@ -5,18 +5,6 @@ The madek-api2 is a JSON API for Madek.
 
 ## API v2 TODOs
 
-* make DB Audits works, including:
-
-    * also there are a lot of `(get-ds)`, at least for writes these must be
-        replaced by tx from the wrapper
-
-    * consider to replace all of them with `tx`; that might cost (a little?)
-        performance but generally should be safer
-
-* some Files are very large and contain too much functionality, split then
-    up in smaller pieces, i.e. per method `get`, `put`, ...
-
-
 * Schemas:
 
     * incomplete and too unspecific in many places

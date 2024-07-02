@@ -152,7 +152,7 @@
 
 (def admin-routes
   [["/"
-    {:swagger {:tags ["admin/app-settings"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/app-settings"] :security [{"auth" []}]}}
     ["app-settings"
      {:get {:summary (sd/sum_adm "Get App Settings.")
             :handler handle_get-app-settings
@@ -177,7 +177,7 @@
 
 (def user-routes
   [["/"
-    {:swagger {:tags ["app-settings"] :security []}}
+    {:openapi {:tags ["app-settings"] :security []}}
     ["app-settings"
      {:get {:summary (sd/sum_pub "Get App Settings.")
             :handler handle_get-app-settings

@@ -111,7 +111,7 @@
 (def ring-routes
 
   ["/"
-   {:swagger {:tags ["admin/delegations"]}}
+   {:openapi {:tags ["admin/delegations"]}}
    ["delegations"
     {:post {:summary (sd/sum_adm_todo "Create delegations.")
             ; TODO labels and descriptions

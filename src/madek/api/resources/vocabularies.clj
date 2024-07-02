@@ -84,7 +84,7 @@
 ; TODO vocab permission
 (def admin-routes
   ["/"
-   {:swagger {:tags ["admin/vocabularies"]}}
+   {:openapi {:tags ["admin/vocabularies"]}}
    ["vocabularies"
     {:get get/admin.vocabularies
 
@@ -129,7 +129,7 @@
 
 (def user-routes
   ["/"
-   {:swagger {:tags ["vocabulary"]}}
+   {:openapi {:tags ["vocabulary"]}}
    ["vocabularies" {:get get/user.vocabularies}]
 
    ["vocabularies/:id" {:get get/user.vocabularies.id}]])

@@ -116,7 +116,7 @@
 ; TODO howto access control or full_texts is public meta data
 (def query-routes
   ["/"
-   {:swagger {:tags ["full_texts"]}}
+   {:openapi {:tags ["full_texts"]}}
    ["full_texts"
     {:get {:summary (sd/sum_usr "Query or list full_texts.")
            :handler handle_list-full_texts
@@ -137,7 +137,7 @@
 
 (def edit-routes
   [["/full_text"
-    {:swagger {:tags ["admin/full_text"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/full_text"] :security [{"auth" []}]}}
     ["/"
      {:post {:summary (sd/sum_adm "Create full_texts entry????")
              :swagger {:consumes "application/json" :produces "application/json"}
@@ -173,7 +173,7 @@
 ; TODO full_texts: test wrap auth for collection
 (def collection-routes
   [["/collection/:collection_id/full_text"
-    {:swagger {:tags ["collection/full_text"]}}
+    {:openapi {:tags ["collection/full_text"]}}
     ["/"
      {:get {:summary (sd/sum_usr_pub "Get full_text.")
             :handler handle_get-full_text
@@ -213,7 +213,7 @@
 ; TODO full_texts: test wrap auth for media entry
 (def entry-routes
   [["/media-entry/:media_entry_id/full_text"
-    {:swagger {:tags ["media-entry/full_text"]}}
+    {:openapi {:tags ["media-entry/full_text"]}}
     ["/"
      {:get {:summary (sd/sum_usr_pub "Get full_text.")
             :handler handle_get-full_text

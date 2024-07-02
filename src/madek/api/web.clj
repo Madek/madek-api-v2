@@ -10,11 +10,11 @@
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.utils.cli :refer [long-opt-for-key]]
-   [madek.api.utils.helper :refer [mslurp]]
    [madek.api.utils.ring-audits :as ring-audits]
    [muuntaja.core :as m]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
+   [reitit.openapi :as openapi]
    [reitit.ring :as rr]
    [reitit.ring.coercion :as rrc]
    [reitit.ring.middleware.multipart :as multipart]
@@ -96,7 +96,7 @@
 
 (def auth-info-route
   ["/api-v2"
-   {:swagger {:tags ["api/auth-info"]}}
+   {:openapi {:tags ["api/auth-info"]}}
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."
@@ -116,22 +116,20 @@
 (def swagger-routes
   ["/api-v2"
    {:no-doc false
-    :swagger {:info {:title "Madek API v2"
-                     :description (mslurp (io/resource "md/api-description.md"))
-                     :version "2.0.0"
+    :openapi {:openapi "3.0.0"
+              :info {:title "Madek API v2"
+                     :description (slurp (io/resource "md/api-description.md"))
                      :contact {:name "N/D"}}
-              :securityDefinitions {:apiAuth {:type "apiKey"
-                                              :name "Authorization"
-                                              :in "header"}
-                                    :basicAuth {:type "basic"}}
-              :security [{:basicAuth [] "auth" []}
-                         {:apiAuth {:type "apiKey"
-                                    :name "Authorization"
-                                    :in "header"}}]}}
+              :components {:securitySchemes {:apiAuth {:type "apiKey"
+                                                       :name "Authorization"
+                                                       :in "header"}
+                                             :basicAuth {:type "http"
+                                                         :scheme "basic"}}}
+              :security [{:basicAuth []} {:apiAuth []}]}}
 
-   ["/swagger.json" {:no-doc true :get (swagger/create-swagger-handler)}]
+   ["/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]
    ["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler
-                                      {:url "/api-v2/swagger.json"})}]])
+                                      {:url "/api-v2/openapi.json"})}]])
 
 (def get-router-data-all
   (->>

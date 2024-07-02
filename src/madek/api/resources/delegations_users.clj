@@ -127,7 +127,7 @@
 ; user self edit favorites 
 (def query-routes
   ["/delegation/users"
-   {:swagger {:tags ["delegation/users"]}}
+   {:openapi {:tags ["delegation/users"]}}
    {:get
     {:summary (sd/sum_adm "Query delegation users.")
      :handler handle_list-delegations_users-by-user
@@ -140,7 +140,7 @@
 ;; TODO: no usage??
 (def user-routes
   ["/delegation/:delegation_id/"
-   {:swagger {:tags ["delegation/users"]}}
+   {:openapi {:tags ["delegation/users"]}}
    ["user"
     {:post {:summary (sd/sum_cnv "Create delegations_user for authed user and media-entry.")
             :handler handle_create-delegations_user
@@ -175,7 +175,7 @@
 
 (def admin-routes
   [["/delegation/"
-    {:swagger {:tags ["admin/delegation/users"]}}
+    {:openapi {:tags ["admin/delegation/users"]}}
     ["users"
      {:get
       {:summary (sd/sum_adm "Query delegations_users.")

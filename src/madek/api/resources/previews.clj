@@ -67,7 +67,7 @@
 ; TODO tests
 (def preview-routes
   ["/previews"
-   {:swagger {:tags ["api/previews"]}}
+   {:openapi {:tags ["api/previews"]}}
    ["/:preview_id"
     {:get {:summary "Get preview for id."
            :swagger {:produces "application/json"}
@@ -92,7 +92,7 @@
 ; TODO tests
 (def media-entry-routes
   ["/media-entry"
-   {:swagger {:tags ["api/media-entry"]}}
+   {:openapi {:tags ["api/media-entry"]}}
    ; TODO media-entry preview auth
    ["/:media_entry_id/preview"
     {:get {:summary "Get preview for media-entry id."

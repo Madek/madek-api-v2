@@ -84,7 +84,7 @@
 ; TODO docu
 (def ring-routes
   ["/"
-   {:swagger {:tags ["admin/admins"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/admins"] :security [{"auth" []}]}}
    ["admins"
     {:get
      {:summary (sd/sum_adm "List admin users.")

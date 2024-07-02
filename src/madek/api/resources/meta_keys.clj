@@ -237,7 +237,7 @@
 
 (def admin-routes
   ["/"
-   {:swagger {:tags ["admin/meta-keys"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/meta-keys"] :security [{"auth" []}]}}
    ["meta-keys"
     {:get {:summary (sd/sum_adm "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
@@ -345,7 +345,7 @@
 ; TODO tests
 (def query-routes
   ["/"
-   {:swagger {:tags ["meta-keys"]}}
+   {:openapi {:tags ["meta-keys"]}}
    ["meta-keys"
     {:get {:summary (sd/sum_usr_pub "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."

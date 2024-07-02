@@ -306,7 +306,7 @@
 ;
 ;(def user-routes
 ;  ["/people"
-;   {:swagger {:tags ["people"]}}
+;   {:openapi {:tags ["people"]}}
 ;   ["/" {:get {:summary (sd/sum_pub "Get all people ids")
 ;               :description "Query list of people only for ids or full-data. Optional Paging."
 ;               :handler handle_query-people

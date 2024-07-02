@@ -120,7 +120,7 @@
 (def admin-routes
 
   ["/"
-   {:swagger {:tags ["admin/static-pages"]}}
+   {:openapi {:tags ["admin/static-pages"]}}
    ["static-pages"
     {:post {:summary (sd/sum_adm "Create static_page.")
             :handler handle_create-static_page

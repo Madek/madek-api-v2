@@ -179,7 +179,7 @@
 ;; FIXME: broken endpoint to test doc
 (def query-routes
   ["/"
-   {:swagger {:tags ["keywords"] :security []}}
+   {:openapi {:tags ["keywords"] :security []}}
    ["keywords"
     {:get
      {:summary (sd/sum_pub (d "Query / list keywords."))
@@ -208,7 +208,7 @@
 
 (def admin-routes
   ["/"
-   {:swagger {:tags ["admin/keywords"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/keywords"] :security [{"auth" []}]}}
    ["keywords"
     {:get
      {:summary (sd/sum_adm "Query keywords")

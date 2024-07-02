@@ -10,7 +10,7 @@
 ; TODO response coercion
 (def meta-data-routes
   ["/meta-data"
-   {:swagger {:tags ["api/meta-data"]}}
+   {:openapi {:tags ["api/meta-data"]}}
    ["/:meta_datum_id" {:get get/meta_datum_id}]
    ["/:meta_datum_id/data-stream" {:get get/meta_datum_id.data-stream}]
    ;:responses {200 {:body s/Any}
@@ -18,13 +18,13 @@
    ])
 (def role-routes
   ["/meta-data-role"
-   {:swagger {:tags ["api/meta-data-role"]}}
+   {:openapi {:tags ["api/meta-data-role"]}}
    ["/:meta_data_role_id"
     {:get get/meta-data-role.meta_data_role_id}]])
 
 (def collection-routes
   ["/collection"
-   {:swagger {:tags ["api/collection"]}}
+   {:openapi {:tags ["api/collection"]}}
    ["/:collection_id/meta-data"
     {:get get/collection_id.meta-data}]
 
@@ -74,7 +74,7 @@
 
 (def media-entry-routes
   ["/media-entry"
-   {:swagger {:tags ["api/media-entry"]}}
+   {:openapi {:tags ["api/media-entry"]}}
    ["/:media_entry_id/meta-data"
     {:get get/media-entry.media_entry_id.meta-data}]
 

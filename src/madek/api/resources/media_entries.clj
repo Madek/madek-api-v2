@@ -270,7 +270,7 @@
 
 (def ring-routes
   ["/"
-   {:swagger {:tags ["api/media-entries"]}}
+   {:openapi {:tags ["api/media-entries"]}}
    ["media-entries"
     {:get
      {:summary "Query media-entries."
@@ -293,7 +293,7 @@
 (sa/def ::collection_id string?)
 (def media-entry-routes
   ["/media-entry"
-   {:swagger {:tags ["api/media-entry"]}}
+   {:openapi {:tags ["api/media-entry"]}}
    ["/"
     {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready")
             :handler handle_create-media-entry
@@ -308,7 +308,6 @@
                          :multipart {:file multipart/temp-file-part}}}}]
 
    ["/:media_entry_id"
-    ;{:swagger {:tags ["api/media-entry"] }}
     {:get {:summary "Get media-entry for id."
            :handler handle_get-media-entry
            :swagger {:produces "application/json"}

@@ -16,7 +16,7 @@
 
 (def admin-routes
   ["/"
-   {:swagger {:tags ["admin/users"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/users"] :security [{"auth" []}]}}
    ["users"
     {:get index/route
      :post create-user/route}]

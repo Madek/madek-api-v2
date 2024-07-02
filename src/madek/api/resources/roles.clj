@@ -36,7 +36,7 @@
 ; TODO tests
 (def user-routes
   ["/"
-   {:swagger {:tags ["roles"]}}
+   {:openapi {:tags ["roles"]}}
    ["roles" {:get {:summary "Get list of roles."
                    :description "Get list of roles."
                    :handler role/get-index
@@ -59,7 +59,7 @@
 ; TODO tests
 (def admin-routes
   ["/"
-   {:swagger {:tags ["admin/roles"]}}
+   {:openapi {:tags ["admin/roles"]}}
    ["roles"
     {:get {:summary (sd/sum_adm "Get list of roles.")
            :description "Get list of roles."

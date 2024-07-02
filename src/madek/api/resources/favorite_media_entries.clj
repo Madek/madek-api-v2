@@ -124,7 +124,7 @@
 ; user self edit favorites
 (def favorite-routes
   ["/favorite/media-entries"
-   {:swagger {:tags ["api/favorite"]}}
+   {:openapi {:tags ["api/favorite"]}}
    {:get
     {:summary (sd/sum_usr "List users favorites media_entries ids.")
      :handler handle_list-favorite_media_entries-by-user
@@ -135,7 +135,7 @@
 
 (def media-entry-routes
   ["/media-entry/:media_entry_id/favorite"
-   {:swagger {:tags ["api/media-entry"]}}
+   {:openapi {:tags ["api/media-entry"]}}
    {:post {:summary (sd/sum_usr "Create favorite_media_entry for authed user and media-entry.")
            :handler handle_create-favorite_media_entry
 
@@ -175,7 +175,7 @@
 
 (def admin-routes
   [["/favorite/"
-    {:swagger {:tags ["admin/favorite/media-entries"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/favorite/media-entries"] :security [{"auth" []}]}}
     ["media-entries"
      {:get
       {:summary (sd/sum_adm "Query favorite_media_entries.")
