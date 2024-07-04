@@ -29,7 +29,7 @@ context "people" do
   context "admin user" do
     include_context :json_client_for_authenticated_admin_user do
       describe "get an unfiltered people list as an admin" do
-        url = "/api-v2/admin/people?page=0&size=100"
+        url = "/api-v2/admin/people?page=1&size=100"
         let :result do
           # client.get.relation('people').get()
           client.get(url)
@@ -49,7 +49,7 @@ context "people" do
       end
 
       context "filter people by their institution" do
-        url = "/api-v2/admin/people?page=0&size=1000&institution=foo.com"
+        url = "/api-v2/admin/people?page=1&size=1000&institution=foo.com"
         let :result do
           client.get(url)
         end
@@ -64,11 +64,11 @@ context "people" do
 
       describe "get admin/people with pagination" do
         it "responses with 200" do
-          resp1 = client.get("/api-v2/admin/people?page=0&size=5")
+          resp1 = client.get("/api-v2/admin/people?page=1&size=5")
           expect(resp1.status).to be == 200
           expect(resp1.body["people"].count).to be 5
 
-          resp2 = client.get("/api-v2/admin/people?page=1&size=5")
+          resp2 = client.get("/api-v2/admin/people?page=2&size=5")
           expect(resp2.status).to be == 200
           expect(resp2.body["people"].count).to be 5
 
@@ -77,7 +77,7 @@ context "people" do
       end
 
       context "filter people by their subtype" do
-        url = "/api-v2/admin/people?page=0&size=100&subtype=Person&institution=foo.com"
+        url = "/api-v2/admin/people?page=1&size=100&subtype=Person&institution=foo.com"
         let :result do
           client.get(url)
         end

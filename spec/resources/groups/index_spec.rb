@@ -19,11 +19,11 @@ context "groups" do
   context "Getting groups with pagination for admin" do
     include_context :json_client_for_authenticated_admin_user do
       it "responses with 200" do
-        resp1 = client.get("/api-v2/admin/groups?page=0&size=5")
+        resp1 = client.get("/api-v2/admin/groups?page=1&size=5")
         expect(resp1.status).to be == 200
         expect(resp1.body["groups"].count).to be 5
 
-        resp2 = client.get("/api-v2/admin/groups?page=1&size=5")
+        resp2 = client.get("/api-v2/admin/groups?page=2&size=5")
         expect(resp2.status).to be == 200
         expect(resp2.body["groups"].count).to be 5
 
@@ -35,11 +35,11 @@ context "groups" do
   context "Getting groups with pagination for user" do
     include_context :json_client_for_authenticated_admin_user do
       it "responses with 200" do
-        resp1 = client.get("/api-v2/groups?page=0&size=5")
+        resp1 = client.get("/api-v2/groups?page=1&size=5")
         expect(resp1.status).to be == 200
         expect(resp1.body["groups"].count).to be 5
 
-        resp2 = client.get("/api-v2/groups?page=1&size=5")
+        resp2 = client.get("/api-v2/groups?page=2&size=5")
         expect(resp2.status).to be == 200
         expect(resp2.body["groups"].count).to be 5
 
@@ -52,7 +52,7 @@ context "groups" do
     include_context :json_client_for_authenticated_admin_user do
       describe "get groups" do
         let :groups_result do
-          client.get("/api-v2/admin/groups?page=0&size=100")
+          client.get("/api-v2/admin/groups?page=1&size=100")
         end
 
         it "responses with 200" do

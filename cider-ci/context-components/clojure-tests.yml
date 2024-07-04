@@ -1,0 +1,28 @@
+generate_tasks:
+  include_match: test/.*_test.clj
+
+task_defaults:
+  ports:
+    API_V2_HTTP_PORT:
+      min: 3100
+      max: 3200
+
+  git_options:
+    submodules:
+      include_match: ^.*$
+
+  trial_attachments:
+    config:
+      content_type: text/yaml
+      include_match: config\/.*\.ya?ml$
+    logs:
+      include_match: logs?\/.*\.log$
+      content_type: text/plain
+
+  scripts:
+
+    test:
+      body: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        clojure -M:test $CIDER_CI_TASK_FILE

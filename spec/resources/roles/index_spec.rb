@@ -11,11 +11,11 @@ describe "roles" do
   include_context :authenticated_json_client do
     describe "get roles with pagination" do
       it "responses with 200" do
-        resp1 = authenticated_json_client.get("/api-v2/roles?page=0&size=5")
+        resp1 = authenticated_json_client.get("/api-v2/roles?page=1&size=5")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 5
 
-        resp2 = authenticated_json_client.get("/api-v2/roles?page=1&size=5")
+        resp2 = authenticated_json_client.get("/api-v2/roles?page=2&size=5")
         expect(resp2.status).to be == 200
         expect(resp2.body["roles"].count).to be 5
 

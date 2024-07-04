@@ -33,11 +33,11 @@ context "users" do
 
       describe "get users by pagination" do
         it "responses with 200" do
-          resp1 = client.get("/api-v2/admin/users?page=0&size=5")
+          resp1 = client.get("/api-v2/admin/users?page=1&size=5")
           expect(resp1.status).to be == 200
           expect(resp1.body["users"].count).to be 5
 
-          resp2 = client.get("/api-v2/admin/users?page=1&size=5")
+          resp2 = client.get("/api-v2/admin/users?page=2&size=5")
           expect(resp2.status).to be == 200
           expect(resp2.body["users"].count).to be 5
 

@@ -8,12 +8,11 @@
    [madek.api.utils.rdbms :as rdbms]
    [next.jdbc :as jdbc]))
 
-;; TODO: FIXME: use get-ds
 (def db-spec {:dbtype "postgresql"
-              :dbname "madek_test"
-              :user "madek_sql"
+              :dbname (or (System/getenv "DATABASE") (System/getenv "PGDATABASE") "madek_test")
+              :user (or (System/getenv "PG15USER") (System/getenv "PGUSER") "madek_sql")
               :port 5415
-              :password "madek_sql"})
+              :password (or (System/getenv "PG15PASSWORD") (System/getenv "PGPASSWORD") "madek_sql")})
 
 (defn init-db [dburl]
   (rdbms/initialize dburl)

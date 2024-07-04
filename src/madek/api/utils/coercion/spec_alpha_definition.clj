@@ -1,15 +1,16 @@
 (ns madek.api.utils.coercion.spec-alpha-definition
   (:require
    [clojure.spec.alpha :as sa]
+   [madek.api.pagination :refer [ZERO_BASED_PAGINATION DEFAULT_COUNT_SWAGGER DEFAULT_PAGE_SWAGGER]]
    [spec-tools.core :as st]))
 
 (sa/def ::page (st/spec {:spec int?
-                         :description "Page number (zero-based)"
-                         :json-schema/default 0}))
+                         :description (str "Page number " (when ZERO_BASED_PAGINATION "(zero-based pagination)"))
+                         :json-schema/default DEFAULT_PAGE_SWAGGER}))
 
 (sa/def ::size (st/spec {:spec int?
                          :description "Number of items per page"
-                         :json-schema/default 100}))
+                         :json-schema/default DEFAULT_COUNT_SWAGGER}))
 
 (def schema_pagination_opt
   (sa/keys
