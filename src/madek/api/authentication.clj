@@ -1,6 +1,7 @@
 (ns madek.api.authentication
   (:require
    [clojure.string :as str]
+   [clojure.walk :refer [keywordize-keys]]
    [madek.api.authentication.basic :as basic-auth]
    [madek.api.authentication.session :as session-auth]
    [madek.api.authentication.token :as token-auth]
@@ -25,21 +26,26 @@
            " - auth-entity: " (-> request :authenticated-entity :id))
     (handler request)))
 
+(defn remove-authorization-header [request]
+  (let [headers (-> request :headers keywordize-keys)
+        updated-headers (assoc headers :authorization "")]
+    (assoc request :headers updated-headers)))
+
 (defn wrap [handler]
   (fn [request]
-    (let [req-from-swagger-ui? (try
-                                 (let [headers (:headers request)
-                                       referer (get headers "referer")
-                                       req-from-swagger-ui? (str/includes? referer "api-docs/index.html")]
-                                   req-from-swagger-ui?)
-                                 (catch Exception e false))
-          request (assoc request :swagger-ui? req-from-swagger-ui?)
+    (let [is-swagger-ui? (str/includes? (request/path-info request) "/api-docs/")
+          request (if is-swagger-ui? (remove-authorization-header request) request)
+
+          referer (get (:headers request) "referer")
+          is-api-endpoint-request? (and referer (str/ends-with? referer "api-docs/index.html"))
           response ((-> handler
                         session-auth/wrap
                         token-auth/wrap
                         basic-auth/wrap) request)]
-      ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-popup in browser
-      (if req-from-swagger-ui?
+
+      ; For incoming requests from swagger-ui avoid returning of WWW-Authenticate
+      ; to prevent triggering of basic-auth-popup in browser
+      (if is-api-endpoint-request?
         response
         (add-www-auth-header-if-401 response)))))
 
