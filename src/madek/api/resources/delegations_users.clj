@@ -135,7 +135,8 @@
      :coercion reitit.coercion.schema/coercion
      :parameters {:query {(s/optional-key :delegation_id) s/Uuid
                           (s/optional-key :user_id) s/Uuid}}
-     :responses {200 {:body {:delegation_ids [s/Uuid]}}}}}])
+     :responses {200 {:description "Returns the delegations_users."
+                      :body {:delegation_ids [s/Uuid]}}}}}])
 
 ;; TODO: no usage??
 (def user-routes
@@ -149,9 +150,12 @@
             :swagger {:produces "application/json"}
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:delegation_id s/Uuid}}
-            :responses {200 {:body schema_delegations_users_export}
-                        404 {:body s/Any}
-                        406 {:body s/Any}}}
+            :responses {200 {:description "Returns the created delegations_user."
+                             :body schema_delegations_users_export}
+                        404 {:description "Delegations_user not found."
+                             :body s/Any}
+                        406 {:description "Could not create delegations_user."
+                             :body s/Any}}}
 
      :get {:summary (sd/sum_cnv "Get delegations_user for authed user and media-entry.")
            :handler handle_get-delegations_user
@@ -159,9 +163,12 @@
                         (wwrap-find-delegations_user-by-auth true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:delegation_id s/Uuid}}
-           :responses {200 {:body schema_delegations_users_export}
-                       404 {:body s/Any}
-                       406 {:body s/Any}}}
+           :responses {200 {:description "Returns the delegations_user."
+                            :body schema_delegations_users_export}
+                       404 {:description "Delegations_user not found."
+                            :body s/Any}
+                       406 {:description "Could not get delegations_user."
+                            :body s/Any}}}
 
      :delete {:summary (sd/sum_cnv "Delete delegations_user for authed user and media-entry.")
               :coercion reitit.coercion.schema/coercion
@@ -169,9 +176,12 @@
               :middleware [(wwrap-find-delegation :delegation_id)
                            (wwrap-find-delegations_user-by-auth true)]
               :parameters {:path {:delegation_id s/Uuid}}
-              :responses {200 {:body schema_delegations_users_export}
-                          404 {:body s/Any}
-                          406 {:body s/Any}}}}]])
+              :responses {200 {:description "Returns the deleted delegations_user."
+                               :body schema_delegations_users_export}
+                          404 {:description "Delegations_user not found."
+                               :body s/Any}
+                          406 {:description "Could not delete delegations_user."
+                               :body s/Any}}}}]])
 
 (def admin-routes
   [["/delegation/"
@@ -182,6 +192,8 @@
        :handler handle_list-delegations_users
        :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the delegations_users."
+                        :body s/Any}}
        :parameters {:query {(s/optional-key :user_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid
                             (s/optional-key :full-data) s/Bool}}}}]
@@ -193,6 +205,12 @@
                     (wwrap-find-delegation :delegation_id)
                     (wwrap-find-delegations_user false)]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the created delegations_user."
+                        :body schema_delegations_users_export}
+                   404 {:description "Delegations_user not found."
+                        :body s/Any}
+                   406 {:description "Could not create delegations_user."
+                        :body s/Any}}
        :parameters {:path {:user_id s/Uuid
                            :delegation_id s/Uuid}}}
 
@@ -201,6 +219,12 @@
        :handler handle_get-delegations_user
        :middleware [wrap-authorize-admin! (wwrap-find-delegations_user true)]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the delegations_user."
+                        :body schema_delegations_users_export}
+                   404 {:description "Delegations_user not found."
+                        :body s/Any}
+                   406 {:description "Could not get delegations_user."
+                        :body s/Any}}
        :parameters {:path {:user_id s/Uuid
                            :delegation_id s/Uuid}}}
 
@@ -209,5 +233,11 @@
        :coercion reitit.coercion.schema/coercion
        :handler handle_delete-delegations_user
        :middleware [wrap-authorize-admin! (wwrap-find-delegations_user true)]
+       :responses {200 {:description "Returns the deleted delegations_user."
+                        :body schema_delegations_users_export}
+                   404 {:description "Delegations_user not found."
+                        :body s/Any}
+                   406 {:description "Could not delete delegations_user."
+                        :body s/Any}}
        :parameters {:path {:user_id s/Uuid
                            :delegation_id s/Uuid}}}}]]])

@@ -99,7 +99,8 @@
                    :coercion reitit.coercion.schema/coercion
                    :parameters {:path {:media_entry_id s/Uuid}
                                 :body schema_update-media-entry-perms}
-                   :responses {200 {:body schema_export-media-entry-perms}}})
+                   :responses {200 {:description "Returns the updated media-entry entity permission."
+                                    :body schema_export-media-entry-perms}}})
 
 (def me.resource.perm_name.perm_val {:summary "Update media-entry entity permissions"
                                      :description (str "Valid perm_name values are" valid_permission_names)
@@ -111,7 +112,8 @@
                                                          :perm_name (s/enum "get_metadata_and_previews"
                                                                             "get_full_size")
                                                          :perm_val s/Bool}}
-                                     :responses {200 {:body schema_export-media-entry-perms}}})
+                                     :responses {200 {:description "Returns the updated media-entry entity permission."
+                                                      :body schema_export-media-entry-perms}}})
 
 (def me.user.user_id.perm_name.perm_val {:summary "Update media-entry user permissions"
                                          :description (str "Valid perm_name values are" valid_permission_names)
@@ -126,7 +128,8 @@
                                                                                 "edit_metadata"
                                                                                 "edit_permissions")
                                                              :perm_val s/Bool}}
-                                         :responses {200 {:body schema_export-media-entry-user-permission}}})
+                                         :responses {200 {:description "Returns the updated media-entry user permission."
+                                                          :body schema_export-media-entry-user-permission}}})
 
 (def me.group.group_id.perm_name.permval {:summary "Update media-entry group permissions"
                                           :description (str "Valid perm_name values are" valid_permission_names)
@@ -140,7 +143,8 @@
                                                                                  "get_full_size"
                                                                                  "edit_metadata")
                                                               :perm_val s/Bool}}
-                                          :responses {200 {:body schema_export-media-entry-group-permission}}})
+                                          :responses {200 {:description "Returns the updated media-entry group permission."
+                                                           :body schema_export-media-entry-group-permission}}})
 
 (def col.resources {:summary "Update collection entity permissions"
                     :description (str "Valid perm_name values are" valid_permission_names)
@@ -150,7 +154,8 @@
                     :coercion reitit.coercion.schema/coercion
                     :parameters {:path {:collection_id s/Uuid}
                                  :body schema_update-collection-perms}
-                    :responses {200 {:body schema_export-collection-perms}}})
+                    :responses {200 {:description "Returns the updated collection entity permission."
+                                     :body schema_export-collection-perms}}})
 
 (def col.resource.perm_name.perm_val {:summary "Update collection entity permissions"
                                       :description (str "Valid perm_name values are" valid_permission_names)
@@ -161,7 +166,8 @@
                                       :parameters {:path {:collection_id s/Uuid
                                                           :perm_name (s/enum "get_metadata_and_previews")
                                                           :perm_val s/Bool}}
-                                      :responses {200 {:body schema_export-collection-perms}}})
+                                      :responses {200 {:description "Returns the updated collection entity permission."
+                                                       :body schema_export-collection-perms}}})
 
 (def col.user.user_id.perm_name.perm_val {:summary "Update collection user permissions"
                                           :handler handle_update-user-perms
@@ -174,7 +180,8 @@
                                                                                  "edit_metadata_and_relations"
                                                                                  "edit_permissions")
                                                               :perm_val s/Bool}}
-                                          :responses {200 {:body schema_export-collection-user-permission}}})
+                                          :responses {200 {:description "Returns the updated collection user permission."
+                                                           :body schema_export-collection-user-permission}}})
 
 (def col.group.group_id.perm_name.perm_val {:summary "Update collection group permissions"
                                             :description (str "Valid perm_name values are" valid_permission_names)
@@ -187,4 +194,5 @@
                                                                 :perm_name (s/enum "get_metadata_and_previews"
                                                                                    "edit_metadata_and_relations")
                                                                 :perm_val s/Bool}}
-                                            :responses {200 {:body schema_export-collection-group-permission}}})
+                                            :responses {200 {:description "Returns the updated collection group permission."
+                                                             :body schema_export-collection-group-permission}}})

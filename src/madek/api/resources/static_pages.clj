@@ -127,7 +127,8 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_create_static_page}
             :middleware [wrap-authorize-admin!]
-            :responses {200 {:body schema_export_static_page}
+            :responses {200 {:description "Returns the created static_page."
+                             :schema schema_export_static_page}
                         406 {:description "Not Acceptable."
                              :schema s/Str
                              :examples {"application/json" {:message "Could not create static_page."}}}
@@ -139,6 +140,26 @@
            :handler handle_list-static_pages
            :coercion reitit.coercion.schema/coercion
            :middleware [wrap-authorize-admin!]
+           :responses {200 {:description "Returns the list of static_pages."
+                            :schema [schema_export_static_page]
+                            :examples {"application/json" [{:id "uuid"
+                                                            :name "name"
+                                                            :contents [{:lang "de" :content "content"}]
+                                                            :created_at "2020-01-01T00:00:00Z"
+                                                            :updated_at "2020-01-01T00:00:00Z"}]}}
+                       201 {:description "Returns the list of static_pages."
+                            :body [schema_export_static_page]
+                            :examples {"application/json" [{:id "uuid"
+                                                            :name "name"
+                                                            :contents [{:lang "de" :content "content"}]
+                                                            :created_at "2020-01-01T00:00:00Z"
+                                                            :updated_at "2020-01-01T00:00:00Z"}]}}
+                       404 {:description "Not Found."
+                            :schema s/Str
+                            :examples {"application/json" {:message "No static_pages found."}}}
+                       422 {:description "Unprocessable Entity."
+                            :schema s/Str
+                            :examples {"application/json" {:message "Could not list static_pages."}}}}
            :parameters {:query {(s/optional-key :full_data) s/Bool}}}}]
 
    ["static-pages/:id"
@@ -148,7 +169,8 @@
                         (wwrap-find-static_page :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_static_page}
+           :responses {200 {:description "Returns the static_page."
+                            :schema schema_export_static_page}
                        404 {:description "Not Found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}}}
@@ -160,8 +182,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update_static_page}
-           :responses {200 {:body schema_export_static_page}
-                       406 {:body s/Any}
+           :responses {200 {:description "Returns the updated static_page."
+                            :body schema_export_static_page}
+                       406 {:description "Not Acceptable."
+                            :body s/Any}
                        404 {:description "Not Found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}}}
@@ -172,7 +196,8 @@
               :middleware [wrap-authorize-admin!
                            (wwrap-find-static_page :id)]
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export_static_page}
+              :responses {200 {:description "Returns the deleted static_page."
+                               :body schema_export_static_page}
                           404 {:description "Not Found."
                                :schema s/Str
                                :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}

@@ -73,7 +73,8 @@
    :coercion reitit.coercion.schema/coercion
    :content-type "application/json"
    :parameters {:path {:id s/Str}}
-   :responses {200 {:body schema}
+   :responses {200 {:description "User found."
+                    :body schema}
                404 {:description "Not Found."
                     :schema s/Str
                     :examples {"application/json" {:message "No such user."}}}}})

@@ -42,7 +42,8 @@
                    :handler role/get-index
                    :coercion spec/coercion
                    :parameters {:query sp/schema_pagination_opt}
-                   :responses {200 {:body ::response-roles-body}}}}]
+                   :responses {200 {:description "Returns the roles."
+                                    :body ::response-roles-body}}}}]
 
    ["roles/:id"
     {:get {:summary "Get role by id"
@@ -52,8 +53,10 @@
            :handler role/handle_get-role-usr
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export-role}
-                       404 {:body s/Any}}}}]])
+           :responses {200 {:description "Returns the role."
+                            :body schema_export-role}
+                       404 {:description "Not found."
+                            :body s/Any}}}}]])
 
 ; switch to meta_key as address?
 ; TODO tests
@@ -67,7 +70,8 @@
            :middleware [wrap-authorize-admin!]
            :coercion spec/coercion
            :parameters {:query sp/schema_pagination_opt}
-           :responses {200 {:body ::response-roles-body}}}
+           :responses {200 {:description "Returns the roles."
+                            :body ::response-roles-body}}}
 
      :post {:summary (sd/sum_adm "Create role.")
             :handler role/handle_create-role
@@ -78,8 +82,10 @@
             :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_create-role}
-            :responses {200 {:body schema_export-role}
-                        404 {:body s/Any}
+            :responses {200 {:description "Returns the created role."
+                             :body schema_export-role}
+                        404 {:description "Not found."
+                             :body s/Any}
                         403 {:description "Forbidden."
                              :schema s/Str
                              :examples {"application/json" {:message "Violation of constraint."}}}
@@ -96,8 +102,10 @@
            :handler role/handle_get-role-admin
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export-role}
-                       404 {:body s/Any}}}
+           :responses {200 {:description "Returns the role."
+                            :body schema_export-role}
+                       404 {:description "Not found."
+                            :body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update role.")
            :handler role/handle_update-role
@@ -108,8 +116,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update-role}
-           :responses {200 {:body schema_export-role}
-                       404 {:body s/Any}
+           :responses {200 {:description "Returns the updated role."
+                            :body schema_export-role}
+                       404 {:description "Not found."
+                            :body s/Any}
                        406 {:description "Not Acceptable."
                             :schema s/Str
                             :examples {"application/json" {:message "Could not update role."}}}}}
@@ -120,7 +130,8 @@
               :content-type "application/json"
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export-role}
+              :responses {200 {:description "Returns the deleted role."
+                               :body schema_export-role}
                           404 {:description "Not found."
                                :schema s/Str
                                :examples {"application/json" {:message "No such role."}}}

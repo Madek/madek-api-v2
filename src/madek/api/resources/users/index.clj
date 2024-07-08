@@ -42,4 +42,5 @@
    :middleware [wrap-authorize-admin!]
    :parameters {:query ::users-query-def}
    :coercion spec/coercion
-   :responses {200 {:body ::get-user/users-body-resp-def}}})
+   :responses {200 {:description "List of users ids."
+                    :body ::get-user/users-body-resp-def}}})

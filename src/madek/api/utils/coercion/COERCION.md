@@ -7,6 +7,7 @@ There are 2 ways to describe schema
     2. Value-Support: Int/Str/Any/Uuid & conversion
     3. Possible to define customized validations
 2. reitit.coercion.spec (more options to define default-value/description/.. of swagger-ui-fields)
+   1. .. but it blows up code
 
 
 Nice2Know
@@ -147,3 +148,77 @@ Definition by reitit.coercion.spec
 
 ```
 
+OpenApi3 - Examples
+--
+```clojure
+       :responses {200 {:description "Success."
+                        :body c/schema_export-vocabulary-admin}
+                   400 {:description "Bad request."
+                        :body s/Any}
+                   
+                   300 {:content {"application/json" {:description "Fetch a pizza as json"
+                                                     :schema {
+                                                              :color s/Str
+                                                              :pineapple s/Bool}
+                                                     :examples {:white {:description "White pizza with pineapple"
+                                                                        :value {:color :white
+                                                                                :pineapple true}}
+                                                                :red {:description "Red pizza"
+                                                                      :value {:color :red
+   
+                                                                              :pineapple false}}}}}}}
+```
+
+### Not really working
+- TODO: Found no way to define simple string with example
+- Working example with map
+```clojure
+   ;; works
+   406 {:description "Not Acceptable."
+        :content {"application/json" {:description "Fetch a pizza as json"
+                                      :schema {
+                                               :color s/Str
+                                               :pineapple s/Bool}
+                                      :examples {:white {:description "White pizza with pineapple"
+                                                         :value {:color :white
+                                                                 :pineapple true}}
+                                                 :red {:description "Red pizza"
+                                                       :value {:color :red
+                                                               :pineapple false}}}}}}
+   
+   
+   ;; example not working
+   410 {:description "Not Acceptable."
+        :content {"text/plain" {:description "Fetch a pizza as json"
+                                :value "mei test"
+                                }}}
+
+   ;; example not working, schema works
+   201 {:description "Returns the list of static_pages."
+        :body [schema_export_static_page]
+        ;:examples {"application/json" [{:id "uuid"
+        ;                                :name "name"
+        ;                                :contents [{:lang "de" :content "content"}]
+        ;                                :created_at "2020-01-01T00:00:00Z"
+        ;                                :updated_at "2020-01-01T00:00:00Z"}]}
+        }
+```
+
+Issues with spec/coercion and attr with values nil/[]
+--
+```clojure
+"path": [
+        "meta-keys",
+        "allowed_people_subtypes",
+        "nil"
+      ],
+      "pred": "clojure.core/nil?",
+      "val": [
+        "Person",
+        "PeopleGroup"
+      ],
+
+;(sa/def ::allowed_people_subtypes (nil-or list?)) ;; error
+;(sa/def ::allowed_people_subtypes (st/spec {:spec list?}))  ;; error
+(sa/def ::allowed_people_subtypes (st/spec {:spec any?})) ;;ok
+```

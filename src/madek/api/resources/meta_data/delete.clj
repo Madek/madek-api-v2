@@ -135,7 +135,8 @@
                                             :parameters {:path {:collection_id s/Uuid
                                                                 :meta_key_id s/Str
                                                                 :keyword_id s/Uuid}}
-                                            :responses {200 {:body s/Any}}})
+                                            :responses {200 {:description "Returns the deleted meta-data."
+                                                             :body s/Any}}})
 
 (def meta_key_id.role.role_id.person_id {:summary "Delete meta-data role for media-entry."
                                          :handler handle_delete-meta-data-role
@@ -148,7 +149,8 @@
                                                              :meta_key_id s/Str
                                                              :role_id s/Uuid
                                                              :person_id s/Uuid}}
-                                         :responses {200 {:body s/Any}}})
+                                         :responses {200 {:description "Returns the deleted meta-data."
+                                                          :body s/Any}}})
 
 (def media_entry.meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
                                                :handler handle_delete-meta-data-people
@@ -159,7 +161,8 @@
                                                :parameters {:path {:media_entry_id s/Uuid
                                                                    :meta_key_id s/Str
                                                                    :person_id s/Uuid}}
-                                               :responses {200 {:body s/Any}}})
+                                               :responses {200 {:description "Returns the deleted meta-data."
+                                                                :body s/Any}}})
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
@@ -169,7 +172,8 @@
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid
                                                                 :meta_key_id s/Str}}
-                                            :responses {200 {:body s/Any}}})
+                                            :responses {200 {:description "Returns the deleted meta-data."
+                                                             :body s/Any}}})
 
 (def collection.meta_key_id.people.person_id {:summary "Delete meta-data people for collection."
                                               :handler handle_delete-meta-data-people
@@ -180,7 +184,8 @@
                                               :parameters {:path {:collection_id s/Uuid
                                                                   :meta_key_id s/Str
                                                                   :person_id s/Uuid}}
-                                              :responses {200 {:body s/Any}}})
+                                              :responses {200 {:description "Returns the deleted meta-data."
+                                                               :body s/Any}}})
 
 (def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
                                      :handler handle_delete-meta-data-keyword
@@ -191,7 +196,8 @@
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str
                                                          :keyword_id s/Uuid}}
-                                     :responses {200 {:body s/Any}}})
+                                     :responses {200 {:description "Returns the deleted meta-data."
+                                                      :body s/Any}}})
 
 (def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key"
                                            :handler handle-delete-meta-data
@@ -201,7 +207,8 @@
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid
                                                                :meta_key_id s/Str}}
-                                           :responses {200 {:body s/Any}}})
+                                           :responses {200 {:description "Returns the deleted meta-data."
+                                                            :body s/Any}}})
 
 (def meta_key_id.role.role_id.person_id {:summary "Delete meta-data role for media-entry."
                                          :handler handle_delete-meta-data-role
@@ -214,7 +221,8 @@
                                                              :meta_key_id s/Str
                                                              :role_id s/Uuid
                                                              :person_id s/Uuid}}
-                                         :responses {200 {:body s/Any}}})
+                                         :responses {200 {:description "Returns the deleted meta-data."
+                                                          :body s/Any}}})
 
 (def meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
                                    :handler handle_delete-meta-data-people
@@ -225,7 +233,8 @@
                                    :parameters {:path {:media_entry_id s/Uuid
                                                        :meta_key_id s/Str
                                                        :person_id s/Uuid}}
-                                   :responses {200 {:body s/Any}}})
+                                   :responses {200 {:description "Returns the deleted meta-data."
+                                                    :body s/Any}}})
 
 (def meta_key_id.keyword.keyword_id2 {:summary "Delete meta-data keyword for media-entry."
                                       :handler handle_delete-meta-data-keyword
@@ -236,7 +245,8 @@
                                       :parameters {:path {:media_entry_id s/Uuid
                                                           :meta_key_id s/Str
                                                           :keyword_id s/Uuid}}
-                                      :responses {200 {:body s/Any}}})
+                                      :responses {200 {:description "Returns the deleted meta-data."
+                                                       :body s/Any}}})
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
@@ -246,7 +256,8 @@
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid
                                                                 :meta_key_id s/Str}}
-                                            :responses {200 {:body s/Any}}})
+                                            :responses {200 {:description "Returns the deleted meta-data."
+                                                             :body s/Any}}})
 
 (def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
                                      :handler handle_delete-meta-data-keyword
@@ -257,7 +268,8 @@
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str
                                                          :keyword_id s/Uuid}}
-                                     :responses {200 {:body s/Any}}})
+                                     :responses {200 {:description "Returns the deleted meta-data."
+                                                      :body s/Any}}})
 
 (def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key"
                                            :handler handle-delete-meta-data
@@ -267,7 +279,8 @@
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid
                                                                :meta_key_id s/Str}}
-                                           :responses {200 {:body s/Any}}})
+                                           :responses {200 {:description "Returns the deleted meta-data."
+                                                            :body s/Any}}})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

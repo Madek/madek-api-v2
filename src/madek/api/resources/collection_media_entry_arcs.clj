@@ -160,15 +160,18 @@
                ; TODO puery params
                :parameters {:query {(s/optional-key :collection_id) s/Uuid
                                     (s/optional-key :media_entry_id) s/Uuid}}
-               :responses {200 {:body s/Any}} ; TODO response coercion
+               :responses {200 {:description "Returns the collection media-entry arcs."
+                                :body s/Any}} ; TODO response coercion
                }}]
    ["/:id" {:get {:summary "Get collection media-entry arc."
                   :handler arc
                   :swagger {:produces "application/json"}
                   :coercion reitit.coercion.schema/coercion
                   :parameters {:path {:id s/Str}}
-                  :responses {200 {:body s/Any}
-                              404 {:body s/Any}} ; TODO response coercion
+                  :responses {200 {:description "Returns the collection media-entry arc."
+                                   :body s/Any}
+                              404 {:description "Collection media-entry arc not found."
+                                   :body s/Any}} ; TODO response coercion
                   }}]])
 (def collection-routes
   ["/collection/:collection_id"
@@ -182,7 +185,8 @@
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid}}
-      :responses {200 {:body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}}}]
+      :responses {200 {:description "Returns the collection media-entry arcs."
+                       :body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}}}]
    ["/media-entry-arc/:media_entry_id"
     {:post
      {:summary (sd/sum_usr "Create collection media-entry arc")
@@ -198,10 +202,14 @@
       :parameters {:path {:collection_id s/Uuid
                           :media_entry_id s/Uuid}
                    :body schema_collection-media-entry-arc-create}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}
-                  500 {:body s/Any}}}
+      :responses {200 {:description "Returns the created collection media-entry arc."
+                       :body s/Any}
+                  404 {:description "Collection media-entry arc not found."
+                       :body s/Any}
+                  406 {:description "Could not create collection media-entry arc."
+                       :body s/Any}
+                  500 {:description "Could not create collection media-entry arc."
+                       :body s/Any}}}
 
      :put
      {:summary (sd/sum_usr "Update collection media-entry arc")
@@ -216,9 +224,12 @@
       :parameters {:path {:collection_id s/Uuid
                           :media_entry_id s/Uuid}
                    :body schema_collection-media-entry-arc-update}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the updated collection media-entry arc."
+                       :body s/Any}
+                  404 {:description "Collection media-entry arc not found."
+                       :body s/Any}
+                  406 {:description "Could not update collection media-entry arc."
+                       :body s/Any}}}
 
      :delete
      {:summary (sd/sum_usr "Delete collection media-entry arc")
@@ -230,9 +241,12 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid
                           :media_entry_id s/Uuid}}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]])
+      :responses {200 {:description "Returns the deleted collection media-entry arc."
+                       :body s/Any}
+                  404 {:description "Collection media-entry arc not found."
+                       :body s/Any}
+                  406 {:description "Could not delete collection media-entry arc."
+                       :body s/Any}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

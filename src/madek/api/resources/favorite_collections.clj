@@ -128,7 +128,8 @@
      :handler handle_list-favorite_collection-by-user
      :middleware [authorization/wrap-authorized-user]
      :coercion reitit.coercion.schema/coercion
-     :responses {200 {:body {:collection_ids [s/Uuid]}}}}}])
+     :responses {200 {:description "Returns the favorite_collections."
+                      :body {:collection_ids [s/Uuid]}}}}}])
 
 ; TODO media resource permissions?
 ; TODO docu
@@ -142,6 +143,12 @@
                         (wwrap-find-collection :collection_id)
                         (wwrap-find-favorite_collection-by-auth false)]
            :coercion reitit.coercion.schema/coercion
+           :responses {200 {:description "Returns the created favorite_collection."
+                            :body schema_favorite_collection_export}
+                       404 {:description "Collection not found."
+                            :body s/Any}
+                       406 {:description "Could not create favorite collection."
+                            :body s/Any}}
            :parameters {:path {:collection_id s/Uuid}}}
 
     :get {:summary (sd/sum_usr "Get favorite_collection for authed user and collection id.")
@@ -149,6 +156,12 @@
           :middleware [authorization/wrap-authorized-user
                        (wwrap-find-favorite_collection-by-auth true)]
           :coercion reitit.coercion.schema/coercion
+          :responses {200 {:description "Returns the favorite_collection."
+                           :body schema_favorite_collection_export}
+                      404 {:description "Favorite collection not found."
+                           :body s/Any}
+                      406 {:description "Could not get favorite collection."
+                           :body s/Any}}
           :parameters {:path {:collection_id s/Uuid}}}
 
     :delete {:summary (sd/sum_usr "Delete favorite_collection for authed user and collection id.")
@@ -156,6 +169,8 @@
              :handler handle_delete-favorite_collection
              :middleware [authorization/wrap-authorized-user
                           (wwrap-find-favorite_collection-by-auth true)]
+             :responses {200 {:description "Returns the deleted favorite_collection."
+                              :body schema_favorite_collection_export}}
              :parameters {:path {:collection_id s/Uuid}}}}])
 
 ; TODO tests
@@ -172,7 +187,8 @@
        :parameters {:query {;(s/optional-key :user_id) s/Uuid
                             ;(s/optional-key :collection_id) s/Uuid
                             (s/optional-key :full_data) s/Bool}}
-       :responses {200 {:body [schema_favorite_collection_export]}}}}]
+       :responses {200 {:description "Returns the favorite_collections."
+                        :body [schema_favorite_collection_export]}}}}]
     ; edit favorite collections for other users
     ["collections/favorite/collections/:collection_id/:user_id"
      {:post {:summary (sd/sum_adm "Create favorite_collection for user and collection.")
@@ -185,9 +201,12 @@
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:user_id s/Uuid
                                  :collection_id s/Uuid}}
-             :responses {200 {:body schema_favorite_collection_export}
-                         404 {:body s/Any}
-                         406 {:body s/Any}}}
+             :responses {200 {:description "Returns the created favorite_collection."
+                              :body schema_favorite_collection_export}
+                         404 {:description "Favorite collection not found."
+                              :body s/Any}
+                         406 {:description "Could not create favorite collection."
+                              :body s/Any}}}
 
       :get {:summary (sd/sum_adm "Get favorite_collection by user and collection id.")
             :handler handle_get-favorite_collection
@@ -196,9 +215,12 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:user_id s/Uuid
                                 :collection_id s/Uuid}}
-            :responses {200 {:body schema_favorite_collection_export}
-                        404 {:body s/Any}
-                        406 {:body s/Any}}}
+            :responses {200 {:description "Returns the favorite_collection."
+                             :body schema_favorite_collection_export}
+                        404 {:description "Favorite collection not found."
+                             :body s/Any}
+                        406 {:description "Could not get favorite collection."
+                             :body s/Any}}}
 
       :delete {:summary (sd/sum_adm "Delete favorite_collection by user and collection id.")
                :coercion reitit.coercion.schema/coercion
@@ -207,6 +229,9 @@
                             (wwrap-find-favorite_collection true)]
                :parameters {:path {:user_id s/Uuid
                                    :collection_id s/Uuid}}
-               :responses {200 {:body schema_favorite_collection_export}
-                           404 {:body s/Any}
-                           406 {:body s/Any}}}}]]])
+               :responses {200 {:description "Returns the deleted favorite_collection."
+                                :body schema_favorite_collection_export}
+                           404 {:description "Favorite collection not found."
+                                :body s/Any}
+                           406 {:description "Could not delete favorite collection."
+                                :body s/Any}}}}]]])

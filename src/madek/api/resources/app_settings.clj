@@ -54,7 +54,7 @@
                 (= 1))] res))
 
 (defn handle_update-app-settings
-  [{{body :body} :parameters tx :tx :as req}]
+  [{{body :body} :parameters tx :tx}]
   (try
     (catcher/with-logging {}
       (if (update-app-settings body tx)
@@ -160,7 +160,8 @@
             :swagger {:produces "application/json"}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body s/Any}}}
+            :responses {200 {:body s/Any
+                             :description "Returns the app settings."}}}
 
       :put {:summary (sd/sum_adm "Update App Settings.")
             :handler handle_update-app-settings
@@ -171,9 +172,10 @@
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_update-app-settings}
-            :responses {200 {:body schema_export-app-settings}
-                        403 {:message "Only administrators are allowed to access this resource."}
-                        404 {:message "<Groups|Meta-Keys> entry does not exist"}}}}]]])
+            :responses {200 {:description "Returns the updated app settings."
+                             :body schema_export-app-settings}
+                        403 {:description "Only administrators are allowed to access this resource."}
+                        404 {:description "<Groups|Meta-Keys> entry does not exist"}}}}]]])
 
 (def user-routes
   [["/"
@@ -184,7 +186,8 @@
             :swagger {:produces "application/json"}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body schema_export-app-settings}}}}]]])
+            :responses {200 {:description "Returns the app settings."
+                             :body schema_export-app-settings}}}}]]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -116,16 +116,6 @@
           (sd/response_failed "Could not delete collection collection arc." 422))))
     (catch Exception e (sd/response_exception e))))
 
-(def schema_collection-collection-arc-export
-  {:id s/Uuid
-   :parent_id s/Uuid
-   :child_id s/Uuid
-   :highlight s/Bool
-   :order s/Num
-   :position s/Int
-   :created_at s/Any
-   :updated_at s/Any})
-
 (def schema_collection-collection-arc-update
   {;(s/optional-key :id) s/Uuid
    ;(s/optional-key :parent_id) s/Uuid
@@ -145,10 +135,6 @@
    (s/optional-key :order) s/Num
    (s/optional-key :position) s/Int})
 
-(def schema_collection-query
-  {(s/optional-key :child_id) s/Uuid
-   (s/optional-key :parent_id) s/Uuid})
-
 (sa/def ::group-id-query-def (sa/keys :opt-un [::sp/child_id ::sp/parent_id ::sp/page ::sp/size]))
 (sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/child_id ::sp/parent_id ::sp/highlight]
                                      :opt-un [::sp-nil/order ::sp-nil/created_at ::sp-nil/updated_at ::sp-nil/position]))
@@ -163,7 +149,8 @@
       :handler handle_query-arcs
       :coercion spec/coercion
       :parameters {:query ::group-id-query-def}
-      :responses {200 {:body any?}} ; TODO response coercion
+      :responses {200 {:description "Returns the collection collection arcs."
+                       :body any?}} ; TODO response coercion
       }}]
    ; TODO rename param to collection_id
    ; TODO add permission checks
@@ -174,8 +161,10 @@
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}} ; TODO response coercion
+      :responses {200 {:description "Returns the collection collection arc."
+                       :body s/Any}
+                  404 {:description "Collection collection arc not found."
+                       :body s/Any}} ; TODO response coercion
       }}]])
 ; TODO rename param use middleware for permissions
 (def collection-routes
@@ -202,8 +191,10 @@
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}
                    :body schema_collection-collection-arc-create}
-      :responses {200 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the created collection collection arc."
+                       :body s/Any}
+                  406 {:description "Could not create collection collection arc"
+                       :body s/Any}}}
 
      :get
      {:summary "Get collection collection arcs."
@@ -212,8 +203,10 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}} ; TODO response coercion
+      :responses {200 {:description "Returns the collection collection arc."
+                       :body s/Any}
+                  404 {:description "Collection collection arc not found."
+                       :body s/Any}} ; TODO response coercion
       }
 
      ; TODO col col arc update tests
@@ -226,9 +219,12 @@
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}
                    :body schema_collection-collection-arc-update}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the updated collection collection arc."
+                       :body s/Any}
+                  404 {:description "Collection collection arc not found."
+                       :body s/Any}
+                  406 {:description "Could not update collection collection arc"
+                       :body s/Any}}}
 
      ; TODO col col arc delete tests
      :delete
@@ -238,9 +234,12 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}}
-      :responses {200 {:body s/Any}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]])
+      :responses {200 {:description "Returns the deleted collection collection arc."
+                       :body s/Any}
+                  404 {:description "Collection collection arc not found."
+                       :body s/Any}
+                  406 {:description "Could not delete collection collection arc"
+                       :body s/Any}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -47,7 +47,8 @@
    :handler handle-create-person
    :middleware [wrap-authorize-admin!]
    :parameters {:body schema}
-   :responses {201 {:body get-person/schema}
+   :responses {201 {:description "Created."
+                    :body get-person/schema}
                409 {:description "Conflict."
                     :schema s/Str
                     :examples {"application/json" {:message "Violation of constraint"}}}}

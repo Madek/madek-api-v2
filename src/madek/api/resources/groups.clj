@@ -122,18 +122,6 @@
    (s/optional-key :institution) (s/maybe s/Str)
    (s/optional-key :created_by_user_id) (s/maybe s/Uuid)})
 
-(def schema_export-group
-  {:id s/Uuid
-   (s/optional-key :name) s/Str
-   (s/optional-key :type) s/Str ; TODO enum
-   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
-   (s/optional-key :created_at) s/Any
-   (s/optional-key :updated_at) s/Any
-   (s/optional-key :institutional_id) (s/maybe s/Str)
-   (s/optional-key :institutional_name) (s/maybe s/Str)
-   (s/optional-key :institution) (s/maybe s/Str)
-   (s/optional-key :searchable) s/Str})
-
 (defn handle_create-group
   [req]
   (try
@@ -169,19 +157,6 @@
     ;(info "handle_update-group" "\nid\n" id "\nbody\n" body)
     (patch-group {:params {:group-id id} :body body} tx)))
 
-(def schema_query-groups
-  {(s/optional-key :id) s/Uuid
-   (s/optional-key :name) s/Str
-   (s/optional-key :type) s/Str
-   (s/optional-key :created_at) s/Any
-   (s/optional-key :updated_at) s/Any
-   (s/optional-key :institutional_id) s/Str
-   (s/optional-key :institutional_name) s/Str
-   (s/optional-key :institution) s/Str
-   (s/optional-key :created_by_user_id) s/Uuid
-   (s/optional-key :searchable) s/Str
-   (s/optional-key :full_data) s/Bool})
-
 (def schema_export-group
   {:id s/Uuid
    (s/optional-key :name) s/Str
@@ -215,7 +190,8 @@
                      :handler index
                      :parameters {:query ::group-query-def}
                      :coercion spec/coercion
-                     :responses {200 {:body ::response-groups-body}}}}]
+                     :responses {200 {:description "Returns a list of group ids."
+                                      :body ::response-groups-body}}}}]
 
     ["groups/:id" {:get {:summary "Get group by id"
                          :description "Get group by id. Returns 404, if no such group exists."
@@ -225,8 +201,10 @@
                          :middleware [wrap-authorize-admin!]
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:path {:id s/Uuid}}
-                         :responses {200 {:body schema_export-group}
-                                     404 {:body s/Any}}}}]]])
+                         :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                          :body schema_export-group}
+                                     404 {:description "Not Found."
+                                          :body s/Any}}}}]]])
 
 (def ring-routes
   ["/"
@@ -237,7 +215,8 @@
                     :middleware [wrap-authorize-admin!]
                     :parameters {:query ::group-query-def}
                     :coercion spec/coercion
-                    :responses {200 {:body {:groups [(st/spec {:spec :usr/groups})]}}}} ;;ok
+                    :responses {200 {:description "Returns a list of group ids."
+                                     :body {:groups [(st/spec {:spec :usr/groups})]}}}} ;;ok
 
               :post {:summary (f "Create a group" "groups::person_id-not-exists")
                      :description "Create a group."
@@ -248,14 +227,16 @@
                      :accept "application/json"
                      :coercion reitit.coercion.schema/coercion
                      :parameters {:body schema_import-group}
-                     :responses {201 {:body schema_export-group}
+                     :responses {201 {:description "Created."
+                                      :body schema_export-group}
                                  404 {:description "Not Found."
                                       :schema s/Str
                                       :examples {"application/json" {:message "User entry not found"}}}
                                  409 {:description "Conflict."
                                       :schema s/Str
                                       :examples {"application/json" {:message "Entry already exists"}}}
-                                 500 {:body s/Any}}}}]
+                                 500 {:description "Internal Server Error."
+                                      :body s/Any}}}}]
 
    ["groups/:id" {:get {:summary "Get group by id OR institutional-id"
                         :description "CAUTION: Get group by id OR institutional-id. Returns 404, if no such group exists."
@@ -269,7 +250,8 @@
                         ;; can be uuid (group-id) or string (institutional-id)
                         ;; http://localhost:3104/api/admin/groups/%3Fthis%23id%2Fneeds%2Fto%2Fbe%2Furl%26encoded>,
 
-                        :responses {200 {:body schema_export-group}
+                        :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                         :body schema_export-group}
                                     404 {:description "Not Found."
                                          :schema s/Str
                                          :examples {"application/json" {:message "No such group found"}}}}}
@@ -279,7 +261,8 @@
                            :middleware [wrap-authorize-admin!]
                            :coercion reitit.coercion.schema/coercion
                            :parameters {:path {:id s/Uuid}}
-                           :responses {403 {:body s/Any}
+                           :responses {403 {:description "Forbidden."
+                                            :body s/Any}
                                        ;; TODO: response of type octet-stream not yet supported?
                                        204 {:description "No Content. The resource was deleted successfully."
                                             :schema nil
@@ -295,8 +278,10 @@
                         :coercion reitit.coercion.schema/coercion
                         :parameters {:path {:id s/Uuid}
                                      :body schema_update-group}
-                        :responses {200 {:body s/Any} ;groups/schema_export-group}
-                                    404 {:body s/Any}}}}] ; TODO error handling
+                        :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                         :body s/Any} ;groups/schema_export-group}
+                                    404 {:description "Not Found."
+                                         :body s/Any}}}}] ; TODO error handling
 
    ; groups-users/ring-routes
    ["groups/:group-id/users" {:get {:summary "Get group users by id"
@@ -322,8 +307,10 @@
                                     :parameters {:path {:group-id s/Uuid}
                                                  :body group-users/schema_update-group-user-list}
 
-                                    :responses {200 {:body s/Any} ;groups/schema_export-group}
-                                                404 {:body s/Str}}}}]
+                                    :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                     :body s/Any} ;groups/schema_export-group}
+                                                404 {:description "Not Found."
+                                                     :body s/Str}}}}]
 
    ["groups/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
                                              :description "gid= uuid/institutional_id\n
@@ -338,7 +325,8 @@
                                              ;:parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
                                              :parameters {:path {:group-id s/Str :user-id s/Str}}
 
-                                             :responses {200 {:body group-users/schema_export-group-user-simple}
+                                             :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                              :body group-users/schema_export-group-user-simple}
                                                          404 {:description "Creation failed."
                                                               :schema s/Str
                                                               :examples {"application/json" {:message "No such group or user."}}}}}
@@ -356,7 +344,8 @@
                                              :parameters {:path {:group-id s/Str :user-id s/Str}}
                                              ;:parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
 
-                                             :responses {200 {:body {:users [group-users/schema_export-group-user-simple]}}
+                                             :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                              :body {:users [group-users/schema_export-group-user-simple]}}
                                                          404 {:description "Creation failed."
                                                               :schema s/Str
                                                               :examples {"application/json" {:message "No such group or user."}}}}} ; TODO error handling
@@ -368,11 +357,13 @@
                                                 :middleware [wrap-authorize-admin!]
                                                 :coercion reitit.coercion.schema/coercion
                                                 :parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
-                                                :responses {200 {:body {:users [group-users/schema_export-group-user-simple]}}
+                                                :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                                 :body {:users [group-users/schema_export-group-user-simple]}}
                                                             404 {:description "Not Found."
                                                                  :schema s/Str
                                                                  :examples {"application/json" {:message "No such group or user."}}}
-                                                            406 {:body s/Str}}}}] ; TODO error handling
+                                                            406 {:description "Could not delete group-user."
+                                                                 :body s/Str}}}}] ; TODO error handling
    ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

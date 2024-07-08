@@ -125,8 +125,10 @@
             :coercion reitit.coercion.schema/coercion
             :middleware [wrap-authorize-admin!]
             :parameters {:body schema_import_usage_terms}
-            :responses {200 {:body schema_export_usage_term}
-                        406 {:body s/Any}}}
+            :responses {200 {:description "Returns the created usage_term."
+                             :body schema_export_usage_term}
+                        406 {:description "Could not create usage_term."
+                             :body s/Any}}}
 
      ; usage_term list / query
      :get {:summary (sd/sum_adm "List usage_terms.")
@@ -134,8 +136,10 @@
            :coercion reitit.coercion.schema/coercion
            :middleware [wrap-authorize-admin!]
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_usage_term]}
-                       406 {:body s/Any}}}}]
+           :responses {200 {:description "Returns the usage_terms."
+                            :body [schema_export_usage_term]}
+                       406 {:description "Could not list usage_terms."
+                            :body s/Any}}}}]
 
    ; edit usage_term
    ["usage-terms/:id"
@@ -145,7 +149,8 @@
                         (wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_usage_term}
+           :responses {200 {:description "Returns the usage_term."
+                            :body schema_export_usage_term}
                        404 {:description "Not found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}
@@ -157,11 +162,13 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update_usage_terms}
-           :responses {200 {:body schema_export_usage_term}
+           :responses {200 {:description "Returns the updated usage_term."
+                            :body schema_export_usage_term}
                        404 {:description "Not found."
                             :schema s/Str
                             :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}
-                       406 {:body s/Any}}}
+                       406 {:description "Not Acceptable."
+                            :body s/Any}}}
 
      :delete {:summary (sd/sum_adm "Delete usage_term by id.")
               :coercion reitit.coercion.schema/coercion
@@ -169,8 +176,8 @@
               :middleware [wrap-authorize-admin!
                            (wwrap-find-usage_term :id)]
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export_usage_term}
-
+              :responses {200 {:description "Returns the deleted usage_term."
+                               :body schema_export_usage_term}
                           404 {:description "Not found."
                                :schema s/Str
                                :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}}]])
@@ -184,7 +191,8 @@
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_usage_term]}}}}]
+           :responses {200 {:description "Returns the usage_terms."
+                            :body [schema_export_usage_term]}}}}]
 
    ["usage-terms/:id"
     {:get {:summary (sd/sum_pub "Get usage_terms by id.")
@@ -192,5 +200,7 @@
            :middleware [(wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_usage_term}
-                       404 {:body s/Any}}}}]])
+           :responses {200 {:description "Returns the usage_term."
+                            :body schema_export_usage_term}
+                       404 {:description "Not found."
+                            :body s/Any}}}}]])

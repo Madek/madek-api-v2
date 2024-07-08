@@ -52,6 +52,9 @@
 (sa/def ::filter_by (st/spec {:spec string?}))
 (sa/def ::subtype (st/spec {:spec string?}))
 (sa/def ::text (st/spec {:spec string?}))
+(sa/def ::vocabulary_id (st/spec {:spec string?}))
+(sa/def ::meta_datum_object_type (st/spec {:spec string?}))
+(sa/def ::admin_comment (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))
@@ -76,12 +79,16 @@
 (sa/def ::me_get_metadata_and_previews (st/spec {:spec boolean?}))
 (sa/def ::me_get_full_size (st/spec {:spec boolean?}))
 (sa/def ::me_edit_permissions (st/spec {:spec boolean?}))
+(sa/def ::is_enabled_for_collections (st/spec {:spec boolean?}))
+(sa/def ::is_enabled_for_media_entries (st/spec {:spec boolean?}))
 (sa/def ::public_get_full_size (st/spec {:spec boolean?}))
 (sa/def ::me_edit_metadata (st/spec {:spec boolean?}))
 (sa/def ::me_edit_permission (st/spec {:spec boolean?}))
 (sa/def ::me_edit_metadata_and_relations (st/spec {:spec boolean?}))
 (sa/def ::get_metadata_and_previews (st/spec {:spec boolean?}))
 (sa/def ::is_published (st/spec {:spec boolean?}))
+(sa/def ::keywords_alphabetical_order (st/spec {:spec boolean?}))
+(sa/def ::is_extensible_list (st/spec {:spec boolean?}))
 
 (sa/def ::position (st/spec {:spec int?}))
 
@@ -89,6 +96,7 @@
                                   :description "An array of any types"}))
 
 (sa/def ::rdf_class (st/spec {:spec string?}))
+(sa/def ::scope (st/spec {:spec string?}))
 
 (sa/def ::layout (st/spec {:spec any?}))
 (sa/def ::sorting (st/spec {:spec any?}))
@@ -100,9 +108,20 @@
 (sa/def ::media_files (st/spec {:spec any?}))
 (sa/def ::previews (st/spec {:spec any?}))
 (sa/def ::col_arcs (st/spec {:spec any?}))
+
+(sa/def ::labels_2 (st/spec {:spec any?}))
+(sa/def ::descriptions_2 (st/spec {:spec any?}))
+(sa/def ::admin_comment_2 (st/spec {:spec any?}))
+(sa/def ::is_enabled_for_public_use (st/spec {:spec any?}))
+(sa/def ::is_enabled_for_public_view (st/spec {:spec any?}))
+(sa/def ::io_mappings (st/spec {:spec any?}))
+(sa/def ::id_2 (st/spec {:spec any?}))
+(sa/def ::text_type (st/spec {:spec string?}))
+(sa/def ::position_2 (st/spec {:spec int?}))
 (sa/def ::col_meta_data (st/spec {:spec any?}))
 (sa/def ::labels (st/spec {:spec map?}))
 (sa/def ::documentation_urls (st/spec {:spec list?}))
+(sa/def ::allowed_people_subtypes (st/spec {:spec any?}))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -48,7 +48,8 @@
                           (assoc (s/optional-key :subtype) (:subtype create/schema)))}
    :handler update-person-handler
    :middleware [wrap-authorize-admin!]
-   :responses {200 {:body get-person/schema}
+   :responses {200 {:description "Updated."
+                    :body get-person/schema}
                404 {:description "Not found."
                     :schema s/Str
                     :examples {"application/json" {:message "Person not found."}}}

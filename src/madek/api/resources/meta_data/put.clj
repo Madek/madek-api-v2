@@ -86,7 +86,8 @@
                                    :parameters {:path {:media_entry_id s/Uuid
                                                        :meta_key_id s/Str}
                                                 :body {:json s/Any}}
-                                   :responses {200 {:body s/Any}}})
+                                   :responses {200 {:description "Returns the updated meta-data."
+                                                    :body s/Any}}})
 
 (def meta_key_id.text-date {:summary "Update meta-data text-date for media-entry"
                             :handler handle_update-meta-data-text-date
@@ -96,7 +97,8 @@
                             :parameters {:path {:media_entry_id s/Uuid
                                                 :meta_key_id s/Str}
                                          :body {:string s/Str}}
-                            :responses {200 {:body s/Any}}})
+                            :responses {200 {:description "Returns the updated meta-data."
+                                             :body s/Any}}})
 
 (def media_entry.meta_key_id.text {:summary "Update meta-data text for media-entry"
                                    :handler handle_update-meta-data-text
@@ -106,7 +108,8 @@
                                    :parameters {:path {:media_entry_id s/Uuid
                                                        :meta_key_id s/Str}
                                                 :body {:string s/Str}}
-                                   :responses {200 {:body s/Any}}})
+                                   :responses {200 {:description "Returns the updated meta-data."
+                                                    :body s/Any}}})
 
 (def collection.meta_key_id.json {:summary "Update meta-data json for collection."
                                   :handler handle_update-meta-data-json
@@ -116,7 +119,8 @@
                                   :parameters {:path {:collection_id s/Uuid
                                                       :meta_key_id s/Str}
                                                :body {:json s/Any}}
-                                  :responses {200 {:body s/Any}}})
+                                  :responses {200 {:description "Returns the updated meta-data."
+                                                   :body s/Any}}})
 
 (def text.meta_key_id.text-date {:summary "Update meta-data text-date for collection."
                                  :handler handle_update-meta-data-text-date
@@ -126,7 +130,8 @@
                                  :parameters {:path {:collection_id s/Uuid
                                                      :meta_key_id s/Str}
                                               :body {:string s/Str}}
-                                 :responses {200 {:body s/Any}}})
+                                 :responses {200 {:description "Returns the updated meta-data."
+                                                  :body s/Any}}})
 
 (def meta_key_id.text {:summary "Update meta-data text for collection."
                        :handler handle_update-meta-data-text
@@ -139,4 +144,5 @@
                        :parameters {:path {:collection_id s/Uuid
                                            :meta_key_id s/Str}
                                     :body {:string s/Str}}
-                       :responses {200 {:body s/Any}}})
+                       :responses {200 {:description "Returns the updated meta-data."
+                                        :body s/Any}}})

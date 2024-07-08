@@ -60,7 +60,8 @@
    :handler update-user-handler
    :middleware [wrap-authorize-admin!
                 (wrap-find-user :id)]
-   :responses {200 {:body get-user/schema}
+   :responses {200 {:description "User updated."
+                    :body get-user/schema}
                404 {:description "Not Found."
                     :schema s/Str
                     :examples {"application/json" {:message "No such user."}}}}})

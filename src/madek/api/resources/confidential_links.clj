@@ -167,8 +167,10 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Uuid}
                          :body schema_import_conf_link}
-            :responses {200 {:body schema_export_conf_link}
-                        406 {:body s/Any}}}
+            :responses {200 {:description "Returns the created confidential link."
+                             :body schema_export_conf_link}
+                        406 {:description "Could not create confidential link."
+                             :body s/Any}}}
 
      :get {:summary (sd/sum_adm "List workflows.")
            :handler handle_list-conf-links
@@ -177,8 +179,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}
                         :query {(s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_conf_link]}
-                       406 {:body s/Any}}}}]
+           :responses {200 {:description "Returns the list of confidential links."
+                            :body [schema_export_conf_link]}
+                       406 {:description "Could not list confidential links."
+                            :body s/Any}}}}]
 
    ["/conf-link/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
@@ -188,8 +192,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid
                                :id s/Uuid}}
-           :responses {200 {:body schema_export_conf_link}
-                       404 {:body s/Any}}}
+           :responses {200 {:description "Returns the confidential link."
+                            :body schema_export_conf_link}
+                       404 {:description "No such confidential link."
+                            :body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update confidential link with id.")
            :handler handle_update-conf-link
@@ -199,9 +205,12 @@
            :parameters {:path {:media_entry_id s/Uuid
                                :id s/Uuid}
                         :body schema_update_conf_link}
-           :responses {200 {:body schema_export_conf_link}
-                       404 {:body s/Any}
-                       406 {:body s/Any}}}
+           :responses {200 {:description "Returns the updated confidential link."
+                            :body schema_export_conf_link}
+                       404 {:description "No such confidential link."
+                            :body s/Any}
+                       406 {:description "Could not update confidential link."
+                            :body s/Any}}}
 
      :delete {:summary (sd/sum_adm "Delete confidential link by id.")
               :coercion reitit.coercion.schema/coercion
@@ -210,8 +219,10 @@
                            jqh/ring-wrap-authorization-edit-permissions]
               :parameters {:path {:media_entry_id s/Uuid
                                   :id s/Uuid}}
-              :responses {200 {:body schema_export_conf_link}
-                          404 {:body s/Any}}}}]])
+              :responses {200 {:description "Returns the deleted confidential link."
+                               :body schema_export_conf_link}
+                          404 {:description "No such confidential link."
+                               :body s/Any}}}}]])
 
 ; TODO check can edit permissions
 (def user-col-routes
@@ -225,8 +236,10 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Uuid}
                          :body schema_import_conf_link}
-            :responses {200 {:body schema_export_conf_link}
-                        406 {:body s/Any}}}
+            :responses {200 {:description "Returns the created confidential link."
+                             :body schema_export_conf_link}
+                        406 {:description "Could not create confidential link."
+                             :body s/Any}}}
 
      :get {:summary (sd/sum_adm "List workflows.")
            :handler handle_list-conf-links
@@ -234,8 +247,10 @@
                         jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body [schema_export_conf_link]}
-                       406 {:body s/Any}}}}]
+           :responses {200 {:description "Returns the list of confidential links."
+                            :body [schema_export_conf_link]}
+                       406 {:description "Could not list confidential links."
+                            :body s/Any}}}}]
 
    ["/conf-link/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
@@ -245,8 +260,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid
                                :id s/Uuid}}
-           :responses {200 {:body schema_export_conf_link}
-                       404 {:body s/Any}}}
+           :responses {200 {:description "Returns the confidential link."
+                            :body schema_export_conf_link}
+                       404 {:description "No such confidential link."
+                            :body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update confidential link with id.")
            :handler handle_update-conf-link
@@ -256,9 +273,12 @@
            :parameters {:path {:collection_id s/Uuid
                                :id s/Uuid}
                         :body schema_update_conf_link}
-           :responses {200 {:body schema_export_conf_link}
-                       404 {:body s/Any}
-                       406 {:body s/Any}}}
+           :responses {200 {:description "Returns the updated confidential link."
+                            :body schema_export_conf_link}
+                       404 {:description "No such confidential link."
+                            :body s/Any}
+                       406 {:description "Could not update confidential link."
+                            :body s/Any}}}
 
      :delete {:summary (sd/sum_adm "Delete confidential link by id.")
               :coercion reitit.coercion.schema/coercion
@@ -267,5 +287,7 @@
                            jqh/ring-wrap-authorization-edit-permissions]
               :parameters {:path {:collection_id s/Uuid
                                   :id s/Uuid}}
-              :responses {200 {:body schema_export_conf_link}
-                          404 {:body s/Any}}}}]])
+              :responses {200 {:description "Returns the deleted confidential link."
+                               :body schema_export_conf_link}
+                          404 {:description "No such confidential link."
+                               :body s/Any}}}}]])

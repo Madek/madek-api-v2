@@ -122,8 +122,10 @@
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
       :parameters {:body schema_import_io_interfaces}
-      :responses {200 {:body schema_export_io_interfaces}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the created io_interface."
+                       :schema schema_export_io_interfaces}
+                  406 {:description "Could not create io_interface."
+                       :schema s/Any}}}
 
      ; io_interface list / query
      :get
@@ -132,7 +134,8 @@
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query {(s/optional-key :full_data) s/Bool}}
-      :responses {200 {:body [schema_export_io_interfaces_opt]}}}}]
+      :responses {200 {:description "Returns the io_interfaces."
+                       :schema [schema_export_io_interfaces_opt]}}}}]
 
    ; edit io_interface
    ["io_interfaces/:id"
@@ -143,8 +146,10 @@
                    wrap-find-io_interface]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}}
-      :responses {200 {:body schema_export_io_interfaces}
-                  404 {:body s/Any}}}
+      :responses {200 {:description "Returns the io_interface."
+                       :schema schema_export_io_interfaces}
+                  404 {:description "Not Found."
+                       :schema s/Any}}}
 
      :put
      {:summary (sd/sum_adm "Update io_interfaces with id.")
@@ -154,9 +159,12 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}
                    :body schema_update_io_interfaces}
-      :responses {200 {:body schema_export_io_interfaces}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the updated io_interface."
+                       :body schema_export_io_interfaces}
+                  404 {:description "Not Found."
+                       :body s/Any}
+                  406 {:description "Could not update io_interface."
+                       :body s/Any}}}
 
      :delete
      {:summary (sd/sum_adm "Delete io_interface by id.")
@@ -165,6 +173,9 @@
       :middleware [wrap-authorize-admin!
                    wrap-find-io_interface]
       :parameters {:path {:id s/Str}}
-      :responses {200 {:body schema_export_io_interfaces}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]])
+      :responses {200 {:description "Returns the deleted io_interface."
+                       :body schema_export_io_interfaces}
+                  404 {:description "Not Found."
+                       :body s/Any}
+                  406 {:description "Could not delete io_interface."
+                       :body s/Any}}}}]])

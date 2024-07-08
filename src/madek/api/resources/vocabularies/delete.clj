@@ -46,14 +46,16 @@
                             :coercion reitit.coercion.schema/coercion
                             :parameters {:path {:id s/Str}}
                             ;:responses {200 {:body schema_export-vocabulary}
-                            :responses {200 {:body c/schema_export-vocabulary-admin}
+                            :responses {200 {:description "Returns the deleted vocabulary."
+                                             :body c/schema_export-vocabulary-admin}
                                         403 {:description "Forbidden."
                                              :schema s/Str
                                              :examples {"application/json" {:message "References still exist"}}}
                                         404 {:description "Not found."
                                              :schema s/Str
                                              :examples {"application/json" {:message "No such vocabulary."}}}
-                                        500 {:body s/Any}}
+                                        500 {:description "Deletion failed."
+                                             :body s/Any}}
                             :swagger {:produces "application/json"}})
 
 (def admin.vocabularies.user.user_id {:summary (sd/sum_adm "Delete vocabulary user permissions")
@@ -68,7 +70,8 @@
                                       ;; TODO: remove this
                                       :description (str "TODO: REMOVE THIS | user_id: columns , id: d48e4387-b80d-45de-9077-5d88c331fa6a")
 
-                                      :responses {200 {:body c/schema_export-user-perms}
+                                      :responses {200 {:description "Returns the deleted vocabulary user permission."
+                                                       :body c/schema_export-user-perms}
 
                                                   404 {:description "Not Found."
                                                        :schema s/Str
@@ -86,7 +89,8 @@
                                         :coercion reitit.coercion.schema/coercion
                                         :parameters {:path {:id s/Str
                                                             :group_id s/Uuid}}
-                                        :responses {200 {:body c/schema_export-group-perms}
+                                        :responses {200 {:description "Returns the deleted vocabulary group permission."
+                                                         :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
                                                          :schema s/Str
                                                          ;:examples {"application/json" {:message "Vocabulary entry not found"}}}

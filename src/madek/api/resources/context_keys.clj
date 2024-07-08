@@ -232,8 +232,10 @@
       :accept "application/json"
       :coercion reitit.coercion.schema/coercion
       :parameters {:body schema_import_context_keys}
-      :responses {200 {:body schema_export_context_key_admin}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the created context_key."
+                       :schema schema_export_context_key_admin}
+                  406 {:description "Could not create context_key."
+                       :schema s/Any}}}
 
      ; context_key list / query
      :get
@@ -242,8 +244,10 @@
       :middleware [wrap-authorize-admin!]
       :parameters {:query :adm/context-keys}
       :coercion spec/coercion
-      :responses {200 {:body :adm/context-keys-response}
-                  406 {:body any?}}}}]
+      :responses {200 {:description "Returns the context_keys."
+                       :schema :adm/context-keys-response}
+                  406 {:description "Could not list context_keys."
+                       :schema any?}}}}]
    ; edit context_key
    ["context-keys/:id"
     {:get
@@ -253,9 +257,12 @@
                    (wwrap-find-context_key :id :id true)]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_context_key_admin}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the context_key."
+                       :schema schema_export_context_key_admin}
+                  404 {:description "Not found"
+                       :schema s/Any}
+                  406 {:description "Could not get context_key."
+                       :schema s/Any}}}
 
      :put
      {:summary (sd/sum_adm "Update context_keys with id.")
@@ -265,9 +272,12 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}
                    :body schema_update_context_keys}
-      :responses {200 {:body schema_export_context_key_admin}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the updated context_key."
+                       :schema schema_export_context_key_admin}
+                  404 {:description "Not found"
+                       :body s/Any}
+                  406 {:description "Could not update context_key."
+                       :body s/Any}}}
 
      :delete
      {:summary (sd/sum_adm_todo "Delete context_key by id.")
@@ -276,9 +286,12 @@
       :middleware [wrap-authorize-admin!
                    (wwrap-find-context_key :id :id true)]
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_context_key_admin}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]])
+      :responses {200 {:description "Returns the deleted context_key."
+                       :body schema_export_context_key_admin}
+                  404 {:description "Not found"
+                       :body s/Any}
+                  406 {:description "Could not delete context_key."
+                       :body s/Any}}}}]])
 
 ; TODO docu
 (def user-routes
@@ -293,8 +306,10 @@
                            (s/optional-key :context_id) s/Str
                            (s/optional-key :meta_key_id) s/Str
                            (s/optional-key :is_required) s/Bool}}
-      :responses {200 {:body [schema_export_context_key]}
-                  406 {:body s/Any}}}}]
+      :responses {200 {:description "Returns the context_keys."
+                       :body [schema_export_context_key]}
+                  406 {:description "Could not list context_keys."
+                       :body s/Any}}}}]
 
    ["context-keys/:id"
     {:get
@@ -303,9 +318,10 @@
       :middleware [(wwrap-find-context_key :id :id true)]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_context_key}
+      :responses {200 {:description "Returns the context_key."
+                       :body schema_export_context_key}
 
-                  400 {:message "Bad request"
+                  400 {:description "Bad request"
                        :body {:schema {:id s/Str :Keyword s/Str}
                               :errors {:id s/Str}
                               :type s/Str
@@ -313,5 +329,5 @@
                               :value {:id s/Str}
                               :in [s/Str]}}
 
-                  404 {:message "Not found"
+                  404 {:description "Not found"
                        :body s/Any}}}}]])

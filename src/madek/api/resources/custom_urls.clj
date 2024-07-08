@@ -167,6 +167,10 @@
     {:get {:summary (sd/sum_usr "Query and list custom_urls.")
            :handler handle_list-custom-urls
            :coercion reitit.coercion.schema/coercion
+           :responses {200 {:description "Returns the custom_urls."
+                            :body s/Any}
+                       404 {:description "Not found."
+                            :body s/Any}}
            :parameters {:query {(s/optional-key :full_data) s/Bool
                                 (s/optional-key :id) s/Str
                                 (s/optional-key :media_entry_id) s/Uuid
@@ -175,6 +179,10 @@
     {:get {:summary (sd/sum_usr "Get custom_url.")
            :handler handle_get-custom-url
            :coercion reitit.coercion.schema/coercion
+           :responses {200 {:description "Returns the custom_url."
+                            :body schema_export_custom_url}
+                       404 {:description "Not found."
+                            :body s/Any}}
            :parameters {:path {:id s/Str}}}}]])
 
 ; TODO Q? custom_url without media-entry or collection ?? filter_set ?? ignore ??
@@ -188,8 +196,10 @@
                        jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}}
-          :responses {200 {:body schema_export_custom_url}
-                      404 {:body s/Any}}}
+          :responses {200 {:description "Returns the custom_url."
+                           :body schema_export_custom_url}
+                      404 {:description "Not found."
+                           :body s/Any}}}
     ; TODO db schema allows multiple entries for multiple users
     :post {:summary (sd/sum_usr "Create custom_url for media entry.")
            :handler handle_create-custom-urls
@@ -198,8 +208,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :body schema_create_custom_url}
-           :responses {200 {:body schema_export_custom_url}
-                       406 {:body s/Any}}}
+           :responses {200 {:description "Returns the created custom_url."
+                            :body schema_export_custom_url}
+                       406 {:description "Creation failed."
+                            :body s/Any}}}
 
     :put {:summary (sd/sum_usr "Update custom_url for media entry.")
           :handler handle_update-custom-urls
@@ -208,8 +220,10 @@
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Str}
                        :body schema_update_custom_url}
-          :responses {200 {:body schema_export_custom_url}
-                      406 {:body s/Any}}}
+          :responses {200 {:description "Returns the updated custom_url."
+                           :body schema_export_custom_url}
+                      406 {:description "Update failed."
+                           :body s/Any}}}
 
     :delete {:summary (sd/sum_todo "Delete custom_url for media entry.")
              :handler handle_delete-custom-urls
@@ -217,8 +231,10 @@
                           jqh/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:media_entry_id s/Str}}
-             :responses {200 {:body schema_export_custom_url}
-                         404 {:body s/Any}}}}])
+             :responses {200 {:description "Returns the deleted custom_url."
+                              :body schema_export_custom_url}
+                         404 {:description "Not found."
+                              :body s/Any}}}}])
 
 (def collection-routes
   ["/collection/:collection_id/custom_url"
@@ -228,6 +244,10 @@
           :middleware [jqh/ring-wrap-add-media-resource
                        jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
+          :responses {200 {:description "Returns the custom_url."
+                           :body schema_export_custom_url}
+                      404 {:description "Not found."
+                           :body s/Any}}
           :parameters {:path {:collection_id s/Str}}}
 
     :post {:summary (sd/sum_usr "Create custom_url for collection.")
@@ -237,8 +257,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Str}
                         :body schema_create_custom_url}
-           :responses {200 {:body schema_export_custom_url}
-                       406 {:body s/Any}}}
+           :responses {200 {:description "Returns the created custom_url."
+                            :body schema_export_custom_url}
+                       406 {:description "Creation failed."
+                            :body s/Any}}}
 
     :put {:summary (sd/sum_usr "Update custom_url for collection.")
           :handler handle_update-custom-urls
@@ -247,8 +269,10 @@
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Str}
                        :body schema_update_custom_url}
-          :responses {200 {:body schema_export_custom_url}
-                      406 {:body s/Any}}}
+          :responses {200 {:description "Returns the updated custom_url."
+                           :body schema_export_custom_url}
+                      406 {:description "Update failed."
+                           :body s/Any}}}
 
     :delete {:summary (sd/sum_todo "Delete custom_url for collection.")
              :handler handle_delete-custom-urls
@@ -256,5 +280,7 @@
                           jqh/ring-wrap-authorization-edit-metadata]
              :coercion reitit.coercion.schema/coercion
              :parameters {:path {:collection_id s/Str}}
-             :responses {200 {:body schema_export_custom_url}
-                         404 {:body s/Any}}}}])
+             :responses {200 {:description "Returns the deleted custom_url."
+                              :body schema_export_custom_url}
+                         404 {:description "Not found."
+                              :body s/Any}}}}])

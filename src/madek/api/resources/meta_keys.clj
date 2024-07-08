@@ -1,6 +1,7 @@
 (ns madek.api.resources.meta-keys
   (:require
    [clojure.java.io :as io]
+   [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.index :as mkindex]
@@ -8,29 +9,28 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-any :as sp-any]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.coercion.spec-alpha-definition-str :as sp-str]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist cast-to-hstore convert-map-if-exist
                                    replace-java-hashmaps mslurp replace-java-hashmaps v]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
    [schema.core :as s]
+   [spec-tools.core :as st]
    [taoensso.timbre :refer [info]]))
 
 (defn adm-export-meta-key [meta-key]
   (-> meta-key
-
       (assoc :hints (sd/transform_ml (:hints meta-key))
              :labels (sd/transform_ml (:labels meta-key))
              :descriptions (sd/transform_ml (:descriptions meta-key))
-             :documentation_urls (sd/transform_ml (:documentation_urls meta-key))
-
-             ;:labels_2 (sd/transform_ml (:labels_2 meta-key))
-             ;:descriptions_2 (sd/transform_ml (:descriptions_2 meta-key))
-             )))
+             :documentation_urls (sd/transform_ml (:documentation_urls meta-key)))))
 
 (defn adm-export-meta-key-list [meta-key]
   (-> meta-key
-
       (assoc :hints (sd/transform_ml (:hints meta-key))
              :labels (sd/transform_ml (:labels meta-key))
              :descriptions (sd/transform_ml (:descriptions meta-key))
@@ -45,11 +45,7 @@
       (assoc :hints (sd/transform_ml (:hints meta-key))
              :labels (sd/transform_ml (:labels meta-key))
              :descriptions (sd/transform_ml (:descriptions meta-key))
-             :documentation_urls (sd/transform_ml (:documentation_urls meta-key))
-
-             ;:labels_2 (sd/transform_ml (:labels_2 meta-key))
-             ;:descriptions_2 (sd/transform_ml (:descriptions_2 meta-key))
-             )))
+             :documentation_urls (sd/transform_ml (:documentation_urls meta-key)))))
 
 (defn user-export-meta-key-list [meta-key]
   (-> meta-key
@@ -58,7 +54,6 @@
              :labels (sd/transform_ml (:labels meta-key))
              :descriptions (sd/transform_ml (:descriptions meta-key))
              :documentation_urls (sd/transform_ml (:documentation_urls meta-key))
-
              :labels_2 (sd/transform_ml (:labels_2 meta-key))
              :descriptions_2 (sd/transform_ml (:descriptions_2 meta-key)))))
 
@@ -158,75 +153,51 @@
 
    (s/optional-key :admin_comment) (s/maybe s/Str)})
 
-(def schema_update-meta-key
-  {;:id s/Str
-   (s/optional-key :is_extensible_list) s/Bool
-   ;:meta_datum_object_type (s/enum "MetaDatum::Text"
-   ;                                "MetaDatum::TextDate"
-   ;                                "MetaDatum::JSON"
-   ;                                "MetaDatum::Keywords"
-   ;                                "MetaDatum::People"
-   ;                                "MetaDatum::Roles")
-   (s/optional-key :keywords_alphabetical_order) s/Bool
-   (s/optional-key :position) s/Int
-   (s/optional-key :is_enabled_for_media_entries) s/Bool
-   (s/optional-key :is_enabled_for_collections) s/Bool
-   ;:vocabulary_id s/Str
+(sa/def ::meta-query-def (sa/keys :opt-un [::sp/is_extensible_list ::sp/keywords_alphabetical_order ::sp/position
+                                           ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections ::sp/vocabulary_id
+                                           ::sp/allowed_people_subtypes ::sp-str/text_type ::sp-nil/allowed_rdf_class
+                                           ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints ::sp-nil/documentation_urls
+                                           ::sp-nil/admin_comment]))
 
-   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
-   (s/optional-key :text_type) s/Str ; TODO enum
-   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
+(sa/def ::schema_update-meta-key (sa/keys :req-un [::sp-str/id]))
 
-   (s/optional-key :labels) (s/maybe sd/schema_ml_list)
-   (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
-   (s/optional-key :hints) (s/maybe sd/schema_ml_list)
-   (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
+(sa/def ::schema_export-meta-key-usr
+  (sa/keys
+   :req-un [::sp-str/id ::sp/vocabulary_id
+            ::sp-any/labels ::sp-any/descriptions ::sp-any/hints ::sp-any/documentation_urls]
+   :opt-un [::sp/is_extensible_list ::sp/meta_datum_object_type ::sp/keywords_alphabetical_order ::sp/position
+            ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections
+            ::sp/allowed_people_subtypes ::sp/text_type ::sp-nil/allowed_rdf_class
+            ::sp/io_mappings
+            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
+            ::sp/labels_2 ::sp/descriptions_2 ::sp/id_2]))
 
-   (s/optional-key :admin_comment) (s/maybe s/Str)})
+(sa/def ::schema_export-meta-key-adm
+  (sa/keys
+   :req-un [::sp-str/id ::sp/vocabulary_id
+            ::sp/admin_comment
+            ::sp-any/labels ::sp-any/descriptions ::sp-any/hints ::sp-any/documentation_urls]
+   :opt-un [::sp/is_extensible_list ::sp/meta_datum_object_type ::sp/keywords_alphabetical_order ::sp/position
+            ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections
+            ::sp/allowed_people_subtypes ::sp/text_type ::sp-nil/allowed_rdf_class
+            ::sp/io_mappings
+            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
+            ::sp/labels_2 ::sp/descriptions_2 ::sp/id_2 ::sp/admin_comment_2]))
 
-(def schema_export-meta-key-usr
-  {:id s/Str
-   (s/optional-key :is_extensible_list) s/Bool
-   (s/optional-key :meta_datum_object_type) s/Str
-   (s/optional-key :keywords_alphabetical_order) s/Bool
-   (s/optional-key :position) s/Int
-   (s/optional-key :is_enabled_for_media_entries) s/Bool
-   (s/optional-key :is_enabled_for_collections) s/Bool
-   :vocabulary_id s/Str
+(sa/def ::meta-query-def (sa/keys :opt-un [::sp/id ::sp/vocabulary_id ::sp/meta_datum_object_type
+                                           ::sp/is_enabled_for_collections ::sp/is_enabled_for_media_entries ::sp/scope ::sp/page ::sp/size]))
 
-   (s/optional-key :allowed_people_subtypes) [s/Str]
-   (s/optional-key :text_type) s/Str
-   (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
+(sa/def ::meta-keys-id-query-def (sa/keys :req-un [::sp-str/id]))
 
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)
-   :hints (s/maybe sd/schema_ml_list)
-   :documentation_urls (s/maybe sd/schema_ml_list)
+(sa/def :meta-response-adm-def/meta-keys (st/spec {:spec (sa/coll-of ::schema_export-meta-key-adm)
+                                                   :description "A list of meta-keys"}))
 
-   ;:admin_comment (s/maybe s/Str)
-   (s/optional-key :io_mappings) s/Any
+(sa/def ::meta-keys-id-response-adm-def (sa/keys :req-un [:meta-response-adm-def/meta-keys]))
 
-   (s/optional-key :enabled_for_public_use) s/Bool
-   (s/optional-key :enabled_for_public_view) s/Bool
-   (s/optional-key :position_2) s/Int
-   (s/optional-key :labels_2) s/Any
-   (s/optional-key :descriptions_2) s/Any
-   (s/optional-key :id_2) s/Str
-   ;:admin_comment_2 (s/maybe s/Str)
-   })
+(sa/def :meta-response-usr-def/meta-keys (st/spec {:spec (sa/coll-of ::schema_export-meta-key-usr)
+                                                   :description "A list of meta-keys"}))
 
-(def schema_export-meta-key-adm
-  (assoc schema_export-meta-key-usr
-         :admin_comment (s/maybe s/Str)
-         (s/optional-key :admin_comment_2) (s/maybe s/Str)))
-
-(def schema_query-meta-key
-  {(s/optional-key :id) s/Str
-   (s/optional-key :vocabulary_id) s/Str
-   (s/optional-key :meta_datum_object_type) s/Str ; TODO enum
-   (s/optional-key :is_enabled_for_collections) s/Bool
-   (s/optional-key :is_enabled_for_media_entries) s/Bool
-   (s/optional-key :scope) (s/enum "view" "use")})
+(sa/def ::meta-keys-id-response-usr-def (sa/keys :req-un [:meta-response-usr-def/meta-keys]))
 
 (defn wwrap-find-meta_key [param colname send404]
   (fn [handler]
@@ -243,33 +214,30 @@
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_adm-query-meta-keys
            :middleware [wrap-authorize-admin!]
-           :swagger (jqh/generate-swagger-pagination-params)
-
            ; FIXME: returns vocabulary.id instead of meta-keys.id ??
-
-           :parameters {:query schema_query-meta-key}
+           :parameters {:query ::meta-query-def}
            :content-type "application/json"
-           :coercion reitit.coercion.schema/coercion
+           :coercion reitit.coercion.spec/coercion
            :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"
-                            :body {:meta-keys [schema_export-meta-key-adm]}}}}
+                            :schema ::meta-keys-id-response-adm-def}}}
 
      :post {:summary (sd/sum_adm "Create meta-key.")
             :handler handle_create_meta-key
             :middleware [wrap-authorize-admin!]
-
             :description (mslurp (io/resource "md/meta-key-post.md"))
-
             :parameters {:body schema_create-meta-key}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body schema_create-meta-key}
+            :responses {200 {:description "Returns the created meta-key."
+                             :schema schema_create-meta-key}
                         404 {:description "Duplicate key error"
                              :schema s/Str
                              :examples {"application/json" {:msg "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists."}}}
                         500 {:description "Internal Server Error"
                              :schema s/Str
                              :examples {"application/json" {:msg "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\")."}}}
-                        406 {:body s/Any}}}}]
+                        406 {:description "Creation failed"
+                             :schema s/Any}}}}]
 
    ["meta-keys/:id"
     {:get {:summary (sd/sum_adm "Get meta-key by id")
@@ -280,67 +248,46 @@
                         (jqh/wrap-check-valid-meta-key-new :id)
                         (wwrap-find-meta_key :id :id true)]
            :handler handle_adm-get-meta-key
-           :coercion reitit.coercion.schema/coercion
-
-           :swagger {:produces "application/json"
-                     :parameters [{:name "id"
-                                   :in "path"
-                                   :description "e.g.: madek_core:subtitle"
-                                   :type "string"
-                                   :required true
-                                   :pattern "^[a-z0-9\\-\\_\\:]+:[a-z0-9\\-\\_\\:]+$"}]}
-
-           :responses {200 {:body schema_export-meta-key-adm}
-                       404 {:body {:message s/Str}}
+           :coercion reitit.coercion.spec/coercion
+           :parameters {:path ::meta-keys-id-query-def}
+           :responses {200 {:description "Returns the meta-key."
+                            :schema ::schema_export-meta-key-adm}
+                       404 {:description "No entry found for the given id"
+                            :schema map?}
                        422 {:description "Wrong format"
-                            :schema s/Str
+                            :body map?
                             :examples {"application/json" {:message "Wrong meta_key_id format! See documentation. (fdas)"}}}}}
 
      :put {:summary (sd/sum_adm "Update meta-key.")
            :handler handle_update_meta-key
            :content-type "application/json"
            :accept "application/json"
-
            :description (mslurp (io/resource "md/meta-key-put.md"))
-
            :middleware [wrap-authorize-admin!
                         (jqh/wrap-check-valid-meta-key-new :id)
                         (wwrap-find-meta_key :id :id true)]
-           :coercion reitit.coercion.schema/coercion
-
-           :swagger {:produces "application/json"
-                     :consumes "application/json"
-                     :parameters [{:name "id"
-                                   :in "path"
-                                   :description "e.g.: copyright:test_me_now22"
-                                   :type "string"
-                                   :required true}]}
-
-           :parameters {:body schema_update-meta-key}
-
-           :responses {200 {:body schema_export-meta-key-adm}
+           :coercion reitit.coercion.spec/coercion
+           :parameters {:path ::meta-keys-id-query-def
+                        :body ::schema_update-meta-key}
+           :responses {200 {:description "Returns the updated meta-key."
+                            :body ::schema_export-meta-key-adm}
                        406 {:description "Update failed"
-                            :schema s/Str
+                            :schema string?
                             :examples {"application/json" {:message "Could not update meta_key."}}}}}
 
      :delete {:summary (sd/sum_adm "Delete meta-key.")
               :handler handle_delete_meta-key
               :middleware [(jqh/wrap-check-valid-meta-key-new :id)
                            (wwrap-find-meta_key :id :id true)]
-              :coercion reitit.coercion.schema/coercion
-              :swagger {:produces "application/json"
-                        :consumes "application/json"
-                        :parameters [{:name "id"
-                                      :in "path"
-                                      :description "e.g.: copyright:test_me_now22"
-                                      :type "string"
-                                      :required true}]}
-
-              :responses {200 {:body schema_export-meta-key-adm}
+              :coercion reitit.coercion.spec/coercion
+              :parameters {:path ::meta-keys-id-query-def}
+              :responses {200 {:description "Returns the deleted meta-key."
+                               :body ::schema_export-meta-key-adm}
                           406 {:description "Entry not found"
-                               :schema s/Str
+                               :schema string?
                                :examples {"application/json" {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}}
-                          422 {:body {:message s/Str}}}}}]])
+                          422 {:description "Wrong format"
+                               :body any?}}}}]])
 
 ; TODO tests
 (def query-routes
@@ -350,14 +297,11 @@
     {:get {:summary (sd/sum_usr_pub "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
-           :parameters {:query schema_query-meta-key}
-           :swagger (jqh/generate-swagger-pagination-params)
+           :parameters {:query sp/schema_pagination_opt}
            :content-type "application/json"
-           :coercion reitit.coercion.schema/coercion
-
-           ; TODO or better own link
+           :coercion reitit.coercion.spec/coercion
            :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"
-                            :body {:meta-keys [schema_export-meta-key-usr]}}}}}]
+                            :body ::meta-keys-id-response-usr-def}}}}]
 
    ["meta-keys/:id"
     {:get {:summary (sd/sum_usr_pub (v "Get meta-key by id"))
@@ -367,25 +311,15 @@
            :handler handle_usr-get-meta-key
            :middleware [(jqh/wrap-check-valid-meta-key-new :id)
                         (wwrap-find-meta_key :id :id true)]
-           :coercion reitit.coercion.schema/coercion
-
-           :swagger {:produces "application/json"
-                     :parameters [{:name "id"
-                                   :in "path"
-                                   :description "e.g.: madek_core:subtitle"
-                                   :type "string"
-                                   :required true
-                                   :pattern "^[a-z0-9\\-\\_\\:]+:[a-z0-9\\-\\_\\:]+$"}]}
-
-           :responses {200 {:body schema_export-meta-key-usr}
-
+           :coercion reitit.coercion.spec/coercion
+           :parameters {:path ::meta-keys-id-query-def}
+           :responses {200 {:description "Returns the meta-key."
+                            :body ::schema_export-meta-key-usr}
                        404 {:description "No entry found for the given id"
-                            :schema s/Str
+                            :body map?
                             :examples {"application/json" {:message "No such entity in :meta_keys as :id with not-existing:key"}}}
-
                        422 {:description "Wrong format"
-                            :schema s/Str
+                            :body map?
                             :examples {"application/json" {:message "Wrong meta_key_id format! See documentation. (fdas)"}}}}}}]])
-
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

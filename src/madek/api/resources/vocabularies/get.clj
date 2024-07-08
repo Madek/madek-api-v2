@@ -19,7 +19,8 @@
                          :content-type "application/json"
                          :swagger (jqh/generate-swagger-pagination-params)
                          :coercion reitit.coercion.schema/coercion
-                         :responses {200 {:body {:vocabularies [c/schema_export-vocabulary-admin]}}}})
+                         :responses {200 {:description "Returns the list of vocabularies."
+                                          :body {:vocabularies [c/schema_export-vocabulary-admin]}}}})
 
 (def admin.vocabularies.id {:summary (sd/sum_adm "Get vocabulary by id.")
                             :handler get-vocabulary
@@ -33,7 +34,8 @@
 
                             :coercion reitit.coercion.schema/coercion
                             :parameters {:path {:id s/Str}}
-                            :responses {200 {:body c/schema_export-vocabulary-admin}
+                            :responses {200 {:description "Returns the vocabulary."
+                                             :body c/schema_export-vocabulary-admin}
                                         404 {:description "Creation failed."
                                              :schema s/Str
                                              :examples {"application/json" {:message "Vocabulary could not be found!"}}}}})
@@ -45,7 +47,8 @@
                                   :accept "application/json"
                                   :coercion reitit.coercion.schema/coercion
                                   :parameters {:path {:id s/Str}}
-                                  :responses {200 {:body c/schema_export-perms_all}
+                                  :responses {200 {:description "Returns the list of vocabulary permissions."
+                                                   :body c/schema_export-perms_all}
                                               404 {:description "Not found."
                                                    :schema s/Str
                                                    :examples {"application/json" {:message "No such vocabulary."}}}}})
@@ -56,17 +59,11 @@
                                :content-type "application/json"
                                :accept "application/json"
                                :coercion reitit.coercion.schema/coercion
-
-                               :swagger {:produces "application/json"
-                                         :parameters [{:name "id"
-                                                       :in "path"
-                                                       :description "e.g.: columns"
-                                                       :type "string"
-                                                       :required true
-                                                       :pattern "^[a-z0-9\\-\\_\\:]+$"}]}
-
-                               :responses {200 {:body [c/schema_export-user-perms]}
-                                           404 {:body s/Any}}})
+                               :parameters {:path {:id s/Str}}
+                               :responses {200 {:description "Returns the list of vocabulary user permissions."
+                                                :body [c/schema_export-user-perms]}
+                                           404 {:description "Not found."
+                                                :body s/Any}}})
 
 (def admin.vocabularies.users.user_id {:summary (sd/sum_adm_todo "Get vocabulary user permissions")
                                        :handler permissions/handle_get-vocab-user-perms
@@ -76,27 +73,21 @@
                                        :coercion reitit.coercion.schema/coercion
                                        :parameters {:path {:id s/Str
                                                            :user_id s/Uuid}}
-                                       :responses {200 {:body c/schema_export-user-perms}
+                                       :responses {200 {:description "Returns the vocabulary user permission."
+                                                        :body c/schema_export-user-perms}
                                                    404 {:description "Not found."
                                                         :schema s/Str
                                                         :examples {"application/json" {:message "No such vocabulary user permission."}}}}})
-;(def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "List vocabulary group permissions")
+
 (def admin.vocabularies.groups {:summary (sd/sum_adm_todo "List vocabulary group permissions")
                                 :handler permissions/handle_list-vocab-group-perms
                                 :middleware [wrap-authorize-admin!]
                                 :content-type "application/json"
-
-                                :swagger {:produces "application/json"
-                                          :parameters [{:name "id"
-                                                        :in "path"
-                                                        :description "e.g.: columns"
-                                                        :type "string"
-                                                        :required true
-                                                        :pattern "^[a-z0-9\\-\\_\\:]+$"}]}
-
+                                :parameters {:path {:id s/Str}}
                                 :accept "application/json"
                                 :coercion reitit.coercion.schema/coercion
-                                :responses {200 {:body [c/schema_export-group-perms]}}})
+                                :responses {200 {:description "Returns the list of vocabulary group permissions."
+                                                 :body [c/schema_export-group-perms]}}})
 
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Get vocabulary group permissions")
                                         :handler permissions/handle_get-vocab-group-perms
@@ -106,7 +97,8 @@
                                         :coercion reitit.coercion.schema/coercion
                                         :parameters {:path {:id s/Str
                                                             :group_id s/Uuid}}
-                                        :responses {200 {:body c/schema_export-group-perms}
+                                        :responses {200 {:description "Returns the vocabulary group permission."
+                                                         :body c/schema_export-group-perms}
                                                     404 {:description "Not found."
                                                          :schema s/Str
                                                          :examples {"application/json" {:message "No such vocabulary group permission."}}}}})
@@ -117,16 +109,17 @@
                         :content-type "application/json"
                         :coercion reitit.coercion.schema/coercion
                         :swagger (jqh/generate-swagger-pagination-params)
-                        :responses {200 {:body {:vocabularies [c/schema_export-vocabulary]}}}})
+                        :responses {200 {:description "Returns the list of vocabularies."
+                                         :body {:vocabularies [c/schema_export-vocabulary]}}}})
 
 (def user.vocabularies.id {:summary "Get vocabulary by id."
-                           ;:description "Get a vocabulary by id. Returns 404, if no such vocabulary exists."
                            :swagger {:produces "application/json"}
                            :content-type "application/json"
                            :handler get-vocabulary
                            :coercion reitit.coercion.schema/coercion
                            :parameters {:path {:id s/Str}}
-                           :responses {200 {:body c/schema_export-vocabulary}
+                           :responses {200 {:description "Returns the vocabulary."
+                                            :body c/schema_export-vocabulary}
                                        404 {:description "Creation failed."
                                             :schema s/Str
                                             :examples {"application/json" {:message "Vocabulary could not be found!"}}}}})

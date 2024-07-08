@@ -212,7 +212,8 @@
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data text."
+                    :body s/Any}}})
 
 (def meta-datum.meta_key_id.text-date
   {:summary "Create meta-data text-date for media-entry"
@@ -223,7 +224,8 @@
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data text-date."
+                    :body s/Any}}})
 
 (def meta-datum.meta_key_id.json
   {:summary "Create meta-data json for media-entry"
@@ -234,7 +236,8 @@
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:json s/Any}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data json."
+                    :body s/Any}}})
 
 (def meta-datum.meta_key_id.keyword.keyword_id
   {:summary "Create meta-data keyword for media-entry."
@@ -247,7 +250,8 @@
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str ;; is this meta_datum_id
                        :keyword_id s/Uuid}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data keyword."
+                    :body s/Any}}})
 
 (def media_entry_id.meta-datum.meta_key_id.people.person_id
   {:summary "Create meta-data people for a media-entries meta-key."
@@ -260,7 +264,8 @@
    :parameters {:path {:media_entry_id s/Uuid
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data people."
+                    :body s/Any}}})
 
 (def media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position
   {:summary "Create meta-data role for media-entry."
@@ -275,7 +280,8 @@
                        :role_id s/Uuid
                        :person_id s/Uuid
                        :position s/Int}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data role."
+                    :body s/Any}}})
 
 (def collection_id.meta-datum:meta_key_id.text
   {:summary "Create meta-data text for collection."
@@ -289,7 +295,8 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data text."
+                    :body s/Any}}})
 
 (def collection_id.meta-datum:meta_key_id.text-date
   {:summary "Create meta-data json for collection."
@@ -300,7 +307,8 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data text-date."
+                    :body s/Any}}})
 
 (def collection_id.meta_key_id.json
   {:summary "Create meta-data json for collection."
@@ -311,7 +319,8 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:json s/Any}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data json."
+                    :body s/Any}}})
 
 (def collection_id.meta_key_id.keyword.keyword_id
   {:summary "Create meta-data keyword for collection."
@@ -324,7 +333,8 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str
                        :keyword_id s/Uuid}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data keyword."
+                    :body s/Any}}})
 
 (def collection_id.meta_key_id.people.person_id
   {:summary "Create meta-data people for media-entry"
@@ -337,7 +347,8 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data people."
+                    :body s/Any}}})
 
 (def collection_id.meta_key_id.role.role_id
   {:summary "Create meta-data role for media-entry"
@@ -349,4 +360,5 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str
                        :role_id s/Uuid}}
-   :responses {200 {:body s/Any}}})
+   :responses {200 {:description "Returns the created meta-data role."
+                    :body s/Any}}})

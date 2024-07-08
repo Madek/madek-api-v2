@@ -71,8 +71,10 @@
                         media-files.authorization/wrap-auth-media-file-metadata-and-previews]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_file_id s/Str}}
-           :responses {200 {:body schema_export-media-file}
-                       404 {:body s/Any}}}}]
+           :responses {200 {:description "Returns the media-file for id."
+                            :schema schema_export-media-file}
+                       404 {:description "Not found."
+                            :schema s/Any}}}}]
 
    ["/:media_file_id/data-stream"
     {:get {:summary (sd/sum_usr_pub "Get media-file data-stream for id.")
@@ -81,9 +83,10 @@
                         media-files.authorization/wrap-auth-media-file-full_size]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_file_id s/Str}}
-           ;:responses {:200 {:body s/Any}
-           ;            :404 {:body s/Any}}
-           }}]])
+           :responses {200 {:description "Returns the media-file data-stream for id."
+                            :schema s/Any}
+                       404 {:description "Not found."
+                            :schema s/Any}}}}]])
 (def media-entry-routes
   ["/media-entry"
    {:openapi {:tags ["api/media-entry"]}}
@@ -96,8 +99,10 @@
                    jqh/ring-wrap-authorization-view]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
-      :responses {200 {:body schema_export-media-file}
-                  404 {:body s/Any}}}}]
+      :responses {200 {:description "Returns the media-file for media-entry id."
+                       :schema schema_export-media-file}
+                  404 {:description "Not found."
+                       :schema s/Any}}}}]
 
    ["/:media_entry_id/media-file/data-stream"
     {:get
@@ -108,8 +113,10 @@
                    jqh/ring-wrap-authorization-download]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
-      ;:responses {:200 {:body s/Any}
-      ;            :404 {:body s/Any}}
-      }}]])
+      :responses {200 {:description "Returns the media-file data-stream for media-entry id."
+                       :schema s/Any}
+                  404 {:description "Not found."
+                       :schema s/Any}}}}]])
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

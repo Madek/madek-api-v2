@@ -131,7 +131,8 @@
      :middleware [authorization/wrap-authorized-user]
      :swagger {:produces "application/json"}
      :coercion reitit.coercion.schema/coercion
-     :responses {200 {:body {:media_entry_ids [s/Uuid]}}}}}])
+     :responses {200 {:description "Returns the favorite_media_entries."
+                      :body {:media_entry_ids [s/Uuid]}}}}}])
 
 (def media-entry-routes
   ["/media-entry/:media_entry_id/favorite"
@@ -145,9 +146,12 @@
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
-           :responses {200 {:body schema_favorite_media_entries_export}
-                       404 {:body s/Any}
-                       406 {:body s/Any}}}
+           :responses {200 {:description "Returns the created favorite_media_entry."
+                            :body schema_favorite_media_entries_export}
+                       404 {:description "Not Found."
+                            :body s/Any}
+                       406 {:description "Could not create favorite_media_entry."
+                            :body s/Any}}}
 
     :get {:summary (sd/sum_usr "Get favorite_media_entry for authed user and media-entry.")
           :handler handle_get-favorite_media_entry
@@ -157,9 +161,12 @@
                        (wwrap-find-favorite_media_entry-by-auth true)]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Uuid}}
-          :responses {200 {:body schema_favorite_media_entries_export}
-                      404 {:body s/Any}
-                      406 {:body s/Any}}}
+          :responses {200 {:description "Returns the favorite_media_entry."
+                           :body schema_favorite_media_entries_export}
+                      404 {:description "Not Found."
+                           :body s/Any}
+                      406 {:description "Could not get favorite_media_entry."
+                           :body s/Any}}}
 
     :delete {:summary (sd/sum_usr "Delete favorite_media_entry for authed user and media-entry.")
              :coercion reitit.coercion.schema/coercion
@@ -169,9 +176,12 @@
                           (wwrap-find-media_entry :media_entry_id)
                           (wwrap-find-favorite_media_entry-by-auth true)]
              :parameters {:path {:media_entry_id s/Uuid}}
-             :responses {200 {:body schema_favorite_media_entries_export}
-                         404 {:body s/Any}
-                         406 {:body s/Any}}}}])
+             :responses {200 {:description "Returns the deleted favorite_media_entry."
+                              :body schema_favorite_media_entries_export}
+                         404 {:description "Not Found."
+                              :body s/Any}
+                         406 {:description "Could not delete favorite_media_entry."
+                              :body s/Any}}}}])
 
 (def admin-routes
   [["/favorite/"
@@ -181,6 +191,8 @@
       {:summary (sd/sum_adm "Query favorite_media_entries.")
        :handler handle_list-favorite_media_entries
        :middleware [wrap-authorize-admin!]
+       :responses {200 {:description "Returns the favorite_media_entries."
+                        :body [schema_favorite_media_entries_export]}}
        :coercion reitit.coercion.schema/coercion}}]
 
     ["media-entries/favorite/media_entries/:media_entry_id/:user_id"
@@ -192,6 +204,12 @@
                     (wwrap-find-media_entry :media_entry_id)
                     (wwrap-find-favorite_media_entry false)]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the created favorite_media_entry."
+                        :body schema_favorite_media_entries_export}
+                   404 {:description "Not Found."
+                        :body s/Any}
+                   406 {:description "Could not create favorite_media_entry."
+                        :body s/Any}}
        :parameters {:path {:user_id s/Uuid
                            :media_entry_id s/Uuid}}}
 
@@ -201,6 +219,12 @@
        :middleware [wrap-authorize-admin!
                     (wwrap-find-favorite_media_entry true)]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the favorite_media_entry."
+                        :body schema_favorite_media_entries_export}
+                   404 {:description "Not Found."
+                        :body s/Any}
+                   406 {:description "Could not get favorite_media_entry."
+                        :body s/Any}}
        :parameters {:path {:user_id s/Uuid
                            :media_entry_id s/Uuid}}}
 
@@ -210,5 +234,11 @@
        :handler handle_delete-favorite_media_entry
        :middleware [wrap-authorize-admin!
                     (wwrap-find-favorite_media_entry true)]
+       :responses {200 {:description "Returns the deleted favorite_media_entry."
+                        :body schema_favorite_media_entries_export}
+                   404 {:description "Not Found."
+                        :body s/Any}
+                   406 {:description "Could not delete favorite_media_entry."
+                        :body s/Any}}
        :parameters {:path {:user_id s/Uuid
                            :media_entry_id s/Uuid}}}}]]])

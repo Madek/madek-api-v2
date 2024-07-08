@@ -41,7 +41,8 @@
                          :accept "application/json"
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:body c/schema_import-vocabulary}
-                         :responses {200 {:body c/schema_export-vocabulary-admin}
+                         :responses {200 {:description "Returns the created vocabulary."
+                                          :body c/schema_export-vocabulary-admin}
                                      406 {:description "Creation failed."
                                           :schema s/Str
                                           :examples {"application/json" {:message "Could not create vocabulary."}}}
@@ -65,7 +66,8 @@
                                                            :user_id s/Uuid}
                                                     :body c/schema_perms-update-user-or-group}
 
-                                       :responses {200 {:body c/schema_export-user-perms}
+                                       :responses {200 {:description "Returns the created vocabulary user permission."
+                                                        :body c/schema_export-user-perms}
                                                    404 {:description "Not found."
                                                         :schema s/Str
                                                         :examples {"application/json" {:message "{Vocabulary|User} entry not found"}}}
@@ -82,7 +84,8 @@
                                         :parameters {:path {:id s/Str
                                                             :group_id s/Uuid}
                                                      :body c/schema_perms-update-user-or-group}
-                                        :responses {200 {:body c/schema_export-group-perms}
+                                        :responses {200 {:description "Returns the created vocabulary group permission."
+                                                         :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
                                                          :schema s/Str
                                                          :examples {"application/json" {:message "Vocabulary entry not found"}}}

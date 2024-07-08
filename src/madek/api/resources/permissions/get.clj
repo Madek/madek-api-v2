@@ -78,7 +78,8 @@
                                                     jqh/ring-wrap-authorization-view]
                                        :coercion reitit.coercion.schema/coercion
                                        :parameters {:path {:media_entry_id s/Uuid}}
-                                       :responses {200 {:body schema_export_media-entry-permissions-all}}})
+                                       :responses {200 {:description "Returns the media-entry permissions."
+                                                        :body schema_export_media-entry-permissions-all}}})
 
 (def media-entry.media_entry_id.perms.resources {:summary "Query media-entry permissions."
                                                  :swagger {:produces "application/json"}
@@ -88,7 +89,8 @@
                                                               jqh/ring-wrap-authorization-view]
                                                  :coercion reitit.coercion.schema/coercion
                                                  :parameters {:path {:media_entry_id s/Uuid}}
-                                                 :responses {200 {:body schema_export-media-entry-perms}}})
+                                                 :responses {200 {:description "Returns the media-entry permissions."
+                                                                  :body schema_export-media-entry-perms}}})
 
 (def media-entry.media_entry_id.perms.users {:summary "Query media-entry user permissions."
                                              :swagger {:produces "application/json"}
@@ -98,7 +100,8 @@
                                                           jqh/ring-wrap-authorization-view]
                                              :coercion reitit.coercion.schema/coercion
                                              :parameters {:path {:media_entry_id s/Uuid}}
-                                             :responses {200 {:body [schema_export-media-entry-user-permission]}}})
+                                             :responses {200 {:description "Returns the media-entry user permissions."
+                                                              :body [schema_export-media-entry-user-permission]}}})
 
 (def media-entry.media_entry_id.perms.user {:summary "Get media-entry user permissions."
                                             :swagger {:produces "application/json"}
@@ -109,7 +112,8 @@
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid
                                                                 :user_id s/Uuid}}
-                                            :responses {200 {:body schema_export-media-entry-user-permission}}})
+                                            :responses {200 {:description "Returns the created media-entry user permission."
+                                                             :body schema_export-media-entry-user-permission}}})
 
 (def media-entry.media_entry_id.perms.groups {:summary "Query media-entry group permissions."
                                               :swagger {:produces "application/json"}
@@ -119,7 +123,8 @@
                                                            jqh/ring-wrap-authorization-view]
                                               :coercion reitit.coercion.schema/coercion
                                               :parameters {:path {:media_entry_id s/Uuid}}
-                                              :responses {200 {:body [schema_export-media-entry-group-permission]}}})
+                                              :responses {200 {:description "Returns the media-entry group permissions."
+                                                               :body [schema_export-media-entry-group-permission]}}})
 
 (def media-entry.media_entry_id.perms.group.group_id {:summary "Get media-entry group permissions."
                                                       :swagger {:produces "application/json"}
@@ -130,7 +135,8 @@
                                                       :coercion reitit.coercion.schema/coercion
                                                       :parameters {:path {:media_entry_id s/Uuid
                                                                           :group_id s/Uuid}}
-                                                      :responses {200 {:body schema_export-media-entry-group-permission}}})
+                                                      :responses {200 {:description "Returns the created media-entry group permission."
+                                                                       :body schema_export-media-entry-group-permission}}})
 
 (def collection.collection_id.perms {:summary "Query collection permissions."
                                      :swagger {:produces "application/json"}
@@ -140,7 +146,8 @@
                                                   jqh/ring-wrap-authorization-view]
                                      :coercion reitit.coercion.schema/coercion
                                      :parameters {:path {:collection_id s/Uuid}}
-                                     :responses {200 {:body schema_export_collection-permissions-all}}})
+                                     :responses {200 {:description "Returns the collection permissions."
+                                                      :body schema_export_collection-permissions-all}}})
 
 (def collection.collection_id.perms.resources {:summary "Query collection permissions."
                                                :swagger {:produces "application/json"}
@@ -150,7 +157,8 @@
                                                             jqh/ring-wrap-authorization-view]
                                                :coercion reitit.coercion.schema/coercion
                                                :parameters {:path {:collection_id s/Uuid}}
-                                               :responses {200 {:body schema_export-collection-perms}}})
+                                               :responses {200 {:description "Returns the collection permissions."
+                                                                :body schema_export-collection-perms}}})
 
 (def collection.collection_id.perms.users {:summary "Query collection permissions."
                                            :swagger {:produces "application/json"}
@@ -160,7 +168,8 @@
                                                         jqh/ring-wrap-authorization-view]
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid}}
-                                           :responses {200 {:body [schema_export-collection-user-permission]}}})
+                                           :responses {200 {:description "Returns the collection user permissions."
+                                                            :body [schema_export-collection-user-permission]}}})
 
 (def collection.collection_id.perms.user.user_id {:summary "Get collection user permissions."
                                                   :swagger {:produces "application/json"}
@@ -171,7 +180,8 @@
                                                   :coercion reitit.coercion.schema/coercion
                                                   :parameters {:path {:collection_id s/Uuid
                                                                       :user_id s/Uuid}}
-                                                  :responses {200 {:body schema_export-collection-user-permission}}})
+                                                  :responses {200 {:description "Returns the created collection user permission."
+                                                                   :body schema_export-collection-user-permission}}})
 
 (def collection.collection_id.perms.groups {:summary "Query collection permissions."
                                             :swagger {:produces "application/json"}
@@ -181,7 +191,8 @@
                                                          jqh/ring-wrap-authorization-view]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:collection_id s/Uuid}}
-                                            :responses {200 {:body [schema_export-collection-group-permission]}}})
+                                            :responses {200 {:description "Returns the collection group permissions."
+                                                             :body [schema_export-collection-group-permission]}}})
 
 (def collection.collection_id.perms.group.group_id {:summary "Get collection group permissions."
                                                     :swagger {:produces "application/json"}
@@ -192,4 +203,5 @@
                                                     :coercion reitit.coercion.schema/coercion
                                                     :parameters {:path {:collection_id s/Uuid
                                                                         :group_id s/Uuid}}
-                                                    :responses {200 {:body schema_export-collection-group-permission}}})
+                                                    :responses {200 {:description "Returns the created collection group permission."
+                                                                     :body schema_export-collection-group-permission}}})

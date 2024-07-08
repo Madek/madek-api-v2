@@ -51,7 +51,8 @@
                       :coercion reitit.coercion.schema/coercion
                       :parameters {:path {:media_entry_id s/Uuid
                                           :user_id s/Uuid}}
-                      :responses {200 {:body schema_export-media-entry-user-permission}}})
+                      :responses {200 {:description "Returns the deleted media-entry user permission."
+                                       :body schema_export-media-entry-user-permission}}})
 
 (def me.group.group_id {:summary "Delete media-entry group permissions."
                         :swagger {:produces "application/json"}
@@ -62,7 +63,8 @@
                         :coercion reitit.coercion.schema/coercion
                         :parameters {:path {:media_entry_id s/Uuid
                                             :group_id s/Uuid}}
-                        :responses {200 {:body schema_export-media-entry-group-permission}}})
+                        :responses {200 {:description "Returns the deleted media-entry group permission."
+                                         :body schema_export-media-entry-group-permission}}})
 
 (def col.user.user_id {:summary "Delete collection user permissions."
                        :swagger {:produces "application/json"}
@@ -73,7 +75,8 @@
                        :coercion reitit.coercion.schema/coercion
                        :parameters {:path {:collection_id s/Uuid
                                            :user_id s/Uuid}}
-                       :responses {200 {:body schema_export-collection-user-permission}}})
+                       :responses {200 {:description "Returns the deleted collection user permission."
+                                        :body schema_export-collection-user-permission}}})
 
 (def col.group.group_id {:summary "Delete collection group permissions."
                          :swagger {:produces "application/json"}
@@ -84,4 +87,5 @@
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:path {:collection_id s/Uuid
                                              :group_id s/Uuid}}
-                         :responses {200 {:body schema_export-collection-group-permission}}})
+                         :responses {200 {:description "Returns the deleted collection group permission."
+                                          :body schema_export-collection-group-permission}}})

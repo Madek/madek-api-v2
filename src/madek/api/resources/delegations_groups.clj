@@ -137,7 +137,8 @@
      :coercion reitit.coercion.schema/coercion
      :parameters {:query {(s/optional-key :delegation_id) s/Uuid
                           (s/optional-key :group_id) s/Uuid}}
-     :responses {200 {:body {:delegation_ids [s/Uuid]}}}}}])
+     :responses {200 {:description "Returns the delegations_groups."
+                      :body {:delegation_ids [s/Uuid]}}}}}])
 
 (def admin-routes
   [["/delegation/"
@@ -148,6 +149,10 @@
        :handler handle_list-delegations_groups
        :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the delegations_groups."
+                        :body [schema_delegations_groups_export]}
+                   404 {:description "No delegations_groups found."
+                        :body s/Any}}
        :parameters {:query {(s/optional-key :group_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid
                             (s/optional-key :full-data) s/Bool}}}}]
@@ -161,6 +166,8 @@
                     (wwrap-find-delegation :delegation_id)
                     (wwrap-find-delegations_group false)]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the created delegations_group."
+                        :body schema_delegations_groups_export}}
        :parameters {:path {:group_id s/Uuid
                            :delegation_id s/Uuid}}}
 
@@ -169,6 +176,8 @@
        :handler handle_get-delegations_group
        :middleware [wrap-authorize-admin! (wwrap-find-delegations_group true)]
        :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Returns the delegations_group."
+                        :body schema_delegations_groups_export}}
        :parameters {:path {:group_id s/Uuid
                            :delegation_id s/Uuid}}}
 
@@ -177,5 +186,7 @@
        :coercion reitit.coercion.schema/coercion
        :handler handle_delete-delegations_group
        :middleware [wrap-authorize-admin! (wwrap-find-delegations_group true)]
+       :responses {200 {:description "Returns the deleted delegations_group."
+                        :body s/Any}}
        :parameters {:path {:group_id s/Uuid
                            :delegation_id s/Uuid}}}}]]])

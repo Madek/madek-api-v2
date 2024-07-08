@@ -278,8 +278,10 @@
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
-      :responses {200 {:body ::media-entries-body-resp-def}
-                  422 {:body any?}}}}]
+      :responses {200 {:description "Returns the media-entries."
+                       :schema ::media-entries-body-resp-def}
+                  422 {:description "Unprocessable Entity."
+                       :schema any?}}}}]
    ["media-entries-related-data"
     {:get
      {:summary "Query media-entries with all related data."
@@ -287,7 +289,8 @@
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
-      :responses {200 {:body ::media-entry-response-def}}}}]])
+      :responses {200 {:description "Returns the media-entries with all related data."
+                       :schema ::media-entry-response-def}}}}]])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)
@@ -303,7 +306,11 @@
             :accept "multipart/form-data"
             :middleware [authorization/wrap-authorized-user]
             ; cannot use schema, need to use spec for multiplart
-            :coercion reitit.coercion.spec/coercion
+            :coercion spec/coercion
+            :responses {200 {:description "Returns the created media-entry."
+                             :body any?}
+                        406 {:description "Could not create media-entry."
+                             :body any?}}
             :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
                          :multipart {:file multipart/temp-file-part}}}}]
 
@@ -317,8 +324,10 @@
                         jqh/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
-           :responses {200 {:body s/Any}
-                       404 {:body s/Any}}}
+           :responses {200 {:description "Returns the media-entry."
+                            :body s/Any}
+                       404 {:description "Not found."
+                            :body s/Any}}}
 
      ; TODO Frage: wer kann einen Eintrag löschen
      :delete {:summary "Delete media-entry for id."
@@ -329,6 +338,10 @@
               :middleware [jqh/ring-wrap-add-media-resource
                            jqh/ring-wrap-authorization-edit-permissions]
               :coercion reitit.coercion.schema/coercion
+              :responses {200 {:description "Returns the deleted media-entry."
+                               :body s/Any}
+                          406 {:description "Not Acceptable."
+                               :body s/Any}}
               :parameters {:path {:media_entry_id s/Uuid}}}}]
 
    ["/:media_entry_id/publish"
@@ -341,8 +354,10 @@
                         jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
-           :responses {200 {:body schema_export_media_entry}
-                       406 {:body schema_publish_failed}}}}]])
+           :responses {200 {:description "Returns the updated media-entry."
+                            :body schema_export_media_entry}
+                       406 {:description "Not Acceptable."
+                            :body schema_publish_failed}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

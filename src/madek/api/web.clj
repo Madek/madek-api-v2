@@ -103,12 +103,13 @@
       :handler auth-info/auth-info
       :middleware [authentication/wrap]
       :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body {:type s/Str
-                              :id s/Uuid
-                              :login s/Str
-                              :created_at s/Any
-                              :email_address s/Str
-                              (s/optional-key :authentication-method) s/Str}}
+      :responses {200 {:description "Authentication info."
+                       :schema {:type s/Str
+                                :id s/Uuid
+                                :login s/Str
+                                :created_at s/Any
+                                :email_address s/Str
+                                (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
                        :schema s/Str
                        :examples {"application/json" {:message "Not authorized"}}}}}}]])
@@ -116,9 +117,14 @@
 (def swagger-routes
   ["/api-v2"
    {:no-doc false
-    :openapi {:openapi "3.0.0"
+    :openapi {:openapi "3.0.1"
+              ;:openapi "3.1.0"                              ;;swagger error but config is 3.1.0 conform
+              ;; swagger-ui: Unable to render this definition, requires swagger: "2.0" OR openapi: 3.0.n
+              ;; https://github.com/api-platform/core/issues/4531
+              ;; https://clojurians-log.clojureverse.org/reitit/2023-05-03
               :info {:title "Madek API v2"
                      :description (slurp (io/resource "md/api-description.md"))
+                     :version "0.1"
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"
                                                        :name "Authorization"

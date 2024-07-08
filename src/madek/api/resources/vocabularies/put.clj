@@ -54,19 +54,13 @@
                             :content-type "application/json"
                             :accept "application/json"
                             :coercion reitit.coercion.schema/coercion
-
                             :description (mslurp (io/resource "md/vocabularies-put.md"))
-
-                            :swagger {:produces "application/json"
-                                      :consumes "application/json"
-                                      :parameters [{:name "id"
-                                                    :in "path"
-                                                    :type "string"
-                                                    :required true}]}
-
-                            :parameters {:body c/schema_update-vocabulary}
-                            :responses {200 {:body c/schema_export-vocabulary-admin}
-                                        400 {:body s/Any}
+                            :parameters {:path {:id s/Str}
+                                         :body c/schema_update-vocabulary}
+                            :responses {200 {:description "Success."
+                                             :body c/schema_export-vocabulary-admin}
+                                        402 {:description "Bad request."
+                                             :schema {:schema s/Any}}
                                         404 {:description "Not found."
                                              :schema s/Str
                                              :examples {"application/json" {:message "No such vocabulary."}}}}})
@@ -77,12 +71,10 @@
                                   :content-type "application/json"
                                   :accept "application/json"
                                   :coercion reitit.coercion.schema/coercion
-
-                                  ;; FIXME: input-validation is missing
                                   :parameters {:path {:id s/Str}
                                                :body c/schema_perms-update}
-
-                                  :responses {200 {:body c/schema_export-vocabulary}
+                                  :responses {200 {:description "Success."
+                                                   :body c/schema_export-vocabulary}
                                               404 {:description "Not found."
                                                    :schema s/Str
                                                    :examples {"application/json" {:message "No such vocabulary."}}}
@@ -103,7 +95,8 @@
                                        :parameters {:path {:id s/Str
                                                            :user_id s/Uuid}
                                                     :body c/schema_perms-update-user-or-group}
-                                       :responses {200 {:body c/schema_export-user-perms}
+                                       :responses {200 {:description "Returns the updated vocabulary user permission."
+                                                        :body c/schema_export-user-perms}
                                                    406 {:description "Not Acceptable."
                                                         :schema s/Str
                                                         :examples {"application/json" {:message "Could not update vocabulary user permission"}}}}})
@@ -121,7 +114,8 @@
                                         :parameters {:path {:id s/Str
                                                             :group_id s/Uuid}
                                                      :body c/schema_perms-update-user-or-group}
-                                        :responses {200 {:body c/schema_export-group-perms}
+                                        :responses {200 {:description "Returns the updated vocabulary group permission."
+                                                         :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
                                                          :schema s/Str
                                                          :examples {"application/json" {:message "No such vocabulary group permission"}}}

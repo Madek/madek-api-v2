@@ -128,37 +128,8 @@
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
-(def schema_collection-update
-  {(s/optional-key :layout) schema_layout_types
-   (s/optional-key :is_master) s/Bool
-   (s/optional-key :sorting) schema_sorting_types
-   (s/optional-key :default_context_id) (s/maybe s/Str)
-
-   ;(s/optional-key :get_metadata_and_previews) s/Bool
-   ;(s/optional-key :responsible_user_id) s/Uuid
-
-   ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-   (s/optional-key :workflow_id) (s/maybe s/Uuid)
-   ;(s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
-
-   (s/optional-key :default_resource_type) schema_default_resource_type})
-
-(def schema_collection-query
-  {(s/optional-key :full_data) s/Bool
-   (s/optional-key :collection_id) s/Uuid
-   (s/optional-key :order) s/Str
-
-   (s/optional-key :creator_id) s/Uuid
-   (s/optional-key :responsible_user_id) s/Uuid
-
-   (s/optional-key :clipboard_user_id) s/Uuid
-   (s/optional-key :workflow_id) s/Uuid
-   (s/optional-key :responsible_delegation_id) s/Uuid
-
-   (s/optional-key :public_get_metadata_and_previews) s/Bool
-   (s/optional-key :me_get_metadata_and_previews) s/Bool
-   (s/optional-key :me_edit_permission) s/Bool
-   (s/optional-key :me_edit_metadata_and_relations) s/Bool})
+(sa/def :usr/collections-update (sa/keys :opt-un [::sp/layout ::sp/is_master ::sp/sorting ::sp-nil/default_context_id
+                                                  ::sp-nil/workflow_id ::sp/default_resource_type]))
 
 (sa/def :collection-query/query-def (sa/keys :opt-un [::sp/full_data ::sp/collection_id ::sp/order ::sp/creator_id
                                                       ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
@@ -195,8 +166,8 @@
 (sa/def :usr/collections (sa/keys :req-un [::sp/id] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
                                                              ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
                                                              ::sp/deleted_at ::sp/created_at ::sp/updated_at ::sp/meta_data_updated_at
-                                                             ::sp/edit_session_updated_at ::sp/clipboard_user_id ::sp/workflow_id
-                                                             ::sp/responsible_delegation_id ::sp/default_resource_type]))
+                                                             ::sp/edit_session_updated_at ::sp-nil/clipboard_user_id ::sp-nil/workflow_id
+                                                             ::sp-nil/responsible_delegation_id ::sp/default_resource_type]))
 
 (sa/def :usr-collection-list/groups (st/spec {:spec (sa/coll-of :usr/collections)
                                               :description "A list of persons"}))
@@ -212,7 +183,8 @@
       :handler handle_get-index
       :coercion spec/coercion
       :parameters {:query :collection-query/query-def}
-      :responses {200 {:body ::response-collections-body}}}}]
+      :responses {200 {:description "Returns the list of collections."
+                       :schema ::response-collections-body}}}}]
 
    ["collection"
     {:post
@@ -227,8 +199,10 @@
       :parameters {:body schema_collection-import}
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
-      :responses {200 {:body schema_collection-export}
-                  406 {:body s/Any}}}}]
+      :responses {200 {:description "Returns the created collection."
+                       :schema schema_collection-export}
+                  406 {:description "Could not create collection."
+                       :schema s/Any}}}}]
 
    ["collection/:collection_id"
     {:get {:summary (sd/sum_usr_pub "Get collection for id.")
@@ -239,9 +213,12 @@
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body schema_collection-export}
-                       404 {:body s/Any}
-                       422 {:body s/Any}}}
+           :responses {200 {:description "Returns the collection."
+                            :schema schema_collection-export}
+                       404 {:description "Collection not found."
+                            :schema s/Any}
+                       422 {:description "Could not get collection."
+                            :schema s/Any}}}
 
      :put {:summary (sd/sum_usr "Update collection for id.")
            :handler handle_update-collection
@@ -249,15 +226,17 @@
                         jqh/ring-wrap-authorization-edit-metadata]
            :swagger {:produces "application/json"
                      :consumes "application/json"}
-           :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:collection_id s/Uuid}
-                        :body schema_collection-update}
-           :responses {;200 {:body schema_collection-export} ;; TODO: fixme
-                       200 {:body s/Any}
-                       404 {:body s/Any}
-                       422 {:body s/Any}}}
+           :coercion reitit.coercion.spec/coercion
+           :parameters {:path {:collection_id uuid?}
+                        :body :usr/collections-update}
+           :responses {200 {:description "Returns the updated collection."
+                            :body :usr/collections}
+                       404 {:description "Collection not found."
+                            :body any?}
+                       422 {:description "Could not update collection."
+                            :body any?}}}
 
-     ; TODO Frage: wer darf eine col löschen: nur der benutzer und der responsible
+; TODO Frage: wer darf eine col löschen: nur der benutzer und der responsible
      ; TODO check owner or responsible
      :delete {:summary (sd/sum_usr "Delete collection for id.")
               :handler handle_delete-collection
@@ -267,9 +246,12 @@
                         :consumes "application/json"}
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid}}
-              :responses {200 {:body schema_collection-export}
-                          404 {:body s/Any}
-                          422 {:body s/Any}}}}]])
+              :responses {200 {:description "Returns the deleted collection."
+                               :body schema_collection-export}
+                          404 {:description "Collection not found."
+                               :body s/Any}
+                          422 {:description "Could not delete collection."
+                               :body s/Any}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

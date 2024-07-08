@@ -186,7 +186,8 @@
       :handler handle_usr-query-keywords
       :coercion spec/coercion
       :parameters {:query sp/schema_pagination_opt}
-      :responses {200 {:body ::response-body}
+      :responses {200 {:description "Successful response, list of items."
+                       :body ::response-body}
                   202 {:description "Successful response, list of items."
                        :schema {}
                        :examples {"application/json" {:message "Here are your items."
@@ -202,8 +203,10 @@
       :middleware [wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_keyword_usr}
-                  404 {:body s/Any}}
+      :responses {200 {:description "Returns the keyword."
+                       :body schema_export_keyword_usr}
+                  404 {:description "Keyword not found."
+                       :body s/Any}}
       :description "Get keyword for id. Returns 404, if no such keyword exists."}}]])
 
 (def admin-routes
@@ -216,7 +219,8 @@
       :coercion spec/coercion
       :middleware [wrap-authorize-admin!]
       :parameters {:query ::person-opt}
-      :responses {200 {:body ::response-body-adm}}
+      :responses {200 {:description "Returns the list of keywords."
+                       :body ::response-body-adm}}
       :description "Get keywords id list. TODO query parameters and paging. TODO get full data."}
 
      :post
@@ -225,8 +229,10 @@
       :handler handle_create-keyword
       :middleware [wrap-authorize-admin!]
       :parameters {:body schema_create_keyword}
-      :responses {200 {:body schema_export_keyword_adm}
-                  406 {:body s/Any}}}}]
+      :responses {200 {:description "Returns the created keyword."
+                       :body schema_export_keyword_adm}
+                  406 {:description "Could not create keyword."
+                       :body s/Any}}}}]
    ["keywords/:id"
     {:get
      {:summary (sd/sum_adm "Get keyword for id")
@@ -235,8 +241,10 @@
                    wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_keyword_adm}
-                  404 {:body s/Any}}
+      :responses {200 {:description "Returns the keyword."
+                       :body schema_export_keyword_adm}
+                  404 {:description "Keyword not found."
+                       :body s/Any}}
       :description "Get keyword for id. Returns 404, if no such keyword exists."}
 
      :put
@@ -247,9 +255,12 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}
                    :body schema_update_keyword}
-      :responses {200 {:body schema_export_keyword_adm}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the updated keyword."
+                       :body schema_export_keyword_adm}
+                  404 {:description "Keyword not found."
+                       :body s/Any}
+                  406 {:description "Could not update keyword."
+                       :body s/Any}}}
 
      :delete
      {:summary (sd/sum_adm "Delete keyword.")
@@ -258,9 +269,12 @@
                    wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export_keyword_adm}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]])
+      :responses {200 {:description "Returns the deleted keyword."
+                       :body schema_export_keyword_adm}
+                  404 {:description "Keyword not found."
+                       :body s/Any}
+                  406 {:description "Could not delete keyword."
+                       :body s/Any}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

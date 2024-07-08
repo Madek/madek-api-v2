@@ -68,7 +68,8 @@
    :handler handler
    :parameters {:query ::people-query-def}
    :middleware [wrap-authorize-admin!]
-   :responses {200 {:body ::get-person/response-people-body}}
+   :responses {200 {:description "List of people ids."
+                    :body ::get-person/response-people-body}}
    :coercion spec/coercion})
 
 ;### Debug ####################################################################

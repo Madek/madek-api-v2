@@ -145,16 +145,20 @@
             :middleware [wrap-authorize-admin!]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_contexts}
-            :responses {200 {:body schema_export_contexts_adm}
-                        406 {:body s/Any}}}
+            :responses {200 {:description "Returns the created context."
+                             :schema schema_export_contexts_adm}
+                        406 {:description "Could not create context."
+                             :schema s/Any}}}
      ; context list / query
      :get {:summary (sd/sum_adm "List contexts.")
            :handler handle_adm-list-contexts
            :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
-           :responses {200 {:body [schema_export_contexts_adm]}
-                       406 {:body s/Any}}}}]
+           :responses {200 {:description "Returns the contexts."
+                            :schema [schema_export_contexts_adm]}
+                       406 {:description "Could not list contexts."
+                            :schema s/Any}}}}]
    ; edit context
    ["contexts/:id"
     {:get {:summary (sd/sum_adm "Get contexts by id.")
@@ -163,8 +167,10 @@
                         (wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export_contexts_adm}
-                       404 {:body s/Any}}}
+           :responses {200 {:description "Returns the context."
+                            :schema schema_export_contexts_adm}
+                       404 {:description "Context not found."
+                            :schema s/Any}}}
 
      :put {:summary (sd/sum_adm "Update contexts with id.")
            :handler handle_update-contexts
@@ -173,10 +179,14 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}
                         :body schema_update_contexts}
-           :responses {200 {:body schema_export_contexts_adm}
-                       404 {:body s/Any}
-                       406 {:body s/Any}
-                       500 {:body s/Any}}}
+           :responses {200 {:description "Returns the updated context."
+                            :body schema_export_contexts_adm}
+                       404 {:description "Context not found."
+                            :body s/Any}
+                       406 {:description "Could not update context."
+                            :body s/Any}
+                       500 {:description "Internal server error."
+                            :body s/Any}}}
 
      :delete {:summary (sd/sum_adm_todo "Delete context by id.")
               :coercion reitit.coercion.schema/coercion
@@ -184,10 +194,14 @@
               :middleware [wrap-authorize-admin!
                            (wwrap-find-context :id :id true)]
               :parameters {:path {:id s/Str}}
-              :responses {200 {:body schema_export_contexts_adm}
-                          404 {:body s/Any}
-                          406 {:body s/Any}
-                          500 {:body s/Any}}}}]])
+              :responses {200 {:description "Returns the deleted context."
+                               :body schema_export_contexts_adm}
+                          404 {:description "Context not found."
+                               :body s/Any}
+                          406 {:description "Could not delete context."
+                               :body s/Any}
+                          500 {:description "Internal server error."
+                               :body s/Any}}}}]])
 
 ; TODO docu and tests
 (def user-routes
@@ -199,8 +213,10 @@
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
-           :responses {200 {:body [schema_export_contexts_usr]}
-                       406 {:body s/Any}}}}]
+           :responses {200 {:description "Returns the contexts."
+                            :body [schema_export_contexts_usr]}
+                       406 {:description "Could not list contexts."
+                            :body s/Any}}}}]
    ; edit context
    ["contexts/:id"
     {:get {:summary (sd/sum_usr "Get contexts by id.")
@@ -208,5 +224,7 @@
            :middleware [(wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
-           :responses {200 {:body schema_export_contexts_usr}
-                       404 {:body s/Any}}}}]])
+           :responses {200 {:description "Returns the context."
+                            :body schema_export_contexts_usr}
+                       404 {:description "Context not found."
+                            :body s/Any}}}}]])

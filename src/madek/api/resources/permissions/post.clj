@@ -49,7 +49,8 @@
                       :parameters {:path {:media_entry_id s/Uuid
                                           :user_id s/Uuid}
                                    :body schema_create-media-entry-user-permission}
-                      :responses {200 {:body schema_export-media-entry-user-permission}}})
+                      :responses {200 {:description "Returns the created media-entry user permission."
+                                       :body schema_export-media-entry-user-permission}}})
 
 (def me.group.group_id {:summary "Create media-entry group permissions."
                         :swagger {:produces "application/json"}
@@ -61,7 +62,8 @@
                         :parameters {:path {:media_entry_id s/Uuid
                                             :group_id s/Uuid}
                                      :body schema_create-media-entry-group-permission}
-                        :responses {200 {:body schema_export-media-entry-group-permission}}})
+                        :responses {200 {:description "Returns the created media-entry group permission."
+                                         :body schema_export-media-entry-group-permission}}})
 
 (def col.user.user_id {:summary "Create collection user permissions."
                        :swagger {:produces "application/json"}
@@ -73,7 +75,8 @@
                        :parameters {:path {:collection_id s/Uuid
                                            :user_id s/Uuid}
                                     :body schema_create-collection-user-permission}
-                       :responses {200 {:body schema_export-collection-user-permission}}})
+                       :responses {200 {:description "Returns the created collection user permission."
+                                        :body schema_export-collection-user-permission}}})
 
 (def col.group.group_id {:summary "Create collection group permissions."
                          :swagger {:produces "application/json"}
@@ -85,4 +88,5 @@
                          :parameters {:path {:collection_id s/Uuid
                                              :group_id s/Uuid}
                                       :body schema_create-collection-group-permission}
-                         :responses {200 {:body schema_export-collection-group-permission}}})
+                         :responses {200 {:description "Returns the created collection group permission."
+                                          :body schema_export-collection-group-permission}}})

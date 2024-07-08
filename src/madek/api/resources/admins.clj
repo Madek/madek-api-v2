@@ -8,6 +8,7 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [reitit.coercion.spec]
    [schema.core :as s]))
 
 (defn handle_list-admin
@@ -92,7 +93,8 @@
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
       :parameters {:query {(s/optional-key :full_data) s/Bool}}
-      :responses {200 {:body {:admins [schema_export-admin]}}}}}]
+      :responses {200 {:description "Returns the list of admins."
+                       :schema {:admins [schema_export-admin]}}}}}]
    ; edit admin
    ["admins/:id"
     {:get
@@ -102,8 +104,10 @@
                    (wwrap-find-admin :id :id true)]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export-admin}
-                  404 {:body s/Any}}}
+      :responses {200 {:description "Returns the admin."
+                       :schema schema_export-admin}
+                  404 {:description "Admin not found."
+                       :schema s/Any}}}
 
      :delete
      {:summary (sd/sum_adm "Delete admin by id.")
@@ -112,9 +116,12 @@
       :middleware [wrap-authorize-admin!
                    (wwrap-find-admin :id :id true)]
       :parameters {:path {:id s/Uuid}}
-      :responses {200 {:body schema_export-admin}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]
+      :responses {200 {:description "Returns the deleted admin."
+                       :schema schema_export-admin}
+                  404 {:description "Admin not found. HERE!!"
+                       :schema s/Any}
+                  406 {:description "Could not delete admin."
+                       :schema s/Any}}}}]
 
    ; access via user
    ["admins/:user_id/user"
@@ -126,9 +133,12 @@
                    (wwrap-find-admin :user_id :user_id false)]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:user_id s/Uuid}}
-      :responses {200 {:body schema_export-admin}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the created admin."
+                       :schema schema_export-admin}
+                  404 {:description "User not found."
+                       :schema s/Any}
+                  406 {:description "Could not create admin."
+                       :schema s/Any}}}
 
      :get
      {:summary (sd/sum_adm "Get admin for user.")
@@ -137,9 +147,12 @@
                    (wwrap-find-admin :user_id :user_id true)]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:user_id s/Uuid}}
-      :responses {200 {:body schema_export-admin}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}
+      :responses {200 {:description "Returns the admin."
+                       :schema schema_export-admin}
+                  404 {:description "Admin not found."
+                       :schema s/Any}
+                  406 {:description "Could not get admin."
+                       :schema s/Any}}}
 
      :delete
      {:summary (sd/sum_adm "Delete admin for user.")
@@ -148,6 +161,9 @@
       :middleware [wrap-authorize-admin!
                    (wwrap-find-admin :user_id :user_id true)]
       :parameters {:path {:user_id s/Uuid}}
-      :responses {200 {:body schema_export-admin}
-                  404 {:body s/Any}
-                  406 {:body s/Any}}}}]])
+      :responses {200 {:description "Returns the deleted admin."
+                       :schema schema_export-admin}
+                  404 {:description "Admin not found."
+                       :schema s/Any}
+                  406 {:description "Could not delete admin."
+                       :schema s/Any}}}}]])

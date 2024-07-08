@@ -132,8 +132,10 @@
             :middleware [authorization/wrap-authorized-user]
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_create_workflow}
-            :responses {200 {:body schema_export_workflow}
-                        406 {:body s/Any}}}
+            :responses {200 {:description "Returns the created workflow."
+                             :body schema_export_workflow}
+                        406 {:description "Could not create workflow."
+                             :body s/Any}}}
 
      :get {:summary (sd/sum_auth "List workflows.")
            :handler handle_list-workflows
@@ -141,8 +143,10 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {;(s/optional-key :name) s/Str ; TODO query by name
                                 (s/optional-key :full_data) s/Bool}}
-           :responses {200 {:body [schema_export_workflow]}
-                       406 {:body s/Any}}}}]
+           :responses {200 {:description "Returns the workflows."
+                            :body [schema_export_workflow]}
+                       406 {:description "Could not list workflows."
+                            :body s/Any}}}}]
 
    ["workflows/:id"
     {:get {:summary (sd/sum_auth "Get workflow by id.")
@@ -151,8 +155,10 @@
                         (wwrap-find-workflow :id)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
-           :responses {200 {:body schema_export_workflow}
-                       404 {:body s/Any}}}
+           :responses {200 {:description "Returns the workflow."
+                            :body schema_export_workflow}
+                       404 {:description "Workflow not found."
+                            :body s/Any}}}
 
      :put {:summary (sd/sum_auth "Update workflow with id.")
            :handler handle_update-workflow
@@ -161,9 +167,12 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}
                         :body schema_update_workflow}
-           :responses {200 {:body schema_export_workflow}
-                       404 {:body s/Any}
-                       406 {:body s/Any}}}
+           :responses {200 {:description "Returns the updated workflow."
+                            :body schema_export_workflow}
+                       404 {:description "Workflow not found."
+                            :body s/Any}
+                       406 {:description "Could not update workflow."
+                            :body s/Any}}}
 
      :delete {:summary (sd/sum_auth "Delete workflow by id.")
               :coercion reitit.coercion.schema/coercion
@@ -171,5 +180,7 @@
               :middleware [authorization/wrap-authorized-user
                            (wwrap-find-workflow :id)]
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export_workflow}
-                          404 {:body s/Any}}}}]])
+              :responses {200 {:description "Returns the deleted workflow."
+                               :body schema_export_workflow}
+                          404 {:description "Workflow not found."
+                               :body s/Any}}}}]])

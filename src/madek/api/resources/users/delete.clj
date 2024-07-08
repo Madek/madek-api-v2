@@ -40,7 +40,8 @@
    :coercion reitit.coercion.schema/coercion
    :content-type "application/json"
    :parameters {:path {:id s/Str}}
-   :responses {200 {:body get-user/schema}
+   :responses {200 {:description "Deleted."
+                    :body get-user/schema}
                403 {:description "Forbidden."
                     :schema s/Str
                     :examples {"application/json" {:message "References still exist"}}}

@@ -146,6 +146,8 @@
            :handler handle_adm_list-edit-sessions
            :middleware [wrap-authorize-admin!]
            :coercion spec/coercion
+           :responses {200 {:description "Returns the edit sessions."
+                            :body any?}}
            :parameters {:query ::query-def}}}]
 
    ["edit_sessions/:id"
@@ -153,14 +155,20 @@
            :handler handle_adm_get-edit-session
            :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
+           :responses {200 {:description "Returns the edit session."
+                            :body schema_export_edit_session}
+                       404 {:description "Edit session not found."
+                            :body s/Any}}
            :parameters {:path {:id s/Uuid}}}
      :delete {:summary (sd/sum_adm "Delete edit_session.")
               :handler handle_adm_delete-edit-sessions
               :middleware [wrap-authorize-admin!]
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:id s/Uuid}}
-              :responses {200 {:body schema_export_edit_session}
-                          404 {:body s/Any}}}}]])
+              :responses {200 {:description "Returns the deleted edit session."
+                               :body schema_export_edit_session}
+                          404 {:description "Edit session not found."
+                               :body s/Any}}}}]])
 
 (def query-routes
   ["/"
@@ -170,6 +178,8 @@
            :handler handle_usr_list-edit-sessions
            :middleware [authorization/wrap-authorized-user]
            :coercion spec/coercion
+           :responses {200 {:description "Returns the edit sessions."
+                            :body any?}}
            :parameters {:query ::query-usr-def}}}]
 
    ["edit_sessions/:id"
@@ -177,6 +187,10 @@
            :handler handle_usr_get-edit-session
            :middleware [authorization/wrap-authorized-user]
            :coercion reitit.coercion.schema/coercion
+           :responses {200 {:description "Returns the edit session."
+                            :body schema_export_edit_session}
+                       404 {:description "Edit session not found."
+                            :body s/Any}}
            :parameters {:path {:id s/Uuid}}}}]])
 
 (def media-entry-routes
@@ -188,8 +202,10 @@
                        jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:media_entry_id s/Uuid}}
-          :responses {200 {:body [schema_export_edit_session]}
-                      404 {:body s/Any}}}
+          :responses {200 {:description "Returns the edit sessions."
+                           :body [schema_export_edit_session]}
+                      404 {:description "Media entry not found."
+                           :body s/Any}}}
     :post {:summary (sd/sum_usr "Create edit session for media entry and authed user.")
            :handler handle_create-edit-session
            :middleware [;authorization/wrap-authorized-user
@@ -197,8 +213,10 @@
                         jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
-           :responses {200 {:body schema_export_edit_session}
-                       404 {:body s/Any}}}}])
+           :responses {200 {:description "Returns the created edit session."
+                            :body schema_export_edit_session}
+                       404 {:description "Media entry not found."
+                            :body s/Any}}}}])
 
 (def collection-routes
   ["/collection/:collection_id/edit_sessions"
@@ -209,8 +227,10 @@
                        jqh/ring-wrap-authorization-view]
           :coercion reitit.coercion.schema/coercion
           :parameters {:path {:collection_id s/Uuid}}
-          :responses {200 {:body [schema_export_edit_session]}
-                      404 {:body s/Any}}}
+          :responses {200 {:description "Returns the edit sessions."
+                           :body [schema_export_edit_session]}
+                      404 {:description "Collection not found."
+                           :body s/Any}}}
 
     :post {:summary (sd/sum_usr "Create edit session for collection and authed user.")
            :handler handle_create-edit-session
@@ -219,5 +239,7 @@
                         jqh/ring-wrap-authorization-edit-metadata]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
-           :responses {200 {:body schema_export_edit_session}
-                       404 {:body s/Any}}}}])
+           :responses {200 {:description "Returns the created edit session."
+                            :body schema_export_edit_session}
+                       404 {:description "Collection not found."
+                            :body s/Any}}}}])

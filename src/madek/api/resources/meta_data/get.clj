@@ -197,10 +197,14 @@
                     :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
                     :coercion reitit.coercion.schema/coercion
                     :parameters {:path {:meta_datum_id s/Uuid}}
-                    :responses {200 {:body schema_export_meta-datum}
-                                401 {:body s/Any}
-                                403 {:body s/Any}
-                                500 {:body s/Any}}})
+                    :responses {200 {:description "Returns the meta-data."
+                                     :body schema_export_meta-datum}
+                                401 {:description "Unauthorized."
+                                     :body s/Any}
+                                403 {:description "Forbidden."
+                                     :body s/Any}
+                                500 {:description "Internal server error."
+                                     :body s/Any}}})
 
 (def meta_datum_id.data-stream {:handler meta-datum/get-meta-datum-data-stream
                                 ; TODO json meta-data: fix response conversion error
@@ -209,6 +213,14 @@
                                 :summary "Get meta-data data-stream."
                                 :description "Get meta-data data-stream."
                                 :coercion reitit.coercion.schema/coercion
+                                :responses {200 {:description "Returns the meta-data data-stream."
+                                                 :body s/Any}
+                                            401 {:description "Unauthorized."
+                                                 :body s/Any}
+                                            403 {:description "Forbidden."
+                                                 :body s/Any}
+                                            500 {:description "Internal server error."
+                                                 :body s/Any}}
                                 :parameters {:path {:meta_datum_id s/Uuid}}})
 
 (def media-entry.media_entry_id.meta-data {:summary "Get meta-data for media-entry."
@@ -220,15 +232,18 @@
                                            :parameters {:path {:media_entry_id s/Uuid}
                                                         :query {(s/optional-key :updated_after) s/Inst
                                                                 (s/optional-key :meta_keys) s/Str}}
-                                           :responses {200 {:body s/Any}}})
+                                           :responses {200 {:description "Returns the meta-data for the media-entry."
+                                                            :body s/Any}}})
 
 (def meta-data-role.meta_data_role_id {:summary " Get meta-data role for id "
                                        :handler meta-datum/handle_get-meta-datum-role
                                        :description " Get meta-datum-role for id. returns 404, if no such meta-data role exists. "
                                        :coercion reitit.coercion.schema/coercion
                                        :parameters {:path {:meta_data_role_id s/Str}}
-                                       :responses {200 {:body schema_export_mdrole}
-                                                   404 {:body s/Any}}})
+                                       :responses {200 {:description "Returns the meta-data role."
+                                                        :body schema_export_mdrole}
+                                                   404 {:description "Not found."
+                                                        :body s/Any}}})
 
 (def collection_id.meta-data {:summary "Get meta-data for collection."
                               :handler meta-data.index/get-index
@@ -239,7 +254,8 @@
                               :parameters {:path {:collection_id s/Uuid}
                                            :query {(s/optional-key :updated_after) s/Inst
                                                    (s/optional-key :meta_keys) s/Str}}
-                              :responses {200 {:body s/Any}}})
+                              :responses {200 {:description "Returns the meta-data for the collection."
+                                               :body s/Any}}})
 
 (def collection_id.meta-data-related {:summary "Get meta-data for collection."
                                       :handler handle_get-mr-meta-data-with-related
@@ -250,7 +266,8 @@
                                       :parameters {:path {:collection_id s/Uuid}
                                                    :query {(s/optional-key :updated_after) s/Inst
                                                            (s/optional-key :meta_keys) s/Str}}
-                                      :responses {200 {:body s/Any}}})
+                                      :responses {200 {:description "Returns the meta-data for the collection."
+                                                       :body s/Any}}})
 
 (def collection_id.meta-datum.meta_key_id {:summary "Get meta-data for collection and meta-key."
                                            :handler handle_get-meta-key-meta-data
@@ -262,7 +279,8 @@
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid
                                                                :meta_key_id s/Str}}
-                                           :responses {200 {:body s/Any}}})
+                                           :responses {200 {:description "Returns the meta-data for the collection and meta-key."
+                                                            :body s/Any}}})
 
 (def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
                                      :handler handle_get-meta-data-keywords
@@ -272,7 +290,8 @@
                                      :coercion reitit.coercion.schema/coercion
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str}}
-                                     :responses {200 {:body s/Any}}})
+                                     :responses {200 {:description "Returns the meta-data keywords for the collection."
+                                                      :body s/Any}}})
 
 (def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
                           :handler handle_get-meta-data-people
@@ -282,7 +301,8 @@
                           :coercion reitit.coercion.schema/coercion
                           :parameters {:path {:collection_id s/Uuid
                                               :meta_key_id s/Str}}
-                          :responses {200 {:body s/Any}}})
+                          :responses {200 {:description "Returns the meta-data people for the collection."
+                                           :body s/Any}}})
 
 (def media_entry_id.meta-data-related {:summary "Get meta-data for media-entry."
                                        :handler handle_get-mr-meta-data-with-related
@@ -292,7 +312,8 @@
                                        :parameters {:path {:media_entry_id s/Uuid}
                                                     :query {(s/optional-key :updated_after) s/Inst
                                                             (s/optional-key :meta_keys) s/Str}}
-                                       :responses {200 {:body s/Any}}})
+                                       :responses {200 {:description "Returns the meta-data for the media-entry."
+                                                        :body s/Any}}})
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Get meta-data for media-entry and meta-key."
                                             :handler handle_get-meta-key-meta-data
@@ -303,7 +324,8 @@
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid
                                                                 :meta_key_id s/Str}}
-                                            :responses {200 {:body s/Any}}})
+                                            :responses {200 {:description "Returns the meta-data for the media-entry and meta-key."
+                                                             :body s/Any}}})
 
 (def media_entry.meta_key_id.keyword {:summary "Get meta-data keywords for media-entries meta-key"
                                       :handler handle_get-meta-data-keywords
@@ -313,7 +335,8 @@
                                       :coercion reitit.coercion.schema/coercion
                                       :parameters {:path {:media_entry_id s/Uuid
                                                           :meta_key_id s/Str}}
-                                      :responses {200 {:body s/Any}}})
+                                      :responses {200 {:description "Returns the meta-data keywords for the media-entry."
+                                                       :body s/Any}}})
 
 ;; collection
 (def meta_key_id.people {:summary "Get meta-data people for media-entries meta-key."
@@ -324,7 +347,8 @@
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:path {:media_entry_id s/Uuid
                                              :meta_key_id s/Str}}
-                         :responses {200 {:body s/Any}}})
+                         :responses {200 {:description "Returns the meta-data people for the media-entry."
+                                          :body s/Any}}})
 
 (def meta_key_id.role {:summary "Get meta-data role for media-entry."
                        :handler handle_get-meta-data-roles
@@ -333,7 +357,8 @@
                        :coercion reitit.coercion.schema/coercion
                        :parameters {:path {:media_entry_id s/Uuid
                                            :meta_key_id s/Str}}
-                       :responses {200 {:body s/Any}}})
+                       :responses {200 {:description "Returns the meta-data role for the media-entry."
+                                        :body s/Any}}})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
