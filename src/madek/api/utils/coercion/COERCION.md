@@ -174,6 +174,47 @@ OpenApi3 - Examples
 - Working example with map
 ```clojure
    ;; works
+   203 {:description "Returns the list of static_pages."
+        :body [schema_export_static_page]
+        :content {"application/json" {:description "test"
+                                      :schema {:name s/Str
+                                               :contents sd/schema_ml_list
+                                               :created_at s/Any
+                                               :updated_at s/Any}
+                                      :examples {:test {:description "test1"
+                                                        :value {:id "uuid"
+                                                                :name :test
+                                                                :contents [{:lang "de" :content "content"}]
+                                                                :created_at "2020-01-01T00:00:00Z"
+                                                                :updated_at "2020-01-01T00:00:00Z"}}}}}}
+   
+   208 {:description "Returns the list of static_pages."
+        :body [schema_export_static_page]
+        :content {"application/json" {:description "test"
+                                      :schema {:name s/Str}
+                                      :examples {:test {:description "test1"
+                                                        :value {:name :test
+                                                                }}}}}}
+   
+   209 {:description "Returns the list of static_pages."
+        :body [schema_export_static_page]
+        :content {
+                  "text/plain" {:description "test"
+                                :schema s/Str
+                                :examples {
+                                           :test {:description "test-example-1"
+                                                  :value "servus du example 1"}
+                                           :test2 {:description "test-example-2"
+                                                   :value "servus du example 2"}
+   
+   
+                                           }}
+                  "application/json" {}
+                  "application/transit+json" {}
+                  "application/transit+msgpack" {}
+                  "application/edn" {}
+                  }}
+   
    406 {:description "Not Acceptable."
         :content {"application/json" {:description "Fetch a pizza as json"
                                       :schema {
@@ -185,23 +226,6 @@ OpenApi3 - Examples
                                                  :red {:description "Red pizza"
                                                        :value {:color :red
                                                                :pineapple false}}}}}}
-   
-   
-   ;; example not working
-   410 {:description "Not Acceptable."
-        :content {"text/plain" {:description "Fetch a pizza as json"
-                                :value "mei test"
-                                }}}
-
-   ;; example not working, schema works
-   201 {:description "Returns the list of static_pages."
-        :body [schema_export_static_page]
-        ;:examples {"application/json" [{:id "uuid"
-        ;                                :name "name"
-        ;                                :contents [{:lang "de" :content "content"}]
-        ;                                :created_at "2020-01-01T00:00:00Z"
-        ;                                :updated_at "2020-01-01T00:00:00Z"}]}
-        }
 ```
 
 Issues with spec/coercion and attr with values nil/[]
