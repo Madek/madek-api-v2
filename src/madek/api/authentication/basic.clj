@@ -85,10 +85,10 @@
       (and is-rproxy-basic referer (str/ends-with? referer "api-docs/index.html")) (do
                                                                                      (println ">o> rproxy _> si")
                                                                                      ;handler request
-
-                                                                                     {:status 200 :body (handler request) ;;:headers {"Content-Type" "text/html"}
-                                                                                      }
-
+                                                                                     ;
+                                                                                     ;{:status 200 :body (handler request) ;;:headers {"Content-Type" "text/html"}
+                                                                                     ; }
+                                                                                     (handler request)
                                                                                      ;(ring.util.response/redirect "/api-docs/index.html")))
                                                                                      )
 
