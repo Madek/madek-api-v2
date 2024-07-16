@@ -4,6 +4,8 @@
    [cider-ci.open-session.bcrypt :refer [checkpw]]
    [clojure.string :as str]
    [clojure.string :as str]
+   [ring.util.request :as request]
+
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
@@ -82,7 +84,8 @@
         ]
 
     (cond
-      (and is-rproxy-basic referer (str/ends-with? referer "api-docs/index.html")) (do
+      ;(and is-rproxy-basic referer (str/ends-with? referer "api-docs/index.html")) (do
+      (and is-rproxy-basic (str/includes? (request/path-info request) "/api-docs/")) (do
                                                                                      (println ">o> rproxy _> si")
                                                                                      ;handler request
                                                                                      ;
@@ -110,8 +113,14 @@
   * return 403 if we find the token but the scope does not suffice,
   * carry on by adding :authenticated-entity to the request."
   (let [{username :username password :password} (extract request)]
+    (println ">o> user" username password)
     (if-not username
-      (handler request)                                     ; carry on without authenticated entity
+      (if (str/includes? (request/path-info request) "/api-docs/")
+        (sd/response_failed "Not authorized???" 401)
+        (handler request)                                   ; carry on without authenticated entity
+        )
+
+      ;(handler request)                                     ; carry on without authenticated entity
       (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
         (token-authentication/authenticate user-token handler request)
         (user-password-authentication username password handler request)))))

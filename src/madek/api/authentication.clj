@@ -34,7 +34,7 @@
 (defn wrap [handler]
   (fn [request]
     (let [is-swagger-ui? (str/includes? (request/path-info request) "/api-docs/")
-          request (if is-swagger-ui? (remove-authorization-header request) request)
+          ;request (if is-swagger-ui? (remove-authorization-header request) request)
 
           referer (get (:headers request) "referer")
           is-api-endpoint-request? (and referer (str/ends-with? referer "api-docs/index.html"))
@@ -47,7 +47,11 @@
       ; to prevent triggering of basic-auth-popup in browser
       (if is-api-endpoint-request?
         response
-        (add-www-auth-header-if-401 response)))))
+        (add-www-auth-header-if-401 response))
+
+      ;response
+      ;(add-www-auth-header-if-401 response)
+      )))
 
 
 ;(defn wrap [handler]
