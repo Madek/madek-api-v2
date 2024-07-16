@@ -38,6 +38,7 @@
 
           referer (get (:headers request) "referer")
           is-api-endpoint-request? (and referer (str/ends-with? referer "api-docs/index.html"))
+
           response ((-> handler
                         session-auth/wrap
                         token-auth/wrap

@@ -83,9 +83,18 @@
         referer (get (:headers request) "referer")
         ]
 
+
+    referer (get (:headers request) "referer")
+    is-api-endpoint-request? (and referer (str/ends-with? referer "api-docs/index.html"))
+
+
     (cond
       ;(and is-rproxy-basic referer (str/ends-with? referer "api-docs/index.html")) (do
-      (and is-rproxy-basic (str/includes? (request/path-info request) "/api-docs/")) (do
+      (and is-rproxy-basic (or
+                             (str/includes? (request/path-info request) "/api-docs/")
+                             ;(str/ends-with? (request/path-info request) "/openapi.json")
+                             (and referer (str/ends-with? referer "api-docs/index.html")
+                             )) (do
                                                                                      (println ">o> rproxy _> si")
                                                                                      ;handler request
                                                                                      ;
