@@ -49,5 +49,14 @@
         response
         (add-www-auth-header-if-401 response)))))
 
+
+;(defn wrap [handler]
+;  (fn [request]
+;    (let [response ((-> handler
+;                        session-auth/wrap
+;                        token-auth/wrap
+;                        basic-auth/wrap) request)]
+;      (add-www-auth-header-if-401 response))))
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

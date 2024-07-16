@@ -1,6 +1,7 @@
 (ns madek.api.authentication.basic
   (:require
    [camel-snake-kebab.core :refer :all]
+   [clojure.string :as str]
    [cider-ci.open-session.bcrypt :refer [checkpw]]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
@@ -59,9 +60,13 @@
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
         entity (get-entity-by-login-or-email login-or-email tx)
-        asuser (when entity (get-auth-systems-user (:id entity) tx))]
+        asuser (when entity (get-auth-systems-user (:id entity) tx))
+        referer (get (:headers request) "referer")
+        ]
 
     (cond
+      (and referer (str/ends-with? referer "api-docs/index.html")) {:status 200}
+
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
       (nil? (get asuser :data)) {:status 401 :body "Only password auth users supported for basic auth."}
