@@ -59,13 +59,30 @@
 
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
+        p (println ">o> login-or-email=" login-or-email)
+        p (println ">o> password=" password)
+
         entity (get-entity-by-login-or-email login-or-email tx)
+        p (println ">o> entity=" entity)
+
         asuser (when entity (get-auth-systems-user (:id entity) tx))
+        p (println ">o> asuser=" asuser)
+
+        is-rproxy-basic (and (= login-or-email "Madek")(= password "Madek"))
+
         referer (get (:headers request) "referer")
         ]
 
     (cond
-      (and referer (str/ends-with? referer "api-docs/index.html")) {:status 200}
+      (and is-rproxy-basic referer (str/ends-with? referer "api-docs/index.html")) (do
+                                                                                    (println ">o> rproxy _> si")
+                                                                                     ;handler request
+
+{:status 200 :body (handler request)                        ;;:headers {"Content-Type" "text/html"}
+ }
+
+                                                                                    ;(ring.util.response/redirect "/api-docs/index.html")))
+                                                                                    )
 
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
