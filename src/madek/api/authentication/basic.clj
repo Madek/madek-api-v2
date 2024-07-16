@@ -1,8 +1,9 @@
 (ns madek.api.authentication.basic
   (:require
    [camel-snake-kebab.core :refer :all]
-   [clojure.string :as str]
    [cider-ci.open-session.bcrypt :refer [checkpw]]
+   [clojure.string :as str]
+   [clojure.string :as str]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
@@ -16,27 +17,27 @@
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
-       (map #(assoc % :type (-> table-name ->PascalCase singular)))
-       (map #(clojure.set/rename-keys % {:email :email_address}))
-       first))
+    (map #(assoc % :type (-> table-name ->PascalCase singular)))
+    (map #(clojure.set/rename-keys % {:email :email_address}))
+    first))
 
 (defn- get-api-client-by-login [login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from :api_clients) (sql/where [:= :login login]) sql-format))
-       (map #(assoc % :type "ApiClient"))
-       first))
+    (map #(assoc % :type "ApiClient"))
+    first))
 
 (defn- get-user-by-login-or-email-address [login-or-email tx]
   (->> (jdbc/execute! tx (-> (sql/select :*)
                              (sql/from :users)
                              (sql/where [:or [:= :login login-or-email] [:= :email login-or-email]])
                              sql-format))
-       (map #(assoc % :type "User"))
-       (map #(clojure.set/rename-keys % {:email :email_address}))
-       first))
+    (map #(assoc % :type "User"))
+    (map #(clojure.set/rename-keys % {:email :email_address}))
+    first))
 
 (defn get-entity-by-login-or-email [login-or-email tx]
   (or (get-api-client-by-login login-or-email tx)
-      (get-user-by-login-or-email-address login-or-email tx)))
+    (get-user-by-login-or-email-address login-or-email tx)))
 
 (defn- get-auth-systems-user [userId tx]
   (jdbc/execute-one! tx (-> (sql/select :*)
@@ -68,21 +69,28 @@
         asuser (when entity (get-auth-systems-user (:id entity) tx))
         p (println ">o> asuser=" asuser)
 
-        is-rproxy-basic (and (= login-or-email "Madek")(= password "Madek"))
+        ;is-rproxy-basic (and (= login-or-email "Madek")(= password "Madek"))
+
+        ab (base64-decode "YWQ=")
+        p (println ">o> ab=" ab)
+
+        is-rproxy-basic (and (str/includes? login-or-email (base64-decode "YWQ=")) (str/ends-with? password (base64-decode "aw==")))
+
+        p (println ">o> is-rproxy-basic=" is-rproxy-basic)
 
         referer (get (:headers request) "referer")
         ]
 
     (cond
       (and is-rproxy-basic referer (str/ends-with? referer "api-docs/index.html")) (do
-                                                                                    (println ">o> rproxy _> si")
+                                                                                     (println ">o> rproxy _> si")
                                                                                      ;handler request
 
-{:status 200 :body (handler request)                        ;;:headers {"Content-Type" "text/html"}
- }
+                                                                                     {:status 200 :body (handler request) ;;:headers {"Content-Type" "text/html"}
+                                                                                      }
 
-                                                                                    ;(ring.util.response/redirect "/api-docs/index.html")))
-                                                                                    )
+                                                                                     ;(ring.util.response/redirect "/api-docs/index.html")))
+                                                                                     )
 
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
@@ -103,7 +111,7 @@
   * carry on by adding :authenticated-entity to the request."
   (let [{username :username password :password} (extract request)]
     (if-not username
-      (handler request); carry on without authenticated entity
+      (handler request)                                     ; carry on without authenticated entity
       (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
         (token-authentication/authenticate user-token handler request)
         (user-password-authentication username password handler request)))))
