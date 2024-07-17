@@ -33,19 +33,35 @@
 ;               lines))))
 
 
-(def basic-data (str/split-lines (slurp "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd")))
+;(def basic-data (str/split-lines (slurp "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd")))
 
 
-(defn read-htpasswd [file-path]
+(defn read-file-or-default [file-path default-value]
+  (try
+    (str/split-lines (slurp file-path))
+    (catch java.io.FileNotFoundException e
+      default-value)))
+
+(def basic-data
+  (read-file-or-default "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd"
+    []))
+
+
+(defn read-rproxy-htpasswd []
   ;(let [lines (str/split-lines (slurp file-path))]
+
+  (println ">o> abc" (type basic-data))
+
   (let [lines basic-data]
     (into {} (map (fn [line]
                     (let [[username hash] (str/split line #":" 2)]
                       {username hash}))
                lines))))
 
-(defn verify-password [username password file-path]
-  (let [users (read-htpasswd file-path)
+(defn verify-password [username password]
+  (let [
+        ;users (read-htpasswd file-path)
+        users (read-rproxy-htpasswd )
         hash (get users username)]
     (if hash
       (verify-md5-crypt password hash)
@@ -64,11 +80,11 @@
         ;_ (println ">o> Verify 'meins' =>" db-hash)
         p (println ">o> data=" basic-data)
 
-        res (verify-password "test2" "test" "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd")
+        res (verify-password "test2" "test")
         p (println ">o> res=" res)
 
-        res (verify-password "test" "Madek" "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd")
-        p (println ">o> res=" res)
+        ;res (verify-password "test" "Madek" "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd")
+        ;p (println ">o> res=" res)
 
         ;;; db-basic-auth: auth_systems_users.data / Bcrypt ($2y$)
         ;db-hash (checkpw "test" "$2a$10$Qa8Mvdwg1KpSqFvvwoex7ec4zl0PfStw9SrMIy8S5g9/P37XDssEG")
