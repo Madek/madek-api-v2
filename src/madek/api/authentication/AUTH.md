@@ -1,96 +1,57 @@
+# Auth/Verification
 
-Pagination / schema validation
+Verify db-password (bcypt)
 --
-```clojure
-sudo mkdir -p /etc/madek
-sudo ln -s /Users/mradl/repos/Madek/api-v2/config /etc/madek/madek.htpasswd
 
-touch /etc/madek/madek.htpasswd
-cat /etc/madek/madek.htpasswd
-```
+- Prefix: $2y$
+- Algorithm: Bcrypt
 
+```bash
+htpasswd -bB madek.htpasswd test test             
+> Adding password for user test
 
-
-
-
-test
-Madek:$apr1$iTbPb4GR$Ezce.FX300GODRc9dLTDt.
-Madek:$apr1$iT4567GR$Ezce.FX300123459dLTDt.
-
-
-
-
-
-
-
-
-
-Madek1:$2y$05$7qLMOupe6xVmisTxaczkGeDTxGP4lUT88WWGs2yDTcQ6u5rdRmj2a
-
-Madek:$apr1$iTbPb4GR$Ezce.FX300GODRc9dLTDt.
-
-
-Madek
-
-$apr1$m4icnsk5$YSNOo1lt8EFEmydXzWLUr1
-
-
-
-Madek:$apr1$/1hTS1cM$9cCqfxPTXm6VGR2lZbvUp.
-
-
-Madek1:$2y$05$7qLMOupe6xVmisTxaczkGeDTxGP4lUT88WWGs2yDTcQ6u5rdRmj2a
-Madek:$apr1$iTbPb4GR$Ezce.FX300GODRc9dLTDt.
-
-
-clojure -m madek.api.authentication.rproxy-basic
-
-Pagination / schema validation
---
-```clojure
-sudo htpasswd -bB /etc/madek/madek.htpasswd Madek Madek
-
-sudo htpasswd madek.htpasswd Madek Madek
-
-```
-
-
-clojure -m madek.api.authentication.rproxy_basic
-
-
-=========================
-
-auth_system_user
-
-Bcrypt ($2y$)
-Prefix: $2y$
-Algorithm: Bcrypt
-
-test:$2y$05$hGq/cmT6942GhZe/FuWyB.lBXRDmhfgKEMT5BmvFs8kJFV07zW/EK
-
-root@NX-41294 authentication # htpasswd -bB madek.htpasswd test test             
-Adding password for user test
-
-
-
--B  Force bcrypt encryption of the password (very secure).
-
-root@NX-41294 authentication # htpasswd -vB madek.htpasswd Madek      
-Enter password:
-Password for user Madek correct.
-
+htpasswd -vB madek.htpasswd Madek      
+> Enter password:
+> Password for user Madek correct.
 
 htpasswd -vbB madek.htpasswd test test
-htpasswd -vbB madek.htpasswd Madek Madek
-Password for user test correct.
-=======
+> Password for user test correct.
+```
 
-MD5 Crypt ($apr1$)
-➜  authentication git:(mr/fix-basic) ✗ htpasswd -b madek.htpasswd test2 test
-Adding password for user test2
+```clojure
 
-➜  authentication git:(mr/fix-basic) ✗ htpasswd -vb madek.htpasswd test2 test  
-Password for user test2 correct.
+(let [;; db-basic-auth: auth_systems_users.data / Bcrypt ($2y$)
+      db-hash (checkpw "test" "$2a$10$Qa8Mvdwg1KpSqFvvwoex7ec4zl0PfStw9SrMIy8S5g9/P37XDssEG")
+      _ (println ">o> db-hash=" db-hash)])
+```
 
 
-test2:$apr1$EtuvpScm$sMLTA.JaMN9eJKVhjqQCQ0
+---
+
+
+Verify db-password (md5)
+--
+- MD5 Crypt ($apr1$)
+```bash
+htpasswd -b madek.htpasswd test test
+> Adding password for user test
+
+htpasswd -vb madek.htpasswd test test  
+> Password for user test correct.
+
+test:$apr1$EtuvpScm$sMLTA.JaMN9eJKVhjqQCQ0
+```
+
+```clojure
+  (let [;; rproxy basic-auth / MD5 Crypt ($apr1$)
+        md5-res (verify-md5-crypt "test" "$apr1$EtuvpScm$sMLTA.JaMN9eJKVhjqQCQ0")
+        _ (println ">o> md5-res=" md5-res)
+
+        ;; create adn verify md5 hash
+        hash (generate-md5-crypt "Madek")
+        _ (println ">o> hash=" hash)
+
+        md5-res (verify-md5-crypt "Madek" hash)
+        _ (println ">o> md5-res=" md5-res)
+        ])
+```
