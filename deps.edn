@@ -54,6 +54,13 @@
         metosin/ring-swagger-ui {:mvn/version "4.19.1"}
         metosin/reitit-swagger-ui {:mvn/version "0.7.1"}
 
+        ;clj-bcrypt{:mvn/version "0.7.1"}
+
+        ;; https://mvnrepository.com/artifact/bcrypt-clj/bcrypt-clj
+        ;bcrypt-clj/bcrypt-clj {:mvn/version "0.3.3"}
+
+
+
         prismatic/schema {:mvn/version "1.4.1"}
         pghstore-clj/pghstore-clj {:mvn/version "0.1.0"}    ;; to-hstore
         ;com.novemberain/pantomime {:mvn/version "2.11.0"}
