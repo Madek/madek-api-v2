@@ -1,9 +1,8 @@
 (ns madek.api.authentication.rproxy-basic
-  (:require [clojure.string :as str]
-            ;[bcrypt-clj.core :as bcrypt]
-            [cider-ci.open-session.bcrypt :refer [checkpw hashpw]]
-            [clojure.java.io :as io])
-            (:import (java.security MessageDigest))
+  (:require [cider-ci.open-session.bcrypt :refer [checkpw hashpw]]
+   ;[bcrypt-clj.core :as bcrypt]
+            [clojure.java.io :as io]
+            [clojure.string :as str])
   )
 
 
@@ -53,10 +52,10 @@
   (let [username (first args)
         password (second args)
 
-    ab (authenticate "Madek" "Madek")
-    cd (authenticate "Madek1" "Madek")
-       p (println ">o> ab=" ab)
-       p (println ">o> cd=" cd)
+        ab (authenticate "Madek" "Madek")
+        cd (authenticate "Madek1" "Madek")
+        p (println ">o> ab=" ab)
+        p (println ">o> cd=" cd)
 
 
         ;data (slurp "/etc/madek/madek.htpasswd")
@@ -68,14 +67,14 @@
         ;ef (checkpw "Madek" data )
         ;ef (checkpw "$2y$05$7qLMOupe6xVmisTxaczkGeDTxGP4lUT88WWGs2yDTcQ6u5rdRmj2a" data )
         ;ef (checkpw "Madek:$apr1$iTbPb4GR$Ezce.FX300GODRc9dLTDt." data )
-        ef (checkpw (hashpw "Madek") data )
-       p (println ">o> ef=" ef)
+        ef (checkpw (hashpw "Madek") data)
+        p (println ">o> ef=" ef)
 
         ]
 
 
 
-     (println ">o> servus" )
+    (println ">o> servus")
 
 
     ;(if (authenticate username password)

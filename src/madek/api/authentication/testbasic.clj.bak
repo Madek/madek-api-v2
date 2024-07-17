@@ -1,0 +1,127 @@
+(ns madek.api.authentication.testbasic.bak
+  (:require [buddy.hashers :as hashers]
+
+             [clj-apache-crypto.crypt :as crypt]
+
+            ))
+
+;(defn read-htpasswd [file-path username]
+;  (with-open [rdr (clojure.java.io/reader file-path)]
+;    (some #(let [[user pass] (str/split % #":")]
+;             (when (= user username) pass))
+;      (line-seq rdr))))
+;
+;(defn verify-password [username password file-path]
+;  (let [hashed-password (read-htpasswd file-path username)
+;
+;        p (println ">o> hashed-password" hashed-password)
+;        ]
+;    (if hashed-password
+;      (if (hashers/check password hashed-password)
+;        (println "Password is correct")
+;        (println "Password is incorrect"))
+;      (println "User not found"))))
+;
+;(defn -main [& args]
+;  (let [
+;        ;username (nth args 0)
+;        ;password (nth args 1)
+;        ;file-path (nth args 2)
+;
+;        username "Madek"
+;        password "Madek"
+;        file-path "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd"
+;
+;        p (println ">o> abc")
+;        ]
+;    (verify-password username password file-path)
+;    ))
+
+
+;; ----------------
+
+
+;;; Function to read the .htpasswd file and return the hashed password for a given username
+;(defn get-hashed-password
+;  [username file-path]
+;  (with-open [rdr (clojure.java.io/reader file-path)]
+;    (let [lines (line-seq rdr)]
+;      (some (fn [line]
+;              (let [[user pass] (str/split line #":")]
+;                (when (= user username)
+;                  pass)))
+;        lines))))
+;
+;;; Function to verify the password
+;(defn verify-password
+;  [username password file-path]
+;  (let [hashed-password (get-hashed-password username file-path)]
+;    (if hashed-password
+;      (bcrypt/check-password password hashed-password)
+;      false)))
+
+
+;(defn apr1-md5 [password salt]
+;  (let [digest (java.security.MessageDigest/getInstance "MD5")
+;        initial (str password "$apr1$" salt)
+;        interim (.digest digest (.getBytes initial))]
+;    (apply str (map (fn [b] (format "%02x" (bit-and b 0xff))) interim))))
+;
+;(defn verify-password
+;  [password hash]
+;  (let [[_ algorithm salt stored-hash] (re-matches #"\$([^$]+)\$([^$]+)\$(.+)" hash)]
+;    (case algorithm
+;      "apr1" (let [computed-hash (apr1-md5 password salt)]
+;               (= stored-hash computed-hash))
+;      ;; Add more cases here for other algorithms if necessary
+;      (throw (Exception. (str "Unsupported algorithm: " algorithm))))))
+
+
+;(defn verify-password [password bcrypt-hash]
+;  "Verifies if the given password matches the bcrypt hash."
+;  (hashers/check password bcrypt-hash))
+;
+;;; Example usage
+;(let [password "my-password"
+;      bcrypt-hash (hashers/encrypt password)]
+;  (println (verify-password password bcrypt-hash)))         ; Should print true
+
+
+
+
+
+
+(defn verify-md5-crypt-password [password md5-crypt-hash]
+  "Verifies if the given password matches the MD5 Crypt hash."
+  (crypt/check-password password md5-crypt-hash))
+
+(defn -main [& args]
+  (let [password "test"
+        md5-crypt-hash "$apr1$12345678$ezn0.jh5khhDNusFKnx8Y0"]
+    (println (verify-md5-crypt-password password md5-crypt-hash))))  ; Should print true or false
+
+
+
+;(defn -main [& args]
+;  (let [username "testuser"
+;        password "Madek"
+;        file-path "/etc/leihs/leihs.htpasswd"
+;
+;        ;hashed-password "$apr1$iTbPb4GR$Ezce.FX300GODRc9dLTDt."
+;        ;hashed-password "$2y$05$7qLMOupe6xVmisTxaczkGeDTxGP4lUT88WWGs2yDTcQ6u5rdRmj2a"
+;        ;hashed-password "Madek1:$2y$05$7qLMOupe6xVmisTxaczkGeDTxGP4lUT88WWGs2yDTcQ6u5rdRmj2a"
+;
+;        ;hashed-password "$apr1$iTbPb4GR$Ezce.FX300GODRc9dLTDt."
+;        hashed-password "$apr1$4/p7V9yn$WGzYU2z/.vORGaVIeDAB1."
+;        hashed-password "$2y$05$i86UDYZR3fVeqkdQsVpkUOErwwnFYAJU6zon1YMK7ULCCbR9VqvdG" ;;test
+;
+;        ;res (bcrypt/check-password password hashed-password)
+;
+;        res (verify-password password hashed-password)
+;
+;        p (println ">o> res=" res)
+;        ]
+;    ;(if (verify-password username password file-path)
+;    ;  (println "Password is correct")
+;    ;  (println "Password is incorrect"))
+;    ))

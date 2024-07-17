@@ -59,6 +59,21 @@
         ;; https://mvnrepository.com/artifact/bcrypt-clj/bcrypt-clj
         ;bcrypt-clj/bcrypt-clj {:mvn/version "0.3.3"}
 
+        ;buddy/buddy-hashers {:mvn/version "1.6.0"}
+        buddy/buddy-core {:mvn/version "1.11.423"}
+        buddy/buddy-hashers {:mvn/version "2.0.167"}
+
+        ;[clojure.string :as str]
+        ;[bcrypt-clj.auth :as bcrypt]
+
+        bcrypt-clj/bcrypt-clj {:mvn/version "0.3.3"}
+
+        ;http-kit/http-kit {:mvn/version "2.8.0"}
+
+        pandect/pandect {:mvn/version "1.0.2"}
+        commons-codec/commons-codec  {:mvn/version "1.17.1"}
+
+        digest/digest {:mvn/version "1.4.10"}
 
 
         prismatic/schema {:mvn/version "1.4.1"}
