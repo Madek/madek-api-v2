@@ -19,7 +19,7 @@
    [java.util Base64]))
 
 (def RPROXY_BASIC_FEATURE_ENABLED? true)
-(def RPROXY_BASIC_FEATURE_ENABLED? false)
+;(def RPROXY_BASIC_FEATURE_ENABLED? false)
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
