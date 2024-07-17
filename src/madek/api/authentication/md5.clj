@@ -19,7 +19,7 @@
     (= computed-hash hash)))                                ; Compare the computed hash with the given hash
 
 
-;; create main
+;; generator: https://8gwifi.org/htpasswd.jsp
 (defn -main [& args]
   (let [
         ;; db-basic-auth: auth_systems_users.data
@@ -28,6 +28,8 @@
 
         ;; rproxy basic-auth
         md5-res (verify-md5-crypt "test" "$apr1$EtuvpScm$sMLTA.JaMN9eJKVhjqQCQ0")
+        p (println ">o> md5-res=" md5-res)
+        md5-res (verify-md5-crypt "Madek" "$apr1$V0tgjCf4$Mx7BIKZbpc3BRyHd7sqZW/")
         p (println ">o> md5-res=" md5-res)
         ])
   )
