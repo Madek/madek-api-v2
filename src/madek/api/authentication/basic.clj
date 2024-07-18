@@ -4,19 +4,19 @@
    [cider-ci.open-session.bcrypt :refer [checkpw]]
    [clojure.string :as str]
    [clojure.string :as str]
-   [ring.util.request :as request]
-
    [clojure.walk :refer [keywordize-keys]]
 
    [honey.sql :refer [format] :rename {format sql-format}]
+
    [honey.sql.helpers :as sql]
    [inflections.core :refer :all]
    [madek.api.authentication.token :as token-authentication]
    [madek.api.resources.shared.core :as sd]
    [next.jdbc :as jdbc]
+   [ring.util.request :as request]
    [taoensso.timbre :refer [debug warn]])
   (:import
-   [java.util Base64]))
+   (java.util Base64)))
 
 (def RPROXY_BASIC_FEATURE_ENABLED? true)
 ;(def RPROXY_BASIC_FEATURE_ENABLED? false)
@@ -75,14 +75,14 @@
         asuser (when entity (get-auth-systems-user (:id entity) tx))
         p (println ">o> asuser=" asuser)
 
-        ;is-rproxy-basic (and (= login-or-email "Madek")(= password "Madek"))
+        ;is-rproxy-basic-user? (and (= login-or-email "Madek")(= password "Madek"))
 
         ab (base64-decode "YWQ=")
         p (println ">o> ab=" ab)
 
-        is-rproxy-basic (and (str/includes? login-or-email (base64-decode "YWQ=")) (str/ends-with? password (base64-decode "aw==")))
+        is-rproxy-basic-user? (and (str/includes? login-or-email (base64-decode "YWQ=")) (str/ends-with? password (base64-decode "aw==")))
 
-        p (println ">o> is-rproxy-basic=" is-rproxy-basic)
+        p (println ">o> is-rproxy-basic-user?=" is-rproxy-basic-user?)
 
         referer (get (:headers request) "referer")
 
@@ -92,48 +92,54 @@
 
         ]
 
+
+
     (cond
-      (and RPROXY_BASIC_FEATURE_ENABLED? is-rproxy-basic (or
-                             (str/includes? (request/path-info request) "/api-docs/")
-                             (and referer (str/ends-with? referer "api-docs/index.html"))
-                               )) (do
-                                    (println ">o> rproxy _> si")
-                                    (handler request)
-                                    )
+    ; (rproxy-auth-feature/continue-if-rproxy-basic-user-for-swagger-ui-is-valid) (handler request)
+      (and RPROXY_BASIC_FEATURE_ENABLED? is-rproxy-basic-user? (or
+                                                           (str/includes? (request/path-info request) "/api-docs/")
+                                                           (and referer (str/ends-with? referer "api-docs/index.html"))
+                                                           )) (do
+                                                                (println ">o> rproxy _> si")
+                                                                (handler request)
+                                                                )
 
-        (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
-                                             {:login-or-email-address login-or-email})}
-        (nil? (get asuser :data)) {:status 401 :body "Only password auth users supported for basic auth."}
-        (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
-                                                                                             {:login-or-email-address login-or-email})}
-        :else (handler (assoc request
-                              :authenticated-entity entity
-                              :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
-                              :authentication-method "Basic Authentication")))))
+      (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
+                                           {:login-or-email-address login-or-email})}
+      (nil? (get asuser :data)) {:status 401 :body "Only password auth users supported for basic auth."}
+      (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
+                                                                                           {:login-or-email-address login-or-email})}
+      :else (handler (assoc request
+                            :authenticated-entity entity
+                            :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
+                            :authentication-method "Basic Authentication")))))
 
-  (defn authenticate [request handler]
-    "Authenticate with the following rules:
-    * carry on of there is no auth header with request as is,
-    * return 401 if there is a login but we don't find id in DB,
-    * return 401 if there is a login and entity but the password doesn't match,
-    * return 403 if we find the token but the scope does not suffice,
-    * carry on by adding :authenticated-entity to the request."
-    (let [{username :username password :password} (extract request)]
-      (println ">o> user" username password)
-      (if-not username
-        (if (and RPROXY_BASIC_FEATURE_ENABLED? (str/includes? (request/path-info request) "/api-docs/"))
-          (sd/response_failed "Not authorized???" 401)
-          (handler request)                                 ; carry on without authenticated entity
-          )
+(defn authenticate [request handler]
+  "Authenticate with the following rules:
+  * carry on of there is no auth header with request as is,
+  * return 401 if there is a login but we don't find id in DB,
+  * return 401 if there is a login and entity but the password doesn't match,
+  * return 403 if we find the token but the scope does not suffice,
+  * carry on by adding :authenticated-entity to the request."
+  (let [{username :username password :password} (extract request)]
+    (println ">o> user" username password)
+    (if-not username
+      ; (rproxy-auth-feature/abort-if-no-rproxy-basic-user-for-swagger-ui) (handler request)
 
-        ;(handler request)                                     ; carry on without authenticated entity
-        (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
-          (token-authentication/authenticate user-token handler request)
-          (user-password-authentication username password handler request)))))
 
-  (defn wrap [handler]
-    (fn [request]
-      (authenticate request handler)))
+      (if (and RPROXY_BASIC_FEATURE_ENABLED? (str/includes? (request/path-info request) "/api-docs/"))
+        (sd/response_failed "Not authorized???" 401)
+        (handler request)                                   ; carry on without authenticated entity
+        )
 
-  ;### Debug ####################################################################
-  ;(debug/debug-ns *ns*)
+      ;(handler request)                                     ; carry on without authenticated entity
+      (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
+        (token-authentication/authenticate user-token handler request)
+        (user-password-authentication username password handler request)))))
+
+(defn wrap [handler]
+  (fn [request]
+    (authenticate request handler)))
+
+;### Debug ####################################################################
+;(debug/debug-ns *ns*)
