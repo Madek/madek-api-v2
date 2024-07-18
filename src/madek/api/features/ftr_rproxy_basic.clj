@@ -22,8 +22,10 @@
                                                                ))))
 
 (defn abort-if-no-rproxy-basic-user-for-swagger-ui [handler request ]
-  (if (and RPROXY_BASIC_FEATURE_ENABLED? (str/includes? (request/path-info request) "/api-docs/"))
-    (sd/response_failed "Not authorized???" 401)
+  (if (and RPROXY_BASIC_FEATURE_ENABLED?
+        (str/includes? (request/path-info request) "/api-v2/"))
+    ;(sd/response_failed "Forbidden" 403)
+    (sd/response_failed "Not authorized" 401)
     (handler request)))
 
 (defn remove-authorization-header [request]

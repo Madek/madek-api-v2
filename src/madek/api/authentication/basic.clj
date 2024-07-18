@@ -3,11 +3,8 @@
    [camel-snake-kebab.core :refer :all]
    [cider-ci.open-session.bcrypt :refer [checkpw]]
    [clojure.walk :refer [keywordize-keys]]
-
    [honey.sql :refer [format] :rename {format sql-format}]
-
    [honey.sql.helpers :as sql]
-
    [inflections.core :refer :all]
    [madek.api.authentication.token :as token-authentication]
    [madek.api.features.ftr-rproxy-basic :refer [abort-if-no-rproxy-basic-user-for-swagger-ui
@@ -17,7 +14,6 @@
    [taoensso.timbre :refer [debug warn]])
   (:import
    (java.util Base64)))
-
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
@@ -64,25 +60,16 @@
 
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
-        p (println ">o> login-or-email=" login-or-email)
-        p (println ">o> password=" password)
-
         entity (get-entity-by-login-or-email login-or-email tx)
-        p (println ">o> entity=" entity)
-
-        asuser (when entity (get-auth-systems-user (:id entity) tx))
-        ]
-
-
+        asuser (when entity (get-auth-systems-user (:id entity) tx))]
 
     (cond
       (continue-if-rproxy-basic-user-for-swagger-ui-is-valid request login-or-email password) (handler request)
-
-      (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
-                                           {:login-or-email-address login-or-email})}
-      (nil? (get asuser :data)) {:status 401 :body "Only password auth users supported for basic auth."}
-      (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
-                                                                                           {:login-or-email-address login-or-email})}
+      (not entity) {:status 401 :body {:message (str "Neither User nor ApiClient exists for "
+                                           {:login-or-email-address login-or-email})}}
+      (nil? (get asuser :data)) {:status 401 :body {:message "Only password auth users supported for basic auth."} }
+      (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body {:message (str "Password mismatch for "
+                                                                                           {:login-or-email-address login-or-email})}}
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
