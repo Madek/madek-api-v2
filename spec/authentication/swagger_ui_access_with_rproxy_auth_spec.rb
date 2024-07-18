@@ -12,6 +12,8 @@ shared_context :user_entity do |ctx|
   end
 end
 
+# FYI: (def RPROXY_BASIC_FEATURE_ENABLED? true)
+
 shared_context :test_proper_basic_auth do
   describe "Test access to api-docs and endpoints" do
     context "with valid basicAuth-User" do
@@ -31,7 +33,6 @@ shared_context :test_proper_basic_auth do
       end
     end
 
-    # context "with invalid basicAuth-User (basicAuth-header from reverse-proxy)" do
     context "with invalid basicAuth-User (basicAuth-header from reverse-proxy)" do
       {
         "/api-v2/app-settings" => 401, # public endpoint

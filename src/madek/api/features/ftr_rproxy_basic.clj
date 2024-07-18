@@ -2,15 +2,14 @@
   (:require
    [camel-snake-kebab.core :refer :all]
    [clojure.string :as str]
-   [madek.api.authentication.rproxy-auth-helper :refer [verify-password]]
-   [inflections.core :refer :all]
    [clojure.walk :refer [keywordize-keys]]
+   [inflections.core :refer :all]
+   [madek.api.authentication.rproxy-auth-helper :refer [verify-password]]
    [madek.api.resources.shared.core :as sd]
    [ring.util.request :as request]))
 
 (def RPROXY_BASIC_FEATURE_ENABLED? true)
 ;(def RPROXY_BASIC_FEATURE_ENABLED? false)
-
 
 (defn continue-if-rproxy-basic-user-for-swagger-ui-is-valid [request login-or-email password]
   (let [referer (get (:headers request) "referer")
@@ -21,10 +20,9 @@
                                                                (and referer (str/ends-with? referer "api-docs/index.html"))
                                                                ))))
 
-(defn abort-if-no-rproxy-basic-user-for-swagger-ui [handler request ]
+(defn abort-if-no-rproxy-basic-user-for-swagger-ui [handler request]
   (if (and RPROXY_BASIC_FEATURE_ENABLED?
         (str/includes? (request/path-info request) "/api-v2/"))
-    ;(sd/response_failed "Forbidden" 403)
     (sd/response_failed "Not authorized" 401)
     (handler request)))
 
@@ -39,11 +37,6 @@
                                                                                (println ">o> remove basic auth")
                                                                                (remove-authorization-header request)) request)
         ] request))
-
-
-
-
-
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
