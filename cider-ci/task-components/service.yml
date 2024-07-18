@@ -39,7 +39,7 @@ scripts:
       set -euo pipefail
       cd $API_V2_DIR
       source datalayer/cider-ci/bin/pg_env_set
-      HTTP_SERVER_PORT=${API_V2_HTTP_PORT} java -jar madek-api-v2.jar
+      RPROXY_BASIC_FEATURE_ENABLED=false HTTP_SERVER_PORT=${API_V2_HTTP_PORT} java -jar madek-api-v2.jar
     start_when:
       the database has been created:
         script_key: create-database

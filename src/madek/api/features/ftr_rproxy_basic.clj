@@ -2,16 +2,18 @@
   (:require
    [camel-snake-kebab.core :refer :all]
    [clojure.string :as str]
+   [madek.api.utils.env :as env]
    [clojure.walk :refer [keywordize-keys]]
    [inflections.core :refer :all]
    [madek.api.authentication.rproxy-auth-helper :refer [verify-password]]
    [madek.api.resources.shared.core :as sd]
    [ring.util.request :as request]))
 
-(def RPROXY_BASIC_FEATURE_ENABLED? true)
-;(def RPROXY_BASIC_FEATURE_ENABLED? false)
+;; TODO: revert to default=false, how to set env
+(def RPROXY_BASIC_FEATURE_ENABLED? (env/get-env-bool "RPROXY_BASIC_FEATURE_ENABLED" true))
 
 (defn continue-if-rproxy-basic-user-for-swagger-ui-is-valid [request login-or-email password]
+  (println ">o> RPROXY_BASIC_FEATURE_ENABLED?=" RPROXY_BASIC_FEATURE_ENABLED?)
   (let [referer (get (:headers request) "referer")
         is-rproxy-basic-user? (verify-password login-or-email password)
         ]

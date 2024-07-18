@@ -10,6 +10,7 @@
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.utils.cli :refer [long-opt-for-key]]
+   [madek.api.features.ftr-rproxy-basic :refer [RPROXY_BASIC_FEATURE_ENABLED?]]
    [madek.api.utils.ring-audits :as ring-audits]
    [muuntaja.core :as m]
    [reitit.coercion.schema]
@@ -123,7 +124,7 @@
               ;; https://github.com/api-platform/core/issues/4531
               ;; https://clojurians-log.clojureverse.org/reitit/2023-05-03
               :info {:title "Madek API v2"
-                     :description (slurp (io/resource "md/api-description.md"))
+                     :description (str (slurp (io/resource "md/api-description.md")) "RPROXY_BASIC_FEATURE_ENABLED?= " RPROXY_BASIC_FEATURE_ENABLED? "\n")
                      :version "0.1"
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"

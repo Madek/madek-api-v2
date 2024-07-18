@@ -31,3 +31,7 @@
       1. **apiKey-form**
       2. **basicAuth-form**
    3. *Admin-Endpoints* should have a lock that provides **basicAuth-form only**
+
+<br/>
+
+## Feature-Toggle
