@@ -2,11 +2,11 @@
   (:require
    [camel-snake-kebab.core :refer :all]
    [clojure.string :as str]
-   [madek.api.utils.env :as env]
    [clojure.walk :refer [keywordize-keys]]
    [inflections.core :refer :all]
    [madek.api.authentication.rproxy-auth-helper :refer [verify-password]]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.env :as env]
    [ring.util.request :as request]))
 
 ;; TODO: revert to default=false, how to set env
@@ -24,8 +24,10 @@
 
 (defn abort-if-no-rproxy-basic-user-for-swagger-ui [handler request]
   (if (and RPROXY_BASIC_FEATURE_ENABLED?
-        (str/includes? (request/path-info request) "/api-v2/"))
-    (sd/response_failed "Not authorized" 401)
+        (str/includes? (request/path-info request) "/api-v2/")
+        (not (str/ends-with? (request/path-info request) "api-v2/openapi.json"))
+        )
+    (sd/response_failed "Not authorized2" 401)
     (handler request)))
 
 (defn remove-authorization-header [request]

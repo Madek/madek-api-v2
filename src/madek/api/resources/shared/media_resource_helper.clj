@@ -69,7 +69,7 @@
             {:status 403 :body {:message "Not authorized for media-resource"}}))
 
         ;else
-        {:status 401 :body {:message "Not authorized"}}))
+        {:status 401 :body {:message "Not authorized3"}}))
 
     ; else
     (let [response {:status 500 :body {:message "No media-resource in request."}}]

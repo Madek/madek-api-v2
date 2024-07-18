@@ -113,7 +113,7 @@
                                 (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
                        :schema s/Str
-                       :examples {"application/json" {:message "Not authorized"}}}}}}]])
+                       :examples {"application/json" {:message "Not authorized4"}}}}}}]])
 
 (def swagger-routes
   ["/api-v2"

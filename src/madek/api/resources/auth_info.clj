@@ -8,7 +8,7 @@
     {:status 200 :body (merge {}
                               (select-keys auth-entity [:type :id :login :created_at :email_address])
                               (select-keys request [:authentication-method :session-expires-at]))}
-    {:status 401 :body {:message "Not authorized"}}))
+    {:status 401 :body {:message "Not authorized1"}}))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
