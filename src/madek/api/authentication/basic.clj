@@ -2,24 +2,22 @@
   (:require
    [camel-snake-kebab.core :refer :all]
    [cider-ci.open-session.bcrypt :refer [checkpw]]
-   [clojure.string :as str]
-   [clojure.string :as str]
    [clojure.walk :refer [keywordize-keys]]
 
    [honey.sql :refer [format] :rename {format sql-format}]
 
    [honey.sql.helpers :as sql]
+
    [inflections.core :refer :all]
    [madek.api.authentication.token :as token-authentication]
+   [madek.api.features.ftr-rproxy-basic :refer [abort-if-no-rproxy-basic-user-for-swagger-ui
+                                                continue-if-rproxy-basic-user-for-swagger-ui-is-valid]]
    [madek.api.resources.shared.core :as sd]
    [next.jdbc :as jdbc]
-   [ring.util.request :as request]
    [taoensso.timbre :refer [debug warn]])
   (:import
    (java.util Base64)))
 
-(def RPROXY_BASIC_FEATURE_ENABLED? true)
-;(def RPROXY_BASIC_FEATURE_ENABLED? false)
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
@@ -73,36 +71,12 @@
         p (println ">o> entity=" entity)
 
         asuser (when entity (get-auth-systems-user (:id entity) tx))
-        p (println ">o> asuser=" asuser)
-
-        ;is-rproxy-basic-user? (and (= login-or-email "Madek")(= password "Madek"))
-
-        ab (base64-decode "YWQ=")
-        p (println ">o> ab=" ab)
-
-        is-rproxy-basic-user? (and (str/includes? login-or-email (base64-decode "YWQ=")) (str/ends-with? password (base64-decode "aw==")))
-
-        p (println ">o> is-rproxy-basic-user?=" is-rproxy-basic-user?)
-
-        referer (get (:headers request) "referer")
-
-
-        referer (get (:headers request) "referer")
-        is-api-endpoint-request? (and referer (str/ends-with? referer "api-docs/index.html"))
-
         ]
 
 
 
     (cond
-    ; (rproxy-auth-feature/continue-if-rproxy-basic-user-for-swagger-ui-is-valid) (handler request)
-      (and RPROXY_BASIC_FEATURE_ENABLED? is-rproxy-basic-user? (or
-                                                           (str/includes? (request/path-info request) "/api-docs/")
-                                                           (and referer (str/ends-with? referer "api-docs/index.html"))
-                                                           )) (do
-                                                                (println ">o> rproxy _> si")
-                                                                (handler request)
-                                                                )
+      (continue-if-rproxy-basic-user-for-swagger-ui-is-valid request login-or-email password) (handler request)
 
       (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
                                            {:login-or-email-address login-or-email})}
@@ -119,20 +93,12 @@
   * carry on of there is no auth header with request as is,
   * return 401 if there is a login but we don't find id in DB,
   * return 401 if there is a login and entity but the password doesn't match,
+  * return 401 if no rproxy-basic-auth user for swagger-ui is valid,
   * return 403 if we find the token but the scope does not suffice,
   * carry on by adding :authenticated-entity to the request."
   (let [{username :username password :password} (extract request)]
-    (println ">o> user" username password)
     (if-not username
-      ; (rproxy-auth-feature/abort-if-no-rproxy-basic-user-for-swagger-ui) (handler request)
-
-
-      (if (and RPROXY_BASIC_FEATURE_ENABLED? (str/includes? (request/path-info request) "/api-docs/"))
-        (sd/response_failed "Not authorized???" 401)
-        (handler request)                                   ; carry on without authenticated entity
-        )
-
-      ;(handler request)                                     ; carry on without authenticated entity
+      (abort-if-no-rproxy-basic-user-for-swagger-ui handler request)
       (if-let [user-token (token-authentication/find-user-token-by-some-secret [username password] (:tx request))]
         (token-authentication/authenticate user-token handler request)
         (user-password-authentication username password handler request)))))

@@ -1,71 +1,44 @@
-(ns madek.api.authentication.md5
+(ns madek.api.authentication.rproxy-auth-helper
   (:require
    [buddy.core.codecs :refer :all]
-   [cider-ci.open-session.bcrypt :refer [checkpw hashpw]]
-   [clojure.string :as str]
    [clojure.string :as str]
    [digest :refer [md5]]
    )
   (:import
-   (java.nio.file Paths)
+   (java.io FileNotFoundException)
    (org.apache.commons.codec.digest Md5Crypt))
   )
 
-(defn verify-md5-crypt [password hash]
+(defn- read-file-or-default [file-path default-value]
+  (try
+    (str/split-lines (slurp file-path))
+    (catch FileNotFoundException e
+      default-value)))
+
+(def rproxy-auth-data (read-file-or-default "/etc/madek/madek.htpasswd" []))
+
+(defn- verify-md5-crypt [password hash]
   (let [[_ _ salt] (str/split hash #"\$" 4)                 ; Split the hash and extract the salt
         salt (str "$apr1$" salt)                            ; Reconstruct the salt with the apr1 prefix
         computed-hash (Md5Crypt/apr1Crypt (.getBytes password "UTF-8") salt)] ; Compute the hash using UTF-8 encoding
     (= computed-hash hash)))                                ; Compare the computed hash with the given hash
 
-(defn generate-md5-crypt [password]
-  (let [salt (str (Md5Crypt/apr1Crypt (.getBytes password "UTF-8")))]
-    (Md5Crypt/apr1Crypt (.getBytes password "UTF-8") salt)))
-
-
-;(defn read-htpasswd [file-path]
-;  (let [lines (str/split-lines (slurp (Paths/get file-path)))
-;
-;        p (println ">o> lines=" lines)
-;        ]
-;    (into {} (map (fn [line]
-;                    (let [[username hash] (str/split line #":" 2)]
-;                      {username hash}))
-;               lines))))
-
-
-;(def basic-data (str/split-lines (slurp "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd")))
-
-
-(defn read-file-or-default [file-path default-value]
-  (try
-    (str/split-lines (slurp file-path))
-    (catch java.io.FileNotFoundException e
-      default-value)))
-
-(def basic-data
-  (read-file-or-default "/Users/mradl/repos/Madek/api-v2/src/madek/api/authentication/madek.htpasswd"
-    []))
-
-
-(defn read-rproxy-htpasswd []
-  ;(let [lines (str/split-lines (slurp file-path))]
-
-  (println ">o> abc" (type basic-data))
-
-  (let [lines basic-data]
+(defn- read-rproxy-htpasswd []
+  (let [lines rproxy-auth-data]
     (into {} (map (fn [line]
                     (let [[username hash] (str/split line #":" 2)]
                       {username hash}))
                lines))))
 
 (defn verify-password [username password]
-  (let [
-        ;users (read-htpasswd file-path)
-        users (read-rproxy-htpasswd )
-        hash (get users username)]
+  (let [user-creds (read-rproxy-htpasswd)
+        hash (get user-creds username)]
     (if hash
       (verify-md5-crypt password hash)
       false)))
+
+
+
 
 ;; generator: https://8gwifi.org/htpasswd.jsp
 (defn -main [& args]
@@ -78,7 +51,7 @@
         ;
         ;db-hash (checkpw "meins" db-hash)
         ;_ (println ">o> Verify 'meins' =>" db-hash)
-        p (println ">o> data=" basic-data)
+        p (println ">o> data=" rproxy-auth-data)
 
         res (verify-password "test2" "test")
         p (println ">o> res=" res)

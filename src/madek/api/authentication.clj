@@ -7,7 +7,7 @@
    [madek.api.authentication.token :as token-auth]
    [ring.util.request :as request]
 
-   [madek.api.authentication.basic :refer [RPROXY_BASIC_FEATURE_ENABLED?]]
+   [madek.api.features.ftr-rproxy-basic :refer [remove-rproxy-auth-for-swagger-resources-if-feature-deactivated]]
 
    [taoensso.timbre :refer [info debug]]))
 
@@ -29,25 +29,20 @@
            " - auth-entity: " (-> request :authenticated-entity :id))
     (handler request)))
 
-(defn remove-authorization-header [request]
-  (let [headers (-> request :headers keywordize-keys)
-        updated-headers (assoc headers :authorization "")]
-    (assoc request :headers updated-headers)))
+
 
 (defn wrap [handler]
   (fn [request]
-    (let [is-swagger-ui? (str/includes? (request/path-info request) "/api-docs/")
-          request (if (and (not RPROXY_BASIC_FEATURE_ENABLED?) is-swagger-ui?) (do
-                                                                                 (println ">o> remove basic auth")
-                                                                                 (remove-authorization-header request)) request)
-          ; (rproxy-auth-feature/remove-rproxy-auth-for-swagger-resources-if-feature-deactivated) (handler request)
+    (let [
+          ;is-swagger-ui? (str/includes? (request/path-info request) "/api-docs/")
+          ;request (if (and (not RPROXY_BASIC_FEATURE_ENABLED?) is-swagger-ui?) (do
+          ;                                                                       (println ">o> remove basic auth")
+          ;                                                                       (remove-authorization-header request)) request)
 
+          request (remove-rproxy-auth-for-swagger-resources-if-feature-deactivated request)
 
           referer (get (:headers request) "referer")
           is-api-request? (and referer (str/ends-with? referer "api-docs/index.html"))
-
-
-
 
           response ((-> handler
                         session-auth/wrap
