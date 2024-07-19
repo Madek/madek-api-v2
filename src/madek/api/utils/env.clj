@@ -13,11 +13,12 @@
     "0" false
     "yes" true
     "no" false
-    default))  ; default to false if none of the above match
+    default))
 
 (defn get-env
   [env-var default-value]
   (pr "getEvnStr _> " (or (System/getenv env-var) default-value)))
+
 (defn get-env-bool
   [env-var default-value]
   (pr env-var (str-to-bool (get-env env-var default-value) default-value)))

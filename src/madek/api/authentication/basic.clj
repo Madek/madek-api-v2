@@ -17,32 +17,27 @@
 
 (defn- get-by-login [table-name login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from table-name) (sql/where [:= :login login]) sql-format))
-    (map #(assoc % :type (-> table-name ->PascalCase singular)))
-    (map #(clojure.set/rename-keys % {:email :email_address}))
-    first))
+       (map #(assoc % :type (-> table-name ->PascalCase singular)))
+       (map #(clojure.set/rename-keys % {:email :email_address}))
+       first))
 
 (defn- get-api-client-by-login [login tx]
   (->> (jdbc/execute! tx (-> (sql/select :*) (sql/from :api_clients) (sql/where [:= :login login]) sql-format))
-    (map #(assoc % :type "ApiClient"))
-    first))
-
-(defn pr [i d]
-  (println ">o> " i ": " d)
-  d
-  )
+       (map #(assoc % :type "ApiClient"))
+       first))
 
 (defn- get-user-by-login-or-email-address [login-or-email tx]
-  (pr "user" (->> (jdbc/execute! tx (-> (sql/select :*)
+  (->> (jdbc/execute! tx (-> (sql/select :*)
                              (sql/from :users)
                              (sql/where [:or [:= :login login-or-email] [:= :email login-or-email]])
                              sql-format))
-    (map #(assoc % :type "User"))
-    (map #(clojure.set/rename-keys % {:email :email_address}))
-    first)))
+       (map #(assoc % :type "User"))
+       (map #(clojure.set/rename-keys % {:email :email_address}))
+       first))
 
 (defn get-entity-by-login-or-email [login-or-email tx]
   (or (get-api-client-by-login login-or-email tx)
-    (get-user-by-login-or-email-address login-or-email tx)))
+      (get-user-by-login-or-email-address login-or-email tx)))
 
 (defn- get-auth-systems-user [userId tx]
   (jdbc/execute-one! tx (-> (sql/select :*)
@@ -66,22 +61,15 @@
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
         entity (get-entity-by-login-or-email login-or-email tx)
-
-        p (println ">o> login=" login-or-email "password=" password)
-        p (println ">o> entity=" entity)
-        asuser (when entity (get-auth-systems-user (:id entity) tx))
-        p (println ">o> asuser=" asuser)
-
-
-        ]
+        asuser (when entity (get-auth-systems-user (:id entity) tx))]
 
     (cond
       (continue-if-rproxy-basic-user-for-swagger-ui-is-valid request login-or-email password) (handler request)
       (not entity) {:status 401 :body {:message (str "Neither User nor ApiClient exists for "
-                                           {:login-or-email-address login-or-email})}}
-      (nil? (get asuser :data)) {:status 401 :body {:message "Only password auth users supported for basic auth."} }
+                                                     {:login-or-email-address login-or-email})}}
+      (nil? (get asuser :data)) {:status 401 :body {:message "Only password auth users supported for basic auth."}}
       (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body {:message (str "Password mismatch for "
-                                                                                           {:login-or-email-address login-or-email})}}
+                                                                                                     {:login-or-email-address login-or-email})}}
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)

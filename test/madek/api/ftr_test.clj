@@ -1,8 +1,8 @@
 (ns madek.api.ftr-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.string :as str]
+            [clojure.test :refer :all]
             [madek.api.features.ftr-rproxy-basic :refer [RPROXY_BASIC_FEATURE_ENABLED? abort-if-no-rproxy-basic-user-for-swagger-ui]]
-            [ring.mock.request :as mock]
-            [clojure.string :as str]))
+            [ring.mock.request :as mock]))
 
 (defn mock-handler [request]
   {:status 200 :body "OK"})

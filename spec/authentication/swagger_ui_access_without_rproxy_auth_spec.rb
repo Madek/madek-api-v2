@@ -37,7 +37,7 @@ shared_context :test_proper_basic_auth do
       {
         "/api-v2/api-docs/index.html" => 200,
         "/api-v2/api-docs/index.css" => 200,
-        "/api-v2/api-docs/swagger-ui.css" => 200,
+        "/api-v2/api-docs/swagger-ui.css" => 200
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
@@ -77,7 +77,7 @@ shared_context :test_proper_basic_auth do
       end
 
       {
-        "/api-v2/auth-info" => 401,
+        "/api-v2/auth-info" => 401
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = plain_faraday_json_client.get(url)
