@@ -124,7 +124,7 @@
               ;; https://github.com/api-platform/core/issues/4531
               ;; https://clojurians-log.clojureverse.org/reitit/2023-05-03
               :info {:title "Madek API v2"
-                     :description (str (slurp (io/resource "md/api-description.md")) "RPROXY_BASIC_FEATURE_ENABLED?= " RPROXY_BASIC_FEATURE_ENABLED? "\n")
+                     :description (str (slurp (io/resource "md/api-description.md")) "RPROXY_BASIC_FEATURE_ENABLED?= " RPROXY_BASIC_FEATURE_ENABLED? "<br/>")
                      :version "0.1"
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"

@@ -10,7 +10,7 @@
    [ring.util.request :as request]))
 
 ;; TODO: revert to default=false, how to set env
-(def RPROXY_BASIC_FEATURE_ENABLED? (env/get-env-bool "RPROXY_BASIC_FEATURE_ENABLED" true))
+(def RPROXY_BASIC_FEATURE_ENABLED? (env/get-env-bool "RPROXY_BASIC_FEATURE_ENABLED" false))
 
 (defn continue-if-rproxy-basic-user-for-swagger-ui-is-valid [request login-or-email password]
   (println ">o> RPROXY_BASIC_FEATURE_ENABLED?=" RPROXY_BASIC_FEATURE_ENABLED?)
@@ -36,7 +36,10 @@
     (assoc request :headers updated-headers)))
 
 (defn remove-rproxy-auth-for-swagger-resources-if-feature-deactivated [request]
-  (let [is-swagger-ui? (str/includes? (request/path-info request) "/api-docs/")
+  (let [
+        _ (println ">o> request >> " (request/path-info request))
+
+        is-swagger-ui? (str/includes? (request/path-info request) "/api-docs/")
         request (if (and (not RPROXY_BASIC_FEATURE_ENABLED?) is-swagger-ui?) (do
                                                                                (println ">o> remove basic auth")
                                                                                (remove-authorization-header request)) request)

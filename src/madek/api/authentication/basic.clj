@@ -26,14 +26,19 @@
     (map #(assoc % :type "ApiClient"))
     first))
 
+(defn pr [i d]
+  (println ">o> " i ": " d)
+  d
+  )
+
 (defn- get-user-by-login-or-email-address [login-or-email tx]
-  (->> (jdbc/execute! tx (-> (sql/select :*)
+  (pr "user" (->> (jdbc/execute! tx (-> (sql/select :*)
                              (sql/from :users)
                              (sql/where [:or [:= :login login-or-email] [:= :email login-or-email]])
                              sql-format))
     (map #(assoc % :type "User"))
     (map #(clojure.set/rename-keys % {:email :email_address}))
-    first))
+    first)))
 
 (defn get-entity-by-login-or-email [login-or-email tx]
   (or (get-api-client-by-login login-or-email tx)
@@ -61,7 +66,14 @@
 (defn user-password-authentication [login-or-email password handler request]
   (let [tx (:tx request)
         entity (get-entity-by-login-or-email login-or-email tx)
-        asuser (when entity (get-auth-systems-user (:id entity) tx))]
+
+        p (println ">o> login=" login-or-email "password=" password)
+        p (println ">o> entity=" entity)
+        asuser (when entity (get-auth-systems-user (:id entity) tx))
+        p (println ">o> asuser=" asuser)
+
+
+        ]
 
     (cond
       (continue-if-rproxy-basic-user-for-swagger-ui-is-valid request login-or-email password) (handler request)
