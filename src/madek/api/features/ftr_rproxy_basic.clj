@@ -22,13 +22,23 @@
                                                                (and referer (str/ends-with? referer "api-docs/index.html"))
                                                                ))))
 
-(defn abort-if-no-rproxy-basic-user-for-swagger-ui [handler request]
-  (if (and RPROXY_BASIC_FEATURE_ENABLED?
-        (str/includes? (request/path-info request) "/api-v2/")
-        (not (str/ends-with? (request/path-info request) "api-v2/openapi.json"))
-        )
-    (sd/response_failed "Not authorized2" 401)
-    (handler request)))
+(defn abort-if-no-rproxy-basic-user-for-swagger-ui
+  "After rproxy basic auth, only /api-docs/* with forward rproxy-basicAuth but not:
+     - /openapi.json
+     - <public api-endpoints>
+  "
+  [handler request]
+
+  (let [referer (get (:headers request) "referer")]
+    (if (and RPROXY_BASIC_FEATURE_ENABLED?
+          (str/includes? (request/path-info request) "/api-v2/")
+          (not (str/ends-with? (request/path-info request) "api-v2/openapi.json"))
+          ;(not (str/ends-with? (request/path-info request) "api-docs/index.html"))
+          (not (and referer (str/ends-with? referer "api-docs/index.html")))
+          )
+      (sd/response_failed "Not authorized2" 401)
+      (handler request)))
+  )
 
 (defn remove-authorization-header [request]
   (let [headers (-> request :headers keywordize-keys)
