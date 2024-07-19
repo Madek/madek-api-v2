@@ -63,6 +63,8 @@
         buddy/buddy-core {:mvn/version "1.11.423"}
         buddy/buddy-hashers {:mvn/version "2.0.167"}
 
+        ring/ring-mock {:mvn/version "0.4.0"}
+
         ;[clojure.string :as str]
         ;[bcrypt-clj.auth :as bcrypt]
 

@@ -25,7 +25,7 @@
 (defn abort-if-no-rproxy-basic-user-for-swagger-ui
   "After rproxy basic auth, only /api-docs/* with forward rproxy-basicAuth but not:
      - /openapi.json
-     - <public api-endpoints>
+     - <public api-endpoints> which have referer set _> not 401
   "
   [handler request]
 
