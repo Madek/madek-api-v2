@@ -22,6 +22,7 @@ RestartSec=5
 
 EnvironmentFile=/etc/madek/pg.env
 Environment=TMPDIR={{madek_tmp_dir}}
+Environment=RPROXY_BASIC_FEATURE_ENABLED=true
 Environment=HTTP_SERVER_PORT={{madek_api_v2_port}}
 ExecStart=/usr/bin/env java "-Xmx{{ madek_api_v2_service_xmx }}m" \
   -jar madek-api-v2.jar server

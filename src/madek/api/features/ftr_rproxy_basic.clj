@@ -29,7 +29,7 @@
   (let [referer (get (:headers request) "referer")]
     (if (and RPROXY_BASIC_FEATURE_ENABLED?
              (str/includes? (request/path-info request) "/api-v2/")
-             (not (str/ends-with? (request/path-info request) "api-v2/openapi.json"))
+             ;(not (str/ends-with? (request/path-info request) "api-v2/openapi.json"))
              (not (and referer (str/ends-with? referer "api-docs/index.html"))))
       (sd/response_failed "Not authorized2" 401)
       (handler request))))

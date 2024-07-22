@@ -1,5 +1,6 @@
 (ns madek.api.utils.env)
 
+;; remove this
 (defn- pr
   [env-var v]
   (println ">o> " env-var v)
