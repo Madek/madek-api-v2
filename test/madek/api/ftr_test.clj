@@ -14,7 +14,7 @@
                         (mock/header "referer" "/some-referer"))
             response (abort-if-no-rproxy-basic-user-for-swagger-ui mock-handler request)]
         (is (= 401 (:status response)))
-        (is (= {:message "Not authorized2"} (:body response))))))
+        (is (= {:message "Not authorized"} (:body response))))))
 
   (testing "RPROXY_BASIC_FEATURE_ENABLED? is false and handler is called"
     (with-redefs [RPROXY_BASIC_FEATURE_ENABLED? false]

@@ -9,7 +9,6 @@
    [madek.api.utils.env :as env]
    [ring.util.request :as request]))
 
-;; TODO: revert to default=false, how to set env
 (def RPROXY_BASIC_FEATURE_ENABLED? (env/get-env-bool "RPROXY_BASIC_FEATURE_ENABLED" false))
 
 (defn continue-if-rproxy-basic-user-for-swagger-ui-is-valid [request login-or-email password]
@@ -29,9 +28,8 @@
   (let [referer (get (:headers request) "referer")]
     (if (and RPROXY_BASIC_FEATURE_ENABLED?
              (str/includes? (request/path-info request) "/api-v2/")
-             ;(not (str/ends-with? (request/path-info request) "api-v2/openapi.json"))
              (not (and referer (str/ends-with? referer "api-docs/index.html"))))
-      (sd/response_failed "Not authorized2" 401)
+      (sd/response_failed "Not authorized" 401)
       (handler request))))
 
 (defn remove-authorization-header [request]

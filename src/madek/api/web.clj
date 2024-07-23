@@ -113,7 +113,7 @@
                                 (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
                        :schema s/Str
-                       :examples {"application/json" {:message "Not authorized4"}}}}}}]])
+                       :examples {"application/json" {:message "Not authorized"}}}}}}]])
 
 (def swagger-routes
   ["/api-v2"
@@ -133,26 +133,7 @@
                                              :basicAuth {:type "http"
                                                          :scheme "basic"}}}
               :security [{:basicAuth []} {:apiAuth []}]}}
-
-   ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]
-
-
-   ;["/api-docs/*" {:no-doc true :get (swagger-ui/create-swagger-ui-handler
-   ;                                   ;{:url "/api-v2/api-docs/openapi.json"}
-   ;                                    )}]
-
-   ]
-
-;[  (swagger-ui/create-swagger-ui-handler
-;    {:path "/api-v2/api-docs/"
-;     :config {:validatorUrl nil
-;              :urls [{:name "swagger" :url "swagger.json"}
-;                     {:name "openapi" :url "openapi.json"}]
-;              :urls.primaryName "openapi"
-;              :operationsSorter "alpha"}})
-;  (ring/create-default-handler)]
-
-  )
+   ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]])
 
 (def get-router-data-all
   (->>
@@ -239,17 +220,14 @@
    (rr/router get-router-data-all get-router-options)
    (rr/routes
 
-
-     (swagger-ui/create-swagger-ui-handler
-       {:path "/api-v2/api-docs/"
-        :config {:validatorUrl nil
-                 :urls [
-                        ;{:name "swagger" :url "swagger.json"}
-                        {:name "openapi" :url "openapi.json"}]
-                 :urls.primaryName "openapi"
-                 :operationsSorter "alpha"}})
-     (rr/create-default-handler)
-
+    (swagger-ui/create-swagger-ui-handler
+     {:path "/api-v2/api-docs/"
+      :config {:validatorUrl nil
+               :urls [;{:name "swagger" :url "swagger.json"}
+                      {:name "openapi" :url "openapi.json"}]
+               :urls.primaryName "openapi"
+               :operationsSorter "alpha"}})
+    (rr/create-default-handler)
 
     (rr/redirect-trailing-slash-handler)
     (rr/create-default-handler))))
