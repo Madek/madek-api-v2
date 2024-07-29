@@ -62,11 +62,11 @@
         asuser (when entity (get-auth-systems-user (:id entity) tx))]
 
     (cond
-      (not entity) {:status 401 :body (str "Neither User nor ApiClient exists for "
-                                           {:login-or-email-address login-or-email})}
+      (not entity) {:status 401 :body {:message (str "Neither User nor ApiClient exists for "
+                                                     {:login-or-email-address login-or-email})}}
       (nil? (get asuser :data)) {:status 401 :body "Only password auth users supported for basic auth."}
-      (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body (str "Password mismatch for "
-                                                                                           {:login-or-email-address login-or-email})}
+      (or (nil? password) (not (checkpw password (:data asuser)))) {:status 401 :body {:message (str "Password mismatch for "
+                                                                                                     {:login-or-email-address login-or-email})}}
       :else (handler (assoc request
                             :authenticated-entity entity
                             :is_admin (sd/is-admin (or (:id entity) (:user_id entity)) tx)
