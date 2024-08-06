@@ -4,6 +4,11 @@ shared_context :user_entity do |ctx|
   context "for Database User" do
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
+
+      @token = ApiToken.create user: @entity, scope_read: true,
+                        scope_write: true
+
+
     end
     let :entity_type do
       "User"
@@ -12,10 +17,23 @@ shared_context :user_entity do |ctx|
   end
 end
 
+# shared_context :api_client_entity do |ctx|
+#  context 'for Database ApiClient' do
+#    before :each do
+#      @entity = FactoryBot.create :api_client, password: 'TOPSECRET'
+#    end
+#    let :entity_type do
+#      'ApiClient'
+#    end
+#    include_context ctx if ctx
+#  end
+# end
+
 shared_context :test_bad_password_basic_auth do
   context "with proper username but bad password" do
     let :response do
-      basic_auth_plain_faraday_json_client(@entity.login, "BOGUS").get("/api-v2/auth-info")
+      # basic_auth_plain_faraday_json_client(@entity.login, "BOGUS").get("/api-v2/auth-info")
+      new_token_auth_faraday_json_client("invalid-token", "/api-v2/auth-info")
     end
     it "responds with 401" do
       expect(response.status).to be == 401
@@ -26,11 +44,12 @@ end
 shared_context :test_proper_basic_auth do
   context "with proper username and password" do
     let :response do
-      basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get("/api-v2/auth-info")
+      # basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get("/api-v2/auth-info")
+      new_token_auth_faraday_json_client(@token.token, "/api-v2/auth-info")
     end
 
     it "responds with success 200" do
-      expect(response.status).to be == 401
+      expect(response.status).to be == 200
     end
 
     describe "the response body" do
@@ -39,20 +58,30 @@ shared_context :test_proper_basic_auth do
       end
 
       describe "the login property" do
+        let :login do
+          body["login"]
+        end
+
         it "should be equal to the entities login" do
-          expect(body["message"]).to be == "Not authorized"
+          expect(login).to be == @entity.login
         end
       end
 
       describe "the authentication-method property" do
+        let :authentication_method do
+          body["authentication-method"]
+        end
         it do
-          expect(body["message"]).to be == "Not authorized"
+          expect(authentication_method).to be == "Token"
         end
       end
 
       describe "the type property" do
+        let :type_property do
+          body["type"]
+        end
         it do
-          expect(body["message"]).to be == "Not authorized"
+          expect(type_property).to be == entity_type
         end
       end
     end

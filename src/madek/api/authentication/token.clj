@@ -83,6 +83,11 @@
 ;                                                 ; TODO move into ae
 ;                                                 :is_admin (sd/is-admin (:user_id user-token) (:tx request)))))))) ;; TODO: db: admins
 
+
+(defn- create-message [message]
+  {:status 401
+   :body {:message message}})
+
 (defn authenticate [user-token handler request]
 
   (let [
@@ -91,23 +96,26 @@
 
     (cond
       (:token_revoked user-token) {:status 401
-                                   :body "The token has been revoked."}
-      (violates-not-read?
-        user-token request) {:status 403
-                             :body (str "The token is not allowed to read"
-                                        " i.e. to use safe http verbs.")}
-      (violates-not-write?
-        user-token request) {:status 403
-                             :body (str "The token is not allowed to write"
-                                        " i.e. to use unsafe http verbs.")}
+                                   :body (create-message "The token has been revoked.")
+                                   }
+      (violates-not-read? user-token request)
+      {:status 403
+       :body (create-message (str "The token is not allowed to read"
+                                  " i.e. to use safe http verbs."))}
+      (violates-not-write? user-token request)
+      {:status 403
+       :body (create-message (str "The token is not allowed to write"
+                                  " i.e. to use unsafe http verbs."))}
 
 
-      (and (str/includes? (:uri request) "/api-v2/admin/") (not is-admin?)) {:status 401
-                                                                             :body "The token has no admin-privileges."}
+      (and (str/includes? (:uri request) "/api-v2/admin/") (not is-admin?))
+      {:status 403
+       :body (create-message "The token has no admin-privileges.")}
 
       :else (handler
               (assoc request
                      :authenticated-entity (assoc user-token :type "User")
+                     :authentication-method "Token"
                      ; TODO move into ae
                      :is_admin is-admin?))))                ;; TODO: db: admins
   )
@@ -203,7 +211,7 @@
     (if-let [user-token (find-user-token-by-some-secret [token-secret] (:tx request))]
       (authenticate user-token handler request)
       {:status 401
-       :body {:message "No token for this token-secret found!"}})
+       :body (create-message "No token for this token-secret found!")})
     (handler request)))
 
 (defn wrap [handler]

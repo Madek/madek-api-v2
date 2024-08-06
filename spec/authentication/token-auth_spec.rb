@@ -33,7 +33,8 @@ describe "API-Token Authentication" do
 
       context "used in basic auth" do
         let :client do
-          basic_auth_plain_faraday_json_client(token.token, nil)
+          # basic_auth_plain_faraday_json_client(token.token, nil)
+          new_token_auth_faraday_json_client(token.token)
         end
         it "accessing auth-info results in 200" do
           expect(response.status).to be == 200
@@ -47,7 +48,9 @@ describe "API-Token Authentication" do
 
         context "used in basic auth" do
           let :client do
-            basic_auth_plain_faraday_json_client(token.token, nil)
+            # basic_auth_plain_faraday_json_client(token.token, nil)
+            new_token_auth_faraday_json_client(token.token)
+
           end
           it "accessing auth-info results in 401" do
             expect(response.status).to be == 401
@@ -65,7 +68,9 @@ describe "API-Token Authentication" do
 
     context "used in basic auth" do
       let :client do
-        basic_auth_plain_faraday_json_client(token.token, nil)
+        # basic_auth_plain_faraday_json_client(token.token, nil)
+        new_token_auth_faraday_json_client(token.token)
+
       end
       it "accessing auth-info results in 401" do
         expect(response.status).to be == 401
@@ -78,7 +83,9 @@ describe "API-Token Authentication" do
       end
       context "used in basic auth" do
         let :client do
-          basic_auth_plain_faraday_json_client(token.token, nil)
+          # basic_auth_plain_faraday_json_client(token.token, nil)
+          new_token_auth_faraday_json_client(token.token)
+
         end
         it "accessing auth-info results in 401" do
           expect(response.status).to be == 200
@@ -94,7 +101,9 @@ describe "API-Token Authentication" do
 
     context "connection via token as basic auth user" do
       let :client do
-        basic_auth_plain_faraday_json_client(token.token, nil)
+        # basic_auth_plain_faraday_json_client(token.token, nil)
+        new_token_auth_faraday_json_client(token.token)
+
       end
       it "enables to read the auth-info" do
         expect(response.status).to be == 200
@@ -103,7 +112,9 @@ describe "API-Token Authentication" do
 
     context 'connection via token as password and some "nonsense" as username' do
       let :client do
-        basic_auth_plain_faraday_json_client("nonsense", token.token)
+        # basic_auth_plain_faraday_json_client("nonsense", token.token)
+        new_token_auth_faraday_json_client(token.token)
+
       end
       it "enables to read the auth-info" do
         expect(response.status).to be == 200
@@ -112,7 +123,9 @@ describe "API-Token Authentication" do
 
     context 'connection via token "Authorization: token TOKEN" header' do
       let :client do
-        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
+        # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
+        new_token_auth_faraday_json_client(token.token)
+
       end
 
       it "enables to read the auth-info" do
@@ -133,7 +146,9 @@ describe "API-Token Authentication" do
       ApiToken.create user: user, scope_read: false, scope_write: true
     end
     let :client do
-      basic_auth_plain_faraday_json_client(token.token, nil)
+      # basic_auth_plain_faraday_json_client(token.token, nil)
+      new_token_auth_faraday_json_client(token.token)
+
     end
     it "reading auth_info results in forbidden " do
       expect(response.status).to be == 403
@@ -159,7 +174,9 @@ describe "Access to public /api-endpoints by API-Token" do
     context "used in basic auth" do
       let :client do
         puts "token.token = #{token.token}"
-        basic_auth_plain_faraday_json_client(token.token, nil)
+        # basic_auth_plain_faraday_json_client(token.token, nil)
+        new_token_auth_faraday_json_client(token.token)
+
       end
       it "accessing auth-info results in 200" do
         expect(response.status).to be == 200
@@ -169,7 +186,9 @@ describe "Access to public /api-endpoints by API-Token" do
     context "used in basic auth" do
       let :client do
         puts "token.token = #{token.token}"
-        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
+        # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
+        new_token_auth_faraday_json_client(token.token)
+
       end
       it "accessing auth-info results in 200" do
         expect(response.status).to be == 200
@@ -179,7 +198,9 @@ describe "Access to public /api-endpoints by API-Token" do
     context "used in basic auth" do
       let :client do
         puts "token.token = #{token.token}"
-        basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
+        # basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
+        new_token_auth_faraday_json_client(token.token)
+
       end
       it "accessing auth-info results in 200" do
         expect(response.status).to be == 200
@@ -189,7 +210,9 @@ describe "Access to public /api-endpoints by API-Token" do
     context "used in basic auth" do
       let :client do
         puts "token.token = #{token.token}"
-        basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
+        # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
+        new_token_auth_faraday_json_client(token.token)
+
       end
       it "accessing auth-info results in 200" do
         expect(response.status).to be == 200
