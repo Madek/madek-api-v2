@@ -27,6 +27,8 @@ shared_context :test_proper_basic_auth do
   context "with proper username and password" do
     let :response do
       basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get("/api-v2/auth-info")
+      # new_token_auth_faraday_json_client(token, "/api-v2/auth-info")
+
     end
 
     it "responds with success 200" do
@@ -64,6 +66,8 @@ describe "/auth-info resource" do
     context "via json" do
       let :response do
         plain_faraday_json_client.get("/api-v2/auth-info")
+        # new_token_auth_faraday_json_client(token, "/api-v2/auth-info")
+
       end
 
       it "responds with not authorized 401" do

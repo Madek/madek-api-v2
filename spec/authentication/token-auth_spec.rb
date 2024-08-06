@@ -15,13 +15,21 @@ shared_examples :responds_with_not_authorized do
   end
 end
 
+
+
 describe "API-Token Authentication" do
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
 
+  let :url do
+    "/api-v2/auth-info"
+  end
+
   let :response do
-    client.get("/api-v2/auth-info")
+    # client.get("/api-v2/auth-info")
+    new_token_auth_faraday_json_client(token.token, url)
+
   end
 
   context "revoking the token " do
@@ -32,10 +40,10 @@ describe "API-Token Authentication" do
       end
 
       context "used in basic auth" do
-        let :client do
-          # basic_auth_plain_faraday_json_client(token.token, nil)
-          new_token_auth_faraday_json_client(token.token)
-        end
+        # let :client do
+        #   # basic_auth_plain_faraday_json_client(token.token, nil)
+        #   new_token_auth_faraday_json_client(token.token)
+        # end
         it "accessing auth-info results in 200" do
           expect(response.status).to be == 200
         end
@@ -49,7 +57,7 @@ describe "API-Token Authentication" do
         context "used in basic auth" do
           let :client do
             # basic_auth_plain_faraday_json_client(token.token, nil)
-            new_token_auth_faraday_json_client(token.token)
+            new_token_auth_faraday_json_client(token.token, url)
 
           end
           it "accessing auth-info results in 401" do
@@ -60,6 +68,15 @@ describe "API-Token Authentication" do
     end
   end
 
+
+
+
+
+
+
+
+
+
   context "prolonging an expired token " do
     let :token do
       ApiToken.create user: user, scope_read: true,
@@ -69,7 +86,7 @@ describe "API-Token Authentication" do
     context "used in basic auth" do
       let :client do
         # basic_auth_plain_faraday_json_client(token.token, nil)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
       it "accessing auth-info results in 401" do
@@ -84,7 +101,7 @@ describe "API-Token Authentication" do
       context "used in basic auth" do
         let :client do
           # basic_auth_plain_faraday_json_client(token.token, nil)
-          new_token_auth_faraday_json_client(token.token)
+          new_token_auth_faraday_json_client(token.token, url)
 
         end
         it "accessing auth-info results in 401" do
@@ -94,6 +111,8 @@ describe "API-Token Authentication" do
     end
   end
 
+
+
   context "read only token connection" do
     let :token do
       ApiToken.create user: user, scope_read: true, scope_write: false
@@ -102,7 +121,7 @@ describe "API-Token Authentication" do
     context "connection via token as basic auth user" do
       let :client do
         # basic_auth_plain_faraday_json_client(token.token, nil)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
       it "enables to read the auth-info" do
@@ -113,7 +132,7 @@ describe "API-Token Authentication" do
     context 'connection via token as password and some "nonsense" as username' do
       let :client do
         # basic_auth_plain_faraday_json_client("nonsense", token.token)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
       it "enables to read the auth-info" do
@@ -124,7 +143,7 @@ describe "API-Token Authentication" do
     context 'connection via token "Authorization: token TOKEN" header' do
       let :client do
         # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
 
@@ -133,7 +152,11 @@ describe "API-Token Authentication" do
       end
 
       it "is forbidden to use an unsafe http verb" do
-        delete_response = client.delete("auth-info") # .data[:href])
+        # delete_response = client.delete("auth-info") # .data[:href])
+
+        delete_response = new_token_auth_faraday_json_client(token.token, url, :delete)
+
+
         # TODO check response status
         # expect(delete_response.status).to be == 403
         expect(delete_response.status).to be == 405
@@ -147,7 +170,7 @@ describe "API-Token Authentication" do
     end
     let :client do
       # basic_auth_plain_faraday_json_client(token.token, nil)
-      new_token_auth_faraday_json_client(token.token)
+      new_token_auth_faraday_json_client(token.token, url)
 
     end
     it "reading auth_info results in forbidden " do
@@ -156,13 +179,21 @@ describe "API-Token Authentication" do
   end
 end
 
+
+
 describe "Access to public /api-endpoints by API-Token" do
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
 
+  let :url do
+    "/api-v2/vocabularies?page=1&count=100"
+  end
+
   let :response do
-    client.get("/api-v2/vocabularies?page=1&count=100")
+    # client.get("/api-v2/vocabularies?page=1&count=100")
+    new_token_auth_faraday_json_client(token.token, url)
+
   end
 
   context "using an authorized token " do
@@ -175,7 +206,7 @@ describe "Access to public /api-endpoints by API-Token" do
       let :client do
         puts "token.token = #{token.token}"
         # basic_auth_plain_faraday_json_client(token.token, nil)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
       it "accessing auth-info results in 200" do
@@ -187,7 +218,7 @@ describe "Access to public /api-endpoints by API-Token" do
       let :client do
         puts "token.token = #{token.token}"
         # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
       it "accessing auth-info results in 200" do
@@ -195,11 +226,13 @@ describe "Access to public /api-endpoints by API-Token" do
       end
     end
 
+
+
     context "used in basic auth" do
       let :client do
         puts "token.token = #{token.token}"
         # basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
       it "accessing auth-info results in 200" do
@@ -211,7 +244,7 @@ describe "Access to public /api-endpoints by API-Token" do
       let :client do
         puts "token.token = #{token.token}"
         # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
-        new_token_auth_faraday_json_client(token.token)
+        new_token_auth_faraday_json_client(token.token, url)
 
       end
       it "accessing auth-info results in 200" do
@@ -219,21 +252,104 @@ describe "Access to public /api-endpoints by API-Token" do
       end
     end
   end
-end
+# end
+
+
+
+
 
 describe "Access forbidden for /admin-endpoints by API-Token" do
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
 
+  let :url do
+    "/api-v2/admin/vocabularies?page=1&count=100"
+  end
   let :response do
-    client.get("/api-v2/admin/vocabularies?page=1&count=100")
+    # client.get("/api-v2/admin/vocabularies?page=1&count=100")
+
+    new_token_auth_faraday_json_client(token.token, url)
+
+
   end
 
   context "using an authorized token " do
     let :token do
       ApiToken.create user: user, scope_read: true,
         scope_write: true
+    end
+
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        # basic_auth_plain_faraday_json_client(token.token, nil)
+        new_token_auth_faraday_json_client(token.token, url)
+
+      end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
+      end
+    end
+
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, token.token)
+        new_token_auth_faraday_json_client(token.token, url)
+
+      end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
+      end
+    end
+
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        # basic_auth_wtoken_header_plain_faraday_json_client(nil, nil, token.token)
+        new_token_auth_faraday_json_client(token.token, url)
+
+      end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
+      end
+    end
+
+    context "used in basic auth" do
+      let :client do
+        puts "token.token = #{token.token}"
+        # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
+        new_token_auth_faraday_json_client(token.token, url)
+
+      end
+      it "access forbidden auth-info results in 403" do
+        expect(response.status).to be == 403
+      end
+    end
+
+    # context "used in basic authxxx" do
+    #   let :client do
+    #     puts "token.token = #{token.token}"
+    #     # basic_auth_wtoken_header_plain_faraday_json_client(token.token, nil, nil)
+    #     response = new_token_auth_faraday_json_client(token.token, url)
+    #
+    #
+    #   end
+    #   it "access forbidden auth-info results in 403" do
+    #     expect(response.status).to be == 403
+    #   end
+    end
+end
+
+
+  context "using an authorized token " do
+    let :token do
+      ApiToken.create user: user, scope_read: true,
+                      scope_write: true
+    end
+    let :url do
+      "/api-v2/admin/vocabularies?page=1&count=100"
     end
 
     context "used in basic auth" do
@@ -276,4 +392,6 @@ describe "Access forbidden for /admin-endpoints by API-Token" do
       end
     end
   end
+
+
 end
