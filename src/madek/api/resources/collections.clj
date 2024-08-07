@@ -82,10 +82,21 @@
       (let [collection (:media-resource req)
             tx (:tx req)
             col-id (:id collection)
-            query (-> (sql/delete-from :collections)
-                      (sql/where [:= :id col-id])
+
+            ;query (-> (sql/delete-from :collections)
+            ;          (sql/where [:= :id col-id])
+            ;          (sql/returning :*)
+            ;          sql-format)
+
+            query (-> (sql/update :collections)
+                      ;(sql/set (cast-to-hstore dwid))
+                      ;(sql/set {:deleted_at [:raw "now() < api_tokens.expires_at"]})
+                      (sql/set {:deleted_at [:raw "now()"]})
+                      ;(sql/where [:= :id id])
                       (sql/returning :*)
                       sql-format)
+
+
             delresult (jdbc/execute-one! tx query)]
 
         (sd/logwrite req (str "handle_delete-collection: " col-id delresult))

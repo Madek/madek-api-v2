@@ -1,5 +1,6 @@
 (ns madek.api.resources.collections.index
   (:require
+   [clojure.tools.logging :as logging]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
@@ -24,7 +25,9 @@
                    (sql/select :*)
                    (sql/select :collections.id, :collections.created_at))]
     (-> toselect
-        (sql/from :collections))))
+        (sql/from :collections)
+        (sql/where [:raw "now() < collections.deleted_at or collections.deleted_at is null"])
+        )))
 
 (defn- set-order [query query-params]
   (if (some #{"desc"} [(-> query-params :order)])
@@ -36,6 +39,7 @@
   (let [query-params (:query-params request)
         authenticated-entity (:authenticated-entity request)
         full_data (= true (:full_data query-params))
+        is_admin? true                                      ; TODO
         sql-query (-> (base-query full_data)
                       (set-order query-params)
                       (dbh/build-query-param query-params :creator_id)
@@ -45,13 +49,18 @@
                                                           authenticated-entity)
                       (pagination/sql-offset-and-limit query-params)
                       sql-format)]
-    ;(logging/info "build-query"
-    ;              "\nquery\n" query-params
-    ;              "\nsql query:\n" sql-query)
+    (logging/info "build-query"
+                  "\nquery\n" query-params
+                  "\nsql query:\n" sql-query)
     sql-query))
 
+
+(defn pr [str fnc]
+  (println ">oo> HELPER / " str)
+  fnc
+  )
 (defn- query-index-resources [request]
-  (jdbc/execute! (:tx request) (build-query request)))
+  (pr "fetch-collection" (jdbc/execute! (:tx request) (build-query request))))
 
 ;### index ####################################################################
 
