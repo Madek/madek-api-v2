@@ -28,9 +28,9 @@
         (assoc-in request [:is_admin] true)))
     (throw
      (ex-info
-      "Only administrators are allowed to access this resource."
+      "Only administrators are allowed to access this resource.11"
       {:status 403
-       :body {:msg "Only administrators are allowed to access this resource."}})))))
+       :body {:msg "Only administrators are allowed to access this resource.22"}})))))
 
 (defn wrap-authorize-admin! [handler]
   (fn [req]

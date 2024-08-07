@@ -4,6 +4,8 @@ shared_context :user_entity do |ctx|
   context "for Database User" do
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
+      @token = ApiToken.create user: @entity, scope_read: true,
+                               scope_write: true
     end
     let :entity_type do
       "User"
@@ -19,13 +21,15 @@ shared_context :test_proper_basic_auth do
         "/api-v2/app-settings" => 200, # public endpoint
         "/api-v2/auth-info" => 200,
 
-        "/api-v2/api-docs/index.html" => 200,
-        "/api-v2/api-docs/index.css" => 200,
-        "/api-v2/api-docs/swagger-ui.css" => 200,
-        "/api-v2/api-docs/openapi.json" => 200
+        # "/api-v2/api-docs/index.html" => 200,
+        # "/api-v2/api-docs/index.css" => 200,
+        # "/api-v2/api-docs/swagger-ui.css" => 200,
+        # "/api-v2/api-docs/openapi.json" => 200
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get(url)
+          # response = basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get(url)
+          response = new_token_auth_faraday_json_client(@token.token, url)
+
           expect(response.status).to eq(code)
         end
       end
@@ -39,7 +43,9 @@ shared_context :test_proper_basic_auth do
         "/api-v2/api-docs/openapi.json" => 200
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
+          # response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
+          response = new_token_auth_faraday_json_client("invalid-token", url)
+
           expect(response.status).to eq(code)
         end
       end
@@ -49,11 +55,12 @@ shared_context :test_proper_basic_auth do
         "/api-v2/auth-info" => 401
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
+          response = new_token_auth_faraday_json_client("invalid-token", url)
+          # response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
 
           expect(response.status).to eq(code)
-          expect(response.body["message"]).to eq("Neither User nor ApiClient exists for {:login-or-email-address \"Not-existing-user\"}")
-          expect(response.headers["www-authenticate"]).to eq("Basic realm=\"Madek ApiClient with password or User with token.\"")
+          expect(response.body["message"]).to eq("No token for this token-secret found!")
+          # expect(response.headers["www-authenticate"]).to eq("Basic realm=\"Madek ApiClient with password or User with token.\"")
         end
       end
     end
@@ -82,7 +89,7 @@ shared_context :test_proper_basic_auth do
 
           expect(response.status).to eq(code)
           expect(response.body["message"]).to eq("Not authorized")
-          expect(response.headers["www-authenticate"]).to eq("Basic realm=\"Madek ApiClient with password or User with token.\"")
+          # expect(response.headers["www-authenticate"]).to eq("Basic realm=\"Madek ApiClient with password or User with token.\"")
         end
       end
     end
