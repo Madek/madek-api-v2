@@ -6,6 +6,7 @@
             [logbug.catcher :as catcher]
             [madek.api.constants :as mc]
             [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error info]]))
 
@@ -97,9 +98,15 @@
 
 (defn sql-query-find-eq
   ([table-name col-name row-data]
-   (let [query (-> (build-query-base table-name :*)
-                   (sql/where [:= col-name (to-uuid row-data col-name table-name)])
-                   sql-format)]
+   (let [query (if (= col-name :media_entry_id)
+                 (-> (build-query-base [table-name :vtable] :vtable.*)
+                     (sql/join [:media_entries :me] [:= :vtable.media_entry_id :me.id])
+                     (sql/where [:= :me.id (to-uuid row-data col-name table-name)])
+                     (->non-soft-deleted "me")
+                     sql-format)
+                 (-> (build-query-base table-name :*)
+                     (sql/where [:= col-name (to-uuid row-data col-name table-name)])
+                     sql-format))]
      query))
 
   ([table-name col-name row-data col-name2 row-data2]

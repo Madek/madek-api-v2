@@ -51,6 +51,7 @@
         fi.metosin/reitit-openapi {:mvn/version "0.7.1"}
         metosin/reitit {:mvn/version "0.7.1"}
 
+        metosin/spec-tools {:mvn/version "0.10.7"}
         metosin/ring-swagger-ui {:mvn/version "4.19.1"}
         metosin/reitit-swagger-ui {:mvn/version "0.7.1"}
 

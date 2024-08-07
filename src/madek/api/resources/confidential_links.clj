@@ -158,7 +158,7 @@
 ; TODO check can edit permissions
 (def user-me-routes
   ["/media-entry/:media_entry_id"
-   {:openapi {:tags ["api/media-entry"] :security [{"auth" []}]}}
+   {:openapi {:tags ["api/media-entry"]}}
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link

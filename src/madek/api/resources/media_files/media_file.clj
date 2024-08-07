@@ -3,11 +3,12 @@
    [logbug.catcher :as catcher]
    [madek.api.constants]
    [madek.api.data-streaming :as data-streaming]
-   [madek.api.resources.previews.index :as previews]))
+   [madek.api.resources.previews.index :as previews]
+   [madek.api.resources.shared.core :as sd]))
 
 (defn get-media-file [request]
   (if (= nil (:media-file request))
-    {:status 404}
+    (sd/response_not_found "No media-file for media_entry_id")
 
     (when-let [media-file (:media-file request)]
       {:status 200

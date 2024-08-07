@@ -66,14 +66,14 @@
         (reset! last-ex* ei)
         (if-let [status (-> ei ex-data :status)]
           (do
-            (warn "COUGHT STATUS EXCEPTION" (ex-message ei))
+            (warn "CAUGHT STATUS EXCEPTION" (ex-message ei))
             (status-error-response status ei))
           (do
-            (error "COUGHT EXCEPTION WO STATUS" (ex-message ei))
+            (error "CAUGHT EXCEPTION WO STATUS" (ex-message ei))
             (server-error-response ei))))
       (catch Exception ex
         (reset! last-ex* ex)
-        (error "COUGHT UNEXPECTED EXCEPTION" (ex-message ex))
+        (error "CAUGHT UNEXPECTED EXCEPTION" (ex-message ex))
         (server-error-response ex)))))
 
 ;### wrap CORS ###############################################################
@@ -197,9 +197,9 @@
             response)
           (catch Exception ex
             (def ^:dynamic debug-last-ex ex)
-            (error "RING-LOGGING-WRAPPER COUGHT EXCEPTION "
+            (error "RING-LOGGING-WRAPPER CAUGHT EXCEPTION "
                    {:wrap-debug-level wrap-debug-level} (ex-message ex))
-            (error "RING-LOGGING-WRAPPER COUGHT EXCEPTION " (thrown/stringify ex))
+            (error "RING-LOGGING-WRAPPER CAUGHT EXCEPTION " (thrown/stringify ex))
             (throw ex))))))
   (let [mws middlewares]
     (def ^:dynamic middlewares

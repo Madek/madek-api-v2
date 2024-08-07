@@ -12,7 +12,7 @@ shared_context :user_entity do |ctx|
   end
 end
 
-shared_context :test_proper_basic_auth do
+shared_context :test_proper_user_basic_auth do
   describe "Test access to api-docs and endpoints" do
     context "with valid basicAuth-User (no rproxy-basicAuth)" do
       {
@@ -91,6 +91,6 @@ end
 
 describe "/auth-info resource" do
   context "Access to api-docs" do
-    include_context :user_entity, :test_proper_basic_auth
+    include_context :user_entity, :test_proper_user_basic_auth
   end
 end

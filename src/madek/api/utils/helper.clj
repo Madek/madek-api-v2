@@ -1,5 +1,6 @@
 (ns madek.api.utils.helper
   (:require [cheshire.core :as json]
+            [honey.sql :refer [format] :rename {format sql-format}]
             [pghstore-clj.core :refer [to-hstore]]
             [taoensso.timbre :refer [warn]])
   (:import (java.util UUID)))
@@ -31,6 +32,15 @@
   (if LOAD-SWAGGER-DESCRIPTION-FROM-FILE
     (slurp file-path)
     "DESCRIPTION DEACTIVATED"))
+
+(defn- quote-names-if-reserved-keywords [sql-query] "Used to quote column-names if they are reserved keywords (sql)"
+  (let [first-sql (first sql-query)
+        modified-sql (clojure.string/replace first-sql "order," "\"order\",")
+        modified-sql (clojure.string/replace modified-sql "order =" "\"order\" =")]
+    (assoc sql-query 0 modified-sql)))
+
+(defn sql-format-quoted [sql-query]
+  (quote-names-if-reserved-keywords (sql-format sql-query)))
 
 ; [madek.api.utils.helper :refer [to-uuid]]
 (defn to-uuid
@@ -86,6 +96,7 @@
 ; [madek.api.utils.helper :refer [convert-map-if-exist]]
 (defn convert-map-if-exist [m]
   (-> m
+      (modify-if-exists :deleted_at #(if (contains? m :deleted_at) [:cast % ::date]))
       (modify-if-exists :layout #(if (contains? m :layout) [:cast % :public.collection_layout]))
       (modify-if-exists :default_resource_type #(if (contains? m :default_resource_type) [:cast % :public.collection_default_resource_type]))
       (modify-if-exists :sorting #(if (contains? m :sorting) [:cast % :public.collection_sorting]))

@@ -27,6 +27,7 @@ describe "Getting a media-entry resource with authentication" do
       :media_entry, get_metadata_and_previews: false,
       responsible_user:  @owner
     )
+    @media_file = FactoryBot.create :media_file_for_image, media_entry: @media_entry
   end
 
   include_context :auth_media_entry_resource_via_plain_json
@@ -297,7 +298,7 @@ describe "Getting a media-entry resource with authentication" do
       edit = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password).put(uurl)
       expect(edit.status).to be == 200
 
-      expect_audit_entries_count(2, 18, 2)
+      expect_audit_entries_count(2, 28, 2)
     end
 
     it "edit user perms is allowed 200" do
@@ -306,7 +307,7 @@ describe "Getting a media-entry resource with authentication" do
       edit = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password).put(uurl)
       expect(edit.status).to be == 200
 
-      expect_audit_entries_count(2, 17, 2)
+      expect_audit_entries_count(2, 27, 2)
     end
 
     it "edit group perms is allowed 200" do

@@ -12,6 +12,7 @@
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.core :refer [keyword str]]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
 
@@ -34,7 +35,7 @@
 
 ;### query ####################################################################
 
-(defn ^:private base-query [me-query]
+(defn- base-query [me-query softdelete-mode]
   ; TODO make full-data selectable
   (let [sel (sql/select [:media_entries.id :media_entry_id]
                         [:media_entries.created_at :media_entry_created_at]
@@ -58,13 +59,12 @@
         where3 (if (blank? ru-id) ; or not uuid
                  where2
                  (sql/where where2 [:= :media_entries.responsible_user_id ru-id]))
+        where4 (cond
+                 (= softdelete-mode :deleted) (soft-deleted where3 "media_entries")
+                 (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted where3 "media_entries"))
 
-        ; TODO updated/created after
-        from (sql/from where3 :media_entries)
-        ;        orig-query (-> (sql/select [:media_entries.id :media_entry_id]
-        ;                                   [:media_entries.created_at :media_entry_created_at])
-        ;                       (sql/from :media_entries))
-        ]
+; TODO updated/created after
+        from (sql/from where4 :media_entries)]
     ;    (info "base-query"
     ;                  "\nme-query:\n" me-query
     ;                  "\nfrom:\n" sel
@@ -182,9 +182,10 @@
   (let [query-params (-> request :parameters :query)
         filter-by (json/decode (:filter_by query-params) true)
         props-by (:media_entry filter-by)
+        softdelete-mode (:filter_softdelete query-params)
         tx (:tx request)
         authenticated-entity (:authenticated-entity request)
-        query-res (-> (base-query props-by)
+        query-res (-> (base-query props-by softdelete-mode)
                       (set-order query-params tx)
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params authenticated-entity)

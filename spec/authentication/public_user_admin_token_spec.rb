@@ -82,7 +82,7 @@ end
 
 ### TEST ENDPOINTS WITH MADEK-USER ##########################################
 
-shared_context :test_proper_basic_auth do
+shared_context :test_proper_user_basic_auth do
   describe "2) Test status-code as madek-user " do
     it "against POST endpoints " do
       user_url = "/api-v2/admin/full_text/"
@@ -162,7 +162,7 @@ describe "/auth-info resource" do
   end
 
   context "Basic Authentication" do
-    include_context :user_entity, :test_proper_basic_auth
+    include_context :user_entity, :test_proper_user_basic_auth
   end
 end
 

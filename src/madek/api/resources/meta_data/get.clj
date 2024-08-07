@@ -1,5 +1,6 @@
 (ns madek.api.resources.meta_data.get
   (:require [cheshire.core]
+            [clojure.java.io :as io]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.resources.meta-data.index :as meta-data.index]
@@ -8,6 +9,7 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.helper :refer [mslurp]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
@@ -225,6 +227,7 @@
 
 (def media-entry.media_entry_id.meta-data {:summary "Get meta-data for media-entry."
                                            :handler meta-data.index/get-index
+                                           :description "Example for meta_keys: ['s9r2epz5t2:i532t703bbkv628idkar']"
                                            ; TODO 401s test fails
                                            :middleware [jqh/ring-wrap-add-media-resource
                                                         jqh/ring-wrap-authorization-view]
@@ -258,6 +261,7 @@
                                                :body s/Any}}})
 
 (def collection_id.meta-data-related {:summary "Get meta-data for collection."
+                                      :description (mslurp (io/resource "md/meta-data-related.md"))
                                       :handler handle_get-mr-meta-data-with-related
                                       :middleware [jqh/ring-wrap-add-media-resource
                                                    jqh/ring-wrap-authorization-view]
@@ -295,9 +299,8 @@
 
 (def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
                           :handler handle_get-meta-data-people
-                          :middleware [;wrap-me-add-meta-data
-                                       jqh/ring-wrap-add-media-resource
-                                       jqh/ring-wrap-authorization-edit-metadata]
+                          :middleware [jqh/ring-wrap-add-media-resource
+                                       jqh/ring-wrap-authorization-view]
                           :coercion reitit.coercion.schema/coercion
                           :parameters {:path {:collection_id s/Uuid
                                               :meta_key_id s/Str}}

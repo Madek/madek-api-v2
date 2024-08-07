@@ -74,10 +74,8 @@
    :parameters {:body schema}
    :responses {201 {:description "Created."
                     :body schema_post}
-
                400 {:description "Bad Request"
                     :body s/Any}
-
                404 {:description "Not Found."
                     :schema s/Str
                     :examples {"application/json" {:message "People entry not found"}}}

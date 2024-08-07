@@ -12,7 +12,9 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
@@ -39,20 +41,16 @@
   (let [eid (-> req :parameters :path :media_entry_id)
         mr (-> req :media-resource)
         tx (:tx req)
-        sql-query-files (-> (sql/delete :media_files)
-                            (sql/where [:= :media_entry_id eid])
-                            sql-format)
-        fresult (jdbc/execute! tx sql-query-files)
-        sql-query-entries (-> (sql/delete :media_entries)
+        sql-query-entries (-> (sql/update :media_entries)
+                              (sql/set {:deleted_at (java.util.Date.)})
                               (sql/where [:= :id eid])
                               sql-format)
         dresult (jdbc/execute! tx sql-query-entries)]
 
     (info "handle_delete_media_entry"
           "\n eid: \n" eid
-          "\n fresult: \n" fresult
           "\n dresult: \n" dresult)
-    (if (= 1 (first dresult))
+    (if (= 1 (::jdbc/update-count (first dresult)))
       (sd/response_ok {:deleted mr})
       (sd/response_failed {:message "Failed to delete media entry"} 406))))
 
@@ -105,9 +103,26 @@
           (sd/response_ok (dbh/query-eq-find-one :media_entries :id eid tx))
           (sd/response_failed "Could not update publish on media_entry." 406)))
 
-      (sd/response_failed {:is_publishable publishable
-                           :media_entry_id eid
-                           :has_meta_data hasMetaData} 406))))
+      (sd/response_failed
+       {:is_publishable publishable
+        :media_entry_id eid
+        :has_meta_data hasMetaData}
+       406))))
+
+(defn handle_update-media-entry [req]
+  (let [data (-> req :parameters :body)
+        tx (:tx req)
+        eid (-> req :parameters :path :media_entry_id)
+        eid (to-uuid eid)
+        sql-query (-> (sql/update :media_entries)
+                      (sql/set (convert-map-if-exist data))
+                      (sql/where [:= :id eid])
+                      (sql/returning :*)
+                      sql-format)
+        dresult (jdbc/execute-one! tx sql-query)]
+    (if dresult
+      (sd/response_ok dresult)
+      (sd/response_failed "Could not update publish on media_entry." 406))))
 
 (def Madek-Constants-Default-Mime-Type "application/octet-stream")
 
@@ -189,6 +204,7 @@
             (handle_uploaded_file_resp_ok file new-mfr new-mer collection-id tx)
             (sd/response_failed "Could not create media-file" 406)))
         (sd/response_failed "Could not create media-entry" 406)))))
+
 ; this is only for dev
 ; no collection add
 ; no meta data / entry clone
@@ -221,18 +237,38 @@
         (sd/response_failed "Not authed" 406)
         (create-media_entry file auth mime collection-id tx)))))
 
-(sa/def ::media-entries-def (sa/keys :opt-un [::sp/collection_id ::sp/order ::sp/filter_by
-                                              ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
-                                              ::sp/me_edit_metadata ::sp/me_edit_permissions
-                                              ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
-                                              ::sp/full_data
-                                              ::sp/page ::sp/size]))
+(def ISO8601TimestampWithoutMS
+  (s/constrained
+   s/Str
+   #(re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z" %)
+   "ISO 8601 timestamp without milliseconds"))
 
-(sa/def ::media-entry-def (sa/keys :req-un [::sp/id]
-                                   :opt-un [::sp/creator_id ::sp/responsible_user_id ::sp/get_full_size ::sp/get_metadata_and_previews
-                                            ::sp/is_published ::sp/created_at ::sp/updated_at ::sp/edit_session_updated_at ::sp/meta_data_updated_at
-                                            ::sp-nil/responsible_delegation_id
-                                            ::sp/page ::sp/size]))
+(sa/def ::media-entries-def
+  (sa/keys :opt-un
+           [::sp/collection_id ::sp/order ::sp/filter_by
+            ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
+            ::sp/me_edit_metadata ::sp/me_edit_permissions
+            ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
+            ::sp/full_data
+            ::sp/page ::sp/size]))
+
+(sa/def ::media-entries-adm-def
+  (sa/keys :opt-un
+           [::sp/collection_id ::sp/order ::sp/filter_by
+            ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
+            ::sp/me_edit_metadata ::sp/me_edit_permissions
+            ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
+            ::sp/full_data
+            ::sp/page ::sp/size
+            ::sp-map/filter_softdelete]))
+
+(sa/def ::media-entry-def
+  (sa/keys :req-un [::sp/id]
+           :opt-un
+           [::sp/creator_id ::sp/responsible_user_id ::sp/get_full_size ::sp/get_metadata_and_previews
+            ::sp/is_published ::sp/created_at ::sp/updated_at ::sp/edit_session_updated_at ::sp/meta_data_updated_at
+            ::sp-nil/responsible_delegation_id
+            ::sp/page ::sp/size]))
 
 (def schema_export_media_entry
   {:id s/Uuid
@@ -250,23 +286,59 @@
 
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
 
-(sa/def ::media-entry-response-def (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
-                                            :opt-un [::sp/col_arcs ::sp/col_meta_data]))
+(def schema_export_adm_media_entry
+  (merge schema_export_media_entry
+         {:deleted_at (s/maybe ISO8601TimestampWithoutMS)}))
 
-(sa/def ::media-entries-resp-def (sa/keys :opt-un [::sp/responsible_user_id ::sp/get_full_size ::sp/creator_id ::sp/updated_at
-                                                   ::sp/edit_session_updated_at ::sp/is_published ::sp/get_metadata_and_previews ::sp/meta_data_updated_at
-                                                   ::sp/created_at]
-                                          :req-un [::sp/id]))
+(sa/def ::media-entry-response-def
+  (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
+           :opt-un [::sp/col_arcs ::sp/col_meta_data]))
 
-(sa/def :media-entry-list/media_entries (st/spec {:spec (sa/coll-of ::media-entries-resp-def)
-                                                  :description "A list of media-entries"}))
+(sa/def ::media-entries-resp-def
+  (sa/keys :opt-un
+           [::sp/responsible_user_id ::sp/get_full_size ::sp/creator_id ::sp/updated_at
+            ::sp/edit_session_updated_at ::sp/is_published ::sp/get_metadata_and_previews ::sp/meta_data_updated_at
+            ::sp/created_at]
+           :req-un [::sp/id]))
 
-(sa/def ::media-entries-body-resp-def (sa/keys :req-un [:media-entry-list/media_entries])) ;TODO: not in use?
+(sa/def :media-entry-list/media_entries
+  (st/spec
+   {:spec (sa/coll-of ::media-entries-resp-def)
+    :description "A list of media-entries"}))
+
+(sa/def ::media-entries-body-resp-def
+  (sa/keys :req-un [:media-entry-list/media_entries]))
 
 (def schema_publish_failed
   {:message {:is_publishable s/Bool
              :media_entry_id s/Uuid
              :has_meta_data [{s/Any s/Bool}]}})
+
+(def schema_media_entry
+  {:id s/Uuid
+   :creator_at s/Any
+   :creator_id s/Uuid
+   :responsible_user_id s/Uuid
+   :is_published s/Bool
+   :updated_at s/Any
+   :edit_session_updated_at s/Any
+   :meta_data_updated_at s/Any})
+
+(def schema_media_entry_deleted
+  {:id s/Uuid
+   :deleted_at s/Any
+   :created_at s/Any
+   :creator_id s/Uuid
+   :responsible_user_id s/Uuid
+   :responsible_delegation_id (s/maybe s/Uuid)
+   :is_published s/Bool
+   :updated_at s/Any
+   :get_full_size s/Bool
+   :type s/Any
+   :table-name s/Str
+   :get_metadata_and_previews s/Bool
+   :edit_session_updated_at s/Any
+   :meta_data_updated_at s/Any})
 
 (def ring-routes
   ["/"
@@ -291,6 +363,38 @@
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries with all related data."
                        :schema ::media-entry-response-def}}}}]])
+
+(def ring-admin-routes
+  ["/"
+   {:openapi {:tags ["admin/media-entries"]}}
+
+   ["media-entries"
+    {:get
+     {:summary "Query media-entries."
+      :handler handle_query_media_entry
+      :middleware [wrap-authorize-admin!
+                   jqh/ring-wrap-parse-json-query-parameters]
+      :coercion spec/coercion
+      :parameters {:query ::media-entries-adm-def}
+      :responses {200 {:description "Returns the media-entries."
+                       :schema ::media-entries-body-resp-def}
+                  422 {:description "Unprocessable Entity."
+                       :schema any?}}}}]
+
+   ["media-entries/:media_entry_id"
+    {:put {:summary "Try publish media-entry for id / HERE!!!!"
+           :handler handle_update-media-entry
+           :swagger {:produces "application/json"}
+           :content-type "application/json"
+           :middleware [wrap-authorize-admin!]
+           :accept "application/json"
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:media_entry_id s/Uuid}
+                        :body {:deleted_at (s/maybe ISO8601TimestampWithoutMS)}}
+           :responses {200 {:description "Returns the updated media-entry."
+                            :body schema_export_adm_media_entry}
+                       406 {:description "Not Acceptable."
+                            :body schema_publish_failed}}}}]])
 
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)
@@ -325,7 +429,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}}
            :responses {200 {:description "Returns the media-entry."
-                            :body s/Any}
+                            :body schema_media_entry}
                        404 {:description "Not found."
                             :body s/Any}}}
 
@@ -339,7 +443,7 @@
                            jqh/ring-wrap-authorization-edit-permissions]
               :coercion reitit.coercion.schema/coercion
               :responses {200 {:description "Returns the deleted media-entry."
-                               :body s/Any}
+                               :body {:deleted schema_media_entry_deleted}}
                           406 {:description "Not Acceptable."
                                :body s/Any}}
               :parameters {:path {:media_entry_id s/Uuid}}}}]

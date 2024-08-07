@@ -29,15 +29,19 @@
         (handler (assoc request :media-file media-file))
         (sd/response_not_found "No media-file for media_file_id")))))
 
+(defn nil-or-empty? [value]
+  (or (nil? value) (empty? value)))
+
 (defn wrap-find-and-add-media-file-by-media-entry-id
   "Extracts path parameter media_entry_id,
    adds queried media-file and its media_file_id to the request data."
   [handler]
   (fn [request]
     (when-let [media-entry-id (-> request :parameters :path :media_entry_id)]
-      (if-let [media-files (query-media-files-by-media-entry-id media-entry-id (:tx request))]
-        (handler (assoc request :media-file (first media-files)))
-        (sd/response_not_found "No media-file for media_entry_id")))))
+      (let [media-files (query-media-files-by-media-entry-id media-entry-id (:tx request))]
+        (if (nil-or-empty? media-files)
+          (sd/response_not_found "No media-file for media_entry_id")
+          (handler (assoc request :media-file (first media-files))))))))
 
 (def schema_export-media-file
   {:id s/Uuid

@@ -35,7 +35,7 @@ shared_context :test_bad_password_basic_auth do
   end
 end
 
-shared_context :test_proper_basic_auth do
+shared_context :test_proper_user_basic_auth do
   context "with proper username and password" do
     let :response do
       basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get("/api-v2/auth-info")
@@ -95,7 +95,7 @@ describe "/auth-info resource" do
   end
 
   context "Basic Authentication" do
-    include_context :user_entity, :test_proper_basic_auth
+    include_context :user_entity, :test_proper_user_basic_auth
     include_context :user_entity, :test_bad_password_basic_auth
   end
 end

@@ -3,6 +3,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.authorization :refer [authorized?]]
             [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error warn]]))
 
@@ -22,6 +23,7 @@
                                               (-> (sql/select :*)
                                                   (sql/from (keyword table-name))
                                                   (sql/where [:= :id (to-uuid id)])
+                                                  ->non-soft-deleted
                                                   sql-format))]
          (assoc resource :type type :table-name table-name)))
 
@@ -33,7 +35,6 @@
 (defn ring-add-media-resource [request handler tx] ;;here
   (if-let [media-resource (get-media-resource request tx)]
     (let [request-with-media-resource (assoc request :media-resource media-resource)]
-      ;(info "ring-add-media-resource" "\nmedia-resource\n" media-resource)
       (handler request-with-media-resource))
     {:status 404}))
 

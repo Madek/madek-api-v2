@@ -1,4 +1,5 @@
 require "spec_helper"
+require "base32/crockford"
 
 shared_context :bunch_of_media_entries do
   let :users_count do
@@ -17,11 +18,81 @@ shared_context :bunch_of_media_entries do
 
   let :media_entries do
     (1..media_entries_count).map do
-      FactoryBot.create :media_entry,
+      me = FactoryBot.create :media_entry,
         responsible_user: users[rand(users_count)],
         is_published: (rand <= 0.9),
         get_metadata_and_previews: true, # (rand <= 0.8),
         get_full_size: true # (rand <= 0.3)
+
+      FactoryBot.create :media_file_for_image, media_entry: me
+      me
+    end
+  end
+
+  let :create_5_media_entries do
+    @collection = FactoryBot.create :collection
+
+    media_types = [
+      :media_file_for_image,
+      :media_file_for_audio,
+      :media_file_for_movie,
+      :media_file_for_document,
+      :media_file_for_other
+    ]
+
+    (1..7).map do |i|
+      vocabulary = create(:vocabulary,
+        id: Faker::Lorem.characters(number: 10))
+
+      user = users[rand(users_count)]
+
+      me = FactoryBot.create :media_entry,
+        responsible_user: user,
+        is_published: (rand <= 0.9),
+        get_metadata_and_previews: true
+
+      FactoryBot.create :confidential_link,
+        created_at: Time.now,
+        user: user,
+        resource: me
+
+      title_meta_key = FactoryBot.create(:meta_key_text,
+        id: "#{vocabulary.id}:#{Faker::Lorem.characters(number: 20)}",
+        vocabulary: vocabulary)
+
+      @meta_datum_text = FactoryBot.create :meta_datum_text,
+        media_entry: me
+
+      @meta_datum_text = FactoryBot.create :meta_datum_people,
+        media_entry: me
+
+      @meta_datum_text = FactoryBot.create :meta_datum_title,
+        media_entry: me
+
+      @meta_datum_text = FactoryBot.create :meta_datum_roles,
+        media_entry: me
+
+      FactoryBot.create(:meta_datum_text,
+        media_entry: me,
+        meta_key: title_meta_key,
+        value: "Title #{i}")
+
+      me.update(get_full_size: rand <= 0.3)
+
+      FactoryBot.create :media_file_for_image, media_entry: me
+
+      media_type = media_types[i % media_types.size]
+
+      FactoryBot.create media_type, media_entry: me
+
+      if i == 1
+        @meta_key_keywords = FactoryBot.create :meta_key_keywords
+        @meta_datum = FactoryBot.create :meta_datum_keywords,
+          media_entry: me,
+          meta_key: @meta_key_keywords
+      end
+
+      me
     end
   end
 

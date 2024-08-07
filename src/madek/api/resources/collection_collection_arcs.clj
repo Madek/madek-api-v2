@@ -5,19 +5,22 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.collection-media-entry-arcs :refer [schema_collection-collection-arc-export]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [spec-tools.core :as st]))
 
 (defn arc-query [request]
   (-> (sql/select :*)
       (sql/from :collection_collection_arcs)
-      (sql/where [:= :id (-> request :parameters :path :id)])
+      (sql/where [:= :id (-> request :parameters :path :id to-uuid)])
       sql-format))
 
 (defn handle_get-arc [req]
@@ -104,7 +107,7 @@
                      :child_id child-id
                      tx)
             tx (:tx req)
-            query (-> (sql/delete :collection_collection_arcs)
+            query (-> (sql/delete-from :collection_collection_arcs)
                       (sql/where [:= :parent_id parent-id
                                   := :child_id child-id])
                       sql-format)
@@ -117,21 +120,12 @@
     (catch Exception e (sd/response_exception e))))
 
 (def schema_collection-collection-arc-update
-  {;(s/optional-key :id) s/Uuid
-   ;(s/optional-key :parent_id) s/Uuid
-   ;(s/optional-key :child_id) s/Uuid
-   (s/optional-key :highlight) s/Bool
+  {(s/optional-key :highlight) s/Bool
    (s/optional-key :order) s/Num
-   (s/optional-key :position) s/Int
-   ;(s/optional-key :created_at) s/Any
-   ;(s/optional-key :updated_at) s/Any
-   })
-(def schema_collection-collection-arc-create
-  {;(s/optional-key :id) s/Uuid
-   ;(s/optional-key :parent_id) s/Uuid
-   ;(s/optional-key :child_id) s/Uuid
+   (s/optional-key :position) s/Int})
 
-   (s/optional-key :highlight) s/Bool
+(def schema_collection-collection-arc-create
+  {(s/optional-key :highlight) s/Bool
    (s/optional-key :order) s/Num
    (s/optional-key :position) s/Int})
 
@@ -139,19 +133,25 @@
 (sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/child_id ::sp/parent_id ::sp/highlight]
                                      :opt-un [::sp-nil/order ::sp-nil/created_at ::sp-nil/updated_at ::sp-nil/position]))
 
+(sa/def ::collection-collection-arc-resp-def (sa/keys :req-un [::sp/id ::sp/child_id ::sp/parent_id ::sp-nil/highlight
+                                                               ::sp-nil/order ::sp-nil/created_at ::sp-nil/updated_at ::sp-nil/position]))
+
+(sa/def :list-of/collection-collection-arcs (st/spec {:spec (sa/coll-of ::collection-collection-arc-resp-def)
+                                                      :description "A list of collection-collection-arcs"}))
+(sa/def ::response-groups-body (sa/keys :req-un [:list-of/collection-collection-arcs]))
+
 ; TODO add permission checks
 (def ring-routes
   ["/collection-collection-arcs"
    {:openapi {:tags ["api/collection"]}}
-   ["/"
+   [""
     {:get
      {:summary "Query collection collection arcs."
       :handler handle_query-arcs
       :coercion spec/coercion
       :parameters {:query ::group-id-query-def}
       :responses {200 {:description "Returns the collection collection arcs."
-                       :body any?}} ; TODO response coercion
-      }}]
+                       :body ::response-groups-body}}}}]
    ; TODO rename param to collection_id
    ; TODO add permission checks
    ["/:id"
@@ -162,7 +162,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}}
       :responses {200 {:description "Returns the collection collection arc."
-                       :body s/Any}
+                       :body schema_collection-collection-arc-export}
                   404 {:description "Collection collection arc not found."
                        :body s/Any}} ; TODO response coercion
       }}]])
@@ -192,7 +192,7 @@
                           :child_id s/Uuid}
                    :body schema_collection-collection-arc-create}
       :responses {200 {:description "Returns the created collection collection arc."
-                       :body s/Any}
+                       :body schema_collection-collection-arc-export}
                   406 {:description "Could not create collection collection arc"
                        :body s/Any}}}
 
@@ -204,7 +204,7 @@
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}}
       :responses {200 {:description "Returns the collection collection arc."
-                       :body s/Any}
+                       :body schema_collection-collection-arc-export}
                   404 {:description "Collection collection arc not found."
                        :body s/Any}} ; TODO response coercion
       }
@@ -220,7 +220,7 @@
                           :child_id s/Uuid}
                    :body schema_collection-collection-arc-update}
       :responses {200 {:description "Returns the updated collection collection arc."
-                       :body s/Any}
+                       :body schema_collection-collection-arc-export}
                   404 {:description "Collection collection arc not found."
                        :body s/Any}
                   406 {:description "Could not update collection collection arc"
@@ -235,7 +235,7 @@
       :parameters {:path {:parent_id s/Uuid
                           :child_id s/Uuid}}
       :responses {200 {:description "Returns the deleted collection collection arc."
-                       :body s/Any}
+                       :body schema_collection-collection-arc-export}
                   404 {:description "Collection collection arc not found."
                        :body s/Any}
                   406 {:description "Could not delete collection collection arc"

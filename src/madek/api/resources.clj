@@ -110,6 +110,7 @@
    favorite-collections/admin-routes
    favorite-media-entries/admin-routes
 
+   collections/ring-admin-routes
    full-texts/edit-routes
 
    groups/ring-routes
@@ -117,6 +118,7 @@
    ;io-mappings/admin-routes
    keywords/admin-routes
 
+   media-entries/ring-admin-routes
    meta-keys/admin-routes
 
    people/admin-routes

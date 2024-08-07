@@ -10,6 +10,7 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [convert-map-if-exist mslurp]]
    [next.jdbc :as jdbc]
@@ -131,12 +132,25 @@
 (sa/def :usr/collections-update (sa/keys :opt-un [::sp/layout ::sp/is_master ::sp/sorting ::sp-nil/default_context_id
                                                   ::sp-nil/workflow_id ::sp/default_resource_type]))
 
+(sa/def :adm/collections-update (sa/keys :opt-un [::sp/layout ::sp/is_master ::sp/sorting ::sp-nil/default_context_id
+                                                  ::sp-nil/workflow_id ::sp/default_resource_type
+
+                                                  ::sp-nil/deleted_at]))
+
 (sa/def :collection-query/query-def (sa/keys :opt-un [::sp/full_data ::sp/collection_id ::sp/order ::sp/creator_id
                                                       ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
                                                       ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                       ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
                                                       ::sp/me_edit_metadata_and_relations
                                                       ::sp/page ::sp/size]))
+
+(sa/def :collection-query/query-admin-def (sa/keys :opt-un [::sp/full_data ::sp/collection_id ::sp/order ::sp/creator_id
+                                                            ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
+                                                            ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
+                                                            ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
+                                                            ::sp/me_edit_metadata_and_relations
+                                                            ::sp/page ::sp/size
+                                                            ::sp-map/filter_softdelete]))
 
 (def schema_collection-export
   {:id s/Uuid
@@ -163,16 +177,74 @@
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
-(sa/def :usr/collections (sa/keys :req-un [::sp/id] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
-                                                             ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
-                                                             ::sp/deleted_at ::sp/created_at ::sp/updated_at ::sp/meta_data_updated_at
-                                                             ::sp/edit_session_updated_at ::sp-nil/clipboard_user_id ::sp-nil/workflow_id
-                                                             ::sp-nil/responsible_delegation_id ::sp/default_resource_type]))
+(sa/def :usr/collections-put (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/deleted_at] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
+                                                                                                     ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
+                                                                                                 ;::sp/deleted_at
+                                                                                                     ::sp/updated_at ::sp/meta_data_updated_at
+                                                                                                     ::sp/edit_session_updated_at ::sp-nil/clipboard_user_id ::sp-nil/workflow_id
+                                                                                                     ::sp-nil/responsible_delegation_id ::sp/default_resource_type]))
+
+(sa/def :usr/collections
+  (sa/keys :req-un [::sp/id
+                    ::sp/created_at
+                    ::sp-nil/deleted_at
+                    ::sp/child_id
+                    ::sp/parent_id]
+           :opt-un [::sp/get_metadata_and_previews
+                    ::sp/layout
+                    ::sp/is_master
+                    ::sp/sorting
+                    ::sp-nil/responsible_user_id
+                    ::sp/creator_id
+                    ::sp-nil/default_context_id
+                    ::sp/deleted_at
+                    ::sp/updated_at
+                    ::sp/meta_data_updated_at
+                    ::sp/edit_session_updated_at
+                    ::sp-nil/clipboard_user_id
+                    ::sp-nil/workflow_id
+                    ::sp-nil/responsible_delegation_id
+                    ::sp/default_resource_type
+                    ::sp-nil/position
+                    ::sp-nil/order]))
 
 (sa/def :usr-collection-list/groups (st/spec {:spec (sa/coll-of :usr/collections)
                                               :description "A list of persons"}))
 
 (sa/def ::response-collections-body (sa/keys :req-un [:usr-collection-list/groups]))
+
+(def ring-admin-routes
+  ["/"
+   {:openapi {:tags ["admin/collection"]}}
+   ["collections"
+    {:get
+     {:summary (sd/sum_usr "Query/List collections.")
+      ;:middleware [wrap-authorize-admin!]
+      :handler handle_get-index
+      :coercion spec/coercion
+      :parameters {:query :collection-query/query-admin-def}
+      :responses {200 {:description "Returns the list of collections."
+                       :body ::response-collections-body}}}}]
+
+   ["collection/:collection_id"
+    {:put {:summary (sd/sum_usr "Update collection for id.")
+           :handler handle_update-collection
+           :description (mslurp (io/resource "md/collections-put.md"))
+           :middleware [;wrap-authorize-admin!
+                        jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-metadata]
+           :swagger {:produces "application/json"
+                     :consumes "application/json"}
+           :coercion reitit.coercion.spec/coercion
+           :parameters {:path {:collection_id uuid?}
+                        :body :adm/collections-update}
+           :responses {200 {:description "Returns the updated collection."
+                            :body (st/spec {:spec (sa/coll-of :usr/collections-put)
+                                            :description "A list of persons"})}
+                       404 {:description "Collection not found."
+                            :body any?}
+                       422 {:description "Could not update collection."
+                            :body any?}}}}]])
 
 (def ring-routes
   ["/"
@@ -184,7 +256,7 @@
       :coercion spec/coercion
       :parameters {:query :collection-query/query-def}
       :responses {200 {:description "Returns the list of collections."
-                       :schema ::response-collections-body}}}}]
+                       :body ::response-collections-body}}}}]
 
    ["collection"
     {:post
@@ -200,9 +272,9 @@
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:description "Returns the created collection."
-                       :schema schema_collection-export}
+                       :body schema_collection-export}
                   406 {:description "Could not create collection."
-                       :schema s/Any}}}}]
+                       :body s/Any}}}}]
 
    ["collection/:collection_id"
     {:get {:summary (sd/sum_usr_pub "Get collection for id.")
@@ -214,11 +286,11 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
            :responses {200 {:description "Returns the collection."
-                            :schema schema_collection-export}
+                            :body schema_collection-export}
                        404 {:description "Collection not found."
-                            :schema s/Any}
+                            :body s/Any}
                        422 {:description "Could not get collection."
-                            :schema s/Any}}}
+                            :body s/Any}}}
 
      :put {:summary (sd/sum_usr "Update collection for id.")
            :handler handle_update-collection
