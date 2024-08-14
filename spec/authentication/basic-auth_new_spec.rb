@@ -6,7 +6,7 @@ shared_context :user_entity do |ctx|
       @entity = FactoryBot.create :user, password: "TOPSECRET"
 
       @token = ApiToken.create user: @entity, scope_read: true,
-                        scope_write: true
+        scope_write: true
     end
     let :entity_type do
       "User"

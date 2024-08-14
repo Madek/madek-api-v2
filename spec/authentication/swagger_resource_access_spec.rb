@@ -5,7 +5,7 @@ shared_context :user_entity do |ctx|
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
       @token = ApiToken.create user: @entity, scope_read: true,
-                               scope_write: true
+        scope_write: true
     end
     let :entity_type do
       "User"
@@ -19,7 +19,7 @@ shared_context :test_proper_basic_auth do
     context "with valid basicAuth-User (no rproxy-basicAuth)" do
       {
         "/api-v2/app-settings" => 200, # public endpoint
-        "/api-v2/auth-info" => 200,
+        "/api-v2/auth-info" => 200
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = new_token_auth_faraday_json_client(@token.token, url)

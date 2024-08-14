@@ -41,7 +41,7 @@
                         session-auth/wrap
                         token-auth/wrap) request)]
       ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-popup in browser
-       response)))
+      response)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

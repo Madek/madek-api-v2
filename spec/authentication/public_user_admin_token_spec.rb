@@ -19,7 +19,7 @@ shared_context :user_token_entity do |ctx|
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
       @token = ApiToken.create user: @entity, scope_read: true,
-                               scope_write: true
+        scope_write: true
     end
     let :entity_type do
       "User"
@@ -33,9 +33,8 @@ shared_context :admin_token_entity do |ctx|
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
       @token = ApiToken.create user: @entity, scope_read: true,
-                               scope_write: true
+        scope_write: true
       @admin = FactoryBot.create :admin, user_id: @entity.id
-
     end
     let :entity_type do
       "User"
@@ -281,4 +280,3 @@ describe "/auth-info resource" do
     include_context :admin_token_entity, :test_proper_basic_auth
   end
 end
-

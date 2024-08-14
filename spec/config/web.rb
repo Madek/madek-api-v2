@@ -75,7 +75,6 @@ def new_token_auth_faraday_json_client(token)
   end
 end
 
-
 def new_token_auth_faraday_json_client(token, url, request_method = :get)
   @new_token_auth_faraday_json_client = Faraday.new(
     url: api_base_url,
@@ -91,7 +90,6 @@ def new_token_auth_faraday_json_client(token, url, request_method = :get)
 
   @new_token_auth_faraday_json_client.send(request_method, url)
 end
-
 
 def session_auth_plain_faraday_json_client(cookie_string)
   @plain_faraday_json_client ||= Faraday.new(

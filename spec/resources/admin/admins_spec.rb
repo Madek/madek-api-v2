@@ -77,7 +77,6 @@ context "admin users" do
 
         it "responds 404 with non-existing id" do
           # TODO build non-existent uuid
-          response = client.get("/api-v2/admin/admins/#{user.id}")
           response = new_token_auth_faraday_json_client(@token.token, "/api-v2/admin/admins/#{user.id}")
           expect(response.status).to be == 404
         end
