@@ -90,8 +90,6 @@ def new_token_auth_faraday_json_client(token, url, request_method = :get)
   end
 
   @new_token_auth_faraday_json_client.send(request_method, url)
-  # response = @new_token_auth_faraday_json_client.send(request_method, url)
-  # response.body
 end
 
 

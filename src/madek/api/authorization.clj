@@ -54,7 +54,6 @@
 
 (defn wrap-authorized-user [handler]
   (fn [request]
-    ;(if-let [id (-> request :authenticated-entity :user_id)]
     (if-let [id (-> request :authenticated-entity :id)]
       (handler request)
       {:status 401 :body {:message "Not authorized. Please login."}})))

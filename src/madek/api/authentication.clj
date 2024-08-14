@@ -2,7 +2,6 @@
   (:require
    [clojure.string :as str]
    [clojure.walk :refer [keywordize-keys]]
-   [madek.api.authentication.basic :as basic-auth]
    [madek.api.authentication.session :as session-auth]
    [madek.api.authentication.token :as token-auth]
    [ring.util.request :as request]
@@ -40,15 +39,9 @@
           request (if is-swagger-resource-request? (remove-authorization-header request) request)
           response ((-> handler
                         session-auth/wrap
-                        token-auth/wrap
-                        ;basic-auth/wrap
-                        ) request)]
+                        token-auth/wrap) request)]
       ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-popup in browser
-        response
-      ;(if is-swagger-request?
-      ;  response
-      ;  (add-www-auth-header-if-401 response))
-      )))
+       response)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

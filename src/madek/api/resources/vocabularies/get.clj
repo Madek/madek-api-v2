@@ -12,7 +12,7 @@
 
 ;### DEFS ##################################################################
 
-(def admin.vocabularies {:summary "Get list of vocabularies ids. DES!!"
+(def admin.vocabularies {:summary "Get list of vocabularies ids."
                          :description "Get list of vocabularies ids."
                          :handler get-index
                          :middleware [wrap-authorize-admin!]

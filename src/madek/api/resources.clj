@@ -52,10 +52,10 @@
     context :context tx :tx :as request}]
   (debug request)
   (if-let [meta-data-id (-> (jdbc/execute! tx
-                              (-> (sql/select :id)
-                                  (sql/from :meta_data)
-                                  (sql/where [:and [:= :media_entry_id media-entry-id] [:= :meta_key_id meta-key-id]])
-                                  sql-format))
+                                           (-> (sql/select :id)
+                                               (sql/from :meta_data)
+                                               (sql/where [:and [:= :media_entry_id media-entry-id] [:= :meta_key_id meta-key-id]])
+                                               sql-format))
                             first :id)]
     (ring.util.response/redirect (str context "/meta-data/" meta-data-id "/data-stream"))))
 
@@ -64,10 +64,10 @@
     context :context tx :tx :as request}]
   (debug request)
   (if-let [media-file-id (-> (jdbc/execute! tx
-                               (-> (sql/select :id)
-                                   (sql/from :media_files)
-                                   (sql/where [:= :media_entry_id media-entry-id])
-                                   sql-format))
+                                            (-> (sql/select :id)
+                                                (sql/from :media_files)
+                                                (sql/where [:= :media_entry_id media-entry-id])
+                                                sql-format))
                              first :id)]
     (ring.util.response/redirect (str context "/media-files/" media-file-id "/data-stream"))))
 
@@ -83,22 +83,17 @@
    ;                :put (constantly sd/no_impl)
    ;                :delete (constantly sd/no_impl)}]
 
-   ; TODO confidential-links post, get, patch, delete
+; TODO confidential-links post, get, patch, delete
 
    ; TODO Frage: delegations workflows post, get, patch, delete
    ])
 (def admin-routes
   ; TODO use wrap admin
-  ["/api-v2/admin"                                          ;{:middleware [
-   ;              authentication/wrap
-   ;wrap-authorize-admin!
-   ;              ]}
+  ["/api-v2/admin" ;{:middleware [
    {:openapi {:security
               [{:apiAuth {:type "apiKey"
                           :name "Authorization"
-                          :in "header"}}
-               ;{:basicAuth [] "auth" []}
-               ]}}
+                          :in "header"}}]}}
 
    admins/ring-routes
    app-settings/admin-routes
