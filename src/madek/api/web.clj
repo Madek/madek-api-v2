@@ -214,33 +214,28 @@
    :data {:middleware middlewares
           :muuntaja m/instance}})
 
-(def app-all
-  (rr/ring-handler
-   (rr/router get-router-data-all get-router-options)
-   (rr/routes
-    (swagger-ui/create-swagger-ui-handler
-     {:path "/api-v2/api-docs/"
-      :config {:validatorUrl nil
-               :urls [{:name "openapi" :url "openapi.json"}]
-               :urls.primaryName "openapi"
-               :operationsSorter "alpha"}})
-    (rr/create-default-handler)
-    (rr/redirect-trailing-slash-handler)
-    (rr/create-default-handler))))
+(def swagger-handler
+  (swagger-ui/create-swagger-ui-handler
+   {:path "/api-v2/api-docs/"
+    :config {:validatorUrl nil
+             :urls [{:name "openapi" :url "openapi.json"}]
+             :urls.primaryName "openapi"
+             :operationsSorter "alpha"}}))
 
-(def app-user
-  (rr/ring-handler
-   (rr/router get-router-data-user get-router-options)
-   (rr/routes
-    (rr/redirect-trailing-slash-handler)
-    (rr/create-default-handler))))
+(def common-routes
+  (rr/routes
+   swagger-handler
+   (rr/redirect-trailing-slash-handler)
+   (rr/create-default-handler)))
 
-(def app-admin
+(defn create-app [router-data]
   (rr/ring-handler
-   (rr/router get-router-data-admin get-router-options)
-   (rr/routes
-    (rr/redirect-trailing-slash-handler)
-    (rr/create-default-handler))))
+   (rr/router router-data get-router-options)
+   common-routes))
+
+(def app-all (create-app get-router-data-all))
+(def app-user (create-app get-router-data-user))
+(def app-admin (create-app get-router-data-admin))
 
 (def api-defaults
   (-> ring-defaults/api-defaults
