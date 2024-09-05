@@ -1,5 +1,6 @@
 (ns madek.api.authentication.token
   (:require
+   [clojure.string :as str]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
@@ -46,23 +47,34 @@
        (#{:delete :put :post :patch}
         (:request-method request))))
 
+(defn- create-response
+  ([message]
+   (create-response message 401))
+
+  ([message status]
+   {:status status
+    :body {:message message}}))
+
 (defn authenticate [user-token handler request]
-  (cond
-    (:token_revoked user-token) {:status 401
-                                 :body "The token has been revoked."}
-    (violates-not-read?
-     user-token request) {:status 403
-                          :body (str "The token is not allowed to read"
-                                     " i.e. to use safe http verbs.")}
-    (violates-not-write?
-     user-token request) {:status 403
-                          :body (str "The token is not allowed to write"
-                                     " i.e. to use unsafe http verbs.")}
-    :else (handler
-           (assoc request
-                  :authenticated-entity (assoc user-token :type "User")
-                   ; TODO move into ae
-                  :is_admin (sd/is-admin (:user_id user-token) (:tx request))))))
+  (let [is-admin? (sd/is-admin (:id user-token) (:tx request))]
+    (cond
+      (:token_revoked user-token) (create-response "The token has been revoked.")
+      (violates-not-read? user-token request)
+      (create-response (str "The token is not allowed to read"
+                            " i.e. to use safe http verbs.") 403)
+      (violates-not-write? user-token request)
+      (create-response (str "The token is not allowed to write"
+                            " i.e. to use unsafe http verbs.") 403)
+
+      (and (str/includes? (:uri request) "/api-v2/admin/") (not is-admin?))
+      (create-response "The token has no admin-privileges." 403)
+
+      :else (handler
+             (assoc request
+                    :authenticated-entity (assoc user-token :type "User")
+                    :authentication-method "Token"
+                     ; TODO move into ae
+                    :is_admin is-admin?)))))
 
 (defn find-token-secret-in-header [request]
   (when-let [header-value (-> request :headers keywordize-keys :authorization)]
@@ -73,8 +85,7 @@
   (if-let [token-secret (find-token-secret-in-header request)]
     (if-let [user-token (find-user-token-by-some-secret [token-secret] (:tx request))]
       (authenticate user-token handler request)
-      {:status 401
-       :body {:message "No token for this token-secret found!"}})
+      (create-response "No token for this token-secret found!"))
     (handler request)))
 
 (defn wrap [handler]

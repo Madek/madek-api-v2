@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -111,7 +112,7 @@
 (def ring-routes
 
   ["/"
-   {:openapi {:tags ["admin/delegations"]}}
+   {:openapi {:tags ["admin/delegations"] :security ADMIN_AUTH_METHODS}}
    ["delegations"
     {:post {:summary (sd/sum_adm_todo "Create delegations.")
             ; TODO labels and descriptions

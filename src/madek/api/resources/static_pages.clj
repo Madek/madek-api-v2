@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
@@ -108,7 +109,8 @@
 (def schema_export_static_page
   {:id s/Uuid
    :name s/Str
-   :contents sd/schema_ml_list
+   ;:contents sd/schema_ml_list                              ; TODO: fix this, "contents" : "(not (map? a-java.util.HashMap))"
+   :contents s/Any
    :created_at s/Any ; TODO as Inst
    :updated_at s/Any})
 
@@ -120,7 +122,8 @@
 (def admin-routes
 
   ["/"
-   {:openapi {:tags ["admin/static-pages"]}}
+   {:openapi {:tags ["admin/static-pages"] :security ADMIN_AUTH_METHODS}}
+
    ["static-pages"
     {:post {:summary (sd/sum_adm "Create static_page.")
             :handler handle_create-static_page
@@ -128,12 +131,12 @@
             :parameters {:body schema_create_static_page}
             :middleware [wrap-authorize-admin!]
             :responses {200 {:description "Returns the created static_page."
-                             :schema schema_export_static_page}
+                             :body schema_export_static_page}
                         406 {:description "Not Acceptable."
-                             :schema s/Str
+                             :body s/Str
                              :examples {"application/json" {:message "Could not create static_page."}}}
                         409 {:description "Conflict."
-                             :schema s/Str
+                             :body s/Str
                              :examples {"application/json" {:message "Entry already exists"}}}}}
 
      :get {:summary (sd/sum_adm "List static_pages.")
@@ -141,7 +144,7 @@
            :coercion reitit.coercion.schema/coercion
            :middleware [wrap-authorize-admin!]
            :responses {200 {:description "Returns the list of static_pages."
-                            :schema [schema_export_static_page]
+                            :body (s/->Either [[schema_export_static_page] [{:id s/Uuid}]])
                             :examples {"application/json" [{:id "uuid"
                                                             :name "name"
                                                             :contents [{:lang "de" :content "content"}]
@@ -155,10 +158,10 @@
                                                             :created_at "2020-01-01T00:00:00Z"
                                                             :updated_at "2020-01-01T00:00:00Z"}]}}
                        404 {:description "Not Found."
-                            :schema s/Str
+                            :body s/Str
                             :examples {"application/json" {:message "No static_pages found."}}}
                        422 {:description "Unprocessable Entity."
-                            :schema s/Str
+                            :body s/Str
                             :examples {"application/json" {:message "Could not list static_pages."}}}}
            :parameters {:query {(s/optional-key :full_data) s/Bool}}}}]
 
@@ -170,9 +173,9 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:description "Returns the static_page."
-                            :schema schema_export_static_page}
+                            :body schema_export_static_page}
                        404 {:description "Not Found."
-                            :schema s/Str
+                            :body s/Str
                             :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}}}
 
      :put {:summary (sd/sum_adm "Update static_pages with id.")
@@ -187,7 +190,7 @@
                        406 {:description "Not Acceptable."
                             :body s/Any}
                        404 {:description "Not Found."
-                            :schema s/Str
+                            :body s/Str
                             :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}}}
 
      :delete {:summary (sd/sum_adm "Delete static_page by id.")
@@ -199,9 +202,9 @@
               :responses {200 {:description "Returns the deleted static_page."
                                :body schema_export_static_page}
                           404 {:description "Not Found."
-                               :schema s/Str
+                               :body s/Str
                                :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}
 
                           422 {:description "Unprocessable Entity."
-                               :schema s/Str
+                               :body s/Str
                                :examples {"application/json" {:message "Could not delete static page."}}}}}}]])

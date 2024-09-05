@@ -9,12 +9,15 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [spec-tools.core :as st]))
 
 (defn build-query [query-params]
   (let [col-sel (if (true? (-> query-params :full_data))
@@ -131,6 +134,11 @@
 
 (sa/def ::query-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/user_id ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
 
+(sa/def ::session-adm-def (sa/keys :req-un [::sp/id] :opt-un [::sp/user_id ::sp/created_at ::sp/media_entry_id ::sp-nil/collection_id]))
+
+(sa/def :list/session (st/spec {:spec (sa/coll-of ::session-adm-def)
+                                :description "A list of sessions"}))
+
 (def schema_export_edit_session
   {:id s/Uuid
    :user_id s/Uuid
@@ -140,14 +148,14 @@
 
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/edit_sessions"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/edit_sessions"] :security ADMIN_AUTH_METHODS}}
    ["edit_sessions"
     {:get {:summary (sd/sum_adm "List edit_sessions.")
            :handler handle_adm_list-edit-sessions
            :middleware [wrap-authorize-admin!]
            :coercion spec/coercion
            :responses {200 {:description "Returns the edit sessions."
-                            :body any?}}
+                            :body :list/session}}
            :parameters {:query ::query-def}}}]
 
    ["edit_sessions/:id"

@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -121,6 +122,10 @@
    :updated_at s/Any
    :created_at s/Any})
 
+(def schema_delegations_list_users_export
+  [{:user_id s/Uuid
+    (s/optional-key :delegation_id) s/Uuid}])
+
 ; TODO response coercion
 ; TODO docu
 ; TODO tests
@@ -164,7 +169,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:delegation_id s/Uuid}}
            :responses {200 {:description "Returns the delegations_user."
-                            :body schema_delegations_users_export}
+                            :body schema_delegations_list_users_export}
                        404 {:description "Delegations_user not found."
                             :body s/Any}
                        406 {:description "Could not get delegations_user."
@@ -185,7 +190,7 @@
 
 (def admin-routes
   [["/delegation/"
-    {:openapi {:tags ["admin/delegation/users"]}}
+    {:openapi {:tags ["admin/delegation/users"] :security ADMIN_AUTH_METHODS}}
     ["users"
      {:get
       {:summary (sd/sum_adm "Query delegations_users.")
@@ -193,7 +198,7 @@
        :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion
        :responses {200 {:description "Returns the delegations_users."
-                        :body s/Any}}
+                        :body schema_delegations_list_users_export}}
        :parameters {:query {(s/optional-key :user_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid
                             (s/optional-key :full-data) s/Bool}}}}]

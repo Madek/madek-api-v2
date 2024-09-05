@@ -7,6 +7,7 @@
 
 (sa/def ::descriptions (nil-or string?))
 (sa/def ::description (nil-or string?))
+(sa/def ::descriptions_2 (nil-or string?))
 (sa/def ::first_name (nil-or string?))
 (sa/def ::institutional_id (nil-or string?))
 (sa/def ::institutional_name (nil-or string?))
@@ -17,6 +18,7 @@
 (sa/def ::external_uri (nil-or string?))
 (sa/def ::length_max (nil-or int?))
 (sa/def ::labels (nil-or string?))
+(sa/def ::labels_2 (nil-or string?))
 (sa/def ::length_min (nil-or int?))
 (sa/def ::documentation_urls (nil-or any?))
 (sa/def ::last_signed_in_at (nil-or any?))
@@ -36,6 +38,7 @@
 (sa/def ::position (nil-or any?))
 (sa/def ::created_at (nil-or any?))
 (sa/def ::updated_at (nil-or any?))
+(sa/def ::collection_id (nil-or uuid?))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

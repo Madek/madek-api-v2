@@ -42,7 +42,7 @@ Requirements:
 * system build tools and libaries; e.g. `sudo apt-get install build-essential` on ubuntu;
     on MacOS you will need Xcode with command line tools and further packages either from
     MacPorts or Homebrew
-*  ⚠️ WARNING: local tests can fail because of wrong order of results (see terms_for_sorting_shared_context.rb)
+*  ⚠️ WARNING: local tests can fail caused by wrong order of results (see terms_for_sorting_shared_context.rb)
 
 
 ### Starting up the Server
@@ -94,9 +94,17 @@ From vim you can use `:! ./bin/cljfmt fix %` to format the current file.
 Use `standardrb` and  `standardrb --fix`.
 
 
-### API Docs
+### API Docs (openApi)
 
 Swagger resource documentation http://localhost:3104/api-docs/index.html
+
+#### Authentication & accessability
+1. **BasicAuth** by login/email & password (db::auth_systems_users.data) 
+   1. Distinguish between user/admin-endpoints (db:admin)
+2. **Token**
+   1. Distinguish between user OR admin-endpoints (db:admin)
+   2. Distinguish between read OR modifiable-endpoints (db:token.scope_read/scope_write)
+
 
 ### Sever Configuration
 

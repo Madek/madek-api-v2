@@ -9,6 +9,7 @@
    [madek.api.json-protocol]
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.cli :refer [long-opt-for-key]]
    [madek.api.utils.ring-audits :as ring-audits]
    [muuntaja.core :as m]
@@ -96,7 +97,7 @@
 
 (def auth-info-route
   ["/api-v2"
-   {:openapi {:tags ["api/auth-info"]}}
+   {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."

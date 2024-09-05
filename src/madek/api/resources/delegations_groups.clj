@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -142,7 +143,7 @@
 
 (def admin-routes
   [["/delegation/"
-    {:openapi {:tags ["admin/delegation/groups"]}}
+    {:openapi {:tags ["admin/delegation/groups"] :security ADMIN_AUTH_METHODS}}
     ["groups"
      {:get
       {:summary (sd/sum_adm "Query delegations_groups.")

@@ -5,6 +5,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
@@ -152,7 +153,7 @@
 
 (def admin-routes
   [["/"
-    {:openapi {:tags ["admin/app-settings"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/app-settings"] :security ADMIN_AUTH_METHODS}}
     ["app-settings"
      {:get {:summary (sd/sum_adm "Get App Settings.")
             :handler handle_get-app-settings
@@ -160,7 +161,7 @@
             :swagger {:produces "application/json"}
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
-            :responses {200 {:body s/Any
+            :responses {200 {:body schema_export-app-settings
                              :description "Returns the app settings."}}}
 
       :put {:summary (sd/sum_adm "Update App Settings.")

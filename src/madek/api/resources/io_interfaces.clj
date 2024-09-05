@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -114,7 +115,7 @@
 ; TODO docu
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/io_interfaces"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/io_interfaces"] :security ADMIN_AUTH_METHODS}}
    ["io_interfaces"
     {:post
      {:summary (sd/sum_adm "Create io_interfaces.")
@@ -123,9 +124,9 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:body schema_import_io_interfaces}
       :responses {200 {:description "Returns the created io_interface."
-                       :schema schema_export_io_interfaces}
+                       :body schema_export_io_interfaces}
                   406 {:description "Could not create io_interface."
-                       :schema s/Any}}}
+                       :body s/Any}}}
 
      ; io_interface list / query
      :get
@@ -135,7 +136,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:query {(s/optional-key :full_data) s/Bool}}
       :responses {200 {:description "Returns the io_interfaces."
-                       :schema [schema_export_io_interfaces_opt]}}}}]
+                       :body [schema_export_io_interfaces_opt]}}}}]
 
    ; edit io_interface
    ["io_interfaces/:id"
@@ -147,9 +148,9 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Str}}
       :responses {200 {:description "Returns the io_interface."
-                       :schema schema_export_io_interfaces}
+                       :body schema_export_io_interfaces}
                   404 {:description "Not Found."
-                       :schema s/Any}}}
+                       :body s/Any}}}
 
      :put
      {:summary (sd/sum_adm "Update io_interfaces with id.")

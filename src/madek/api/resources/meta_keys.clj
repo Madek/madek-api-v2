@@ -8,6 +8,7 @@
    [madek.api.resources.meta-keys.meta-key :as mk]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-any :as sp-any]
@@ -170,19 +171,19 @@
             ::sp/allowed_people_subtypes ::sp/text_type ::sp-nil/allowed_rdf_class
             ::sp/io_mappings
             ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
-            ::sp/labels_2 ::sp/descriptions_2 ::sp/id_2]))
+            ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2]))
 
 (sa/def ::schema_export-meta-key-adm
   (sa/keys
    :req-un [::sp-str/id ::sp/vocabulary_id
-            ::sp/admin_comment
+            ::sp-nil/admin_comment
             ::sp-any/labels ::sp-any/descriptions ::sp-any/hints ::sp-any/documentation_urls]
    :opt-un [::sp/is_extensible_list ::sp/meta_datum_object_type ::sp/keywords_alphabetical_order ::sp/position
             ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections
             ::sp/allowed_people_subtypes ::sp/text_type ::sp-nil/allowed_rdf_class
             ::sp/io_mappings
             ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
-            ::sp/labels_2 ::sp/descriptions_2 ::sp/id_2 ::sp/admin_comment_2]))
+            ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2 ::sp/admin_comment_2]))
 
 (sa/def ::meta-query-def (sa/keys :opt-un [::sp/id ::sp/vocabulary_id ::sp/meta_datum_object_type
                                            ::sp/is_enabled_for_collections ::sp/is_enabled_for_media_entries ::sp/scope ::sp/page ::sp/size]))
@@ -208,7 +209,7 @@
 
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/meta-keys"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/meta-keys"] :security ADMIN_AUTH_METHODS}}
    ["meta-keys"
     {:get {:summary (sd/sum_adm "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
@@ -219,7 +220,7 @@
            :content-type "application/json"
            :coercion reitit.coercion.spec/coercion
            :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"
-                            :schema ::meta-keys-id-response-adm-def}}}
+                            :body ::meta-keys-id-response-adm-def}}}
 
      :post {:summary (sd/sum_adm "Create meta-key.")
             :handler handle_create_meta-key
@@ -229,15 +230,15 @@
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
             :responses {200 {:description "Returns the created meta-key."
-                             :schema schema_create-meta-key}
+                             :body schema_create-meta-key}
                         404 {:description "Duplicate key error"
-                             :schema s/Str
+                             :body s/Str
                              :examples {"application/json" {:msg "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists."}}}
                         500 {:description "Internal Server Error"
-                             :schema s/Str
+                             :body s/Str
                              :examples {"application/json" {:msg "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\")."}}}
                         406 {:description "Creation failed"
-                             :schema s/Any}}}}]
+                             :body s/Any}}}}]
 
    ["meta-keys/:id"
     {:get {:summary (sd/sum_adm "Get meta-key by id")
@@ -253,7 +254,7 @@
            :responses {200 {:description "Returns the meta-key."
                             :schema ::schema_export-meta-key-adm}
                        404 {:description "No entry found for the given id"
-                            :schema map?}
+                            :body map?}
                        422 {:description "Wrong format"
                             :body map?
                             :examples {"application/json" {:message "Wrong meta_key_id format! See documentation. (fdas)"}}}}}
@@ -272,7 +273,7 @@
            :responses {200 {:description "Returns the updated meta-key."
                             :body ::schema_export-meta-key-adm}
                        406 {:description "Update failed"
-                            :schema string?
+                            :body string?
                             :examples {"application/json" {:message "Could not update meta_key."}}}}}
 
      :delete {:summary (sd/sum_adm "Delete meta-key.")
@@ -284,7 +285,7 @@
               :responses {200 {:description "Returns the deleted meta-key."
                                :body ::schema_export-meta-key-adm}
                           406 {:description "Entry not found"
-                               :schema string?
+                               :body string?
                                :examples {"application/json" {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}}
                           422 {:description "Wrong format"
                                :body any?}}}}]])

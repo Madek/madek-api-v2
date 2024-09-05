@@ -10,6 +10,7 @@
    [madek.api.resources.vocabularies.get :as get]
    [madek.api.resources.vocabularies.post :as post]
    [madek.api.resources.vocabularies.put :as put]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -84,7 +85,7 @@
 ; TODO vocab permission
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/vocabularies"]}}
+   {:openapi {:tags ["admin/vocabularies"] :security ADMIN_AUTH_METHODS}}
    ["vocabularies"
     {:get get/admin.vocabularies
 

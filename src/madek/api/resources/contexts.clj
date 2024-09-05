@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [next.jdbc :as jdbc]
@@ -138,7 +139,7 @@
 (def admin-routes
 
   ["/"
-   {:openapi {:tags ["admin/contexts"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/contexts"] :security ADMIN_AUTH_METHODS}}
    ["contexts"
     {:post {:summary (sd/sum_adm_todo "Create contexts.")
             :handler handle_create-contexts
@@ -146,9 +147,9 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:body schema_import_contexts}
             :responses {200 {:description "Returns the created context."
-                             :schema schema_export_contexts_adm}
+                             :body schema_export_contexts_adm}
                         406 {:description "Could not create context."
-                             :schema s/Any}}}
+                             :body s/Any}}}
      ; context list / query
      :get {:summary (sd/sum_adm "List contexts.")
            :handler handle_adm-list-contexts
@@ -156,9 +157,9 @@
            :coercion reitit.coercion.schema/coercion
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
            :responses {200 {:description "Returns the contexts."
-                            :schema [schema_export_contexts_adm]}
+                            :body [schema_export_contexts_adm]}
                        406 {:description "Could not list contexts."
-                            :schema s/Any}}}}]
+                            :body s/Any}}}}]
    ; edit context
    ["contexts/:id"
     {:get {:summary (sd/sum_adm "Get contexts by id.")
@@ -168,9 +169,9 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
            :responses {200 {:description "Returns the context."
-                            :schema schema_export_contexts_adm}
+                            :body schema_export_contexts_adm}
                        404 {:description "Context not found."
-                            :schema s/Any}}}
+                            :body s/Any}}}
 
      :put {:summary (sd/sum_adm "Update contexts with id.")
            :handler handle_update-contexts

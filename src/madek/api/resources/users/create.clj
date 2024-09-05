@@ -41,24 +41,39 @@
    (s/optional-key :last_name) s/Str
    (s/optional-key :login) s/Str
    (s/optional-key :notes) (s/maybe s/Str)
-
-   ;(s/optional-key :settings) json-and-json-str-validation
    (s/optional-key :settings) v/vector-or-hashmap-validation})
+
+(def schema_post
+  {:institution s/Str
+   :institutional_id (s/maybe s/Str)
+   :email (s/maybe v/email-validation)
+   :first_name (s/maybe s/Str)
+   :person_id s/Uuid
+   :active_until s/Any
+   :settings s/Any
+   :login s/Str
+   :searchable s/Str
+   :updated_at s/Any
+   :accepted_usage_terms_id (s/maybe s/Uuid)
+   :id s/Uuid
+   :notes (s/maybe s/Str)
+   :last_name (s/maybe s/Str)
+   :last_signed_in_at (s/maybe s/Any)
+   :autocomplete s/Any
+   :emails_locale (s/maybe s/Any)
+   :created_at s/Any})
 
 ;; post /users
 (def route
   {:accept "application/json"
    :coercion reitit.coercion.schema/coercion
    :content-type "application/json"
-   ;:description "Create user."
    :description (mslurp (io/resource "md/admin-users-post.md"))
    :handler handle-create-user
    :middleware [wrap-authorize-admin!]
    :parameters {:body schema}
    :responses {201 {:description "Created."
-                    :body s/Any
-                    ;:body get-user/schema
-                    }
+                    :body schema_post}
 
                400 {:description "Bad Request"
                     :body s/Any}

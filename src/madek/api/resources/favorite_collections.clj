@@ -5,6 +5,7 @@
             [madek.api.authorization :as authorization]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.helper :refer [f]]
             [next.jdbc :as jdbc]
@@ -176,7 +177,7 @@
 ; TODO tests
 (def admin-routes
   [["/favorite/"
-    {:openapi {:tags ["admin/favorite/collections"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/favorite/collections"] :security ADMIN_AUTH_METHODS}}
     ["collections"
      {:get
       {:summary (sd/sum_adm (f "List favorite_collection users." " TODO: pagination?"))

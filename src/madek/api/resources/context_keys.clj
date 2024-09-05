@@ -7,6 +7,7 @@
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
@@ -221,7 +222,7 @@
 ; TODO tests
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/context-keys"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/context-keys"] :security ADMIN_AUTH_METHODS}}
    ["context-keys"
     {:post
      {:summary (sd/sum_adm "Post context_key by id.")
@@ -233,9 +234,9 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:body schema_import_context_keys}
       :responses {200 {:description "Returns the created context_key."
-                       :schema schema_export_context_key_admin}
+                       :body schema_export_context_key_admin}
                   406 {:description "Could not create context_key."
-                       :schema s/Any}}}
+                       :body s/Any}}}
 
      ; context_key list / query
      :get
@@ -245,9 +246,9 @@
       :parameters {:query :adm/context-keys}
       :coercion spec/coercion
       :responses {200 {:description "Returns the context_keys."
-                       :schema :adm/context-keys-response}
+                       :body :adm/context-keys-response}
                   406 {:description "Could not list context_keys."
-                       :schema any?}}}}]
+                       :body any?}}}}]
    ; edit context_key
    ["context-keys/:id"
     {:get
@@ -258,11 +259,11 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
       :responses {200 {:description "Returns the context_key."
-                       :schema schema_export_context_key_admin}
+                       :body schema_export_context_key_admin}
                   404 {:description "Not found"
-                       :schema s/Any}
+                       :body s/Any}
                   406 {:description "Could not get context_key."
-                       :schema s/Any}}}
+                       :body s/Any}}}
 
      :put
      {:summary (sd/sum_adm "Update context_keys with id.")
@@ -273,7 +274,7 @@
       :parameters {:path {:id s/Uuid}
                    :body schema_update_context_keys}
       :responses {200 {:description "Returns the updated context_key."
-                       :schema schema_export_context_key_admin}
+                       :body schema_export_context_key_admin}
                   404 {:description "Not found"
                        :body s/Any}
                   406 {:description "Could not update context_key."
@@ -322,7 +323,7 @@
                        :body schema_export_context_key}
 
                   400 {:description "Bad request"
-                       :body {:schema {:id s/Str :Keyword s/Str}
+                       :body {:body {:id s/Str :Keyword s/Str}
                               :errors {:id s/Str}
                               :type s/Str
                               :coercion s/Str

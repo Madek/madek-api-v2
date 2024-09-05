@@ -125,7 +125,7 @@
 (def user-routes
 
   ["/"
-   {:openapi {:tags ["admin/workflows"]}}
+   {:openapi {:tags ["workflows"]}}
    ["workflows"
     {:post {:summary (sd/sum_auth "Create workflow.")
             :handler handle_create-workflow

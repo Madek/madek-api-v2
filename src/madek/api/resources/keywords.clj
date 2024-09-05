@@ -6,6 +6,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -211,7 +212,7 @@
 
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/keywords"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/keywords"] :security ADMIN_AUTH_METHODS}}
    ["keywords"
     {:get
      {:summary (sd/sum_adm "Query keywords")

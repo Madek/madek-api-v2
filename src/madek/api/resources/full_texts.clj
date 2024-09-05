@@ -7,12 +7,14 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
+            [spec-tools.core :as st]
             [taoensso.timbre :refer [error info]]))
 
 (defn handle_list-full_texts
@@ -112,6 +114,11 @@
 
 (sa/def :ft-query/schema-query-def (sa/keys :opt-un [::sp/full_data ::sp/media_resource_id ::sp/text ::sp/page ::sp/size]))
 
+(sa/def ::response-schema-def (sa/keys :req-un [::sp/media_resource_id] :opt-un [::sp/text]))
+
+(sa/def :usr-list/full-texts (st/spec {:spec (sa/coll-of ::response-schema-def)
+                                       :description "A list of full_texts"}))
+
 ; TODO tests
 ; TODO howto access control or full_texts is public meta data
 (def query-routes
@@ -122,7 +129,7 @@
            :handler handle_list-full_texts
            :coercion spec/coercion
            :responses {200 {:description "Returns the full_texts."
-                            :body any?}}
+                            :body :usr-list/full-texts}}
            :parameters {:query :ft-query/schema-query-def}}}]
 
    ["full_texts/:media_resource_id"
@@ -141,56 +148,56 @@
 
 (def edit-routes
   [["/full_text"
-    {:openapi {:tags ["admin/full_text"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/full_text"] :security ADMIN_AUTH_METHODS}}
     ["/"
      {:post {:summary (sd/sum_adm "Create full_texts entry????")
              :swagger {:consumes "application/json" :produces "application/json"}
              :handler handle_create-full_texts
-             :coercion reitit.coercion.schema/coercion
-             :parameters {:body {:text s/Str
-                                 :media_resource_id s/Uuid}}
+             :coercion reitit.coercion.spec/coercion
+             :parameters {:body {:text string?
+                                 :media_resource_id uuid?}}
              :middleware [wrap-authorize-admin!]
              :responses {200 {:description "Returns the created full_text."
-                              :body s/Any}
+                              :body ::response-schema-def}
                          406 {:description "Creation failed."
-                              :schema s/Str
+                              :schema string?
                               :examples {"application/json" {:message "Could not create full_text."}}}}}}]
 
     ["/full_text/:media_resource_id"
      {:post {:summary (sd/sum_adm "Create full_texts entry")
              :swagger {:consumes "application/json" :produces "application/json"}
              :handler handle_create-full_texts
-             :coercion reitit.coercion.schema/coercion
-             :parameters {:path {:media_resource_id s/Uuid}
-                          :body {:text s/Str}}
+             :coercion reitit.coercion.spec/coercion
+             :parameters {:path {:media_resource_id uuid?}
+                          :body {:text string?}}
              :responses {200 {:description "Returns the created full_text."
-                              :body s/Any}
+                              :body ::response-schema-def}
                          406 {:description "Creation failed."
-                              :schema s/Str
+                              :schema string?
                               :examples {"application/json" {:message "Could not create full_text."}}}}
              :middleware [wrap-authorize-admin!]}
       :put {:summary (sd/sum_adm "Update full_text.")
-            :coercion reitit.coercion.schema/coercion
-            :parameters {:path {:media_resource_id s/Uuid}
-                         :body {:text s/Str}}
+            :coercion reitit.coercion.spec/coercion
+            :parameters {:path {:media_resource_id uuid?}
+                         :body {:text string?}}
             :middleware [wrap-authorize-admin!
                          (wrap-find-full_text :media_resource_id true)]
             :responses {200 {:description "Returns the updated full_text."
-                             :body s/Any}
+                             :body ::response-schema-def}
                         406 {:description "Update failed."
-                             :schema s/Str
+                             :schema string?
                              :examples {"application/json" {:message "Could not update full_text."}}}}
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_adm "Delete full_text.")
-               :coercion reitit.coercion.schema/coercion
-               :parameters {:path {:media_resource_id s/Uuid}}
+               :coercion reitit.coercion.spec/coercion
+               :parameters {:path {:media_resource_id uuid?}}
                :middleware [wrap-authorize-admin!
                             (wrap-find-full_text :media_resource_id true)]
                :responses {200 {:description "Returns the deleted full_text."
-                                :body s/Any}
+                                :body ::response-schema-def}
                            406 {:description "Deletion failed."
-                                :schema s/Str
+                                :schema string?
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}
                :handler handle_delete-full_texts}}]]])
 

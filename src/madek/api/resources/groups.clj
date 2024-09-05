@@ -9,6 +9,7 @@
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -169,8 +170,20 @@
    (s/optional-key :institution) (s/maybe s/Str)
    (s/optional-key :searchable) s/Str})
 
+(def schema_export-group-min
+  {:id s/Uuid
+   :institutional-id s/Str
+   :email (s/maybe s/Str)
+   :person-id s/Uuid})
+
 (sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
 (sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
+
+(sa/def :usr-users-list/users (st/spec {:spec (sa/coll-of ::group-id-resp-def)
+                                        :description "A list of users"}))
+
+(sa/def ::response-users-body (sa/keys :req-un [:usr-users-list/users]))
+
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
                                             ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
                                             ::sp/full_data ::sp/page ::sp/size]))
@@ -208,7 +221,7 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["admin/groups"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/groups"] :security ADMIN_AUTH_METHODS}}
    ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
                     :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
                     :handler index
@@ -230,10 +243,10 @@
                      :responses {201 {:description "Created."
                                       :body schema_export-group}
                                  404 {:description "Not Found."
-                                      :schema s/Str
+                                      :body s/Str
                                       :examples {"application/json" {:message "User entry not found"}}}
                                  409 {:description "Conflict."
-                                      :schema s/Str
+                                      :body s/Str
                                       :examples {"application/json" {:message "Entry already exists"}}}
                                  500 {:description "Internal Server Error."
                                       :body s/Any}}}}]
@@ -253,7 +266,7 @@
                         :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                          :body schema_export-group}
                                     404 {:description "Not Found."
-                                         :schema s/Str
+                                         :body s/Str
                                          :examples {"application/json" {:message "No such group found"}}}}}
                   :delete {:summary "Deletes a group by id"
                            :description "Delete a group by id"
@@ -265,7 +278,7 @@
                                             :body s/Any}
                                        ;; TODO: response of type octet-stream not yet supported?
                                        204 {:description "No Content. The resource was deleted successfully."
-                                            :schema nil
+                                            :body nil
                                             :examples {"application/json" nil}}}}
                   :put {:summary "Get group by id"
                         :swagger {:produces "application/json"}
@@ -279,7 +292,7 @@
                         :parameters {:path {:id s/Uuid}
                                      :body schema_update-group}
                         :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                         :body s/Any} ;groups/schema_export-group}
+                                         :body schema_export-group}
                                     404 {:description "Not Found."
                                          :body s/Any}}}}] ; TODO error handling
 
@@ -293,7 +306,7 @@
                                     :parameters {:query sp/schema_pagination_opt
                                                  :path {:group-id uuid?}}
                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                     :schema {:body ::group-id-resp-def}}}}
+                                                     :body ::response-users-body}}}
 
                               ; TODO works with tests, but not with the swagger ui
                               ; TODO: broken test / duplicate key issue
@@ -308,7 +321,7 @@
                                                  :body group-users/schema_update-group-user-list}
 
                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                     :body s/Any} ;groups/schema_export-group}
+                                                     :body {:users [schema_export-group-min]}} ;groups/schema_export-group}
                                                 404 {:description "Not Found."
                                                      :body s/Str}}}}]
 
@@ -328,7 +341,7 @@
                                              :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                               :body group-users/schema_export-group-user-simple}
                                                          404 {:description "Creation failed."
-                                                              :schema s/Str
+                                                              :body s/Any
                                                               :examples {"application/json" {:message "No such group or user."}}}}}
 
                                        ; TODO error handling
@@ -347,7 +360,7 @@
                                              :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                               :body {:users [group-users/schema_export-group-user-simple]}}
                                                          404 {:description "Creation failed."
-                                                              :schema s/Str
+                                                              :body s/Str
                                                               :examples {"application/json" {:message "No such group or user."}}}}} ; TODO error handling
                                        :delete {:summary "Deletes a group-user by group-id and user-id"
                                                 :description "Delete a group-user by group-id and user-id."
@@ -360,7 +373,7 @@
                                                 :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                                  :body {:users [group-users/schema_export-group-user-simple]}}
                                                             404 {:description "Not Found."
-                                                                 :schema s/Str
+                                                                 :body s/Str
                                                                  :examples {"application/json" {:message "No such group or user."}}}
                                                             406 {:description "Could not delete group-user."
                                                                  :body s/Str}}}}] ; TODO error handling

@@ -6,6 +6,7 @@
    [madek.api.authorization :as authorization]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -185,7 +186,7 @@
 
 (def admin-routes
   [["/favorite/"
-    {:openapi {:tags ["admin/favorite/media-entries"] :security [{"auth" []}]}}
+    {:openapi {:tags ["admin/favorite/media-entries"] :security ADMIN_AUTH_METHODS}}
     ["media-entries"
      {:get
       {:summary (sd/sum_adm "Query favorite_media_entries.")

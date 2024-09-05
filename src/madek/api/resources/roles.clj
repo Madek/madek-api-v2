@@ -3,6 +3,7 @@
    [clojure.spec.alpha :as sa]
    [madek.api.resources.roles.role :as role]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [reitit.coercion.schema]
@@ -62,7 +63,7 @@
 ; TODO tests
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/roles"]}}
+   {:openapi {:tags ["admin/roles"] :security ADMIN_AUTH_METHODS}}
    ["roles"
     {:get {:summary (sd/sum_adm "Get list of roles.")
            :description "Get list of roles."

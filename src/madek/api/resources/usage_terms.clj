@@ -5,6 +5,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -117,7 +118,7 @@
 (def admin-routes
 
   ["/"
-   {:openapi {:tags ["admin/usage-terms"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/usage-terms"] :security ADMIN_AUTH_METHODS}}
    ["usage-terms"
     {:post {:summary (sd/sum_adm "Create usage_terms.")
             :handler handle_create-usage_terms

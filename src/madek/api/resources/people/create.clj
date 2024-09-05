@@ -43,7 +43,9 @@
   {:accept "application/json"
    :coercion reitit.coercion.schema/coercion
    :content-type "application/json"
-   :description "Create a person.\nThe [subtype] has to be one of [\"Person\" \"PeopleGroup\" \"PeopleInstitutionalGroup\"]. \nAt least one of [first_name, last_name, description] must have a value."
+   :description "Create a person.\nThe [subtype] has to be one of [\"Person\" \"PeopleGroup\" \"PeopleInstitutionalGroup\"].
+   \nAt least one of [first_name, last_name, description] must have a value.
+     \n\nDefault: \"subtype\": \"Person\",\n  \"institutional_id\": null, "
    :handler handle-create-person
    :middleware [wrap-authorize-admin!]
    :parameters {:body schema}

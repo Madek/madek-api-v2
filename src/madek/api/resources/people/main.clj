@@ -4,7 +4,8 @@
    [madek.api.resources.people.delete :as delete-person]
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.people.index :as index]
-   [madek.api.resources.people.update :as update-person]))
+   [madek.api.resources.people.update :as update-person]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]))
 
 (def user-routes
   ["/"
@@ -17,7 +18,7 @@
 
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/people"] :security [{"auth" []}]}}
+   {:openapi {:tags ["admin/people"] :security ADMIN_AUTH_METHODS}}
    ["people"
     {:get index/route
      :post create-person/route}]
