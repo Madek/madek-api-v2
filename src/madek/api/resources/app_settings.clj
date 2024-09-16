@@ -6,6 +6,9 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.authorization :as authorization]
+
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
@@ -180,11 +183,15 @@
 
 (def user-routes
   [["/"
-    {:openapi {:tags ["app-settings"] :security []}}
+    {:openapi {:tags ["app-settings"] :security ADMIN_AUTH_METHODS}}
     ["app-settings"
      {:get {:summary (sd/sum_pub "Get App Settings.")
             :handler handle_get-app-settings
             :swagger {:produces "application/json"}
+            :middleware [
+                         ;jqh/ring-wrap-authorization-view
+                         authorization/wrap-authorized-user
+                         ]
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
             :responses {200 {:description "Returns the app settings."

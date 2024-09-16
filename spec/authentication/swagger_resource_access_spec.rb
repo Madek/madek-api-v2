@@ -16,8 +16,8 @@ shared_context :test_proper_user_basic_auth do
   describe "Test access to api-docs and endpoints" do
     context "with valid basicAuth-User (no rproxy-basicAuth)" do
       {
-        "/api-v2/app-settings" => 200, # public endpoint
-        "/api-v2/auth-info" => 200,
+        "/api-v2/app-settings" => 401,
+        "/api-v2/auth-info" => 401,
 
         "/api-v2/api-docs/index.html" => 200,
         "/api-v2/api-docs/index.css" => 200,
@@ -45,14 +45,15 @@ shared_context :test_proper_user_basic_auth do
       end
 
       {
-        "/api-v2/app-settings" => 401, # public endpoint
+        "/api-v2/app-settings" => 401,
         "/api-v2/auth-info" => 401
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
 
           expect(response.status).to eq(code)
-          expect(response.body["message"]).to eq("Neither User nor ApiClient exists for {:login-or-email-address \"Not-existing-user\"}")
+          # expect(response.body["message"]).to eq("Neither User nor ApiClient exists for {:login-or-email-address \"Not-existing-user\"}")
+          expect(response.body["message"]).to eq("Not authorized")
           expect(response.headers["www-authenticate"]).to eq("Basic realm=\"Madek ApiClient with password or User with token.\"")
         end
       end

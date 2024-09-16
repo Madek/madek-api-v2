@@ -130,9 +130,15 @@
               :components {:securitySchemes {:apiAuth {:type "apiKey"
                                                        :name "Authorization"
                                                        :in "header"}
-                                             :basicAuth {:type "http"
-                                                         :scheme "basic"}}}
-              :security [{:basicAuth []} {:apiAuth []}]}}
+
+                                             ;:basicAuth {:type "http"
+                                             ;            :scheme "basic"}
+
+                                             }}
+              ;:security [{:basicAuth []} {:apiAuth []}]}}
+              :security [
+                         ;{:basicAuth []}
+                         {:apiAuth []}]}}
    ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]])
 
 (def get-router-data-all
