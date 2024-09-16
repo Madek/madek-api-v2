@@ -19,7 +19,7 @@
 
 (defn mw-management-auth [handler]
   (fn [request]
-    (if-let [password (-> request basic-auth/extract :password)]
+    (if-let [password (-> request basic-auth/extract :password)] ;; TODO:
       (if-not (= password "secret");(-> (get-config) :madek_master_secret))
         {:status 401 :body {:msg "Password doesn't match the madek_master_secret" :pw password :mpw (-> (get-config) :madek_master_secret)}}
         (handler request))
