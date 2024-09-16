@@ -9,6 +9,7 @@
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -219,7 +220,7 @@
    ["collections"
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
-      ;:middleware [wrap-authorize-admin!]
+      :middleware [wrap-authorize-admin!]
       :handler handle_get-index
       :coercion spec/coercion
       :parameters {:query :collection-query/query-admin-def}
@@ -230,7 +231,8 @@
     {:put {:summary (sd/sum_usr "Update collection for id.")
            :handler handle_update-collection
            :description (mslurp (io/resource "md/collections-put.md"))
-           :middleware [;wrap-authorize-admin!
+           :middleware [wrap-authorize-admin!
+                        jqh/ring-wrap-authorization-edit-permissions
                         jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-metadata]
            :swagger {:produces "application/json"

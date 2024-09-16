@@ -5,7 +5,7 @@ describe "a bunch of media entries with different properties" do
   include_context :bunch_of_media_entries
 
   describe "JSON `client` for authenticated `user`" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       describe "the soft-deleted media_entries resource" do
         before do
           create_5_media_entries # force evaluation

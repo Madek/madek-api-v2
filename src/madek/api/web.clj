@@ -129,10 +129,8 @@
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"
                                                        :name "Authorization"
-                                                       :in "header"}
-                                             :basicAuth {:type "http"
-                                                         :scheme "basic"}}}
-              :security [{:basicAuth []} {:apiAuth []}]}}
+                                                       :in "header"}}}
+              :security [{:apiAuth []}]}}
    ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]])
 
 (def get-router-data-all

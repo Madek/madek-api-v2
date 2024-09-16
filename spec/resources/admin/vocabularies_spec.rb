@@ -55,7 +55,7 @@ context "admin vocabularies" do
   end
 
   context "Responds not authorized as user" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_token_user do
       before :each do
         @vocabulary = FactoryBot.create :vocabulary
       end
@@ -89,7 +89,7 @@ context "admin vocabularies" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       context "get" do
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
@@ -112,7 +112,7 @@ context "admin vocabularies" do
               data.except("created_at", "updated_at", "admin_comment")
             ).to eq(
               @vocabulary.attributes.with_indifferent_access
-                .except(:created_at, :updated_at, :admin_comment)
+                         .except(:created_at, :updated_at, :admin_comment)
             )
           end
         end
@@ -140,7 +140,7 @@ context "admin vocabularies" do
             data.except("created_at", "updated_at")
           ).to eq(
             @create_data.with_indifferent_access
-              .except(:created_at, :updated_at)
+                        .except(:created_at, :updated_at)
           )
         end
       end
@@ -167,8 +167,8 @@ context "admin vocabularies" do
               "position")
           ).to eq(
             @vocabulary.attributes.with_indifferent_access
-              .except(:created_at, :updated_at,
-                :position)
+                       .except(:created_at, :updated_at,
+                         :position)
           )
           expect(data["position"]).to be == 1
         end
@@ -189,7 +189,7 @@ context "admin vocabularies" do
             data.except("created_at", "updated_at")
           ).to eq(
             @vocabulary.attributes.with_indifferent_access
-              .except(:created_at, :updated_at)
+                       .except(:created_at, :updated_at)
           )
         end
       end

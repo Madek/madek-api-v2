@@ -2,8 +2,8 @@ require "spec_helper"
 require "shared/audit-validator"
 
 context "people" do
-  expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT people",
-    "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users", "INSERT admins"]
+  expected_audit_entries = ["INSERT admins", "INSERT api_tokens", "INSERT auth_systems_users", "INSERT groups",
+    "INSERT people", "INSERT rdf_classes", "INSERT usage_terms", "INSERT users", "UPDATE auth_systems"]
 
   before :each do
     @people = 77.times.map {
@@ -27,7 +27,7 @@ context "people" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       describe "get an unfiltered people list as an admin" do
         url = "/api-v2/admin/people?page=1&size=100"
         let :result do

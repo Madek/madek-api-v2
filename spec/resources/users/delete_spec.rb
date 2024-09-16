@@ -5,8 +5,8 @@ context "users" do
     @user = FactoryBot.create :user
   end
 
-  context "non admin user" do
-    include_context :json_client_for_authenticated_user do
+  context "non admin-user" do
+    include_context :json_client_for_authenticated_token_user do
       it "is forbidden to delete any user" do
         expect(
           client.delete("/api-v2/admin/users/#{@user.id}").status
@@ -15,8 +15,8 @@ context "users" do
     end
   end
 
-  context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+  context "admin-user" do
+    include_context :json_client_for_authenticated_token_admin do
       context "deleting a standard user" do
         let :delete_user_result do
           client.delete("/api-v2/admin/users/#{CGI.escape(@user.id)}")

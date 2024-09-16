@@ -8,7 +8,7 @@ context "a user in a group" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       # TODO json roa remove: test links
       # describe 'getting the the user via the group with json roa' do
       #  it 'works' do

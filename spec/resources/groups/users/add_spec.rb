@@ -11,7 +11,7 @@ context "adding a user to a group via put" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       describe "adding the user to the group via put" do
         it "responds with 200" do
           expect(

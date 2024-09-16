@@ -86,15 +86,15 @@ context "A media-entry resource with get_metadata_and_previews permission" do
   end
 
   context "A media-entry resource without get_metadata_and_previews permission" do
-    before :each do
-      @media_entry = FactoryBot.create :media_entry,
+    let :media_entry do
+      FactoryBot.create :media_entry,
         get_metadata_and_previews: false
     end
 
     context "a meta datum of type text" do
       before :each do
         @meta_datum_text = FactoryBot.create :meta_datum_text,
-          media_entry: @media_entry
+          media_entry: media_entry
       end
 
       describe "preconditions" do
@@ -103,7 +103,7 @@ context "A media-entry resource with get_metadata_and_previews permission" do
         end
 
         it "belongs to the media-entry" do
-          expect(@media_entry.meta_data).to include @meta_datum_text
+          expect(media_entry.meta_data).to include @meta_datum_text
         end
       end
 

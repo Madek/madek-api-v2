@@ -2,7 +2,7 @@ require "spec_helper"
 
 context "users" do
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       before :each do
         @person = client.post("/api-v2/admin/people") do |req|
           req.body = {last_name: "test",

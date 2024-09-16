@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe "meta-key" do
-  include_context :json_client_for_authenticated_user do
+  include_context :json_client_for_authenticated_token_user do
     def json_meta_key_resource(meta_key_id, params = {})
       query_params = URI.encode_www_form(params)
       query_params = "?" + query_params unless query_params.empty?

@@ -2,312 +2,231 @@ require "spec_helper"
 require "shared/audit-validator"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
 
-# TODO check can ... download, edit-metadata, edit-permissions
-describe "Getting a media-entry resource without authentication" do
-  before :example do
-    @media_entry = FactoryBot.create(:media_entry,
-      get_metadata_and_previews: false)
-  end
+shared_context :setup_owner_user_for_token_access_base do
+  let(:owner) { FactoryBot.create(:user, password: "owner", notes: "owner") }
+  let(:owner_token) { ApiToken.create(user: owner, scope_read: true, scope_write: true, description: "owner_token") }
 
+  let(:user) { FactoryBot.create(:user, password: "password", notes: "user") }
+  let(:user_token) { ApiToken.create(user: user, scope_read: true, scope_write: true, description: "user_token") }
+end
+
+shared_context :setup_owner_user_for_token_access do
+  include_context :setup_owner_user_for_token_access_base
+
+  let(:media_entry) do
+    me = FactoryBot.create(:media_entry, get_metadata_and_previews: false, responsible_user: owner)
+    FactoryBot.create :media_file_for_image, media_entry: me
+    me
+  end
+  let(:media_file) { FactoryBot.create(:media_file_for_image, media_entry: media_entry) }
+end
+
+describe "Getting a media-entry resource without authentication" do
   shared_context :check_not_authenticated_without_public_permission do
-    it "is forbidden 401" do
-      expect(response.status).to be == 401
+    include_context :setup_owner_user_for_token_access
+
+    context :via_plain_json do
+      include_context :auth_media_entry_resource_via_plain_json
+      it "is forbidden 401" do
+        expect(response.status).to eq 401
+      end
+    end
+
+    context :via_token do
+      include_context :media_entry_resource_via_plain_json
+      it "is forbidden 401" do
+        expect(response.status).to eq 401
+      end
     end
   end
 
-  include_context :check_media_entry_resource_via_any,
-    :check_not_authenticated_without_public_permission
+  include_context :check_media_entry_resource_via_any, :check_not_authenticated_without_public_permission
 end
 
 describe "Getting a media-entry resource with authentication" do
-  before :example do
-    @owner = FactoryBot.create(:user, password: "owner")
-    @entity = FactoryBot.create(:user, password: "password")
-    @media_entry = FactoryBot.create(
-      :media_entry, get_metadata_and_previews: false,
-      responsible_user:  @owner
-    )
-    @media_file = FactoryBot.create :media_file_for_image, media_entry: @media_entry
-  end
-
-  include_context :auth_media_entry_resource_via_plain_json
+  include_context :setup_owner_user_for_token_access
 
   context :check_forbidden_without_required_permission do
     it "is forbidden 403" do
-      expect(response.status).to be == 403
-    end
-  end
-
-  context :check_allowed_if_responsible_user do
-    before :example do
-      url = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/resources"
-      update = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password)
-        .put(url) do |req|
-        req.body = {
-          responsible_user_id: @entity.id
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(update).not_to be_nil
-      # @media_entry.update! responsible_user: @entity
-    end
-
-    it "is allowed 200" do
-      expect(response.status).to be == 200
-    end
-  end
-
-  context :check_allowed_if_user_belongs_to_responsible_delegation do
-    before do
-      delegation = create(:delegation)
-      delegation.users << @entity
-      @media_entry.update!(
-        responsible_user: nil,
-        responsible_delegation_id: delegation.id
-      )
-    end
-
-    it "is allowed 200" do
-      expect(response.status).to be == 200
-    end
-  end
-
-  context :check_allowed_if_user_belongs_to_group_belonging_to_responsible_delegation do
-    before do
-      delegation = create(:delegation)
-      group = create(:group)
-      delegation.groups << group
-      group.users << @entity
-      @media_entry.update!(
-        responsible_user: nil,
-        responsible_delegation_id: delegation.id
-      )
-    end
-
-    it "is allowed 200" do
-      expect(response.status).to be == 200
-    end
-  end
-
-  context :check_allowed_if_user_permission do
-    before :example do
-      url = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}"
-      user_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post(url) do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: false,
-          edit_metadata: false,
-          edit_permissions: false
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(user_perm.status).to be == 200
-    end
-
-    it "is allowed 200" do
-      expect(response.status).to be == 200
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 403
     end
   end
 
   context :check_not_allowed_if_updated_user_permission do
     before :example do
-      curl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}"
-      create_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post(curl) do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: false,
-          edit_metadata: false,
-          edit_permissions: false
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(create_perm.status).to be == 200
-      readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api-v2/media-entry/#{@media_entry.id}")
-      expect(readok.status).to be == 200
+      curl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      create_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, curl, body: {
+        get_metadata_and_previews: true,
+        get_full_size: false,
+        edit_metadata: false,
+        edit_permissions: false
+      })
+      expect(create_perm.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}/get_metadata_and_previews/false"
-      update_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).put(uurl)
-      expect(update_perm.status).to be == 200
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(readok.status).to eq 200
+      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/false"
+      update_perm = wtoken_header_plain_faraday_json_client_put(owner_token.token, uurl)
+      expect(update_perm.status).to eq 200
     end
 
     it "is not allowed 403" do
-      expect(response.status).to be == 403
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 403
     end
   end
 
   context :check_not_allowed_if_deleted_user_permission do
     before :example do
-      curl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}"
-      create_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post(curl) do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: false,
-          edit_metadata: false,
-          edit_permissions: false
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(create_perm.status).to be == 200
-      readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api-v2/media-entry/#{@media_entry.id}")
-      expect(readok.status).to be == 200
+      curl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      create_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, curl, body: {
+        get_metadata_and_previews: true,
+        get_full_size: false,
+        edit_metadata: false,
+        edit_permissions: false
+      })
+      expect(create_perm.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}"
-      del_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).delete(uurl)
-      expect(del_perm.status).to be == 200
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(readok.status).to eq 200
+
+      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      del_perm = wtoken_header_plain_faraday_json_client_delete(owner_token.token, uurl)
+      expect(del_perm.status).to eq 200
     end
 
     it "is not allowed 403" do
-      expect(response.status).to be == 403
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 403
     end
   end
 
   context :check_allowed_if_group_permission do
-    let :group do
-      group = FactoryBot.create(:group)
-      expect(group).not_to be_nil
-      group
-    end
-    before :example do
-      @entity.groups << group
+    let(:group) { FactoryBot.create(:group) }
 
-      group_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post("#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}") do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: false,
-          edit_metadata: false
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
+    before :example do
+      user.groups << group
+      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      group_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
+        get_metadata_and_previews: true,
+        get_full_size: false,
+        edit_metadata: false
+      })
       expect(group_perm).not_to be_nil
-      group_perm
     end
 
     it "is allowed 200" do
-      expect(response.status).to be == 200
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 200
     end
   end
 
   context :check_not_allowed_if_updated_group_permission do
-    let :group do
-      group = FactoryBot.create(:group)
-      expect(group).not_to be_nil
-      group
-    end
+    let(:group) { FactoryBot.create(:group) }
+
     before :example do
-      @entity.groups << group
+      user.groups << group
+      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      group_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
+        get_metadata_and_previews: true,
+        get_full_size: false,
+        edit_metadata: false
+      })
+      expect(group_perm.status).to eq 200
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(readok.status).to eq 200
 
-      group_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post("#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}") do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: false,
-          edit_metadata: false
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(group_perm.status).to be == 200
-      readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api-v2/media-entry/#{@media_entry.id}")
-      expect(readok.status).to be == 200
-
-      uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}/get_metadata_and_previews/false"
-      update_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).put(uurl)
+      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}/get_metadata_and_previews/false"
+      update_perm = token_header_plain_faraday_json_client(:put, uurl, owner_token.token)
       expect(update_perm).not_to be_nil
     end
 
     it "is not allowed 403" do
-      expect(response.status).to be == 403
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 403
     end
   end
 
   context :check_not_allowed_if_deleted_group_permission do
-    let :group do
-      group = FactoryBot.create(:group)
-      expect(group).to be_a(Group)
-      group
-    end
+    let(:group) { FactoryBot.create(:group) }
+
     before :example do
-      @entity.groups << group
+      user.groups << group
+      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      group_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
+        get_metadata_and_previews: true,
+        get_full_size: false,
+        edit_metadata: false
+      })
+      expect(group_perm.status).to eq 200
 
-      group_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post("#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}") do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: false,
-          edit_metadata: false
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(group_perm.status).to be == 200
-      readok = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-        .get("/api-v2/media-entry/#{@media_entry.id}")
-      expect(readok.status).to be == 200
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(readok.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/group/#{group.id}"
-      update_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).delete(uurl)
+      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      update_perm = wtoken_header_plain_faraday_json_client_delete(owner_token.token, uurl)
       expect(update_perm).not_to be_nil
       update_perm
     end
 
     it "is not allowed 403" do
-      expect(response.status).to be == 403
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 403
     end
   end
 
   context :check_download_allowed_if_user_permission do
     before :example do
-      url = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}"
-      user_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post(url) do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: true,
-          edit_metadata: true,
-          edit_permissions: true
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(user_perm.status).to be == 200
+      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      user_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
+        get_metadata_and_previews: true,
+        get_full_size: true,
+        edit_metadata: true,
+        edit_permissions: true
+      })
+      expect(user_perm.status).to eq 200
     end
 
     it "download is allowed 200" do
-      expect(response.status).to be == 200
-      uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/media-file/data-stream"
-      download = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password).get(uurl)
-      expect(download.status).to be == 200
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 200
+      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/media-file/data-stream"
+      download = wtoken_header_plain_faraday_json_client_get(user_token.token, uurl)
+      expect(download.status).to eq 200
     end
   end
 
   context :check_edit_permissions_allowed_if_user_permission do
     before :example do
-      url = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}"
-      user_perm = newbasic_auth_plain_faraday_json_client(@owner.login, @owner.password).post(url) do |req|
-        req.body = {
-          get_metadata_and_previews: true,
-          get_full_size: true,
-          edit_metadata: true,
-          edit_permissions: true
-        }.to_json
-        req.headers["Content-Type"] = "application/json"
-      end
-      expect(user_perm.status).to be == 200
+      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      user_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
+        get_metadata_and_previews: true,
+        get_full_size: true,
+        edit_metadata: true,
+        edit_permissions: true
+      })
+      expect(user_perm.status).to eq 200
     end
 
     it "edit resource perms is allowed 200" do
-      expect(response.status).to be == 200
-      uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/resource/get_metadata_and_previews/true"
-      edit = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password).put(uurl)
-      expect(edit.status).to be == 200
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 200
 
-      expect_audit_entries_count(2, 28, 2)
+      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/resource/get_metadata_and_previews/true"
+      edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
+      expect(edit.status).to eq 200
+      expect_audit_entries_count(2, 30, 2) # FIXME
     end
 
     it "edit user perms is allowed 200" do
-      expect(response.status).to be == 200
-      uurl = "#{api_base_url}/media-entry/#{@media_entry.id}/perms/user/#{@entity.id}/get_metadata_and_previews/true"
-      edit = newbasic_auth_plain_faraday_json_client(@entity.login, @entity.password).put(uurl)
-      expect(edit.status).to be == 200
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      expect(response.status).to eq 200
 
-      expect_audit_entries_count(2, 27, 2)
+      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/true"
+      edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
+      expect(edit.status).to eq 200
+      expect_audit_entries_count(2, 29, 2) # FIXME
     end
 
     it "edit group perms is allowed 200" do

@@ -14,7 +14,7 @@ describe "filtering media entries" do
   end
 
   context "permission params checks" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_token_user do
       it "returns 422 if some 'me_' not true" do
         response = get_media_entries_response("me_get_metadata_and_previews" => false)
         expect(response.status).to be == 422
@@ -23,7 +23,7 @@ describe "filtering media entries" do
   end
 
   context "by public_ permissions" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_token_user do
       it "public_get_metadata_and_previews" do
         get_media_entries("public_get_metadata_and_previews" => true)
           .each do |me|
@@ -48,7 +48,7 @@ describe "filtering media entries" do
     # end
 
     context "me_get_metadata_and_previews for a user" do
-      include_context :json_client_for_authenticated_user do
+      include_context :json_client_for_authenticated_token_user do
         it "200 for public permissions" do
           10.times {
             FactoryBot.create(:media_entry,
@@ -118,7 +118,7 @@ describe "filtering media entries" do
     end
 
     context "me_get_full_size for a user" do
-      include_context :json_client_for_authenticated_user do
+      include_context :json_client_for_authenticated_token_user do
         it "200 for public permissions" do
           10.times {
             FactoryBot.create(:media_entry,

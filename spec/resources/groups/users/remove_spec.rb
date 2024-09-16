@@ -12,7 +12,7 @@ context "removing a user from a group via DELETE" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       describe "removing a user from the group via DELETE" do
         it "responds with 204" do
           expect(

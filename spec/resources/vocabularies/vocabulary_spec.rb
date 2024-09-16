@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe "vocabulary" do
-  include_context :json_client_for_authenticated_user do
+  include_context :json_client_for_authenticated_token_user do
     ###############################################################################
     # Just so that there is some other arbitrary data besides the actual test data.
     # No exlicit expectations are done with them.
@@ -27,7 +27,7 @@ describe "vocabulary" do
 
     def json_vocabulary_resource(vocabulary_id, is_authenticated_user = false)
       if is_authenticated_user
-        basic_auth_plain_faraday_json_client(entity.login, entity.password).get("#{api_base_url}/vocabularies/#{vocabulary_id}")
+        client.get("#{api_base_url}/vocabularies/#{vocabulary_id}")
       else
         plain_faraday_json_client.get("#{api_base_url}/vocabularies/#{vocabulary_id}")
       end

@@ -6,8 +6,8 @@ context "groups" do
     @groups = 201.times.map { FactoryBot.create :group }
   end
 
-  context "non admin user" do
-    include_context :json_client_for_authenticated_user do
+  context "non admin-user" do
+    include_context :json_client_for_authenticated_token_user do
       it "is forbidden to retrieve groups" do
         expect(
           client.get("/api-v2/admin/groups").status
@@ -17,7 +17,7 @@ context "groups" do
   end
 
   context "Getting groups with pagination for admin" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       it "responses with 200" do
         resp1 = client.get("/api-v2/admin/groups?page=1&size=5")
         expect(resp1.status).to be == 200
@@ -33,7 +33,7 @@ context "groups" do
   end
 
   context "Getting groups with pagination for user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_user do
       it "responses with 200" do
         resp1 = client.get("/api-v2/groups?page=1&size=5")
         expect(resp1.status).to be == 200
@@ -48,8 +48,8 @@ context "groups" do
     end
   end
 
-  context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+  context "Getting groups with pagination for admin" do
+    include_context :json_client_for_authenticated_token_admin do
       describe "get groups" do
         let :groups_result do
           client.get("/api-v2/admin/groups?page=1&size=100")

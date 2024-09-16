@@ -9,7 +9,7 @@ context "people" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       context "retriving a standard person" do
         let :get_person_result do
           client.get("/api-v2/people/#{@person.id}")
@@ -20,7 +20,7 @@ context "people" do
 
           expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
-            "INSERT auth_systems_users", "INSERT admins"]
+            "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens"]
           expect_audit_entries("GET /api-v2/people/#{@person.id}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end
 
@@ -53,8 +53,9 @@ context "people" do
           expect(result.body["id"]).to be == @inst_person["id"]
 
           expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
-            "INSERT people", "INSERT people", "INSERT people", "INSERT usage_terms",
-            "INSERT users", "INSERT auth_systems_users", "INSERT admins"]
+            "INSERT people", "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
+            "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens"]
+
           expect_audit_entries("GET #{url}}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end
       end

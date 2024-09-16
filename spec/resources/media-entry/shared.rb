@@ -2,13 +2,13 @@ require "spec_helper"
 
 shared_context :media_entry_resource_via_plain_json do
   let :response do
-    plain_faraday_json_client.get("/api-v2/media-entry/#{@media_entry.id}")
+    plain_faraday_json_client.get("/api-v2/media-entry/#{media_entry.id}")
   end
 end
 
 shared_context :auth_media_entry_resource_via_plain_json do
   let :response do
-    basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get("/api-v2/media-entry/#{@media_entry.id}")
+    basic_auth_plain_faraday_json_client(user.login, user.password).get("/api-v2/media-entry/#{media_entry.id}")
   end
 end
 

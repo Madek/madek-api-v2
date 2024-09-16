@@ -25,7 +25,7 @@ describe "updating group-users" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       let :response do
         client.put("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users") do |req|
           req.body = {users: @update_data}.to_json

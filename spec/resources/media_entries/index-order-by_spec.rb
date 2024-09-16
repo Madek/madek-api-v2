@@ -5,7 +5,7 @@ require "shared/audit-validator"
 describe "ordering media entries" do
   include_context :bunch_of_media_entries
 
-  include_context :json_client_for_authenticated_user do
+  include_context :json_client_for_authenticated_token_user do
     def resource(order = nil)
       client.get("/api-v2/media-entries", {"order" => order})
     end

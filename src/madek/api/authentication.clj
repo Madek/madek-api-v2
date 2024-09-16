@@ -2,18 +2,10 @@
   (:require
    [clojure.string :as str]
    [clojure.walk :refer [keywordize-keys]]
-   [madek.api.authentication.basic :as basic-auth]
    [madek.api.authentication.session :as session-auth]
    [madek.api.authentication.token :as token-auth]
    [ring.util.request :as request]
    [taoensso.timbre :refer [debug]]))
-
-(defn- add-www-auth-header-if-401 [response]
-  (case (:status response)
-    401 (assoc-in response [:headers "WWW-Authenticate"]
-                  (str "Basic realm=\"Madek ApiClient with password"
-                       " or User with token.\""))
-    response))
 
 (defn wrap-log [handler]
   (fn [request]
@@ -33,19 +25,12 @@
 
 (defn wrap [handler]
   (fn [request]
-    (let [referer (or (get (:headers request) "referer") (:referer (:headers request)))
-          is-swagger-resource-request? (str/includes? (request/path-info request) "/api-docs/")
-          is-swagger-request? (or (str/includes? (request/path-info request) "/api-docs/")
-                                  (and referer (str/ends-with? referer "api-docs/index.html")))
+    (let [is-swagger-resource-request? (str/includes? (request/path-info request) "/api-docs/")
           request (if is-swagger-resource-request? (remove-authorization-header request) request)
           response ((-> handler
                         session-auth/wrap
-                        token-auth/wrap
-                        basic-auth/wrap) request)]
-      ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-popup in browser
-      (if is-swagger-request?
-        response
-        (add-www-auth-header-if-401 response)))))
+                        token-auth/wrap) request)]
+      response)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -48,7 +48,7 @@ context "admin keywords" do
   end
 
   context "Responds not authorized as user" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_token_user do
       describe "not authorized" do
         it "query responds with 403" do
           expect(client.get(query_url).status).to be == 403
@@ -82,7 +82,7 @@ context "admin keywords" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       context "get" do
         it "responds 400 with bad formatted uuid" do
           badid = Faker::Internet.slug(words: nil, glue: "-")

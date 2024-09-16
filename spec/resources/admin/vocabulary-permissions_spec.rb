@@ -1,12 +1,12 @@
 require "spec_helper"
 
-context "vocabulary permission" do
-  include_context :json_client_for_authenticated_admin_user do
+context "vocabulary permission as admin" do
+  include_context :json_client_for_authenticated_token_admin do
     def json_vocabulary_resource(vocabulary_id, is_authenticated_user = false)
       if is_authenticated_user
         client.get("#{api_base_url}/admin/vocabularies/#{vocabulary_id}")
       else
-        plain_faraday_json_client.get("#{api_base_url}/vocabularies/#{vocabulary_id}")
+        client.get("#{api_base_url}/vocabularies/#{vocabulary_id}")
       end
     end
 

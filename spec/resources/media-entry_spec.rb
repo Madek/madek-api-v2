@@ -10,7 +10,7 @@ end
 
 shared_context :with_public_preview_and_metadata_permission do
   before :each do
-    @media_entry.update! get_metadata_and_previews: true
+    media_entry.update! get_metadata_and_previews: true
   end
 end
 
@@ -44,8 +44,8 @@ shared_context :content_type_part do
 end
 
 context "Getting a media-entry resource without authentication" do
-  before :each do
-    @media_entry = FactoryBot.create :media_entry
+  let :media_entry do
+    FactoryBot.create :media_entry
   end
 
   include_context :check_media_entry_resource_via_any,
@@ -63,30 +63,5 @@ context "Getting a media-entry resource without authentication" do
         end
       end
     end
-
-    # TODO json roa: test links
-    # context 'for json-roa' do
-    #  include_context :media_entry_resource_via_json_roa
-    #  describe 'the content-type part of the content-type header' do
-    #    include_context :content_type_part
-    #    it do
-    #      expect(content_type).to be == 'application/json-roa+json'
-    #    end
-    #  end
-
-    #  describe 'the relation meta-data ' do
-    #    let :relation_meta_data do
-    #      resource.relation('meta-data')
-    #    end
-    #    describe 'meta_data' do
-    #      it do
-    #        expect(relation_meta_data).to be
-    #      end
-    #      it do
-    #        expect(relation_meta_data).to be_a JSON_ROA::Client::Relation
-    #      end
-    #    end
-    #  end
-    # end
   end
 end

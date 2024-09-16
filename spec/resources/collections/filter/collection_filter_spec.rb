@@ -1,12 +1,12 @@
 require "spec_helper"
 
 describe "filtering collections" do
-  def get_collections(filter = nil)
-    client.get("/api-v2/collections", filter).body.with_indifferent_access["collections"]
-  end
+  include_context :json_client_for_authenticated_token_admin do
+    def get_collections(filter = nil)
+      client.get("/api-v2/collections", filter).body.with_indifferent_access["collections"]
+    end
 
-  context "by collection_id" do
-    include_context :json_client_for_authenticated_user do
+    context "by collection_id" do
       it "as single filter option" do
         @collection = FactoryBot.create(:collection)
         5.times do

@@ -47,11 +47,6 @@ describe "MediaFile Resource" do
     # end
 
     describe "the media-file resource" do
-      # let :resource do
-      # authenticated_json_roa_client.get.relation('media-file') \
-      #  .get('id' => media_file.id)
-      # end
-
       describe "the response" do
         let :response do
           authenticated_json_client.get("/api-v2/media-file/#{media_file.id}")
@@ -75,13 +70,8 @@ describe "MediaFile Resource" do
       end
 
       describe "the data-stream resource" do
-        # let :data_stream_resource do
-        #  resource.relation('data-stream').get
-        # end
-
         describe "the response" do
           let :data_stream_resource_response do
-            # data_stream_resource.response
             authenticated_json_client.get("/api-v2/media-file/#{media_file.id}/data-stream")
           end
 

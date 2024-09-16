@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe "index" do
-  include_context :json_client_for_authenticated_user do
+  include_context :json_client_for_authenticated_token_user do
     let :meta_keys_resource do
       client.get("/api-v2/meta-keys")
     end

@@ -38,6 +38,94 @@ shared_context :json_client_for_authenticated_admin_user do |ctx|
   end
 end
 
+shared_context :json_client_for_authenticated_token_base do |ctx, user_as_admin, user_read, user_write|
+  let :user do
+    user = FactoryBot.create :user, password: "TOPSECRET"
+    if user_as_admin
+      FactoryBot.create :admin, user: user
+    end
+    user
+  end
+
+  let :token do
+    ApiToken.create user: user, scope_read: user_read, scope_write: user_write
+  end
+
+  let :entity do
+    user
+  end
+
+  let :client do
+    wtoken_header_plain_faraday_json_client(token.token)
+  end
+
+  describe "JSON `client` for authenticated `user`" do
+    include_context ctx if ctx
+  end
+end
+
+shared_context :json_client_for_authenticated_token_owner_user do |ctx|
+  let :user do
+    FactoryBot.create :user, password: "TOPSECRET"
+  end
+
+  let :user_token do
+    ApiToken.create user: user, scope_read: true, scope_write: true
+  end
+
+  let :user_token_no_creds do
+    ApiToken.create user: user, scope_read: false, scope_write: false
+  end
+
+  let :user_entity do
+    user
+  end
+
+  let :user_client do
+    wtoken_header_plain_faraday_json_client(user_token.token)
+  end
+
+  let :user_client_no_creds do
+    wtoken_header_plain_faraday_json_client(user_token_no_creds.token)
+  end
+
+  let :owner do
+    FactoryBot.create :user, password: "OWNER-TOPSECRET"
+  end
+
+  let :owner_token do
+    ApiToken.create user: owner, scope_read: true, scope_write: true
+  end
+
+  describe "JSON `client` for authenticated `user`" do
+    include_context ctx if ctx
+  end
+end
+
+shared_context :json_client_for_authenticated_token_admin do |ctx|
+  include_context :json_client_for_authenticated_token_base, ctx, true, true, true
+end
+
+shared_context :json_client_for_authenticated_token_admin_no_creds do |ctx|
+  include_context :json_client_for_authenticated_token_base, ctx, true, false, false
+end
+
+shared_context :json_client_for_authenticated_token_user do |ctx|
+  include_context :json_client_for_authenticated_token_base, ctx, false, true, true
+end
+
+shared_context :json_client_for_authenticated_token_user_no_creds do |ctx|
+  include_context :json_client_for_authenticated_token_base, ctx, false, false, false
+end
+
+shared_context :json_client_for_authenticated_token_user_read do |ctx|
+  include_context :json_client_for_authenticated_token_base, ctx, false, true, false
+end
+
+shared_context :json_client_for_authenticated_token_user_write do |ctx|
+  include_context :json_client_for_authenticated_token_base, ctx, false, false, true
+end
+
 shared_context :json_client_for_authenticated_api_client do |ctx|
   let :api_client do
     FactoryBot.create :api_client, password: "TOPSECRET"

@@ -2,7 +2,7 @@ require "spec_helper"
 
 context "groups" do
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_token_admin do
       # include_context :json_roa_client_for_authenticated_admin_user do
 
       describe "creating" do

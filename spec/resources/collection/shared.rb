@@ -6,22 +6,6 @@ shared_context :collection_resource_via_json do
   end
 end
 
-shared_context :auth_collection_resource_via_json do
-  let :client do
-    basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
-  end
-
-  let :response do
-    client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
-  end
-end
-
-shared_context :collection_resource_via_plain_json do
-  let :response do
-    plain_faraday_json_client.get("/api-v2/collection/#{@collection.id}")
-  end
-end
-
 shared_context :check_collection_resource_via_any do |ctx|
   context :via_plain_json do
     include_context :collection_resource_via_json
