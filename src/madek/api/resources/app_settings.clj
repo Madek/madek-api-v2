@@ -183,15 +183,11 @@
 
 (def user-routes
   [["/"
-    {:openapi {:tags ["app-settings"] :security ADMIN_AUTH_METHODS}}
+    {:openapi {:tags ["app-settings"] :security []}}
     ["app-settings"
      {:get {:summary (sd/sum_pub "Get App Settings.")
             :handler handle_get-app-settings
             :swagger {:produces "application/json"}
-            :middleware [
-                         ;jqh/ring-wrap-authorization-view
-                         authorization/wrap-authorized-user
-                         ]
             :content-type "application/json"
             :coercion reitit.coercion.schema/coercion
             :responses {200 {:description "Returns the app settings."

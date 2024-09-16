@@ -59,6 +59,17 @@ def basic_auth_wtoken_header_plain_faraday_json_client(login, password, token)
     conn.response :json, content_type: /\bjson$/
     conn.adapter Faraday.default_adapter
   end
+  end
+
+def wtoken_header_plain_faraday_json_client(token)
+  @plain_faraday_json_client ||= Faraday.new(
+    url: api_base_url,
+    headers: {accept: "application/json", Authorization: "token #{token}"}
+  ) do |conn|
+    yield(conn) if block_given?
+    conn.response :json, content_type: /\bjson$/
+    conn.adapter Faraday.default_adapter
+  end
 end
 
 def session_auth_plain_faraday_json_client(cookie_string)
