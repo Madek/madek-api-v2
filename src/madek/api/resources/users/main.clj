@@ -5,7 +5,7 @@
    [madek.api.resources.users.get :as get-user]
    [madek.api.resources.users.index :as index]
    [madek.api.resources.users.update :as update-user]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]))
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS2]]))
 
 ; There are some things missing here yet. A non admin user should be able to
 ; get limited users set (by properties and number of results). The index for
@@ -17,7 +17,7 @@
 
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/users"] :security ADMIN_AUTH_METHODS}}
+   {:openapi {:tags ["admin/users"] :security ADMIN_AUTH_METHODS2}}
    ["users"
     {:get index/route
      :post create-user/route}]
