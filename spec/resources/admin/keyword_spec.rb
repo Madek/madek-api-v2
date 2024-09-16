@@ -82,7 +82,7 @@ context "admin keywords" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       context "get" do
         it "responds 400 with bad formatted uuid" do
           badid = Faker::Internet.slug(words: nil, glue: "-")

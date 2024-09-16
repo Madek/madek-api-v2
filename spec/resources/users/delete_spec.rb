@@ -16,7 +16,7 @@ context "users" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       context "deleting a standard user" do
         let :delete_user_result do
           client.delete("/api-v2/admin/users/#{CGI.escape(@user.id)}")

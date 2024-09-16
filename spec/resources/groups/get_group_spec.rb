@@ -18,7 +18,7 @@ context "groups" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       context "retrieving a standard group" do
         let :get_group_result do
           client.get("/api-v2/admin/groups/#{@group.id}")

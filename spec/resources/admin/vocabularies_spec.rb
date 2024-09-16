@@ -4,7 +4,7 @@ context "admin vocabularies" do
   before :each do
     @vocabulary = FactoryBot.create :vocabulary
     # TODO use Faker and indiv. data
-    @labels = {de: "labelde", en: "labelen"}
+    @labels = { de: "labelde", en: "labelen" }
 
     @create_data = {
       id: "myvocab",
@@ -89,7 +89,7 @@ context "admin vocabularies" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       context "get" do
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
@@ -111,9 +111,9 @@ context "admin vocabularies" do
             expect(
               data.except("created_at", "updated_at", "admin_comment")
             ).to eq(
-              @vocabulary.attributes.with_indifferent_access
-                .except(:created_at, :updated_at, :admin_comment)
-            )
+                   @vocabulary.attributes.with_indifferent_access
+                              .except(:created_at, :updated_at, :admin_comment)
+                 )
           end
         end
       end
@@ -139,9 +139,9 @@ context "admin vocabularies" do
           expect(
             data.except("created_at", "updated_at")
           ).to eq(
-            @create_data.with_indifferent_access
-              .except(:created_at, :updated_at)
-          )
+                 @create_data.with_indifferent_access
+                             .except(:created_at, :updated_at)
+               )
         end
       end
 
@@ -164,12 +164,12 @@ context "admin vocabularies" do
           data = response.body
           expect(
             data.except("created_at", "updated_at",
-              "position")
+                        "position")
           ).to eq(
-            @vocabulary.attributes.with_indifferent_access
-              .except(:created_at, :updated_at,
-                :position)
-          )
+                 @vocabulary.attributes.with_indifferent_access
+                            .except(:created_at, :updated_at,
+                                    :position)
+               )
           expect(data["position"]).to be == 1
         end
       end
@@ -188,9 +188,9 @@ context "admin vocabularies" do
           expect(
             data.except("created_at", "updated_at")
           ).to eq(
-            @vocabulary.attributes.with_indifferent_access
-              .except(:created_at, :updated_at)
-          )
+                 @vocabulary.attributes.with_indifferent_access
+                            .except(:created_at, :updated_at)
+               )
         end
       end
     end

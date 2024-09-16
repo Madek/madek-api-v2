@@ -61,6 +61,7 @@ def basic_auth_wtoken_header_plain_faraday_json_client(login, password, token)
   end
   end
 
+# wtoken_header_plain_faraday_json_client(token.token)
 def wtoken_header_plain_faraday_json_client(token)
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,

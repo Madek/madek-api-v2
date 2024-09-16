@@ -7,7 +7,7 @@ context "people" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       describe "patching/updating" do
         it "works" do
           expect(

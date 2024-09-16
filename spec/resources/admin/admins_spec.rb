@@ -63,27 +63,27 @@ context "admin users" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       context "get" do
-        before :each do
-          @admin = FactoryBot.create :admin
-        end
+        # before :each do
+        #   @admin = FactoryBot.create :admin
+        # end
 
         it "responds 400 with bad formatted uuid" do
           badid = Faker::Internet.slug(words: nil, glue: "-")
-          response = client.get("/api-v2/admin/admins/#{badid}")
+          response = wtoken_header_plain_faraday_json_client(token.token).get("/api-v2/admin/admins/#{badid}")
           expect(response.status).to be == 400
         end
 
         it "responds 404 with non-existing id" do
           # TODO build non-existent uuid
-          response = client.get("/api-v2/admin/admins/#{user.id}")
+          response = wtoken_header_plain_faraday_json_client(token.token).get("/api-v2/admin/admins/#{user.id}")
           expect(response.status).to be == 404
         end
 
         describe "existing id" do
           let :response do
-            client.get(admin_url)
+            wtoken_header_plain_faraday_json_client(token.token).get(admin_url)
           end
 
           it "responds with 200" do
@@ -104,7 +104,7 @@ context "admin users" do
 
       context "post" do
         let :response do
-          client.post(user_url)
+          wtoken_header_plain_faraday_json_client(token.token).post(user_url)
         end
 
         it "responds with 200" do
@@ -121,12 +121,12 @@ context "admin users" do
       # TODO test more data
 
       context "delete" do
-        before :each do
-          @admin = FactoryBot.create :admin
-        end
+        # before :each do
+        #   @admin = FactoryBot.create :admin
+        # end
 
         let :response do
-          client.delete(admin_user_url)
+          wtoken_header_plain_faraday_json_client(token.token).delete(admin_user_url)
         end
 
         it "responds with 200" do

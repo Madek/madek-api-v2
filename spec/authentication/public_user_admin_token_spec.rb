@@ -169,7 +169,7 @@ end
 ## TEST ENDPOINTS AS MADEK-ADMIN ############################################
 
 context "3) resource with admin auth" do
-  # include_context :json_client_for_authenticated_admin_user do
+  # include_context :json_client_for_authenticated_admin_token_user do
   include_context :json_client_for_authenticated_admin_token_user do
     describe "Test status-code as public-user " do
       it "against POST endpoints " do

@@ -21,7 +21,7 @@ context "people" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       context "deleting a standard person" do
         let :delete_person_result do
           client.delete("/api-v2/admin/people/#{@person.id}")

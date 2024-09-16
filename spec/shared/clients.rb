@@ -56,6 +56,10 @@ shared_context :json_client_for_authenticated_admin_token_user do |ctx|
 
   include_context :json_client_for_authenticated_entity
 
+  let :client do
+    wtoken_header_plain_faraday_json_client(token.token)
+  end
+
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx
   end

@@ -77,7 +77,7 @@ context "admin io_interfaces" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       context "get" do
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
