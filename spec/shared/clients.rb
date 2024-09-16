@@ -38,6 +38,95 @@ shared_context :json_client_for_authenticated_admin_user do |ctx|
   end
 end
 
+shared_context :json_client_for_authenticated_admin_token_user do |ctx|
+  let :user do
+    user = FactoryBot.create :user, password: "TOPSECRET"
+    FactoryBot.create :admin, user: user
+    user
+  end
+
+  let :token do
+    ApiToken.create user: user, scope_read: true,
+                    scope_write: true
+  end
+
+  let :entity do
+    user
+  end
+
+  include_context :json_client_for_authenticated_entity
+
+  describe "JSON `client` for authenticated `user`" do
+    include_context ctx if ctx
+  end
+end
+
+shared_context :json_client_for_authenticated_token_user do |ctx|
+  let :user do
+    user = FactoryBot.create :user, password: "TOPSECRET"
+    user
+  end
+
+  let :token do
+    ApiToken.create user: user, scope_read: true,
+                    scope_write: true
+  end
+
+  let :entity do
+    user
+  end
+
+  include_context :json_client_for_authenticated_entity
+
+  describe "JSON `client` for authenticated `user`" do
+    include_context ctx if ctx
+  end
+end
+
+shared_context :json_client_for_authenticated_admin_token_no_creds_user do |ctx|
+  let :user do
+    user = FactoryBot.create :user, password: "TOPSECRET"
+    FactoryBot.create :admin, user: user
+    user
+  end
+
+  let :token do
+    ApiToken.create user: user, scope_read: false,
+                    scope_write: false
+  end
+
+  let :entity do
+    user
+  end
+
+  include_context :json_client_for_authenticated_entity
+
+  describe "JSON `client` for authenticated `user`" do
+    include_context ctx if ctx
+  end
+end
+
+shared_context :json_client_for_authenticated_token_no_creds_user do |ctx|
+  let :user do
+    FactoryBot.create :user, password: "TOPSECRET"
+  end
+
+  let :token do
+    ApiToken.create user: user, scope_read: false,
+                    scope_write: false
+  end
+
+  let :entity do
+    user
+  end
+
+  include_context :json_client_for_authenticated_entity
+
+  describe "JSON `client` for authenticated `user`" do
+    include_context ctx if ctx
+  end
+end
+
 shared_context :json_client_for_authenticated_api_client do |ctx|
   let :api_client do
     FactoryBot.create :api_client, password: "TOPSECRET"
