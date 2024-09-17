@@ -3,6 +3,9 @@ require "json"
 require Pathname(File.expand_path("../..", __FILE__)).join("shared")
 
 describe "generated runs" do
+
+  include_context :json_client_for_authenticated_token_user do
+
   (1..ROUNDS).each do |round|
     # (1..1).each do |round|
     describe "ROUND #{round}" do
@@ -39,7 +42,7 @@ describe "generated runs" do
                 if meta_datum_json.collection_id == media_resource.id
                   url = "/api-v2/collection/#{meta_datum_json.collection_id}/meta-datum/#{meta_datum_json.meta_key_id}"
                 end
-                authenticated_json_client.get(url)
+                client.get(url)
               end
 
               it "status 200" do
@@ -58,5 +61,6 @@ describe "generated runs" do
         end
       end
     end
+  end
   end
 end
