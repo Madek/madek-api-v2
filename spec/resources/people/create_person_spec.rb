@@ -5,6 +5,10 @@ expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_cl
   "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users",
   "INSERT admins", "INSERT people"]
 
+expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
+  "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users",
+  "INSERT admins", "INSERT api_tokens", "INSERT people"]
+
 context "people" do
   context "admin user" do
     include_context :json_client_for_authenticated_token_admin do

@@ -4,8 +4,12 @@ require Pathname(File.expand_path("..", __FILE__)).join("shared")
 ROUNDS = 3
 
 describe "generated runs" do
-  (1..ROUNDS).each do |round|
-    # (1..1).each do |round|
+
+  include_context :json_client_for_authenticated_token_user do
+
+
+  # (1..ROUNDS).each do |round|
+    (1..1).each do |round|
     describe "ROUND #{round}" do
       describe "meta_datum_roles_for_random_resource_type" do
         include_context :meta_datum_for_media_entry
@@ -14,15 +18,15 @@ describe "generated runs" do
             media_entry: media_resource
         end
 
-        describe "authenticated_json_client" do
-          include_context :authenticated_json_client
+        describe "client" do
+          # include_context :client
           after :each do |example|
             if example.exception
               example.exception.message <<
                 "\n  MediaResource: #{media_resource} " \
                 " #{media_resource.attributes}"
-              example.exception.message << "\n  Client: #{client_entity} " \
-                " #{client_entity.attributes}"
+              example.exception.message << "\n  Client: #{entity} " \
+                " #{entity.attributes}"
             end
           end
           describe "with random public view permission" do
@@ -32,7 +36,7 @@ describe "generated runs" do
             end
             describe "the meta-data resource" do
               let :response do
-                authenticated_json_client.get("/api-v2/meta-data/#{meta_datum_roles.id}")
+                client.get("/api-v2/meta-data/#{meta_datum_roles.id}")
               end
 
               it "status, either 200 success or 403 forbidden, " \
@@ -64,7 +68,7 @@ describe "generated runs" do
                   it "provides valid relations" do
                     if response.status == 200
                       response.body["value"].each do |v|
-                        meta_data_role = authenticated_json_client.get("/api-v2/meta-data-role/#{v["id"]}")
+                        meta_data_role = client.get("/api-v2/meta-data-role/#{v["id"]}")
 
                         expect(meta_data_role.status).to be == 200
 
@@ -72,16 +76,16 @@ describe "generated runs" do
 
                           meta_datum_id = meta_data_role.body["meta_datum_id"]
 
-                          expect(authenticated_json_client.get("/api-v2/meta-data/#{meta_datum_id}").status)
+                          expect(client.get("/api-v2/meta-data/#{meta_datum_id}").status)
                             .to be == 200
 
                           person_id = meta_data_role.body["person_id"]
-                          expect(authenticated_json_client.get("/api-v2/people/#{person_id}").status)
+                          expect(client.get("/api-v2/people/#{person_id}").status)
                             .to be == 200
 
                           unless meta_data_role.body["role_id"].nil?
                             role_id = meta_data_role.body["role_id"]
-                            expect(authenticated_json_client.get("/api-v2/roles/#{role_id}").status)
+                            expect(client.get("/api-v2/roles/#{role_id}").status)
                               .to be == 200
                           end
                         end
@@ -93,12 +97,12 @@ describe "generated runs" do
                     it "has role relation" do
                       if response.status == 200
                         response.body["value"].each do |v|
-                          meta_data_role = authenticated_json_client.get("/api-v2/meta-data-role/#{v["id"]}")
+                          meta_data_role = client.get("/api-v2/meta-data-role/#{v["id"]}")
 
                           unless meta_data_role.body["role_id"].nil?
                             #  expect(meta_data_role.json_roa_data['relations']).to have_key 'role'
                             role_id = meta_data_role.body["role_id"]
-                            expect(authenticated_json_client.get("/api-v2/roles/#{role_id}").status)
+                            expect(client.get("/api-v2/roles/#{role_id}").status)
                               .to be == 200
                           end
                         end
@@ -121,17 +125,17 @@ describe "generated runs" do
                     # end
 
                     meta_key_id = response.body["meta_key_id"]
-                    expect(authenticated_json_client.get("/api-v2/meta-keys/#{meta_key_id}").status)
+                    expect(client.get("/api-v2/meta-keys/#{meta_key_id}").status)
                       .to be == 200
 
                     if response.body["media_entry_id"] == media_resource.id
                       media_entry_id = response.body["media_entry_id"]
-                      expect(authenticated_json_client.get("/api-v2/media-entry/#{media_entry_id}").status)
+                      expect(client.get("/api-v2/media-entry/#{media_entry_id}").status)
                         .to be == 200
                     end
                     if response.body["collection_id"] == media_resource.id
                       collection_id = response.body["collection_id"]
-                      expect(authenticated_json_client.get("/api-v2/collection/#{collection_id}").status)
+                      expect(client.get("/api-v2/collection/#{collection_id}").status)
                         .to be == 200
                     end
                   end
@@ -140,6 +144,7 @@ describe "generated runs" do
             end
           end
         end
+      end
       end
     end
   end

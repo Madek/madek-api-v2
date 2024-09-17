@@ -5,13 +5,18 @@ expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_cl
   "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
   "INSERT auth_systems_users", "INSERT admins", "DELETE people"]
 
+expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
+  "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
+  "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "DELETE people"]
+
+
 context "people" do
   before :each do
     @person = FactoryBot.create :person
   end
 
-  context "non admin user" do
-    include_context :json_client_for_authenticated_token_admin do
+  context "non admin-user" do
+    include_context :json_client_for_authenticated_token_user do
       it "is forbidden to delete any person" do
         expect(
           client.delete("/api-v2/admin/people/#{@person.id}").status
@@ -20,7 +25,7 @@ context "people" do
     end
   end
 
-  context "admin user" do
+  context "admin-user" do
     include_context :json_client_for_authenticated_token_admin do
       context "deleting a standard person" do
         let :delete_person_result do
