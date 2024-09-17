@@ -3,6 +3,10 @@ require "json"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
 
 describe "generated runs" do
+
+  include_context :json_client_for_authenticated_token_user do
+
+
   (1..ROUNDS).each do |round|
     # (1..1).each do |round|
     describe "ROUND #{round}" do
@@ -10,15 +14,15 @@ describe "generated runs" do
         include_context :meta_datum_for_random_resource_type
         let(:meta_datum_json) { meta_datum "json" }
 
-        describe "authenticated_json_client" do
-          include_context :authenticated_json_client
+        describe "client" do
+          # include_context :client
           after :each do |example|
             if example.exception
               example.exception.message << \
                 "\n  MediaResource: #{media_resource} " \
                 " #{media_resource.attributes}"
-              example.exception.message << "\n  Client: #{client_entity} " \
-                " #{client_entity.attributes}"
+              example.exception.message << "\n  Client: #{entity} " \
+                " #{entity.attributes}"
             end
           end
 
@@ -30,7 +34,7 @@ describe "generated runs" do
 
             describe "the meta-datum resource" do
               let :response do
-                authenticated_json_client.get("/api-v2/meta-data/#{meta_datum_json.id}")
+                client.get("/api-v2/meta-data/#{meta_datum_json.id}")
               end
 
               let :value do
@@ -56,7 +60,7 @@ describe "generated runs" do
 
             describe "the meta-datum-data-stream resource" do
               let :response do
-                authenticated_json_client.get("/api-v2/meta-data/#{meta_datum_json.id}/data-stream")
+                client.get("/api-v2/meta-data/#{meta_datum_json.id}/data-stream")
               end
 
               it "status, either 200 success or 403 forbidden, " \
@@ -82,5 +86,6 @@ describe "generated runs" do
         end
       end
     end
+  end
   end
 end

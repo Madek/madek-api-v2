@@ -3,6 +3,10 @@ require "json"
 require Pathname(File.expand_path("../..", __FILE__)).join("shared")
 
 describe "generated runs" do
+
+  include_context :json_client_for_authenticated_token_user do
+
+
   # (1..ROUNDS).each do |round|
   (1..1).each do |round|
     describe "ROUND #{round}" do
@@ -17,32 +21,32 @@ describe "generated runs" do
         let(:create_data) { "Hello Lala" }
         let(:update_data) { "Bye Bye Ugale" }
 
-        describe "authenticated_json_client" do
-          include_context :authenticated_json_client
+        describe "client" do
+          # include_context :client
 
           after :each do |example|
             if example.exception
               example.exception.message <<
                 "\n  MediaResource: #{media_resource} " \
                 " #{media_resource.attributes}"
-              example.exception.message << "\n  Client: #{client_entity} " \
-                " #{client_entity.attributes}"
+              example.exception.message << "\n  Client: #{entity} " \
+                " #{entity.attributes}"
 
               example.exception.message << "\n  URL: #{post_url} " \
-                " #{client_entity.attributes}"
+                " #{entity.attributes}"
             end
           end
 
           describe "with creator is authed user" do
             before :each do
               media_resource.update! \
-                creator_id: client_entity.id,
-                responsible_user_id: client_entity.id
+                creator_id: entity.id,
+                responsible_user_id: entity.id
             end
 
             describe "create the meta-datum resource" do
               let :response do
-                authenticated_json_client.post(post_url) do |req|
+                client.post(post_url) do |req|
                   req.body = {string: create_data}.to_json
                   req.headers["Content-Type"] = "application/json"
                 end
@@ -59,12 +63,12 @@ describe "generated runs" do
 
             describe "read the meta-datum resource" do
               let :response do
-                authenticated_json_client.post(post_url) do |req|
+                client.post(post_url) do |req|
                   req.body = {string: create_data}.to_json
                   req.headers["Content-Type"] = "application/json"
                 end
 
-                authenticated_json_client.get(delete_url)
+                client.get(delete_url)
               end
 
               it "status 200" do
@@ -78,12 +82,12 @@ describe "generated runs" do
 
             describe "update the meta-datum resource" do
               let :response do
-                authenticated_json_client.post(post_url) do |req|
+                client.post(post_url) do |req|
                   req.body = {string: create_data}.to_json
                   req.headers["Content-Type"] = "application/json"
                 end
 
-                authenticated_json_client.put(post_url) do |req|
+                client.put(post_url) do |req|
                   req.body = {string: update_data}.to_json
                   req.headers["Content-Type"] = "application/json"
                 end
@@ -100,12 +104,12 @@ describe "generated runs" do
 
             describe "delete the meta-datum resource" do
               let :response do
-                authenticated_json_client.post(post_url) do |req|
+                client.post(post_url) do |req|
                   req.body = {string: create_data}.to_json
                   req.headers["Content-Type"] = "application/json"
                 end
 
-                authenticated_json_client.delete(delete_url)
+                client.delete(delete_url)
               end
 
               it "status 200" do
@@ -120,5 +124,6 @@ describe "generated runs" do
         end
       end
     end
+  end
   end
 end
