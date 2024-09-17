@@ -27,7 +27,7 @@ context "people" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       describe "get an unfiltered people list as an admin" do
         url = "/api-v2/admin/people?page=1&size=100"
         let :result do

@@ -13,6 +13,7 @@
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [convert-map-if-exist mslurp]]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -21,12 +22,18 @@
    [taoensso.timbre :refer [info]]))
 
 (defn handle_get-collection [request]
-  (let [collection (:media-resource request)
+  (let [
+        p (println ">o> handle_get-collection")
+        collection (:media-resource request)
         cleanedcol (dissoc collection :table-name :type
                      ;:responsible_delegation_id
                      ; TODO Frage clipboard_user
                      ;:clipboard_user_id
-                           )]
+                           )
+
+        p (println ">o> handle_get-collection" cleanedcol)
+
+        ]
     (sd/response_ok cleanedcol)))
 
 (defn handle_get-index [req]
@@ -219,7 +226,7 @@
    ["collections"
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
-      ;:middleware [wrap-authorize-admin!]
+      :middleware [wrap-authorize-admin!]                   ;TODO: check
       :handler handle_get-index
       :coercion spec/coercion
       :parameters {:query :collection-query/query-admin-def}

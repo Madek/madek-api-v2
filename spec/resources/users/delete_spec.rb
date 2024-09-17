@@ -6,7 +6,7 @@ context "users" do
   end
 
   context "non admin user" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       it "is forbidden to delete any user" do
         expect(
           client.delete("/api-v2/admin/users/#{@user.id}").status
@@ -16,7 +16,7 @@ context "users" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       context "deleting a standard user" do
         let :delete_user_result do
           client.delete("/api-v2/admin/users/#{CGI.escape(@user.id)}")

@@ -7,7 +7,7 @@ expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_cl
 
 context "people" do
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       describe "creating" do
         describe "a person" do
           it "works" do

@@ -38,7 +38,7 @@ shared_context :json_client_for_authenticated_admin_user do |ctx|
   end
 end
 
-shared_context :json_client_for_authenticated_admin_token_user do |ctx|
+shared_context :json_client_for_authenticated_token_admin do |ctx|
   let :user do
     user = FactoryBot.create :user, password: "TOPSECRET"
     FactoryBot.create :admin, user: user
@@ -54,7 +54,7 @@ shared_context :json_client_for_authenticated_admin_token_user do |ctx|
     user
   end
 
-  include_context :json_client_for_authenticated_entity
+  # include_context :json_client_for_authenticated_entity
 
   let :client do
     wtoken_header_plain_faraday_json_client(token.token)
@@ -79,14 +79,17 @@ shared_context :json_client_for_authenticated_token_user do |ctx|
     user
   end
 
-  include_context :json_client_for_authenticated_entity
+  let :client do
+    wtoken_header_plain_faraday_json_client(token.token)
+  end
+  # include_context :json_client_for_authenticated_entity
 
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx
   end
 end
 
-shared_context :json_client_for_authenticated_admin_token_no_creds_user do |ctx|
+shared_context :json_client_for_authenticated_token_admin_no_creds do |ctx|
   let :user do
     user = FactoryBot.create :user, password: "TOPSECRET"
     FactoryBot.create :admin, user: user
@@ -98,18 +101,22 @@ shared_context :json_client_for_authenticated_admin_token_no_creds_user do |ctx|
                     scope_write: false
   end
 
+
   let :entity do
     user
   end
 
-  include_context :json_client_for_authenticated_entity
+  let :client do
+    wtoken_header_plain_faraday_json_client(token.token)
+  end
+  # include_context :json_client_for_authenticated_entity
 
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx
   end
 end
 
-shared_context :json_client_for_authenticated_token_no_creds_user do |ctx|
+shared_context :json_client_for_authenticated_token_user_no_creds do |ctx|
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
@@ -123,7 +130,10 @@ shared_context :json_client_for_authenticated_token_no_creds_user do |ctx|
     user
   end
 
-  include_context :json_client_for_authenticated_entity
+  let :client do
+    wtoken_header_plain_faraday_json_client(token.token)
+  end
+  # include_context :json_client_for_authenticated_entity
 
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx

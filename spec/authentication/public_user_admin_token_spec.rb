@@ -170,7 +170,7 @@ end
 
 context "3) resource with admin auth" do
   # include_context :json_client_for_authenticated_admin_token_user do
-  include_context :json_client_for_authenticated_admin_token_user do
+  include_context :json_client_for_authenticated_token_admin do
     describe "Test status-code as public-user " do
       it "against POST endpoints " do
         # "/api-v2/admin/full-text/" => 404, Post-Request
@@ -342,7 +342,7 @@ end
 # TEST ENDPOINTS AS MADEK-TOKEN-ADMIN-USER #################################
 
 context "5) resource with token-user auth with admin-credentials" do
-  include_context :json_client_for_authenticated_admin_token_user do
+  include_context :json_client_for_authenticated_token_admin do
 
     describe "Test status-code as madek-user " do
       it "against POST endpoints " do

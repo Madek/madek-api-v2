@@ -43,7 +43,47 @@ context "admin users" do
   end
 
   context "Responds not authorized as user" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_user do
+      describe "not authorized" do
+        it "query responds with 403" do
+          expect(client.get(query_url).status).to be == 403
+        end
+        it "get responds with 403" do
+          expect(client.get(admin_url).status).to be == 403
+        end
+        it "post responds with 403" do
+          response = client.post(user_url)
+          expect(response.status).to be == 403
+        end
+        it "delete responds with 403" do
+          expect(client.delete(admin_user_url).status).to be == 403
+        end
+      end
+    end
+  end
+
+  context "Responds not authorized as user" do
+    include_context :json_client_for_authenticated_token_user_no_creds do
+      describe "not authorized" do
+        it "query responds with 403" do
+          expect(client.get(query_url).status).to be == 403
+        end
+        it "get responds with 403" do
+          expect(client.get(admin_url).status).to be == 403
+        end
+        it "post responds with 403" do
+          response = client.post(user_url)
+          expect(response.status).to be == 403
+        end
+        it "delete responds with 403" do
+          expect(client.delete(admin_user_url).status).to be == 403
+        end
+      end
+    end
+  end
+
+  context "Responds not authorized as user" do
+    include_context :json_client_for_authenticated_token_admin_no_creds do
       describe "not authorized" do
         it "query responds with 403" do
           expect(client.get(query_url).status).to be == 403
@@ -63,7 +103,7 @@ context "admin users" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       context "get" do
         # before :each do
         #   @admin = FactoryBot.create :admin

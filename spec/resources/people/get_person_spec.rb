@@ -9,7 +9,7 @@ context "people" do
   end
 
   context "admin user" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       context "retriving a standard person" do
         let :get_person_result do
           client.get("/api-v2/people/#{@person.id}")

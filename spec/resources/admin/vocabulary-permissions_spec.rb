@@ -1,7 +1,7 @@
 require "spec_helper"
 
 context "vocabulary permission" do
-  include_context :json_client_for_authenticated_admin_token_user do
+  include_context :json_client_for_authenticated_token_admin do
 
     def json_vocabulary_resource(vocabulary_id, is_authenticated_user = false)
       if is_authenticated_user

@@ -55,7 +55,7 @@ context "admin vocabularies" do
   end
 
   context "Responds not authorized as user" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       before :each do
         @vocabulary = FactoryBot.create :vocabulary
       end
@@ -89,7 +89,7 @@ context "admin vocabularies" do
   end
 
   context "Responds ok as admin" do
-    include_context :json_client_for_authenticated_admin_token_user do
+    include_context :json_client_for_authenticated_token_admin do
       context "get" do
         it "responds 404 with non-existing id" do
           badid = Faker::Internet.uuid
