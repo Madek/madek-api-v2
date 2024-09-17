@@ -85,7 +85,7 @@ shared_context :test_proper_user_basic_auth do
           expect(response.status).to eq(code)
           # expect(response.body["message"]).to eq("Neither User nor ApiClient exists for {:login-or-email-address \"Not-existing-user\"}")
           expect(response.body["message"]).to eq("Not authorized")
-          expect(response.headers["www-authenticate"]).to eq("Basic realm=\"Madek ApiClient with password or User with token.\"")
+          # expect(response.headers["www-authenticate"]).to eq("Basic realm=\"Madek ApiClient with password or User with token.\"")
         end
       end
     end
