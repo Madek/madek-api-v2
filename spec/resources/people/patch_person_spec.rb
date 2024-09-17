@@ -20,6 +20,9 @@ context "people" do
           expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins", "UPDATE people"]
+
+          expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes", "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "UPDATE people"]
+
           expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
         end
 
@@ -34,6 +37,9 @@ context "people" do
           expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins"]
+
+          expected_audit_entries =["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes", "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens"]
+
           expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
         end
 
@@ -50,6 +56,10 @@ context "people" do
             expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
               "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
               "INSERT auth_systems_users", "INSERT admins", "UPDATE people"]
+
+
+            expected_audit_entries =["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes", "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "UPDATE people"]
+
             expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
           end
         end

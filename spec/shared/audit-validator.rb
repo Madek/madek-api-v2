@@ -14,7 +14,7 @@ def expect_audit_entries(expected_auditedrequest_info, expected_auditchange_list
 
   list = AuditedChange.all.map { |a| "#{a.tg_op} #{a.table_name}" }
   if options[:distinct]
-    puts "list: #{list}"
+    puts "list: #{list.uniq.sort}"
     expect(list.uniq.sort).to be == expected_auditchange_list.uniq.sort
   else
     puts "list: #{list}"
