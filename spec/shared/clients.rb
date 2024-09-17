@@ -79,10 +79,6 @@ shared_context :json_client_for_authenticated_token_user do |ctx|
     user
   end
 
-  # let :client_entity do
-  #   user
-  # end
-
   let :client do
     wtoken_header_plain_faraday_json_client(token.token)
   end
