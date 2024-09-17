@@ -68,7 +68,7 @@ context "admin context-keys" do
   end
 
   context "Responds not authorized as user" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       before :each do
         @context_key = FactoryBot.create :context_key
       end

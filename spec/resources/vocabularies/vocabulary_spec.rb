@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe "vocabulary" do
-  include_context :json_client_for_authenticated_user do
+  include_context :json_client_for_authenticated_admin_token_user do
     ###############################################################################
     # Just so that there is some other arbitrary data besides the actual test data.
     # No exlicit expectations are done with them.

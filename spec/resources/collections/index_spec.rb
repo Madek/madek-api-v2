@@ -5,7 +5,7 @@ describe "a bunch of collections with different properties" do
   include_context :bunch_of_collections
 
   describe "JSON `client` for authenticated `user`" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation

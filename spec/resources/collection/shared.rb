@@ -6,6 +6,7 @@ shared_context :collection_resource_via_json do
   end
 end
 
+# DEPR
 shared_context :auth_collection_resource_via_json do
   let :client do
     basic_auth_plain_faraday_json_client(@entity.login, @entity.password)

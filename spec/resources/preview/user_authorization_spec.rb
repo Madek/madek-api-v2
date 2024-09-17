@@ -1,6 +1,7 @@
 require "spec_helper"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
 
+
 describe "Getting a preview resource without authentication" do
   before :example do
     @media_entry = FactoryBot.create(:media_entry_with_image_media_file,
@@ -31,6 +32,7 @@ describe "Getting a preview resource with authentication" do
 
   include_context :auth_preview_resource_via_json
 
+  context json_client_for_authenticated_token_no_creds_user do
   context :check_forbidden_without_required_permission do
     before :example do
       @media_entry.user_permissions <<
@@ -47,6 +49,7 @@ describe "Getting a preview resource with authentication" do
     it "is forbidden 403" do
       expect(response.status).to be == 403
     end
+  end
   end
 
   context :check_allowed_if_responsible do

@@ -41,43 +41,43 @@ shared_context :test_proper_user_basic_auth do
       basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get("/api-v2/auth-info")
     end
 
-    it "responds with success 200" do
-      expect(response.status).to be == 200
+    it "responds with Unauthorized 401" do
+      expect(response.status).to be == 401
     end
 
-    describe "the response body" do
-      let :body do
-        response.body
-      end
-
-      describe "the login property" do
-        let :login do
-          body["login"]
-        end
-
-        it "should be equal to the entities login" do
-          expect(login).to be == @entity.login
-        end
-      end
-
-      describe "the authentication-method property" do
-        let :authentication_method do
-          body["authentication-method"]
-        end
-        it do
-          expect(authentication_method).to be == "Basic Authentication"
-        end
-      end
-
-      describe "the type property" do
-        let :type_property do
-          body["type"]
-        end
-        it do
-          expect(type_property).to be == entity_type
-        end
-      end
-    end
+    # describe "the response body" do
+    #   let :body do
+    #     response.body
+    #   end
+    #
+    #   describe "the login property" do
+    #     let :login do
+    #       body["login"]
+    #     end
+    #
+    #     it "should be equal to the entities login" do
+    #       expect(login).to be == @entity.login
+    #     end
+    #   end
+    #
+    #   describe "the authentication-method property" do
+    #     let :authentication_method do
+    #       body["authentication-method"]
+    #     end
+    #     it do
+    #       expect(authentication_method).to be == "Basic Authentication"
+    #     end
+    #   end
+    #
+    #   describe "the type property" do
+    #     let :type_property do
+    #       body["type"]
+    #     end
+    #     it do
+    #       expect(type_property).to be == entity_type
+    #     end
+    #   end
+    # end
   end
 end
 

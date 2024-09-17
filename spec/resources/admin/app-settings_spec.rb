@@ -16,7 +16,7 @@ context "app-settings admin" do
   end
 
   context "resource with user auth" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       it "responds with 403" do
         expect(client.get("/api-v2/admin/app-settings").status).to be == 403
       end

@@ -67,8 +67,7 @@ end
 
 shared_context :json_client_for_authenticated_token_user do |ctx|
   let :user do
-    user = FactoryBot.create :user, password: "TOPSECRET"
-    user
+    FactoryBot.create :user, password: "TOPSECRET"
   end
 
   let :token do

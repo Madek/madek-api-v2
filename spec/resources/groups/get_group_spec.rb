@@ -8,7 +8,7 @@ context "groups" do
   end
 
   context "non admin user" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       it "is forbidden to retrieve any group" do
         expect(
           client.get("/api-v2/admin/groups", {id: @group.id}).status

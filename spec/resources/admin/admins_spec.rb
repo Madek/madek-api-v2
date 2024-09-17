@@ -43,7 +43,7 @@ context "admin users" do
   end
 
   context "Responds not authorized as user" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       describe "not authorized" do
         it "query responds with 403" do
           expect(client.get(query_url).status).to be == 403

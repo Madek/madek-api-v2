@@ -7,7 +7,7 @@ describe "filtering collections" do
     end
 
     context "by collection_id" do
-      # include_context :json_client_for_authenticated_user do
+      # include_context :json_client_for_authenticated_admin_token_user do
       it "as single filter option" do
         @collection = FactoryBot.create(:collection)
         5.times do

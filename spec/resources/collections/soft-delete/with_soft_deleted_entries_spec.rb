@@ -4,6 +4,8 @@ require Pathname(File.expand_path("../../", __FILE__)).join("shared")
 describe "filtering collections" do
   include_context :full_setup_for_collections
 
+  include_context :json_client_for_authenticated_admin_token_user do
+
   before :each do
     user
     media_entries
@@ -132,5 +134,6 @@ describe "filtering collections" do
         expect(response.body["id"]).to eq(id)
       end
     end
+  end
   end
 end

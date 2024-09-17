@@ -55,7 +55,7 @@ context "admin vocabularies" do
   end
 
   context "Responds not authorized as user" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       before :each do
         @vocabulary = FactoryBot.create :vocabulary
       end

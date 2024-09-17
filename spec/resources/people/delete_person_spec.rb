@@ -11,7 +11,7 @@ context "people" do
   end
 
   context "non admin user" do
-    include_context :json_client_for_authenticated_user do
+    include_context :json_client_for_authenticated_admin_token_user do
       it "is forbidden to delete any person" do
         expect(
           client.delete("/api-v2/admin/people/#{@person.id}").status
