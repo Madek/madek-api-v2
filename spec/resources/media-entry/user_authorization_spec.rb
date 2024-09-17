@@ -24,9 +24,7 @@ describe "Getting a media-entry resource with authentication" do
     before :example do
       @media_entry = FactoryBot.create(
         :media_entry, get_metadata_and_previews: false,
-        # responsible_user:
-          responsible_user: FactoryBot.create(:user)
-
+        responsible_user: FactoryBot.create(:user)
       )
     end
 
@@ -73,20 +71,20 @@ describe "Getting a media-entry resource with authentication" do
   context :check_allowed_if_user_belongs_to_responsible_delegation do
     include_context :json_client_for_authenticated_token_owner_user do
 
-    before do
-      delegation = create(:delegation)
-      delegation.users << user_entity
-      @media_entry.update!(
-        responsible_user: nil,
-        responsible_delegation_id: delegation.id
-      )
-    end
+      before do
+        delegation = create(:delegation)
+        delegation.users << user_entity
+        @media_entry.update!(
+          responsible_user: nil,
+          responsible_delegation_id: delegation.id
+        )
+      end
 
-    it "is allowed 200" do
-      response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+      it "is allowed 200" do
+        response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
 
-      expect(response.status).to be == 200
-    end
+        expect(response.status).to be == 200
+      end
     end
   end
 
@@ -108,33 +106,33 @@ describe "Getting a media-entry resource with authentication" do
     end
   end
 
-  # ----------
+  context :check_allowed_if_user_permission do
+    before :example do
+      @media_entry.user_permissions <<
+        FactoryBot.create(:media_entry_user_permission,
+                          get_metadata_and_previews: true,
+                          user: user_entity)
+    end
 
-  # context :check_allowed_if_user_permission do
-  #   before :example do
-  #     @media_entry.user_permissions <<
-  #       FactoryBot.create(:media_entry_user_permission,
-  #         get_metadata_and_previews: true,
-  #         user: @entity)
-  #   end
-  #
-  #   it "is allowed 200" do
-  #     expect(response.status).to be == 200
-  #   end
-  # end
-  #
-  # context :check_allowed_if_group_permission do
-  #   before :example do
-  #     group = FactoryBot.create(:group)
-  #     @entity.groups << group
-  #     @media_entry.group_permissions <<
-  #       FactoryBot.create(:media_entry_group_permission,
-  #         get_metadata_and_previews: true,
-  #         group: group)
-  #   end
-  #
-  #   it "is allowed 200" do
-  #     expect(response.status).to be == 200
-  #   end
-  # end
+    it "is allowed 200" do
+      response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+      expect(response.status).to be == 200
+    end
+  end
+
+  context :check_allowed_if_group_permission do
+    before :example do
+      group = FactoryBot.create(:group)
+      user_entity.groups << group
+      @media_entry.group_permissions <<
+        FactoryBot.create(:media_entry_group_permission,
+                          get_metadata_and_previews: true,
+                          group: group)
+    end
+
+    it "is allowed 200" do
+      response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+      expect(response.status).to be == 200
+    end
+  end
 end
