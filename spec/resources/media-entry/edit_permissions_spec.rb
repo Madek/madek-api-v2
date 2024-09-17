@@ -20,9 +20,14 @@ describe "Getting a media-entry resource without authentication" do
 end
 
 describe "Getting a media-entry resource with authentication" do
+
+  include_context :json_client_for_authenticated_token_user do
+
+
+
   before :example do
-    @owner = FactoryBot.create(:user, password: "owner")
-    @entity = FactoryBot.create(:user, password: "password")
+    @owner = owner
+    @entity = user
     @media_entry = FactoryBot.create(
       :media_entry, get_metadata_and_previews: false,
       responsible_user:  @owner
@@ -314,4 +319,5 @@ describe "Getting a media-entry resource with authentication" do
       # TODO
     end
   end
+end
 end

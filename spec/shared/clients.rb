@@ -87,6 +87,64 @@ shared_context :json_client_for_authenticated_token_user do |ctx|
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx
   end
+  end
+
+shared_context :json_client_for_authenticated_token_owner_user do |ctx|
+  let :user do
+    FactoryBot.create :user, password: "TOPSECRET"
+  end
+
+  let :user_token do
+    ApiToken.create user: user, scope_read: true,
+                    scope_write: true
+  end
+
+  let :user_token_no_creds do
+    ApiToken.create user: user, scope_read: false,
+                    scope_write: false
+  end
+
+  let :user_entity do
+    user
+  end
+
+  let :user_client do
+    wtoken_header_plain_faraday_json_client(user_token.token)
+  end
+
+  let :user_client_no_creds do
+    wtoken_header_plain_faraday_json_client(user_token_no_creds.token)
+  end
+
+
+
+
+
+  let :owner do
+    FactoryBot.create :user, password: "OWNER-TOPSECRET"
+  end
+
+  let :owner_token do
+    ApiToken.create user: owner, scope_read: true,
+                    scope_write: true
+  end
+
+  let :owner_entity do
+    owner
+  end
+
+  let :owner_client do
+    wtoken_header_plain_faraday_json_client(owner_token.token)
+  end
+
+
+
+
+
+
+  describe "JSON `client` for authenticated `user`" do
+    include_context ctx if ctx
+  end
 end
 
 shared_context :json_client_for_authenticated_token_admin_no_creds do |ctx|
