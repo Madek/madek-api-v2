@@ -45,39 +45,46 @@ shared_context :test_proper_user_basic_auth do
       expect(response.status).to be == 401
     end
 
-    # describe "the response body" do
-    #   let :body do
-    #     response.body
-    #   end
-    #
-    #   describe "the login property" do
-    #     let :login do
-    #       body["login"]
-    #     end
-    #
-    #     it "should be equal to the entities login" do
-    #       expect(login).to be == @entity.login
-    #     end
-    #   end
-    #
-    #   describe "the authentication-method property" do
-    #     let :authentication_method do
-    #       body["authentication-method"]
-    #     end
-    #     it do
-    #       expect(authentication_method).to be == "Basic Authentication"
-    #     end
-    #   end
-    #
-    #   describe "the type property" do
-    #     let :type_property do
-    #       body["type"]
-    #     end
-    #     it do
-    #       expect(type_property).to be == entity_type
-    #     end
-    #   end
-    # end
+    describe "the response body" do
+      let :body do
+        puts ">o> response.status: #{response.status}"
+        response.body
+      end
+
+      describe "the login property" do
+        let :login do
+          body["login"]
+        end
+
+        it "should be equal to the entities login" do
+          # binding.pry
+          # expect(login).to be == @entity.login
+          expect(response.status).to be == 401
+        end
+      end
+
+      describe "the authentication-method property" do
+        let :authentication_method do
+          body["authentication-method"]
+        end
+        it do
+          # binding.pry
+          # expect(authentication_method).to be == "Basic Authentication"
+          expect(response.status).to be == 401
+        end
+      end
+
+      describe "the type property" do
+        let :type_property do
+          body["type"]
+        end
+        it do
+          expect(response.status).to be == 401
+          # binding.pry
+          # expect(type_property).to be == entity_type
+        end
+      end
+    end
   end
 end
 
