@@ -5,8 +5,7 @@
    [honey.sql.helpers :as sql]
    [next.jdbc :as jdbc]))
 
-(def ADMIN_AUTH_METHODS2 [{"apiAuth" []} {"basicAuth" []}])
-(def ADMIN_AUTH_METHODS [{"apiAuth" []}])
+(def ADMIN_AUTH_METHODS [{"apiAuth" []} {"basicAuth" []}])
 
 ;### admin check ##############################################################
 

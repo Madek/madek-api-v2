@@ -41,10 +41,11 @@
           response ((-> handler
                         session-auth/wrap
                         token-auth/wrap
-                        ;basic-auth/wrap
-                        ) request)]
+                        basic-auth/wrap) request)]
       ; for swagger-ui avoid returning of WWW-Authenticate to prevent triggering of basic-auth-popup in browser
-      response)))
+      (if is-swagger-request?
+        response
+        (add-www-auth-header-if-401 response)))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
