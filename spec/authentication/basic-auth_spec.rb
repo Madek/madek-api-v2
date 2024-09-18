@@ -47,7 +47,6 @@ shared_context :test_proper_user_basic_auth do
 
     describe "the response body" do
       let :body do
-        puts ">o> response.status: #{response.status}"
         response.body
       end
 
@@ -57,8 +56,6 @@ shared_context :test_proper_user_basic_auth do
         end
 
         it "should be equal to the entities login" do
-          # binding.pry
-          # expect(login).to be == @entity.login
           expect(response.status).to be == 401
         end
       end
@@ -68,8 +65,6 @@ shared_context :test_proper_user_basic_auth do
           body["authentication-method"]
         end
         it do
-          # binding.pry
-          # expect(authentication_method).to be == "Basic Authentication"
           expect(response.status).to be == 401
         end
       end
@@ -80,8 +75,6 @@ shared_context :test_proper_user_basic_auth do
         end
         it do
           expect(response.status).to be == 401
-          # binding.pry
-          # expect(type_property).to be == entity_type
         end
       end
     end

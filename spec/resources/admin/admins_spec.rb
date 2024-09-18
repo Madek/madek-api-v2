@@ -105,10 +105,6 @@ context "admin users" do
   context "Responds ok as admin" do
     include_context :json_client_for_authenticated_token_admin do
       context "get" do
-        # before :each do
-        #   @admin = FactoryBot.create :admin
-        # end
-
         it "responds 400 with bad formatted uuid" do
           badid = Faker::Internet.slug(words: nil, glue: "-")
           response = wtoken_header_plain_faraday_json_client(token.token).get("/api-v2/admin/admins/#{badid}")
@@ -135,9 +131,8 @@ context "admin users" do
             expect(
               data.except("created_at", "updated_at")
             ).to eq(
-              @admin.attributes.with_indifferent_access
-                .except(:created_at, :updated_at)
-            )
+                   @admin.attributes.with_indifferent_access
+                         .except(:created_at, :updated_at)                 )
           end
         end
       end
@@ -161,10 +156,6 @@ context "admin users" do
       # TODO test more data
 
       context "delete" do
-        # before :each do
-        #   @admin = FactoryBot.create :admin
-        # end
-
         let :response do
           wtoken_header_plain_faraday_json_client(token.token).delete(admin_user_url)
         end
@@ -178,9 +169,8 @@ context "admin users" do
           expect(
             data.except("created_at", "updated_at")
           ).to eq(
-            @admin.attributes.with_indifferent_access
-              .except(:created_at, :updated_at)
-          )
+                 @admin.attributes.with_indifferent_access
+                       .except(:created_at, :updated_at)               )
         end
       end
     end

@@ -2,7 +2,6 @@ require "spec_helper"
 
 context "vocabulary permission" do
   include_context :json_client_for_authenticated_token_admin do
-
     def json_vocabulary_resource(vocabulary_id, is_authenticated_user = false)
       if is_authenticated_user
         client.get("#{api_base_url}/admin/vocabularies/#{vocabulary_id}")
@@ -39,7 +38,6 @@ context "vocabulary permission" do
           req.body = @create_data.to_json
           req.headers["Content-Type"] = "application/json"
         end
-
         expect(create_response.status).to be == 200
 
         data = json_vocabulary_resource(vocab_id).body

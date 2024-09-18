@@ -17,7 +17,7 @@ end
 def plain_faraday_json_client
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
-    headers: {accept: "application/json"}
+    headers: { accept: "application/json" }
   ) do |conn|
     yield(conn) if block_given?
     conn.response :json, content_type: /\bjson$/
@@ -28,7 +28,7 @@ end
 def basic_auth_plain_faraday_json_client(login, password)
   @basic_auth_plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
-    headers: {accept: "application/json"}
+    headers: { accept: "application/json" }
   ) do |conn|
     conn.request :basic_auth, login, password
     yield(conn) if block_given?
@@ -40,7 +40,7 @@ end
 def newbasic_auth_plain_faraday_json_client(login, password)
   @newbasic_auth_plain_faraday_json_client = Faraday.new(
     url: api_base_url,
-    headers: {accept: "application/json"}
+    headers: { accept: "application/json" }
   ) do |conn|
     conn.request :basic_auth, login, password
     yield(conn) if block_given?
@@ -52,20 +52,20 @@ end
 def basic_auth_wtoken_header_plain_faraday_json_client(login, password, token)
   @basic_auth_plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
-    headers: {accept: "application/json", Authorization: "token #{token}"}
+    headers: { accept: "application/json", Authorization: "token #{token}" }
   ) do |conn|
     conn.request :basic_auth, login, password
     yield(conn) if block_given?
     conn.response :json, content_type: /\bjson$/
     conn.adapter Faraday.default_adapter
   end
-  end
+end
 
 # wtoken_header_plain_faraday_json_client(token.token)
 def wtoken_header_plain_faraday_json_client(token)
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
-    headers: {accept: "application/json", Authorization: "token #{token}"}
+    headers: { accept: "application/json", Authorization: "token #{token}" }
   ) do |conn|
     yield(conn) if block_given?
     conn.response :json, content_type: /\bjson$/
@@ -76,7 +76,7 @@ end
 def session_auth_plain_faraday_json_client(cookie_string)
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
-    headers: {accept: "application/json", Cookie: cookie_string}
+    headers: { accept: "application/json", Cookie: cookie_string }
   ) do |conn|
     yield(conn) if block_given?
     conn.response :json, content_type: /\bjson$/
