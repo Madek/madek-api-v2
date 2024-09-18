@@ -3,43 +3,31 @@ require "#{Rails.root}/spec/resources/collection/shared.rb"
 
 describe "Getting a collection resource without authentication" do
   include_context :json_client_for_authenticated_token_admin_no_creds do
-
-  before :example do
-    @collection = FactoryBot.create(:collection,
-                                    get_metadata_and_previews: false)
-  end
-
-  shared_context :check_not_authenticated_without_public_permission do
-    it "is forbidden 401" do
-      expect(response.status).to be == 401
+    before :example do
+      @collection = FactoryBot.create(:collection,
+                                      get_metadata_and_previews: false)
     end
-  end
 
-  include_context :check_collection_resource_via_any,
-                  :check_not_authenticated_without_public_permission
-end
+    shared_context :check_not_authenticated_without_public_permission do
+      it "is forbidden 401" do
+        expect(response.status).to be == 401
+      end
+    end
+
+    include_context :check_collection_resource_via_any,
+                    :check_not_authenticated_without_public_permission
+  end
 end
 
 describe "Getting a collection resource with authentication" do
-
-  # include_context :json_client_for_authenticated_admin_token_user do
-  # include_context :json_client_for_authenticated_token_no_creds_user do
   include_context :json_client_for_authenticated_token_user do
-
     before :example do
-
-      puts ">o> user: #{user}"
-      puts ">o> use2r: #{@user}"
-
       @collection = FactoryBot.create(
         :collection, get_metadata_and_previews: false,
-        # responsible_user: FactoryBot.create(:user)
         responsible_user: user
       )
-      # @entity = FactoryBot.create(:user, password: "password")
       @entity = user
     end
-
 
     context :check_forbidden_without_required_permission do
       before :example do
@@ -56,9 +44,9 @@ describe "Getting a collection resource with authentication" do
       end
       it "is forbidden 403" do
         response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
-        #binding.pry
-        expect(response.status).to be == 200        # TODO: check this
-        # expect(response.status).to be == 403
+        binding.pry
+        expect(response.status).to be == 200 # TODO: check this
+        # expect(response.status).to be == 403 # correct
       end
     end
 
@@ -69,12 +57,9 @@ describe "Getting a collection resource with authentication" do
 
       it "is allowed 200" do
         response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
-        #binding.pry
         expect(response.status).to be == 200
       end
     end
-
-
 
     context :check_allowed_if_user_belongs_to_responsible_delegation do
       before do
@@ -88,8 +73,6 @@ describe "Getting a collection resource with authentication" do
 
       it "is allowed 200" do
         response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
-        #binding.pry
-
         expect(response.status).to be == 200
       end
     end
@@ -108,8 +91,6 @@ describe "Getting a collection resource with authentication" do
 
       it "is allowed 200" do
         response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
-        #binding.pry
-
         expect(response.status).to be == 200
       end
     end
@@ -124,8 +105,6 @@ describe "Getting a collection resource with authentication" do
 
       it "is allowed 200" do
         response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
-        #binding.pry
-
         expect(response.status).to be == 200
       end
     end
@@ -142,12 +121,8 @@ describe "Getting a collection resource with authentication" do
 
       it "is allowed 200" do
         response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
-        #binding.pry
-
         expect(response.status).to be == 200
       end
     end
-
-
   end
 end
