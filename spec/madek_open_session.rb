@@ -29,7 +29,7 @@ module MadekOpenSession
   end
 
   def secret
-    Rails.application.secrets.secret_key_base || \
+    Rails.application.secret_key_base || \
       raise(StandardError, "secret_key_base must be set!")
   end
 
