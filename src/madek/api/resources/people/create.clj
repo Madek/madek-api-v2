@@ -37,7 +37,8 @@
    (s/optional-key :institutional_id) (s/maybe s/Str)
    (s/optional-key :last_name) (s/maybe s/Str)
    (s/optional-key :admin_comment) (s/maybe s/Str)
-   (s/optional-key :pseudonym) (s/maybe s/Str)})
+   (s/optional-key :pseudonym) (s/maybe s/Str)
+   (s/optional-key :identification_info) (s/maybe s/Str)})
 
 (def route
   {:accept "application/json"

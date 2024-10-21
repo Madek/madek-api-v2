@@ -22,7 +22,8 @@
    :people.admin_comment
    :people.pseudonym
    :people.subtype
-   :people.updated_at])
+   :people.updated_at
+   :people.identification_info])
 
 (defn where-uid
   "Adds a where condition to the people people query against a unique id. The
