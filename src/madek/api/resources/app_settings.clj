@@ -93,6 +93,7 @@
    (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
+   (s/optional-key :person_info_fields) [s/Str]
    (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
    (s/optional-key :section_meta_key_id) (s/maybe s/Str)
    (s/optional-key :site_titles) sd/schema_ml_list
@@ -136,6 +137,7 @@
    (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
+   (s/optional-key :person_info_fields) [s/Str]
    (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
    (s/optional-key :section_meta_key_id) (s/maybe s/Str)
    (s/optional-key :site_titles) (s/maybe sd/schema_ml_list)

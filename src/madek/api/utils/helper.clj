@@ -132,7 +132,8 @@
       (modify-if-exists :contexts_for_context_keys #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
       (modify-if-exists :catalog_context_keys #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
       (modify-if-exists :copyright_notice_templates #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :allowed_people_subtypes #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))))
+      (modify-if-exists :allowed_people_subtypes #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
+      (modify-if-exists :person_info_fields #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))))
 
 ; [madek.api.utils.helper :refer [cast-to-hstore]]
 (defn cast-to-hstore [data]
