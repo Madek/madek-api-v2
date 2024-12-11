@@ -18,7 +18,10 @@ describe "ordering media entries" do
           expect(response.status).to eq(422)
           expect(response.body).to eq({"msg" => "only the following values are allowed as " \
                                                     "order parameter: desc, asc, title_asc, " \
-                                                    "title_desc, last_change, manual_asc, " \
+                                                    "title_desc, " \
+                                                    "last_change_desc, " \
+                                                    "last_change_asc, " \
+                                                    "manual_asc, " \
                                                     "manual_desc and stored_in_collection"})
         end
       end
@@ -72,11 +75,19 @@ describe "ordering media entries" do
         end
       end
 
-      context "last_change" do
-        include_examples "ordering by last_change"
+      context "last_change_desc" do
+        include_examples "ordering by last_change", "desc"
+
+        it "returns 30 media entries of descending order" do
+          expect(media_entries_edit_session_updated_at.size).to eq(30)
+        end
+      end
+
+      context "last_change_asc" do
+        include_examples "ordering by last_change", "asc"
 
         it "returns 30 media entries of ascending order" do
-          expect(edit_session_updated_ats.size).to eq(30)
+          expect(media_entries_edit_session_updated_at.size).to eq(30)
         end
       end
 
@@ -258,8 +269,12 @@ describe "ordering media entries" do
           include_examples "ordering by madek_core:title"
         end
 
-        context "last_change" do
-          include_examples "ordering by last_change"
+        context "last_change_desc" do
+          include_examples "ordering by last_change", "desc"
+        end
+
+        context "last_change_asc" do
+          include_examples "ordering by last_change", "asc"
         end
 
         context "manual" do
@@ -343,10 +358,16 @@ describe "ordering media entries" do
             include_examples "ordering by madek_core:title", "desc"
           end
 
-          context "when collection has last_change sorting" do
-            before { collection.update!(sorting: "last_change") }
+          context "when collection has last_change sorting DESC (already existed)" do
+            before { collection.update!(sorting: "last_change DESC") }
 
-            include_examples "ordering by last_change"
+            include_examples "ordering by last_change", "desc"
+          end
+
+          context "when collection has last_change sorting ASC" do
+            before { collection.update!(sorting: "last_change ASC") }
+
+            include_examples "ordering by last_change", "asc"
           end
         end
       end
