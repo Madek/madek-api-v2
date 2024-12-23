@@ -48,19 +48,22 @@
 
 ;TODO logwrite
 (defn create-user-permissions
-  [resource mr-type user-id data tx]
+  [resource mr-type user-id auth-entity-id data tx]
   ;(try
   ;  (catcher/with-logging {}
   (let [mr-id (:id resource)
         tname (c/user-table mr-type)
-        insdata (assoc data :user_id user-id (c/resource-key mr-type) mr-id)
+        insdata (assoc data
+                       :user_id user-id
+                       (c/resource-key mr-type) mr-id
+                       :creator_id auth-entity-id)
         insert-stmt (-> (sql/insert-into tname)
                         (sql/values [insdata])
                         (sql/returning :*)
                         sql-format)
         ins-result (jdbc/execute-one! tx insert-stmt)]
 
-    (info "create-user-permissions" mr-id mr-type user-id tname insdata)
+    (info "create-user-permissions" mr-id mr-type user-id auth-entity-id tname insdata)
     (if-let [result ins-result]
       result
       nil)))
@@ -117,18 +120,21 @@
        (jdbc/execute! tx)))
 
 (defn create-group-permissions
-  [resource mr-type group-id data tx]
+  [resource mr-type group-id auth-entity-id data tx]
   ;(try
   ;(catcher/with-logging {}
   (let [mr-id (:id resource)
         tname (c/group-table mr-type)
-        insdata (assoc data :group_id group-id (c/resource-key mr-type) mr-id)
+        insdata (assoc data
+                       :group_id group-id
+                       (c/resource-key mr-type) mr-id
+                       :creator_id auth-entity-id)
         insert-stmt (-> (sql/insert-into tname)
                         (sql/values [(convert-map-if-exist insdata)])
                         (sql/returning :*)
                         sql-format)
         insresult (jdbc/execute-one! tx insert-stmt)]
-    (info "create-group-permissions" mr-id mr-type group-id tname insdata)
+    (info "create-group-permissions" mr-id mr-type group-id auth-entity-id tname insdata)
     (if-let [result insresult]
       result
       nil)))

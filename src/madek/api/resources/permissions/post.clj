@@ -12,11 +12,12 @@
   (try
     (catcher/with-logging {}
       (let [user-id (-> req :parameters :path :user_id)
+            auth-entity-id (-> req :authenticated-entity :id)
             mr (-> req :media-resource)
             mrt (mr-table-type mr)
             tx (:tx req)
             data (-> req :parameters :body)
-            result (mr-permissions/create-user-permissions mr mrt user-id data tx)]
+            result (mr-permissions/create-user-permissions mr mrt user-id auth-entity-id data tx)]
 
         (if (nil? result)
           (sd/response_failed "Could not create user permissions." 422)
@@ -27,12 +28,13 @@
   (try
     (catcher/with-logging {}
       (let [group-id (-> req :parameters :path :group_id)
+            auth-entity-id (-> req :authenticated-entity :id)
             mr (-> req :media-resource)
             mrt (mr-table-type mr)
             tx (:tx req)
             data (-> req :parameters :body)]
 
-        (if-let [insresult (mr-permissions/create-group-permissions mr mrt group-id data tx)]
+        (if-let [insresult (mr-permissions/create-group-permissions mr mrt group-id auth-entity-id data tx)]
           (sd/response_ok insresult)
           (sd/response_failed "Could not create resource group permissions." 422))))
     (catch Exception ex (sd/response_exception ex))))

@@ -50,6 +50,7 @@
 (def schema_export-collection-user-permission
   {:id s/Uuid
    :updator_id (s/maybe s/Uuid)
+   :creator_id s/Uuid
    :collection_id s/Uuid
    :user_id s/Uuid
    :get_metadata_and_previews s/Bool
@@ -66,6 +67,7 @@
 (def schema_export-collection-group-permission
   {:id s/Uuid
    :updator_id (s/maybe s/Uuid)
+   :creator_id s/Uuid
    :collection_id s/Uuid
    :group_id s/Uuid
    :get_metadata_and_previews s/Bool
@@ -113,6 +115,7 @@
 (def schema_export-media-entry-user-permission
   {:id s/Uuid
    :updator_id (s/maybe s/Uuid)
+   :creator_id s/Uuid
    :media_entry_id s/Uuid
    :user_id s/Uuid
    :get_metadata_and_previews s/Bool
@@ -131,6 +134,7 @@
 (def schema_export-media-entry-group-permission
   {:id s/Uuid
    :updator_id (s/maybe s/Uuid)
+   :creator_id s/Uuid
    :media_entry_id s/Uuid
    :group_id s/Uuid
    :get_metadata_and_previews s/Bool
