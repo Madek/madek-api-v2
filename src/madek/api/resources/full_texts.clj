@@ -216,12 +216,12 @@
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}}
-            :responses {200 {:description "Returns the full_text. wrong fad9ede8-fb1e-4e54-93be-2775e1f3a223"
-                             :body s/Any}}
-                             ;:body {:media_resource_id s/Uuid
-                             ;       :text s/Str
-                             ;       }
-            ;}}
+            :responses {200 {:description "Returns the full_text. c4baae61-603d-47b5-bcee-74e09077947e"
+                             ;:body s/Any}}
+                             :body {:media_resource_id s/Uuid
+                                    :text s/Str
+                                    }
+            }}
             :middleware [jqh/ring-wrap-add-media-resource
                          jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]}
