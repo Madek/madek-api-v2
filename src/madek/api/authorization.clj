@@ -56,7 +56,7 @@
   (fn [request]
     (if-let [id (-> request :authenticated-entity :id)]
       (handler request)
-      {:status 401 :body {:message "Not authorized"}})))
+      {:status 401 :body {:message "Not authorized2"}})))
 
 (def destructive-methods #{:post :put :delete})
 

@@ -136,8 +136,14 @@
     {:get {:summary (sd/sum_usr "Get full_text.")
            :handler handle_get-full_text
            :coercion reitit.coercion.schema/coercion
-           :responses {200 {:description "Returns the full_text."
-                            :body s/Any}}
+           :responses {200 {:description "Returns the full_text. b09c11e1-4ce0-4089-87d5-b0d1c0a0682b"
+                            ;:body s/Any
+
+                            :body {:media_resource_id s/Uuid
+                                   :text s/Str
+                                   }
+
+                            }}
            :parameters {:path {:media_resource_id s/Uuid}}
            :middleware [(wrap-find-full_text :media_resource_id true)]}}]])
 
@@ -210,8 +216,12 @@
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}}
-            :responses {200 {:description "Returns the full_text."
+            :responses {200 {:description "Returns the full_text. wrong fad9ede8-fb1e-4e54-93be-2775e1f3a223"
                              :body s/Any}}
+                             ;:body {:media_resource_id s/Uuid
+                             ;       :text s/Str
+                             ;       }
+            ;}}
             :middleware [jqh/ring-wrap-add-media-resource
                          jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]}
@@ -267,8 +277,13 @@
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str}}
-            :responses {200 {:description "Returns the full_text."
-                             :body s/Any}}
+            :responses {200 {:description "Returns the full_text. fad9ede8-fb1e-4e54-93be-2775e1f3a223"
+                             ;:body s/Any
+
+                             :body {:media_resource_id s/Uuid
+                                    :text s/Str
+                                    }
+                             }}
             :middleware [jqh/ring-wrap-add-media-resource
                          jqh/ring-wrap-authorization-view
                          (wrap-find-full_text :media_entry_id true)]}
