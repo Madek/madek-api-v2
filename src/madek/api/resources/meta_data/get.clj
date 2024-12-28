@@ -258,7 +258,110 @@
                                            :query {(s/optional-key :updated_after) s/Inst
                                                    (s/optional-key :meta_keys) s/Str}}
                               :responses {200 {:description "Returns the meta-data for the collection."
-                                               :body s/Any}}})
+                                               ;:body s/Any
+                                               :body
+
+                                               {:collection_id s/Uuid
+                                                :meta-data [{:media_entry_id (s/maybe s/Uuid)
+                                                             :collection_id s/Uuid
+                                                             :type (s/enum "MetaDatum::Text"
+                                                                     "MetaDatum::People"
+                                                                     "MetaDatum::TextDate"
+                                                                     "MetaDatum::Keywords")
+                                                             :meta_key_id s/Str
+                                                             :string (s/maybe s/Str)
+                                                             :id s/Uuid
+                                                             ;:meta_data_updated_at s/Inst
+                                                             :meta_data_updated_at s/Str
+                                                             :json (s/maybe s/Any)
+                                                             :other_media_entry_id (s/maybe s/Uuid)}]}
+
+
+                                               }}})
+
+
+;(s/defschema MetaDatum
+;  {:media_entry_id (s/maybe s/Uuid)
+;   :collection_id s/Uuid
+;   :type (s/enum "MetaDatum::Text"
+;           "MetaDatum::People"
+;           "MetaDatum::TextDate"
+;           "MetaDatum::Keywords")
+;   :meta_key_id s/Str
+;   :string (s/maybe s/Str)
+;   :id s/Uuid
+;   :meta_data_updated_at s/Inst
+;   :json (s/maybe s/Any)
+;   :other_media_entry_id (s/maybe s/Uuid)})
+;
+;(s/defschema MdPeople
+;  {:meta_datum_id s/Uuid
+;   :person_id s/Uuid
+;   :created_by_id s/Uuid
+;   :meta_data_updated_at s/Inst
+;   :id s/Uuid
+;   :position s/Int})
+;
+;(s/defschema Person
+;  {:institution s/Str
+;   :institutional_id (s/maybe s/Str)
+;   :description (s/maybe s/Str)
+;   :first_name s/Str
+;   :external_uris [s/Str]
+;   :identification_info (s/maybe s/Str)
+;   :searchable s/Str
+;   :updated_at s/Inst
+;   :id s/Uuid
+;   :last_name (s/maybe s/Str)
+;   :admin_comment (s/maybe s/Str)
+;   :pseudonym (s/maybe s/Str)
+;   :created_at s/Inst
+;   :subtype (s/enum "Person" "PeopleGroup")})
+;
+;(s/defschema MdKeyword
+;  {:id s/Uuid
+;   :created_by_id s/Uuid
+;   :meta_datum_id s/Uuid
+;   :keyword_id s/Uuid
+;   :created_at s/Inst
+;   :updated_at s/Inst
+;   :meta_data_updated_at s/Inst
+;   :position s/Int})
+;
+;(s/defschema Keyword
+;  {:description (s/maybe s/Str)
+;   :external_uris [s/Str]
+;   :meta_key_id s/Str
+;   :creator_id s/Uuid
+;   :term s/Str
+;   :updated_at s/Inst
+;   :rdf_class s/Str
+;   :id s/Uuid
+;   :position s/Int
+;   :created_at s/Inst})
+;
+;(s/defschema Entry
+;  {:meta-data MetaDatum
+;   :defaultmetadata s/Str
+;   :defaultdata s/Str
+;   (s/optional-key :md_people) [MdPeople]
+;   (s/optional-key :people) [Person]
+;   (s/optional-key :md_keywords) [MdKeyword]
+;   (s/optional-key :keywords) [Keyword]})
+;
+;(s/defschema Entries [Entry])
+
+
+
+;; TODO
+(s/def Entry
+  {:meta-data s/Any
+   (s/optional-key :defaultmetadata) s/Str
+   (s/optional-key :defaultdata) s/Str
+   (s/optional-key :md_people) s/Any
+   (s/optional-key :people) s/Any
+   (s/optional-key :md_keywords) s/Any
+   (s/optional-key :keywords) s/Any})
 
 (def collection_id.meta-data-related {:summary "Get meta-data for collection."
                                       :description (mslurp (io/resource "md/meta-data-related.md"))
@@ -271,7 +374,13 @@
                                                    :query {(s/optional-key :updated_after) s/Inst
                                                            (s/optional-key :meta_keys) s/Str}}
                                       :responses {200 {:description "Returns the meta-data for the collection."
-                                                       :body s/Any}}})
+                                                       ;:body s/Any
+
+
+                                                       :body [Entry]
+
+
+                                                       }}})
 
 (def collection_id.meta-datum.meta_key_id {:summary "Get meta-data for collection and meta-key."
                                            :handler handle_get-meta-key-meta-data
