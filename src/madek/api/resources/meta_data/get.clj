@@ -382,6 +382,55 @@
 
                                                        }}})
 
+
+;(s/defschema MetaData
+;  {:created_by_id s/Uuid
+;   :media_entry_id (s/maybe s/Uuid)
+;   :collection_id s/Uuid
+;   :type (s/enum "MetaDatum::Keywords")
+;   :meta_key_id s/Str
+;   :string (s/maybe s/Str)
+;   :id s/Uuid
+;   :meta_data_updated_at s/Inst
+;   :json (s/maybe s/Any)
+;   :other_media_entry_id (s/maybe s/Uuid)})
+;
+;(s/defschema MdKeyword
+;  {:id s/Uuid
+;   :created_by_id s/Uuid
+;   :meta_datum_id s/Uuid
+;   :keyword_id s/Uuid
+;   :created_at s/Inst
+;   :updated_at s/Inst
+;   :meta_data_updated_at s/Inst
+;   :position s/Int})
+;
+;(s/defschema Keyword
+;  {:description (s/maybe s/Str)
+;   :external_uris [s/Str]
+;   :meta_key_id s/Str
+;   :creator_id s/Uuid
+;   :term s/Str
+;   :updated_at s/Inst
+;   :rdf_class s/Str
+;   :id s/Uuid
+;   :position s/Int
+;   :created_at s/Inst})
+;
+;(s/defschema KeywordEntry
+;  {:meta-data MetaData
+;   :md_keywords [MdKeyword]
+;   :keywords [Keyword]})
+
+
+(s/defschema KeywordEntry
+  {:meta-data s/Any
+   :md_keywords s/Any
+   :keywords s/Any})
+
+; 25a5d974-1855-458b-b6ba-cc3272a4865b
+; media_content:portrayed_object_materials
+
 (def collection_id.meta-datum.meta_key_id {:summary "Get meta-data for collection and meta-key."
                                            :handler handle_get-meta-key-meta-data
 
@@ -393,7 +442,61 @@
                                            :parameters {:path {:collection_id s/Uuid
                                                                :meta_key_id s/Str}}
                                            :responses {200 {:description "Returns the meta-data for the collection and meta-key."
-                                                            :body s/Any}}})
+                                                            ;:body s/Any
+
+                                                            :body KeywordEntry
+
+                                                            }}})
+
+
+;(s/defschema MetaData
+;  {:created_by_id s/Uuid
+;   :media_entry_id (s/maybe s/Uuid)
+;   :collection_id s/Uuid
+;   :type (s/enum "MetaDatum::Keywords")
+;   :meta_key_id s/Str
+;   :string (s/maybe s/Str)
+;   :id s/Uuid
+;   :meta_data_updated_at s/Inst
+;   :json (s/maybe s/Any)
+;   :other_media_entry_id (s/maybe s/Uuid)})
+;
+;(s/defschema MdKeyword
+;  {:id s/Uuid
+;   :created_by_id s/Uuid
+;   :meta_datum_id s/Uuid
+;   :keyword_id s/Uuid
+;   :created_at s/Inst
+;   :updated_at s/Inst
+;   :meta_data_updated_at s/Inst
+;   :position s/Int})
+;
+;(s/defschema Keyword
+;  {:description (s/maybe s/Str)
+;   :external_uris [s/Str]
+;   :meta_key_id s/Str
+;   :creator_id s/Uuid
+;   :term s/Str
+;   :updated_at s/Inst
+;   :rdf_class s/Str
+;   :id s/Uuid
+;   :position s/Int
+;   :created_at s/Inst})
+;
+;(s/defschema KeywordEntry
+;  {:meta_data MetaData
+;   :keywords_ids [s/Uuid]
+;   :md_keywords [MdKeyword]
+;   :keywords [Keyword]})
+
+
+(s/defschema KeywordEntry
+  {:meta-data s/Any
+   :md_keywords s/Any
+   :keywords s/Any})
+
+; 25a5d974-1855-458b-b6ba-cc3272a4865b
+; media_content:portrayed_object_materials
 
 (def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
                                      :handler handle_get-meta-data-keywords
@@ -404,7 +507,11 @@
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str}}
                                      :responses {200 {:description "Returns the meta-data keywords for the collection."
-                                                      :body s/Any}}})
+                                                      ;:body s/Any
+
+                                                      :body KeywordEntry
+
+                                                      }}})
 
 (def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
                           :handler handle_get-meta-data-people
