@@ -483,7 +483,7 @@
 ;   :position s/Int
 ;   :created_at s/Inst})
 ;
-;(s/defschema KeywordEntry
+;(s/defschema Value
 ;  {:meta_data MetaData
 ;   :keywords_ids [s/Uuid]
 ;   :md_keywords [MdKeyword]
@@ -491,14 +491,16 @@
 
 
 (s/defschema KeywordEntry
-  {:meta-data s/Any
+  {:meta_data s/Any
+   :keywords_ids s/Any
    :md_keywords s/Any
    :keywords s/Any})
 
+; TODO
 ; 25a5d974-1855-458b-b6ba-cc3272a4865b
 ; media_content:portrayed_object_materials
 
-(def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
+(def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key X1"
                                      :handler handle_get-meta-data-keywords
                                      :middleware [;wrap-me-add-meta-data
                                                   jqh/ring-wrap-add-media-resource
@@ -513,6 +515,60 @@
 
                                                       }}})
 
+;(s/defschema MetaData
+;  {:created_by_id s/Uuid
+;   :media_entry_id (s/maybe s/Uuid)
+;   :collection_id s/Uuid
+;   :type (s/enum "MetaDatum::People")
+;   :meta_key_id s/Str
+;   :string (s/maybe s/Str)
+;   :id s/Uuid
+;   :meta_data_updated_at s/Inst
+;   :json (s/maybe s/Any)
+;   :other_media_entry_id (s/maybe s/Uuid)})
+;
+;(s/defschema MdPerson
+;  {:meta_datum_id s/Uuid
+;   :person_id s/Uuid
+;   :created_by_id s/Uuid
+;   :meta_data_updated_at s/Inst
+;   :id s/Uuid
+;   :position s/Int})
+;
+;(s/defschema Person
+;  {:institution s/Str
+;   :institutional_id (s/maybe s/Str)
+;   :description (s/maybe s/Str)
+;   :first_name (s/maybe s/Str)
+;   :external_uris [s/Str]
+;   :identification_info (s/maybe s/Str)
+;   :searchable s/Str
+;   :updated_at s/Inst
+;   :id s/Uuid
+;   :last_name (s/maybe s/Str)
+;   :admin_comment (s/maybe s/Str)
+;   :pseudonym (s/maybe s/Str)
+;   :created_at s/Inst
+;   :subtype (s/enum "PeopleInstitutionalGroup" "PeopleIndividual")})
+;
+;(s/defschema PeopleEntry
+;  {:meta_data MetaData
+;   :people_ids [s/Uuid]
+;   :md_people [MdPerson]
+;   :people [Person]})
+
+
+
+
+
+(s/defschema PeopleEntry
+  {:meta_data s/Any
+   :people_ids s/Any
+   :md_people s/Any
+   :people s/Any})
+
+
+
 (def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
                           :handler handle_get-meta-data-people
                           :middleware [jqh/ring-wrap-add-media-resource
@@ -521,7 +577,14 @@
                           :parameters {:path {:collection_id s/Uuid
                                               :meta_key_id s/Str}}
                           :responses {200 {:description "Returns the meta-data people for the collection."
-                                           :body s/Any}}})
+                                           ;:body s/Any
+
+                                           :body PeopleEntry
+
+                                           }}})
+
+
+
 
 (def media_entry_id.meta-data-related {:summary "Get meta-data for media-entry."
                                        :handler handle_get-mr-meta-data-with-related
