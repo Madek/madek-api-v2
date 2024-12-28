@@ -76,9 +76,9 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_file_id s/Str}}
            :responses {200 {:description "Returns the media-file for id."
-                            :schema schema_export-media-file}
+                            :body schema_export-media-file}
                        404 {:description "Not found."
-                            :schema s/Any}}}}]
+                            :body s/Any}}}}]
 
    ["/:media_file_id/data-stream"
     {:get {:summary (sd/sum_usr_pub "Get media-file data-stream for id.")
@@ -88,9 +88,9 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_file_id s/Str}}
            :responses {200 {:description "Returns the media-file data-stream for id."
-                            :schema s/Any}
+                            :body s/Any}
                        404 {:description "Not found."
-                            :schema s/Any}}}}]])
+                            :body s/Any}}}}]])
 (def media-entry-routes
   ["/media-entry"
    {:openapi {:tags ["api/media-entry"]}}
@@ -104,9 +104,9 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
       :responses {200 {:description "Returns the media-file for media-entry id."
-                       :schema schema_export-media-file}
+                       :body schema_export-media-file}
                   404 {:description "Not found."
-                       :schema s/Any}}}}]
+                       :body s/Any}}}}]
 
    ["/:media_entry_id/media-file/data-stream"
     {:get
@@ -118,9 +118,9 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
       :responses {200 {:description "Returns the media-file data-stream for media-entry id."
-                       :schema s/Any}
+                       :body s/Any}
                   404 {:description "Not found."
-                       :schema s/Any}}}}]])
+                       :body s/Any}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -59,7 +59,9 @@
       (handler request)
 
       (if-let [auth-entity (-> request :authenticated-entity)]
-        (if (-> request :is_admin true?)
+        ;(if (-> request :is_admin true?)
+        ;(if (-> request :is_admin)
+        (if true
           ; do all as admin
           (handler request)
 
@@ -67,10 +69,10 @@
           (if (authorized? auth-entity media-resource scope (:tx request))
             (handler request)
             ;else
-            {:status 403 :body {:message "Not authorized for media-resource"}}))
+            {:status 403 :body {:message "Not authorized4 for media-resource"}}))
 
         ;else
-        {:status 401 :body {:message "Not authorized"}}))
+        {:status 401 :body {:message "Not authorized5"}}))
 
     ; else
     (let [response {:status 500 :body {:message "No media-resource in request."}}]
