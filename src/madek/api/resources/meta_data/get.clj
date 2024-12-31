@@ -596,8 +596,11 @@
                                                             (s/optional-key :meta_keys) s/Str}}
                                        :responses {200 {:description "Returns the meta-data for the media-entry."
                                                         :body s/Any}}})
+;2befd736-48bc-403e-ac69-9a94011e9470
+;madek_core:title
 
-(def media_entry_id.meta-datum.meta_key_id {:summary "Get meta-data for media-entry and meta-key."
+(def media_entry_id.meta-datum.meta_key_id {:summary "Get meta-data for media-entry and meta-key. X6\n
+2befd736-48bc-403e-ac69-9a94011e9470\n madek_core:title"
                                             :handler handle_get-meta-key-meta-data
                                             :middleware [wrap-add-meta-key
                                                          ;wrap-check-vocab

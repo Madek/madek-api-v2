@@ -61,6 +61,10 @@
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion
+
+
+
+
 (defn handle_create-meta-data-json
   [req]
   (try
@@ -227,6 +231,35 @@
    :responses {200 {:description "Returns the created meta-data text-date."
                     :body s/Any}}})
 
+
+
+
+
+;25a5d974-1855-458b-b6ba-cc3272a4865b
+;research_video:rv_annotations
+;
+;{
+; "json": "{\"description\":null,\"external_uris\":[],\"meta_key_id\":\"research_video:rv_annotations\",\"term\":\"Installation22a\"}"
+;}
+
+(s/defschema JsonContent
+  {:term s/Str
+   :description (s/maybe s/Str)
+   :meta_key_id s/Str
+   :external_uris [s/Str]})
+
+(s/defschema MetaDataJSON
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id s/Uuid
+   :type (s/enum "MetaDatum::JSON")
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Inst
+   :json JsonContent
+   :other_media_entry_id (s/maybe s/Uuid)})
+
 (def meta-datum.meta_key_id.json
   {:summary "Create meta-data json for media-entry"
    :handler handle_create-meta-data-json
@@ -310,8 +343,11 @@
    :responses {200 {:description "Returns the created meta-data text-date."
                     :body s/Any}}})
 
+
+
 (def collection_id.meta_key_id.json
-  {:summary "Create meta-data json for collection."
+  {:summary "Create meta-data json for collection. X2"
+   :description "- Example:\n```\n{\"json\": \"{\\\"description\\\":null,\\\"external_uris\\\":[],\\\"meta_key_id\\\":\\\"research_video:rv_annotations\\\",\\\"term\\\":\\\"Installation22a\\\"}\"}\n```"
    :handler handle_create-meta-data-json
    :middleware [jqh/ring-wrap-add-media-resource
                 jqh/ring-wrap-authorization-edit-metadata]
@@ -320,7 +356,11 @@
                        :meta_key_id s/Str}
                 :body {:json s/Any}}
    :responses {200 {:description "Returns the created meta-data json."
-                    :body s/Any}}})
+                    ;:body s/Any
+
+                    :body MetaDataJSON
+
+                    }}})
 
 (def collection_id.meta_key_id.keyword.keyword_id
   {:summary "Create meta-data keyword for collection."
