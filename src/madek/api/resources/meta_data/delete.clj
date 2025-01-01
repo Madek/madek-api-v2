@@ -199,16 +199,6 @@
                                      :responses {200 {:description "Returns the deleted meta-data."
                                                       :body s/Any}}})
 
-(def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key"
-                                           :handler handle-delete-meta-data
-                                           :middleware [jqh/ring-wrap-add-media-resource
-                                                        jqh/ring-wrap-authorization-view
-                                                        wrap-col-add-meta-data]
-                                           :coercion reitit.coercion.schema/coercion
-                                           :parameters {:path {:collection_id s/Uuid
-                                                               :meta_key_id s/Str}}
-                                           :responses {200 {:description "Returns the deleted meta-data."
-                                                            :body s/Any}}})
 
 (def meta_key_id.role.role_id.person_id {:summary "Delete meta-data role for media-entry."
                                          :handler handle_delete-meta-data-role
@@ -271,7 +261,9 @@
                                      :responses {200 {:description "Returns the deleted meta-data."
                                                       :body s/Any}}})
 
-(def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key"
+(def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key A3"
+                                           :description "- 124e558f-9c89-4256-8c59-6731b4cb0a49
+   - media_content:test"
                                            :handler handle-delete-meta-data
                                            :middleware [jqh/ring-wrap-add-media-resource
                                                         jqh/ring-wrap-authorization-view
@@ -280,7 +272,36 @@
                                            :parameters {:path {:collection_id s/Uuid
                                                                :meta_key_id s/Str}}
                                            :responses {200 {:description "Returns the deleted meta-data."
-                                                            :body s/Any}}})
+                                                            ;:body s/Any
+
+                                                            :body {
+                                                                           :created_by_id s/Uuid
+                                                                           :media_entry_id (s/maybe s/Uuid)
+                                                                           :collection_id s/Uuid
+                                                                           :type s/Str
+                                                                           :meta_key_id s/Str
+                                                                           :string s/Str
+                                                                           :id s/Uuid
+                                                                           ;:meta_data_updated_at (s/maybe s/Inst)
+                                                                           :meta_data_updated_at (s/maybe s/Any)
+                                                                           ;:meta_data_updated_at s/Inst
+                                                                           ;:meta_data_updated_at s/Str
+
+                                                                           :json (s/maybe s/Any)
+                                                                           :other_media_entry_id (s/maybe s/Uuid)
+
+                                                                           }
+
+
+                                                            }
+
+                                                       406 {:description "Returns the cause of error."
+                                                            :body {:message s/Str}}
+
+                                                       500 {:description "Returns the cause of error."
+                                                            :body {:message s/Str}}
+
+                                                       }})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

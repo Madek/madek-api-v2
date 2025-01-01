@@ -3,6 +3,8 @@
             [cheshire.core :as cheshire]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
+            [madek.api.utils.helper :refer [to-uuid]]
+
             [logbug.catcher :as catcher]
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.core :as sd]
@@ -140,10 +142,28 @@
 
 (defn db-create-meta-data-roles
   [db md-id role-id person-id position]
-  (let [data {:meta_datum_id md-id
-              :person_id person-id
+  (let [data {:meta_datum_id (to-uuid md-id)
+              :person_id person-id                          ;;is nil
               :role_id role-id
-              :position position}
+              ;:position position
+              }
+
+        data (if (nil? position)
+
+               data
+
+               (assoc data :position position)
+
+               )
+
+    ;2024-12-31T16:24:57.434Z NX-41294 ERROR [madek.api.resources.meta_data.post:189] - Could not create md role #error {
+    ;:cause "ERROR: The types of related meta_data and meta_keys must be identical\n  Wobei: PL/pgSQL function check_meta_data_meta_key_type_consistency() line 8 at RAISE"
+    ;:via
+    ;[{:type org.postgresql.util.PSQLException
+    ;  :message "ERROR: The types of related meta_data and meta_keys must be identical\n  Wobei: PL/pgSQL function check_meta_data_meta_key_type_consistency() line 8 at RAISE"
+    ;  :at [org.postgresql.core.v3.QueryExecutorImpl receiveErrorResponse "QueryExecutorImpl.java" 2533]}]
+    ;:trace
+
         sql-query (-> (sql/insert-into :meta_data_roles)
                       (sql/values [data])
                       sql-format)
@@ -193,8 +213,18 @@
             user-id (-> req :authenticated-entity :id)
             meta-key-id (-> req :parameters :path :meta_key_id)
             role-id (-> req :parameters :path :role_id)
-            person-id (-> req :parameters :path :person_id)
+
+            ;; Fixme: both not set by path
+            ;person-id (-> req :parameters :path :person_id)
+            person-id (-> req :authenticated-entity :person_id)
+            ;p (println ">o> ????? person_id" (-> req :authenticated-entity))
+            p (println ">o> ????? person_id" person-id)
+
+            ;; default 0
             position (-> req :parameters :path :position)
+            p (println ">o> abc" user-id)
+
+
             tx (:tx req)]
 
         (if-let [result (create_md_and_role mr meta-key-id role-id person-id position user-id tx)]
@@ -208,7 +238,7 @@
 ;; ######## handler ################################################
 
 (def meta-datum.meta_key_id.text
-  {:summary "Create meta-data text for media-entry"
+  {:summary "Create meta-data text for media-entry A2"
    :handler handle_create-meta-data-text
    :middleware [jqh/ring-wrap-add-media-resource
                 jqh/ring-wrap-authorization-edit-metadata]
@@ -301,7 +331,7 @@
                     :body s/Any}}})
 
 (def media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position
-  {:summary "Create meta-data role for media-entry."
+  {:summary "Create meta-data role for media-entry. B1"
    :handler handle_create-meta-data-role
    :middleware [wrap-add-role
                 wrap-add-person
@@ -317,7 +347,11 @@
                     :body s/Any}}})
 
 (def collection_id.meta-datum:meta_key_id.text
-  {:summary "Create meta-data text for collection."
+  {
+   :summary "Create meta-data text for collection. A1"
+   :description "- Add entry to meta_key
+   - 124e558f-9c89-4256-8c59-6731b4cb0a49
+   - media_content:test"
    :handler handle_create-meta-data-text
    :middleware [jqh/ring-wrap-add-media-resource
                 jqh/ring-wrap-authorization-edit-metadata]
@@ -328,8 +362,47 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
-   :responses {200 {:description "Returns the created meta-data text."
-                    :body s/Any}}})
+   :responses {
+               200 {:description "Returns the created meta-data text."
+                    ;:body s/Any}
+
+               ;{
+               ; "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+               ; "media_entry_id": null,
+               ; "collection_id": "124e558f-9c89-4256-8c59-6731b4cb0a49",
+               ; "type": "MetaDatum::Text",
+               ; "meta_key_id": "media_content:test2",
+               ; "string": "string222",
+               ; "id": "002c0ed9-7d80-428e-9cf0-e01e4c67b4bd",
+               ; "meta_data_updated_at": "2024-12-31T14:47:38.615709Z",
+               ; "json": null,
+               ; "other_media_entry_id": null
+               ; }
+
+                    :body {
+                           :created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id s/Uuid
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           ;:meta_data_updated_at (s/maybe s/Inst) ;;FixMe
+                           :meta_data_updated_at (s/maybe s/Any)
+                           ;:meta_data_updated_at s/Inst
+                           ;:meta_data_updated_at s/Str
+
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Uuid)
+
+
+                           }}
+               500 {:description "Returns the cause of error."
+                                :body {:message s/Str}}
+
+               }
+
+   })
 
 (def collection_id.meta-datum:meta_key_id.text-date
   {:summary "Create meta-data json for collection."
@@ -391,7 +464,7 @@
                     :body s/Any}}})
 
 (def collection_id.meta_key_id.role.role_id
-  {:summary "Create meta-data role for media-entry"
+  {:summary "Create meta-data role for media-entry B2"
    :handler handle_create-meta-data-role
    :middleware [wrap-add-role
                 jqh/ring-wrap-add-media-resource
