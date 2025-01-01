@@ -105,14 +105,14 @@
       :middleware [authentication/wrap]
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:description "Authentication info."
-                       :schema {:type s/Str
+                       :body {:type s/Str
                                 :id s/Uuid
                                 :login s/Str
                                 :created_at s/Any
                                 :email_address s/Str
                                 (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
-                       :schema s/Str
+                       :body s/Str
                        :examples {"application/json" {:message "Not authorized1"}}}}}}]])
 
 (def swagger-routes
