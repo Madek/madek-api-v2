@@ -130,7 +130,7 @@
 
 (def user-routes
   ["/"
-   {:openapi {:tags ["vocabulary"]}}
+   {:openapi {:tags ["vocabulary *"]}}
    ["vocabularies" {:get get/user.vocabularies}]
 
    ["vocabularies/:id" {:get get/user.vocabularies.id}]])

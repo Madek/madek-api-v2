@@ -297,7 +297,7 @@
 ; TODO docu
 (def user-routes
   ["/"
-   {:openapi {:tags ["context-keys"] :security []}}
+   {:openapi {:tags ["context-keys *"] :security []}}
    ["context-keys"
     {:get
      {:summary (sd/sum_pub "Query / List context_keys.")

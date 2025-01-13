@@ -182,7 +182,7 @@
 
 (def user-routes
   [["/"
-    {:openapi {:tags ["app-settings"] :security []}}
+    {:openapi {:tags ["app-settings *"] :security []}}
     ["app-settings"
      {:get {:summary (sd/sum_pub "Get App Settings.")
             :handler handle_get-app-settings

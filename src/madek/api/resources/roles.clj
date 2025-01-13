@@ -37,7 +37,7 @@
 ; TODO tests
 (def user-routes
   ["/"
-   {:openapi {:tags ["roles"]}}
+   {:openapi {:tags ["roles *"]}}
    ["roles" {:get {:summary "Get list of roles."
                    :description "Get list of roles."
                    :handler role/get-index

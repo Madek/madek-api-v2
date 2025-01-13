@@ -18,7 +18,7 @@
    ])
 (def role-routes
   ["/meta-data-role"
-   {:openapi {:tags ["api/meta-data-role"]}}
+   {:openapi {:tags ["api/meta-data-role *"]}}
    ["/:meta_data_role_id"
     {:get get/meta-data-role.meta_data_role_id}]])
 

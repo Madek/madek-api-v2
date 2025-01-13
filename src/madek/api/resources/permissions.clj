@@ -55,7 +55,7 @@
 
 (def collection-routes
   ["/collection/:collection_id/perms"
-   {:openapi {:tags ["collection/perms"]}}
+   {:openapi {:tags ["collection/perms *"]}}
    ["/"
     {:get get/collection.collection_id.perms}]
 
