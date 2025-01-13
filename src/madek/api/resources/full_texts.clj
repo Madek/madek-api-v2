@@ -125,7 +125,7 @@
 ; TODO howto access control or full_texts is public meta data
 (def query-routes
   ["/"
-   {:openapi {:tags ["full_texts"]}}
+   {:openapi {:tags ["full_texts *"]}}
    ["full_texts"
     {:get {:summary (sd/sum_usr "Query or list full_texts.")
            :handler handle_list-full_texts
@@ -218,7 +218,7 @@
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}}
-            :responses {200 {:description "Returns the full_text. c4baae61-603d-47b5-bcee-74e09077947e"
+            :responses {200 {:description "Returns the full_text. 015425fd-3123-4b7f-977f-2c65f2eddf0a"
                              ;:body s/Any}}
                              :body {:media_resource_id s/Uuid
                                     :text s/Str
@@ -273,9 +273,12 @@
 ; TODO full_texts: test wrap auth for media entry
 (def entry-routes
   [["/media-entry/:media_entry_id/full_text"
-    {:openapi {:tags ["media-entry/full_text"]}}
+    {:openapi {:tags ["media-entry/full_text *"]}}
     ["/"
      {:get {:summary (sd/sum_usr_pub "Get full_text.")
+            :description "Get full_text for media_entry.\n
+select id as \"media_entry_id\", t.text from media_entries e, full_texts t\n
+where e.id=t.media_resource_id"
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str}}
@@ -320,7 +323,13 @@
             :responses {200 {:description "Returns the updated full_text."
                              :body s/Any}
                         406 {:description "Update failed."
-                             :schema s/Str
+
+                             ;:schema s/Str
+
+                             :body {:media_resource_id s/Uuid
+                                    :text s/Str
+                                    }
+
                              :examples {"application/json" {:message "Could not update full_text."}}}}
             :handler handle_update-full_texts}
 

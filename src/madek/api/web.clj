@@ -97,7 +97,7 @@
 
 (def auth-info-route
   ["/api-v2"
-   {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
+   {:openapi {:tags ["api/auth-info *"] :security ADMIN_AUTH_METHODS}}
    ["/auth-info"
     {:get
      {:summary "Authentication help and info."

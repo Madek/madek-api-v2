@@ -180,7 +180,7 @@
 ;; FIXME: broken endpoint to test doc
 (def query-routes
   ["/"
-   {:openapi {:tags ["keywords"] :security []}}
+   {:openapi {:tags ["keywords *"] :security []}}
    ["keywords"
     {:get
      {:summary (sd/sum_pub (d "Query / list keywords."))

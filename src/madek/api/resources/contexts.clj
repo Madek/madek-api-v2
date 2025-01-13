@@ -208,7 +208,7 @@
 (def user-routes
 
   ["/"
-   {:openapi {:tags ["contexts"]}}
+   {:openapi {:tags ["contexts *"]}}
    ["contexts"
     {:get {:summary (sd/sum_usr "List contexts.")
            :handler handle_usr-list-contexts

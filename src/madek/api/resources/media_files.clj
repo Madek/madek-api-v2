@@ -65,7 +65,7 @@
 
 (def media-file-routes
   ["/media-file"
-   {:openapi {:tags ["api/media-file"]}}
+   {:openapi {:tags ["api/media-file *"]}}
    ["/:media_file_id"
     {:get {:summary (sd/sum_usr_pub "Get media-file for id.")
            :swagger {:produces "application/json"}
