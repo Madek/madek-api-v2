@@ -180,7 +180,8 @@
    :meta_key_id s/Str
    :type s/Str
    :value (s/->Either [[{:id s/Uuid}] s/Str])
-   (s/optional-key :media_entry_id) s/Uuid
+   ;(s/optional-key :media_entry_id) s/Uuid
+   :media_entry_id s/Uuid
    (s/optional-key :collection_id) s/Uuid})
 
 (def schema_export_mdrole
@@ -196,7 +197,7 @@
                     :middleware [jqh/ring-wrap-add-meta-datum-with-media-resource
                                  jqh/ring-wrap-authorization-view]
                     :summary "Get meta-data for id"
-                    :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
+                    :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists.\ne4f7c451-e6ad-4356-8715-5e5aed60d25a"
                     :coercion reitit.coercion.schema/coercion
                     :parameters {:path {:meta_datum_id s/Uuid}}
                     :responses {200 {:description "Returns the meta-data."
@@ -212,7 +213,7 @@
                                 ; TODO json meta-data: fix response conversion error
                                 :middleware [jqh/ring-wrap-add-meta-datum-with-media-resource
                                              jqh/ring-wrap-authorization-view]
-                                :summary "Get meta-data data-stream."
+                                :summary "Get meta-data data-stream.\ne4f7c451-e6ad-4356-8715-5e5aed60d25a"
                                 :description "Get meta-data data-stream."
                                 :coercion reitit.coercion.schema/coercion
                                 :responses {200 {:description "Returns the meta-data data-stream."

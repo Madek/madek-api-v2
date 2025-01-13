@@ -67,7 +67,7 @@
 ; TODO tests
 (def preview-routes
   ["/previews"
-   {:openapi {:tags ["api/previews"]}}
+   {:openapi {:tags ["api/previews *"]}}
    ["/:preview_id"
     {:get {:summary "Get preview for id."
            :swagger {:produces "application/json"}
