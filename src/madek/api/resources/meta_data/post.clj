@@ -396,7 +396,8 @@
                            :other_media_entry_id (s/maybe s/Uuid)
 
 
-                           }}
+                           }
+                    }
                500 {:description "Returns the cause of error."
                                 :body {:message s/Str}}
 
@@ -405,16 +406,44 @@
    })
 
 (def collection_id.meta-datum:meta_key_id.text-date
-  {:summary "Create meta-data json for collection."
+  {
+   :summary "Create meta-data json for collection."
+   :description "- 211dd424-7093-468b-855c-8c1519422021
+   - media_content:mee"
+
    :handler handle_create-meta-data-text-date
    :middleware [jqh/ring-wrap-add-media-resource
                 jqh/ring-wrap-authorization-edit-metadata]
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
-                :body {:string s/Str}}
+                :body {:string s/Str}
+
+
+                }
    :responses {200 {:description "Returns the created meta-data text-date."
-                    :body s/Any}}})
+                    ;:body s/Any
+
+                    :body {
+                           :created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id s/Uuid
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           ;:meta_data_updated_at (s/maybe s/Inst) ;;FixMe
+                           :meta_data_updated_at (s/maybe s/Any)
+                           ;:meta_data_updated_at s/Inst
+                           ;:meta_data_updated_at s/Str
+
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Uuid)
+
+
+                           }
+
+                    }}})
 
 
 

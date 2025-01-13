@@ -78,9 +78,9 @@
                         jqh/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Returns the preview."
-                            :schema schema_export_preview}
+                            :body schema_export_preview}
                        404 {:description "Not found."
-                            :schema s/Any}}
+                            :body s/Any}}
            :parameters {:path {:preview_id s/Uuid}}}}]
 
    ["/:preview_id/data-stream"
@@ -91,9 +91,9 @@
                         jqh/ring-wrap-authorization-view]
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Returns the preview."
-                            :schema s/Any}
+                            :body s/Any}
                        404 {:description "Not found."
-                            :schema s/Any}}
+                            :body s/Any}}
            :parameters {:path {:preview_id s/Uuid}}}}]])
 
 ; TODO auth
@@ -112,9 +112,9 @@
            :parameters {:path {:media_entry_id s/Str}
                         :query {(s/optional-key :size) s/Str}}
            :responses {200 {:description "Returns the preview."
-                            :schema schema_export_preview}
+                            :body schema_export_preview}
                        404 {:description "Not found."
-                            :schema s/Any}}}}]
+                            :body s/Any}}}}]
 
    ; TODO media-entry preview auth
    ["/:media_entry_id/preview/data-stream"
@@ -125,9 +125,9 @@
                         ;             media-files.authorization/ring-wrap-authorize-metadata-and-previews
                         ]
            :responses {200 {:description "Returns the preview."
-                            :schema s/Any}
+                            :body s/Any}
                        404 {:description "Not found."
-                            :schema s/Any}}
+                            :body s/Any}}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
                         :query {(s/optional-key :size) s/Str}}}}]])

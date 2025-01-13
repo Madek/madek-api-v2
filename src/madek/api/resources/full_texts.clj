@@ -5,6 +5,8 @@
             [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
             [madek.api.resources.shared.core :as sd]
+            [madek.api.utils.helper :refer [to-uuid]]
+
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
@@ -49,7 +51,7 @@
                       (-> req :parameters :path :media_resource_id)
                       (-> req :parameters :path :collection_id)
                       (-> req :parameters :path :media_entry_id))
-            ins-data (assoc rdata :media_resource_id mr-id)
+            ins-data (assoc rdata :media_resource_id (to-uuid mr-id))
             sql-query (-> (sql/insert-into :full_texts)
                           (sql/values [ins-data])
                           (sql/returning :*)
@@ -72,10 +74,10 @@
                       (-> req :parameters :path :media_resource_id)
                       (-> req :parameters :path :collection_id)
                       (-> req :parameters :path :media_entry_id))
-            dwid (assoc data :media_resource_id mr-id)
+            dwid (assoc data :media_resource_id (to-uuid mr-id))
             sql-query (-> (sql/update :full_texts)
                           (sql/set dwid)
-                          (sql/where [:= :media_resource_id mr-id])
+                          (sql/where [:= :media_resource_id (to-uuid mr-id)])
                           (sql/returning :*)
                           sql-format)
             upd-result (jdbc/execute-one! (:tx req) sql-query)]
@@ -296,7 +298,12 @@
              :parameters {:path {:media_entry_id s/Str}
                           :body {:text s/Str}}
              :responses {200 {:description "Returns the created full_text."
-                              :body s/Any}
+                              ;:body s/Any
+
+                              :body {:media_resource_id s/Uuid
+                                     :text s/Str
+                                     }
+                              }
                          406 {:description "Creation failed."
                               :schema s/Str
                               :examples {"application/json" {:message "Could not create full_text."}}}}
@@ -324,7 +331,13 @@
                             jqh/ring-wrap-authorization-edit-metadata
                             (wrap-find-full_text :media_entry_id true)]
                :responses {200 {:description "Returns the deleted full_text."
-                                :body s/Any}
+                                ;:body s/Any
+
+                                :body {:media_resource_id s/Uuid
+                                       :text s/Str
+                                       }
+
+                                }
                            406 {:description "Deletion failed."
                                 :schema s/Str
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}
