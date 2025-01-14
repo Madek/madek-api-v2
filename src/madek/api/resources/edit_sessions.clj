@@ -180,14 +180,27 @@
 
 (def query-routes
   ["/"
-   {:openapi {:tags ["edit_sessions"]}}
+   {:openapi {:tags ["edit_sessions *"]}}
    ["edit_sessions"
     {:get {:summary (sd/sum_usr "List authed users edit_sessions.")
            :handler handle_usr_list-edit-sessions
            :middleware [authorization/wrap-authorized-user]
            :coercion spec/coercion
            :responses {200 {:description "Returns the edit sessions."
-                            :body any?}}
+
+                            ;:body any?
+
+                            :body :list/session
+                            ;; TODO
+                            ;{
+                            ; "id": "275d843d-76f1-46f0-b537-8dcc8e797660",
+                            ; "user_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+                            ; "created_at": "2023-10-13T09:14:18.385151Z",
+                            ; "media_entry_id": "2b79da4c-2a79-4553-801f-1392888184ee",
+                            ; "collection_id": null
+                            ; },
+
+                            }}
            :parameters {:query ::query-usr-def}}}]
 
    ["edit_sessions/:id"

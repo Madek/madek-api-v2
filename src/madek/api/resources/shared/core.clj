@@ -104,8 +104,12 @@
    If it exists it is associated with the request as reqkey"
   [request handler path-param db_table db_col_name reqkey send404]
   (let [search (-> request :parameters :path path-param)
-        tx (:tx request)]
-    ;(info "req-find-data: " search " " db_table " " db_col_name)
+        tx (:tx request)
+        p (println ">o> abc.path-param" path-param)
+        p (println ">o> abc" search db_table db_col_name)
+
+        ]
+    (println ">>> req-find-data: " search " " db_table " " db_col_name)
     (if-let [result-db (dbh/query-eq-find-one db_table db_col_name search tx)]
       (handler (assoc request reqkey result-db))
       (if (= true send404)
