@@ -10,7 +10,7 @@
 ; TODO response coercion
 (def meta-data-routes
   ["/meta-data"
-   {:openapi {:tags ["api/meta-data"]}}
+   {:openapi {:tags ["api/meta-data *"]}}
    ["/:meta_datum_id" {:get get/meta_datum_id}]
    ["/:meta_datum_id/data-stream" {:get get/meta_datum_id.data-stream}]
    ;:responses {200 {:body s/Any}

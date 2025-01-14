@@ -214,7 +214,7 @@
                                 :middleware [jqh/ring-wrap-add-meta-datum-with-media-resource
                                              jqh/ring-wrap-authorization-view]
                                 :summary "Get meta-data data-stream.\ne4f7c451-e6ad-4356-8715-5e5aed60d25a"
-                                :description "Get meta-data data-stream."
+                                :description "Get meta-data data-stream.\n- ToCheck: really correct"
                                 :coercion reitit.coercion.schema/coercion
                                 :responses {200 {:description "Returns the meta-data data-stream."
                                                  :body s/Any}
