@@ -212,7 +212,7 @@
 ; TODO full_texts: test wrap auth for collection
 (def collection-routes
   [["/collection/:collection_id/full_text"
-    {:openapi {:tags ["collection/full_text"]}}
+    {:openapi {:tags ["collection/full_text *"]}}
     ["/"
      {:get {:summary (sd/sum_usr_pub "Get full_text.")
             :handler handle_get-full_text
@@ -220,7 +220,7 @@
             :parameters {:path {:collection_id s/Str}}
             :responses {200 {:description "Returns the full_text. 015425fd-3123-4b7f-977f-2c65f2eddf0a"
                              ;:body s/Any}}
-                             :body {:media_resource_id s/Uuid
+                             :body {:collection_id s/Uuid
                                     :text s/Str
                                     }
             }}
@@ -236,7 +236,12 @@
              :parameters {:path {:collection_id s/Str}
                           :body {:text s/Str}}
              :responses {200 {:description "Returns the created full_text."
-                              :body s/Any}
+                              ;:body s/Any
+
+                              :body {:collection_id s/Uuid
+                                     :text s/Str
+                                     }
+                              }
                          406 {:description "Creation failed."
                               :schema s/Str
                               :examples {"application/json" {:message "Could not create full_text."}}}}
@@ -251,7 +256,12 @@
                          jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]
             :responses {200 {:description "Returns the updated full_text."
-                             :body s/Any}
+                             ;:body s/Any
+
+                             :body {:collection_id s/Uuid
+                                    :text s/Str
+                                    }
+                             }
                         406 {:description "Update failed."
                              :schema s/Str
                              :examples {"application/json" {:message "Could not update full_text."}}}}
@@ -264,7 +274,12 @@
                             jqh/ring-wrap-authorization-edit-metadata
                             (wrap-find-full_text :collection_id true)]
                :responses {200 {:description "Returns the deleted full_text."
-                                :body s/Any}
+                                ;:body s/Any
+
+                                :body {:collection_id s/Uuid
+                                       :text s/Str
+                                       }
+                                }
                            406 {:description "Deletion failed."
                                 :schema s/Str
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}
