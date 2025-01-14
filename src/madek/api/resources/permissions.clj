@@ -8,7 +8,7 @@
 
 (def media-entry-routes
   ["/media-entry/:media_entry_id/perms"
-   {:openapi {:tags ["media-entry/perms"]}}
+   {:openapi {:tags ["media-entry/perms *"]}}
    ["/"
     {:get get/media-entry.media_entry_id.perms}]
 
