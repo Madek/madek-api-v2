@@ -351,18 +351,18 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries."
-                       :schema ::media-entries-body-resp-def}
+                       :body ::media-entries-body-resp-def}
                   422 {:description "Unprocessable Entity."
-                       :schema any?}}}}]
+                       :body any?}}}}]
    ["media-entries-related-data"
     {:get
-     {:summary "Query media-entries with all related data."
+     {:summary "Query media-entries with all related data. (FIXME)"
       :handler handle_query_media_entry-related-data
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries with all related data."
-                       :schema ::media-entry-response-def}}}}]])
+                       :body ::media-entry-response-def}}}}]])
 
 (def ring-admin-routes
   ["/"
@@ -377,9 +377,9 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-adm-def}
       :responses {200 {:description "Returns the media-entries."
-                       :schema ::media-entries-body-resp-def}
+                       :body ::media-entries-body-resp-def}
                   422 {:description "Unprocessable Entity."
-                       :schema any?}}}}]
+                       :body any?}}}}]
 
    ["media-entries/:media_entry_id"
     {:put {:summary "Try publish media-entry for id / HERE!!!!"
