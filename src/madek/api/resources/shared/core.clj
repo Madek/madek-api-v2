@@ -183,6 +183,13 @@
 
 (def s_cnv_acc "Convenience access.")
 
+
+;; TODO: tags for roles that has to be confirmed @drtom
+(defn ?sum_usr_pub? [text] (apply str "?PUBLIC/USER Context? " text))
+(defn ?sum_pub? [text] (apply str "?PUBLIC Context? " text))
+(defn ?sum_usr? [text] (apply str "?USER Context? " text))
+
+
 (defn sum_todo [text] (apply str "TODO: " text))
 (defn sum_pub [text] (apply str "PUBLIC Context: " text))
 (defn sum_usr [text] (apply str "USER Context: " text))

@@ -5,7 +5,11 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.authorization :as authorization]
-            [madek.api.constants :refer [FILE_STORAGE_DIR]]
+
+
+
+
+              [madek.api.constants :refer [FILE_STORAGE_DIR]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
@@ -396,10 +400,10 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["api/media-entries"]}}
+   {:openapi {:tags ["api/media-entries *"]}}
    ["media-entries"
     {:get
-     {:summary "Query media-entries. (public)"
+     {:summary (sd/?sum_pub? "Query media-entries.")
       :handler handle_query_media_entry
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
@@ -410,7 +414,7 @@
                        :body any?}}}}]
    ["media-entries-related-data"
     {:get
-     {:summary "Query media-entries with all related data. (auth)"
+     {:summary (sd/?sum_usr? "Query media-entries with all related data.")
       :handler handle_query_media_entry-related-data
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
