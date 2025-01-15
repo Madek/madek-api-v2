@@ -3,6 +3,7 @@
    [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [madek.api.resources.people.common :refer [person-query]]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -48,7 +49,7 @@
     (sd/response_failed "No such person found" 404)))
 
 (def route
-  {:summary (sd/sum_adm "Get person by uid")
+  {:summary (fl/?no-auth? (sd/sum_adm "Get person by uid 053fd97b-38e6-48df-9eaf-cdc66799a666"))
    :description "Get a person by uid (either uuid or pair of json encoded [institution, institutional_id]). Returns 404, if no such people exists."
    :handler handler
    :middleware []

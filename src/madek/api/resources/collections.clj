@@ -7,6 +7,7 @@
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
    [madek.api.resources.collections.index :refer [get-index]]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -173,7 +174,8 @@
    (s/optional-key :meta_data_updated_at) s/Any
    (s/optional-key :edit_session_updated_at) s/Any
 
-   (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
+   ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
+   (s/optional-key :clipboard_user_id) (s/maybe s/Str)      ; is a string OR just cast it to uuid in response
    (s/optional-key :workflow_id) (s/maybe s/Uuid)
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
 
@@ -254,7 +256,7 @@
    {:openapi {:tags ["api/collection"]}}
    ["collections"
     {:get
-     {:summary (sd/sum_usr "Query/List collections.")
+     {:summary (fl/?no-auth?(sd/sum_usr "Query/List collections."))
       :handler handle_get-index
       :coercion spec/coercion
       :parameters {:query :collection-query/query-def}
@@ -263,7 +265,7 @@
 
    ["collection"
     {:post
-     {:summary (sd/sum_usr "Create collection")
+     {:summary (fl/?token? (sd/sum_usr "Create collection"))
 
       ;:description "CAUTION: Either :responsible_user_id OR :responsible_user_id has to be set - not both (db-constraint)"
       :description (mslurp (io/resource "md/collections-post.md"))
@@ -280,7 +282,7 @@
                        :body s/Any}}}}]
 
    ["collection/:collection_id"
-    {:get {:summary (sd/sum_usr_pub "Get collection for id.")
+    {:get {:summary (fl/?token? (sd/sum_usr_pub "Get collection for id. b8a02655-b499-4516-8c96-e18ff849698e"))
            :handler handle_get-collection
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-view]
@@ -305,7 +307,8 @@
            :parameters {:path {:collection_id uuid?}
                         :body :usr/collections-update}
            :responses {200 {:description "Returns the updated collection."
-                            :body :usr/collections}
+                            ;:body :usr/collections}
+                            :body any?}
                        404 {:description "Collection not found."
                             :body any?}
                        422 {:description "Could not update collection."

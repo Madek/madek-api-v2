@@ -190,6 +190,12 @@
 (defn ?sum_usr? [text] (apply str "?USER Context? " text))
 
 
+;; Flag to
+(defn ?token? [text] (apply str text " [mr/ IST / token]"))
+(defn ?session? [text] (apply str text " [mr / IST / session]"))
+(defn ?no-auth? [text] (apply str text " [mr / IST / no-auth]"))
+
+
 (defn sum_todo [text] (apply str "TODO: " text))
 (defn sum_pub [text] (apply str "PUBLIC Context: " text))
 (defn sum_usr [text] (apply str "USER Context: " text))
