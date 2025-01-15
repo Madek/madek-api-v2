@@ -6,6 +6,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
@@ -295,7 +296,7 @@
   ["/"
    {:openapi {:tags ["meta-keys *"]}}
    ["meta-keys"
-    {:get {:summary (sd/sum_usr_pub "Get all meta-key ids")
+    {:get {:summary (fl/?no-auth? (sd/sum_usr_pub "Get all meta-key ids"))
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
            :parameters {:query sp/schema_pagination_opt}
@@ -305,7 +306,7 @@
                             :body ::meta-keys-id-response-usr-def}}}}]
 
    ["meta-keys/:id"
-    {:get {:summary (sd/sum_usr_pub (v "Get meta-key by id"))
+    {:get {:summary (fl/?no-auth? (sd/sum_usr_pub (v "Get meta-key by id")))
            :description "Get meta-key by id. Returns 404, if no such meta-key exists."
            :content-type "application/json"
            :accept "application/json"

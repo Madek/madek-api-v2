@@ -5,6 +5,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.keywords.keyword :as kw]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -183,7 +184,7 @@
    {:openapi {:tags ["keywords *"] :security []}}
    ["keywords"
     {:get
-     {:summary (sd/sum_pub (d "Query / list keywords."))
+     {:summary (fl/?no-auth? (sd/sum_pub (d "Query / list keywords.")))
       :handler handle_usr-query-keywords
       :coercion spec/coercion
       :parameters {:query sp/schema_pagination_opt}
@@ -199,7 +200,7 @@
 
    ["keywords/:id"
     {:get
-     {:summary (sd/sum_pub "Get keyword for id.")
+     {:summary (fl/?no-auth? (sd/sum_pub "Get keyword for id. dda7c0b5-73e8-4f6d-bbaf-776bf0077389"))
       :handler handle_usr-get-keyword
       :middleware [wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion

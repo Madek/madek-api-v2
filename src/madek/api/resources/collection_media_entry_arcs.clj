@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -164,7 +165,7 @@
 (def ring-routes
   ["/collection-media-entry-arcs"
    {:openapi {:tags ["api/collection"]}}
-   ["" {:get {:summary "Query collection media-entry arcs."
+   ["" {:get {:summary (fl/?no-auth? "Query collection media-entry arcs.")
               :handler arcs
               :swagger {:produces "application/json"}
               :coercion reitit.coercion.schema/coercion
@@ -173,7 +174,7 @@
               :responses {200 {:description "Returns the collection media-entry arcs."
                                :body {:collection-media-entry-arcs [schema_collection-media-entry-arc-response]}}}}}]
 
-   ["/:id" {:get {:summary "Get collection media-entry arc."
+   ["/:id" {:get {:summary (fl/?no-auth? "Get collection media-entry arc. 9b521e91-c977-4ee9-924b-ed97036409e3")
                   :handler arc
                   :swagger {:produces "application/json"}
                   :coercion reitit.coercion.schema/coercion

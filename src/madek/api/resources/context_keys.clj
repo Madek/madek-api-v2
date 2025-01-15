@@ -5,6 +5,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
@@ -300,7 +301,7 @@
    {:openapi {:tags ["context-keys *"] :security []}}
    ["context-keys"
     {:get
-     {:summary (sd/sum_pub "Query / List context_keys.")
+     {:summary (fl/?no-auth? (sd/sum_pub "Query / List context_keys."))
       :handler handle_usr-list-context_keys
       :coercion reitit.coercion.schema/coercion
       :parameters {:query {(s/optional-key :id) s/Uuid
@@ -314,7 +315,7 @@
 
    ["context-keys/:id"
     {:get
-     {:summary (sd/sum_pub "Get context_key by id.")
+     {:summary (fl/?no-auth? (sd/sum_pub "Get context_key by id. 61fda710-6357-497e-bfb7-890c9db7b68d"))
       :handler handle_usr-get-context_key
       :middleware [(wwrap-find-context_key :id :id true)]
       :coercion reitit.coercion.schema/coercion

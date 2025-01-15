@@ -6,6 +6,7 @@
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
    [madek.api.resources.collection-media-entry-arcs :refer [schema_collection-collection-arc-export]]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
@@ -25,7 +26,11 @@
 
 (defn handle_get-arc [req]
   (let [query (arc-query req)
-        db-result (jdbc/execute! (:tx req) query)]
+        db-result (jdbc/execute! (:tx req) query)
+
+        te_print (println "db-result: " db-result)
+        te_print (println "db-result1: " (first db-result))
+        ]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
@@ -146,7 +151,7 @@
    {:openapi {:tags ["api/collection"]}}
    [""
     {:get
-     {:summary "Query collection collection arcs."
+     {:summary (fl/?no-auth? "Query collection collection arcs.")
       :handler handle_query-arcs
       :coercion spec/coercion
       :parameters {:query ::group-id-query-def}
@@ -156,7 +161,7 @@
    ; TODO add permission checks
    ["/:id"
     {:get
-     {:summary "Get collection collection arcs."
+     {:summary (fl/?no-auth? "Get collection collection arcs. c0569b22-3077-4e37-ac44-fb8fd12b6d12")
       :handler handle_get-arc
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion

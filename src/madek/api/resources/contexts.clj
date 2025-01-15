@@ -3,6 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -210,7 +211,7 @@
   ["/"
    {:openapi {:tags ["contexts *"]}}
    ["contexts"
-    {:get {:summary (sd/sum_usr "List contexts.")
+    {:get {:summary (fl/?no-auth? (sd/sum_usr "List contexts."))
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
@@ -220,7 +221,7 @@
                             :body s/Any}}}}]
    ; edit context
    ["contexts/:id"
-    {:get {:summary (sd/sum_usr "Get contexts by id.")
+    {:get {:summary (fl/?no-auth? (sd/sum_usr "Get contexts by id. archhist"))
            :handler handle_usr-get-context
            :middleware [(wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion

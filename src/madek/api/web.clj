@@ -1,5 +1,8 @@
 (ns madek.api.web
   (:require
+
+   [madek.api.resources.shared.core :as fl]
+
    [clojure.java.io :as io]
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
@@ -100,7 +103,7 @@
    {:openapi {:tags ["api/auth-info *"] :security ADMIN_AUTH_METHODS}}
    ["/auth-info"
     {:get
-     {:summary "Authentication help and info."
+     {:summary (fl/?no-auth? "Authentication help and info.")
       :handler auth-info/auth-info
       :middleware [authentication/wrap]
       :coercion reitit.coercion.schema/coercion
@@ -112,7 +115,7 @@
                                 :email_address s/Str
                                 (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
-                       :body s/Str
+                       :body {:message s/Str}
                        :examples {"application/json" {:message "Not authorized1"}}}}}}]])
 
 (def swagger-routes
