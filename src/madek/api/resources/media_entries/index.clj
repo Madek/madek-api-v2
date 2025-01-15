@@ -122,9 +122,15 @@
     (let [auth-entity (-> request :authenticated-entity)
           data (query-index-resources request)
           tx (:tx request)
-          result (build-result-related-data collection-id auth-entity full-data data tx)]
+          result (build-result-related-data collection-id auth-entity full-data data tx)
+
+          p (println ">o> abc.result" result)
+          ]
       (sd/response_ok result)))
-  ;(catch Exception e (sd/response_exception e)))
+  ;(catch Exception e
+  ;  (println ">o> abc??" (.getMessage e))
+  ;  (sd/response_exception e)
+  ;  ))
   )
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
