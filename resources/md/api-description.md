@@ -23,3 +23,14 @@
    1. Public endpoints have no lock
    2. *Auth-endpoints* have a lock that provides
       1. **apiKey-form**
+3. Roles
+   1. PUBLIC....GET-ENDPOINTS
+   2. USER.......PUT/DELETE/POST-ENDPOINTS (Session/Token)
+   3. ADMIN.....GET/PUT/DELETE/POST-ENDPOINTS (Session/Token) 
+4. Permission-Tables
+   1. admins
+   2. auth_systems_users
+   3. collection_api_client_permission
+   4. collection_user_permission
+   5. media_entry_user_permissions
+   6. vocabulary_user_permissions

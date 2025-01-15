@@ -294,6 +294,60 @@
   (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
            :opt-un [::sp/col_arcs ::sp/col_meta_data]))
 
+
+;; -----------------------
+
+;; Define media entry spec
+(sa/def :me1/media_entry
+  (st/spec {:spec (sa/keys :req-un [::sp/id]
+                    :opt-un [::sp/responsible_user_id
+                             ::sp/get_full_size
+                             ::sp/creator_id
+                             ::sp/updated_at
+                             ::sp/edit_session_updated_at
+                             ::sp/is_published
+                             ::sp/get_metadata_and_previews
+                             ::sp/meta_data_updated_at
+                             ::sp/created_at])
+            :description "Represents a media entry with optional metadata"}))
+
+;; FIXME: can be null
+;(sa/def :me1/meta_data
+;  (st/spec {:spec (sa/or :null nil? :any any?)
+;            :description "Represents metadata, which can be null or any value"}))
+(sa/def :me1/meta_data (st/spec {:spec any?}))
+
+
+;; FIXME: can be null
+;(sa/def :me1/media_files
+;  (st/spec {:spec (sa/coll-of any? :kind vector?)
+;            :description "An array of media files"}))
+(sa/def :me1/media_files (st/spec {:spec any?}))
+
+
+;; FIXME: can be null
+;(sa/def :me1/previews
+;  (st/spec {:spec (sa/coll-of any? :kind vector?)
+;            :description "An array of previews"}))
+(sa/def :me1/previews (st/spec {:spec any?}))
+
+
+(sa/def :me1/media_entries
+  (st/spec {:spec (sa/coll-of :me1/media_entry)
+            :description "An array of media entries"}))
+
+;; Define the complete response spec
+(sa/def ::media-entry-response2-def
+  (st/spec {:spec (sa/keys :req-un [:me1/media_entries :me1/meta_data :me1/media_files :me1/previews]
+                    ;:opt-un []
+                    )
+            ;:description "Represents the full response structure"
+            }))
+
+
+;; -----------------------
+
+
 (sa/def ::media-entries-resp-def
   (sa/keys :opt-un
            [::sp/responsible_user_id ::sp/get_full_size ::sp/creator_id ::sp/updated_at
@@ -345,7 +399,7 @@
    {:openapi {:tags ["api/media-entries"]}}
    ["media-entries"
     {:get
-     {:summary "Query media-entries."
+     {:summary "Query media-entries. (public)"
       :handler handle_query_media_entry
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
@@ -356,13 +410,13 @@
                        :body any?}}}}]
    ["media-entries-related-data"
     {:get
-     {:summary "Query media-entries with all related data. (FIXME)"
+     {:summary "Query media-entries with all related data. (auth)"
       :handler handle_query_media_entry-related-data
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries with all related data."
-                       :body ::media-entry-response-def}}}}]])
+                       :body ::media-entry-response2-def}}}}]])
 
 (def ring-admin-routes
   ["/"

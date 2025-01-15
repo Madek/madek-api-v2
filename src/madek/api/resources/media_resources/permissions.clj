@@ -178,8 +178,11 @@
 
 (defn permission-by-auth-entity? [resource auth-entity perm-name mr-type tx]
   (or (perm-name resource)
-      (let [auth-entity-id (:id auth-entity)]
+      (let [auth-entity-id (:id auth-entity)
+            p (println ">o> abc.(:type auth-entity) ??" (:type auth-entity))
+            ]
         (-> (case (:type auth-entity)
+              nil (throw (ex-info "Anonymous entity has no permissions." {:status 401}))
               "User" (or (= auth-entity-id (:responsible_user_id resource))
                          (some #(= (:responsible_delegation_id resource) %) (c/delegation-ids auth-entity-id tx))
                          (seq (c/query-user-permissions resource
