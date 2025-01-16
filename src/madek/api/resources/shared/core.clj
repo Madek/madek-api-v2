@@ -191,8 +191,8 @@
 
 
 ;; Flag to
-(defn ?token? [text] (apply str text " [mr/ IST / token]"))
-(defn ?session? [text] (apply str text " [mr / IST / session]"))
+(defn ?token? [text] (apply str text " [mr/ IST / token-auth]"))
+(defn ?session? [text] (apply str text " [mr / IST / session-auth]"))
 (defn ?no-auth? [text] (apply str text " [mr / IST / no-auth]"))
 
 

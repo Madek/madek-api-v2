@@ -6,6 +6,7 @@
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
             [madek.api.resources.meta_data.common :refer :all]
+            [madek.api.resources.shared.core :as fl]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -249,7 +250,7 @@
                                                    404 {:description "Not found."
                                                         :body s/Any}}})
 
-(def collection_id.meta-data {:summary "Get meta-data for collection."
+(def collection_id.meta-data {:summary (fl/?token? "Get meta-data for collection.")
                               :handler meta-data.index/get-index
                               :middleware [jqh/ring-wrap-add-media-resource
                                            jqh/ring-wrap-authorization-view]
@@ -276,7 +277,6 @@
                                                              :meta_data_updated_at s/Str
                                                              :json (s/maybe s/Any)
                                                              :other_media_entry_id (s/maybe s/Uuid)}]}
-
 
                                                }}})
 
@@ -364,7 +364,7 @@
    (s/optional-key :md_keywords) s/Any
    (s/optional-key :keywords) s/Any})
 
-(def collection_id.meta-data-related {:summary "Get meta-data for collection."
+(def collection_id.meta-data-related {:summary (fl/?token? "Get meta-data for collection.")
                                       :description (mslurp (io/resource "md/meta-data-related.md"))
                                       :handler handle_get-mr-meta-data-with-related
                                       :middleware [jqh/ring-wrap-add-media-resource
@@ -384,55 +384,40 @@
                                                        }}})
 
 
-;(s/defschema MetaData
-;  {:created_by_id s/Uuid
-;   :media_entry_id (s/maybe s/Uuid)
-;   :collection_id s/Uuid
-;   :type (s/enum "MetaDatum::Keywords")
-;   :meta_key_id s/Str
-;   :string (s/maybe s/Str)
-;   :id s/Uuid
-;   :meta_data_updated_at s/Inst
-;   :json (s/maybe s/Any)
-;   :other_media_entry_id (s/maybe s/Uuid)})
-;
-;(s/defschema MdKeyword
-;  {:id s/Uuid
-;   :created_by_id s/Uuid
-;   :meta_datum_id s/Uuid
-;   :keyword_id s/Uuid
-;   :created_at s/Inst
-;   :updated_at s/Inst
-;   :meta_data_updated_at s/Inst
-;   :position s/Int})
-;
-;(s/defschema Keyword
-;  {:description (s/maybe s/Str)
-;   :external_uris [s/Str]
-;   :meta_key_id s/Str
-;   :creator_id s/Uuid
-;   :term s/Str
-;   :updated_at s/Inst
-;   :rdf_class s/Str
-;   :id s/Uuid
-;   :position s/Int
-;   :created_at s/Inst})
-;
-;(s/defschema KeywordEntry
-;  {:meta-data MetaData
-;   :md_keywords [MdKeyword]
-;   :keywords [Keyword]})
 
+
+;(s/defschema KeywordEntry
+;  {:meta-data s/Any
+;   :md_keywords s/Any
+;   :keywords s/Any})
 
 (s/defschema KeywordEntry
-  {:meta-data s/Any
-   :md_keywords s/Any
-   :keywords s/Any})
+  {
+   ;:meta_data s/Any
+   :meta-data s/Any
+   (s/optional-key :meta_data) s/Any
+   ;(s/optional-key :meta-data) s/Any
+   (s/optional-key :keywords) s/Any
+   (s/optional-key :keywords_ids) s/Any
+   (s/optional-key  :md_keywords) s/Any
+   (s/optional-key  :defaultmetadata) s/Any
+   (s/optional-key  :defaultdata) s/Any
+   (s/optional-key  :people) s/Any
+   (s/optional-key  :md_people) s/Any
+   ;:keywords s/Any
+   })
 
 ; 25a5d974-1855-458b-b6ba-cc3272a4865b
 ; media_content:portrayed_object_materials
 
-(def collection_id.meta-datum.meta_key_id {:summary "Get meta-data for collection and meta-key."
+(def collection_id.meta-datum.meta_key_id {:summary (fl/?no-auth? "Get meta-data for collection and meta-key.")
+
+                                           :description "
+81f47499-d7a9-4e28-9e58-c6e2db2334ea
+madek_core:keywords
+madek_core:subtitle
+"
+
                                            :handler handle_get-meta-key-meta-data
 
                                            :middleware [wrap-add-meta-key
@@ -491,11 +476,7 @@
 ;   :keywords [Keyword]})
 
 
-(s/defschema KeywordEntry
-  {:meta_data s/Any
-   :keywords_ids s/Any
-   :md_keywords s/Any
-   :keywords s/Any})
+
 
 ; TODO
 ; 25a5d974-1855-458b-b6ba-cc3272a4865b

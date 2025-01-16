@@ -192,8 +192,9 @@
   (sa/keys :req-un [::sp/id
                     ::sp/created_at
                     ::sp-nil/deleted_at
-                    ::sp/child_id
-                    ::sp/parent_id]
+                    ;::sp/child_id
+                    ;::sp/parent_id
+                    ]
            :opt-un [::sp/get_metadata_and_previews
                     ::sp/layout
                     ::sp/is_master
@@ -201,7 +202,6 @@
                     ::sp-nil/responsible_user_id
                     ::sp/creator_id
                     ::sp-nil/default_context_id
-                    ::sp/deleted_at
                     ::sp/updated_at
                     ::sp/meta_data_updated_at
                     ::sp/edit_session_updated_at
@@ -210,7 +210,12 @@
                     ::sp-nil/responsible_delegation_id
                     ::sp/default_resource_type
                     ::sp-nil/position
-                    ::sp-nil/order]))
+                    ::sp-nil/order
+
+                    ;; is this really really required
+                    ;::sp/child_id
+                    ;::sp/parent_id
+                    ]))
 
 (sa/def :usr-collection-list/groups (st/spec {:spec (sa/coll-of :usr/collections)
                                               :description "A list of persons"}))
@@ -265,7 +270,7 @@
 
    ["collection"
     {:post
-     {:summary (fl/?token? (sd/sum_usr "Create collection"))
+     {:summary (fl/?no-auth? (sd/sum_usr "Create collection"))
 
       ;:description "CAUTION: Either :responsible_user_id OR :responsible_user_id has to be set - not both (db-constraint)"
       :description (mslurp (io/resource "md/collections-post.md"))
@@ -282,7 +287,7 @@
                        :body s/Any}}}}]
 
    ["collection/:collection_id"
-    {:get {:summary (fl/?token? (sd/sum_usr_pub "Get collection for id. b8a02655-b499-4516-8c96-e18ff849698e"))
+    {:get {:summary (fl/?no-auth? (sd/sum_usr_pub "Get collection for id. b8a02655-b499-4516-8c96-e18ff849698e"))
            :handler handle_get-collection
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-view]
@@ -297,7 +302,12 @@
                        422 {:description "Could not get collection."
                             :body s/Any}}}
 
-     :put {:summary (sd/sum_usr "Update collection for id.")
+     :put {
+           :summary (fl/?token? (sd/sum_usr "Update collection for id."))
+           :description "
+b8a02655-b499-4516-8c96-e18ff849698e\n\n
+{\n  \"layout\": \"grid\",\n  \"is_master\": true,\n  \"sorting\": \"title ASC\",\n  \"default_context_id\": null,\n  \"workflow_id\": null,\n  \"default_resource_type\": \"collections\"\n}
+"
            :handler handle_update-collection
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-metadata]
@@ -307,8 +317,11 @@
            :parameters {:path {:collection_id uuid?}
                         :body :usr/collections-update}
            :responses {200 {:description "Returns the updated collection."
-                            ;:body :usr/collections}
-                            :body any?}
+
+                            ;:body :usr/collections}         ;;map only causes error
+                            :body :usr-collection-list/groups}
+                            ;:body any?}
+
                        404 {:description "Collection not found."
                             :body any?}
                        422 {:description "Could not update collection."
@@ -316,7 +329,7 @@
 
 ; TODO Frage: wer darf eine col löschen: nur der benutzer und der responsible
      ; TODO check owner or responsible
-     :delete {:summary (sd/sum_usr "Delete collection for id.")
+     :delete {:summary (fl/?token? (sd/sum_usr "Delete collection for id."))
               :handler handle_delete-collection
               :middleware [jqh/ring-wrap-add-media-resource
                            jqh/ring-wrap-authorization-edit-permissions]
