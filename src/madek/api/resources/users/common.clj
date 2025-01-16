@@ -23,6 +23,7 @@
    :users.last_signed_in_at
    :users.login
    :users.notes
+   :users.password_sign_in_enabled
    :users.person_id
    :users.settings
    :users.updated_at])

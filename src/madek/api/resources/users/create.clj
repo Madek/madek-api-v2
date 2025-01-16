@@ -40,6 +40,7 @@
    (s/optional-key :institutional_id) s/Str
    (s/optional-key :last_name) s/Str
    (s/optional-key :login) s/Str
+   (s/optional-key :password_sign_in_enabled) s/Bool
    (s/optional-key :notes) (s/maybe s/Str)
    (s/optional-key :settings) v/vector-or-hashmap-validation})
 
@@ -56,6 +57,7 @@
    :updated_at s/Any
    :accepted_usage_terms_id (s/maybe s/Uuid)
    :id s/Uuid
+   :password_sign_in_enabled (s/maybe s/Bool)
    :notes (s/maybe s/Str)
    :last_name (s/maybe s/Str)
    :last_signed_in_at (s/maybe s/Any)
