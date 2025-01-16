@@ -67,12 +67,40 @@
     (catcher/with-logging {}
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
+
+
+            p (println ">o> abc1" parent-id (type parent-id))
+            p (println ">o> abc2" child-id (type child-id))
+
             data (-> req :parameters :body)
             ins-data (assoc data :parent_id parent-id :child_id child-id)
-            sql-map {:insert-into :collection_collection_arcs
-                     :values [ins-data]}
-            sql (-> sql-map sql-format)]
-        (if-let [ins-res (next.jdbc/execute! (:tx req) [sql ins-data])]
+
+            p (println ">o> abc.ins-data" ins-data)
+
+            ;sql-map {:insert-into :collection_collection_arcs
+            ;         :values [ins-data]}
+            ;sql (-> sql-map sql-format)
+
+            ins-data (if (nil? (:order ins-data))
+                   (dissoc ins-data :order)
+                   (let [
+                         ins-data (assoc ins-data "order" (:order ins-data) )
+                         ins-data (dissoc ins-data :order)
+                         ] ins-data
+                           )
+                   )
+
+
+            query (-> (sql/insert-into :collection_collection_arcs)
+                      (sql/values [ins-data])
+                      (sql/returning :*)
+                      sql-format)
+
+            p (println ">o> abc.query" query)
+
+            ]
+        (if-let [ins-res (next.jdbc/execute-one! (:tx req) query)]
+        ;(if-let [ins-res (next.jdbc/execute! (:tx req) [sql ins-data])]
           (sd/response_ok ins-res)
           (sd/response_failed "Could not create collection-collection-arc" 406))))
     (catch Exception e (sd/response_exception e))))
@@ -83,15 +111,36 @@
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
             data (-> req :parameters :body)
+
+            p (println ">o> data" data)
+            p (println ">o> data1" (:order data) (type (:order data)))
+
+            data (if (nil? (:order data))
+                   (dissoc data :order)
+                   (let [
+                         data (assoc data "order" (:order data) )
+                         data (dissoc data :order)
+                         ] data
+                     )
+                   )
+
+            p (println ">o> data1b" (:collection_collection_arcs.order data) (type (:order data)))
+
             query (-> (sql/update :collection_collection_arcs)
                       (sql/set data)
-                      (sql/where [:= :parent_id parent-id
-                                  := :child_id child-id])
+                      (sql/where [:= :parent_id parent-id]
+                                  [:= :child_id child-id])
+                      (sql/returning :*)
                       sql-format)
+            p (println ">o> abc.query" query)
             tx (:tx req)
-            result (next.jdbc/execute! tx query)]
+            result (next.jdbc/execute! tx query)
 
-        (if (= 1 (first result))
+            p (println ">o> abc.result" result)
+            ]
+
+        (if (= 1 (count result))
+        ;(if (= 1 (first result))
           (sd/response_ok (dbh/query-eq-find-one
                            :collection_collection_arcs
                            :parent_id parent-id
@@ -113,13 +162,19 @@
                      tx)
             tx (:tx req)
             query (-> (sql/delete-from :collection_collection_arcs)
-                      (sql/where [:= :parent_id parent-id
-                                  := :child_id child-id])
+                      (sql/where [:and [:= :parent_id parent-id]
+                                  [:= :child_id child-id]])
+                      (sql/returning :*)
                       sql-format)
 
-            delresult (next.jdbc/execute! tx query)]
+            delresult (next.jdbc/execute! tx query)
+            p (println ">o> abc.delresult1" delresult)
+            p (println ">o> abc.delresult2" (= 1 (first delresult)))
+            p (println ">o> abc.delresult3" (first delresult))
+            ]
 
-        (if (= 1 (first delresult))
+        (if (first delresult)
+        ;(if (= 1 (first delresult))
           (sd/response_ok olddata)
           (sd/response_failed "Could not delete collection collection arc." 422))))
     (catch Exception e (sd/response_exception e))))
@@ -188,7 +243,7 @@
    ;]
    ["/collection-arc/:child_id"
     {:post
-     {:summary (sd/sum_todo "Create collection collection arc")
+     {:summary (fl/?no-auth? (sd/sum_todo "Create collection collection arc"))
       :handler handle_create-col-col-arc
       :swagger {:produces "application/json"
                 :consumes "application/json"}
@@ -202,7 +257,8 @@
                        :body s/Any}}}
 
      :get
-     {:summary "Get collection collection arcs."
+     {:summary (fl/?no-auth? "Get collection collection arcs.")
+      :description "- parent_id f041a641-92d8-42ed-813b-e51d2069b042 \n- child_id b229a2a3-8bd1-4902-916c-6674b5a8fced"
       :handler handle_arc-by-parent-and-child
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
@@ -216,7 +272,7 @@
 
      ; TODO col col arc update tests
      :put
-     {:summary (sd/sum_usr "Update collection collection arc")
+     {:summary (fl/?no-auth? (sd/sum_usr "Update collection collection arc"))
       :handler handle_update-arc
       :swagger {:produces "application/json"
                 :consumes "application/json"}
@@ -233,7 +289,7 @@
 
      ; TODO col col arc delete tests
      :delete
-     {:summary (sd/sum_usr "Delete collection collection arc")
+     {:summary (fl/?no-auth? (sd/sum_usr "Delete collection collection arc"))
       :handler handle_delete-arc
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
