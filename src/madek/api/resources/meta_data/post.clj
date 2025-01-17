@@ -166,6 +166,7 @@
 
         sql-query (-> (sql/insert-into :meta_data_roles)
                       (sql/values [data])
+                      (sql/returning :*)                    ;; FIXME: is correct but key-prefix is still in use
                       sql-format)
         result (jdbc/execute! db sql-query)]
     result))
@@ -238,7 +239,9 @@
 ;; ######## handler ################################################
 
 (def meta-datum.meta_key_id.text
-  {:summary "Create meta-data text for media-entry A2"
+  {
+   :summary "Create meta-data text for media-entry A2"
+   :description "- 8cd394a8-b26e-4f17-aa01-9c71f1a413fd\n- media_object:test_me"
    :handler handle_create-meta-data-text
    :middleware [jqh/ring-wrap-add-media-resource
                 jqh/ring-wrap-authorization-edit-metadata]
@@ -247,7 +250,25 @@
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
    :responses {200 {:description "Returns the created meta-data text."
-                    :body s/Any}}})
+
+                    ;:body s/Any
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id (s/maybe s/Uuid)
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Any)
+                           }
+
+                    ;:body {s/Any}
+
+
+
+                    }}})
 
 (def meta-datum.meta_key_id.text-date
   {:summary "Create meta-data text-date for media-entry"
@@ -259,7 +280,37 @@
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
    :responses {200 {:description "Returns the created meta-data text-date."
-                    :body s/Any}}})
+
+                    ;:body s/Any
+
+
+                    ;{
+                    ; "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+                    ; "media_entry_id": "d28fea93-7ed9-439d-9a9b-a4b3c164cc10",
+                    ; "collection_id": null,
+                    ; "type": "MetaDatum::TextDate",
+                    ; "meta_key_id": "media_content:mee",
+                    ; "string": "string",
+                    ; "id": "c652c0fc-dcd3-48a0-bff1-f271f4f1d16a",
+                    ; "meta_data_updated_at": "2025-01-17T18:26:38.494081Z",
+                    ; "json": null,
+                    ; "other_media_entry_id": null
+                    ; }
+
+                    :body {
+                           :created_by_id s/Uuid
+                            :media_entry_id (s/maybe s/Uuid)
+                            :collection_id s/Uuid
+                            :type s/Str
+                            :meta_key_id s/Str
+                            :string s/Str
+                            :id s/Uuid
+                            :meta_data_updated_at (s/maybe s/Any)
+                            :json (s/maybe s/Any)
+                            :other_media_entry_id (s/maybe s/Any)
+                           }
+
+                    }}})
 
 
 
@@ -413,7 +464,36 @@
                        :person_id s/Uuid
                        :position s/Int}}
    :responses {200 {:description "Returns the created meta-data role."
-                    :body s/Any}}})
+
+                    ;:body s/Any
+                    :body {
+                           :meta_data s/Any
+                           :md_roles s/Any
+                           }
+
+
+                    ;{
+                    ; "meta_data": {
+                    ;               "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+                    ;               "media_entry_id": "8cd394a8-b26e-4f17-aa01-9c71f1a413fd",
+                    ;               "collection_id": null,
+                    ;               "type": "MetaDatum::Text",
+                    ;               "meta_key_id": "media_object:test_me",
+                    ;               "string": "string",
+                    ;               "id": "29d80f51-2aa1-4399-910c-b8df565b088d",
+                    ;               "meta_data_updated_at": "2025-01-17T18:39:58.821238Z",
+                    ;               "json": null,
+                    ;               "other_media_entry_id": null
+                    ;               },
+                    ; "md_roles": [
+                    ;              {
+                    ; FIXME: return data not count
+                    ;               "next.jdbc/update-count": 1
+                    ;               }
+                    ;              ]
+                    ; }
+
+                    }}})
 
 (def collection_id.meta-datum:meta_key_id.text
   {
