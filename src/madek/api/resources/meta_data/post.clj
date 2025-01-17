@@ -286,12 +286,15 @@
    :meta_key_id s/Str
    :string (s/maybe s/Str)
    :id s/Uuid
-   :meta_data_updated_at s/Inst
+   :meta_data_updated_at s/Any ;; causes response error
+   ;:meta_data_updated_at s/Str
    :json JsonContent
    :other_media_entry_id (s/maybe s/Uuid)})
 
 (def meta-datum.meta_key_id.json
-  {:summary "Create meta-data json for media-entry"
+  {
+   :summary "Create meta-data json for media-entry S3"
+   :description "- 2befd736-48bc-403e-ac69-9a94011e9470\n-test_me:test_me"
    :handler handle_create-meta-data-json
    :middleware [jqh/ring-wrap-add-media-resource
                 jqh/ring-wrap-authorization-edit-metadata]
@@ -300,10 +303,42 @@
                        :meta_key_id s/Str}
                 :body {:json s/Any}}
    :responses {200 {:description "Returns the created meta-data json."
-                    :body s/Any}}})
+
+                    ;:body s/Any
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id s/Uuid
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string (s/maybe s/Str)
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json s/Str
+                           :other_media_entry_id (s/maybe s/Any)
+                            }
+                    ;{
+                    ; "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+                    ; "media_entry_id": "2befd736-48bc-403e-ac69-9a94011e9470",
+                    ; "collection_id": null,
+                    ; "type": "MetaDatum::JSON",
+                    ; "meta_key_id": "test_me:test_me",
+                    ; "string": null,
+                    ; "id": "f44ecb1d-11f1-4daf-a333-a5ff5bb548c1",
+                    ; "meta_data_updated_at": "2025-01-17T16:50:27.041362Z",
+                    ; "json": {
+                    ;          "test": "me"
+                    ;          },
+                    ; "other_media_entry_id": null
+                    ; }
+
+                    }}})
 
 (def meta-datum.meta_key_id.keyword.keyword_id
-  {:summary "Create meta-data keyword for media-entry."
+  {
+   :summary "Create meta-data keyword for media-entry."
+   :description "- a0040f48-020e-47bd-ae10-df7b28c8ff9c\n
+- zhdk_bereich:project_type\n
+- 5a55f216-432c-4804-b1b9-9d943b00911b"
    :handler handle_create-meta-data-keyword
    :middleware [;wrap-me-add-meta-data
                 wrap-add-keyword
@@ -314,7 +349,41 @@
                        :meta_key_id s/Str ;; is this meta_datum_id
                        :keyword_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data keyword."
-                    :body s/Any}}})
+                    ;:body s/Any
+
+
+                    :body {:meta_data s/Any
+                           :md_keywords s/Any
+                           }
+
+                    ;{
+                    ; "meta_data": {
+                    ;               "created_by_id": "98954f14-0f95-4de6-b7d5-0113643cb2b3",
+                    ;               "media_entry_id": "a0040f48-020e-47bd-ae10-df7b28c8ff9c",
+                    ;               "collection_id": null,
+                    ;               "type": "MetaDatum::Keywords",
+                    ;               "meta_key_id": "zhdk_bereich:project_type",
+                    ;               "string": null,
+                    ;               "id": "8d626684-76eb-4953-ba67-44ace3d87292",
+                    ;               "meta_data_updated_at": "2019-06-28T13:24:59.889018Z",
+                    ;               "json": null,
+                    ;               "other_media_entry_id": null
+                    ;               },
+                    ; "md_keywords": [
+                    ;                 {
+                    ;                  "id": "b710a131-adb9-4231-9658-7509d7e5d7c5",
+                    ;                  "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+                    ;                  "meta_datum_id": "8d626684-76eb-4953-ba67-44ace3d87292",
+                    ;                  "keyword_id": "5a55f216-432c-4804-b1b9-9d943b00911b",
+                    ;                  "created_at": "2025-01-17T17:25:08.918321Z",
+                    ;                  "updated_at": "2025-01-17T17:25:08.918321Z",
+                    ;                  "meta_data_updated_at": "2025-01-17T17:25:08.918321Z",
+                    ;                  "position": 0
+                    ;                  }
+                    ;                 ]
+                    ; }
+
+                    }}})
 
 (def media_entry_id.meta-datum.meta_key_id.people.person_id
   {:summary "Create meta-data people for a media-entries meta-key."
@@ -449,7 +518,11 @@
 
 (def collection_id.meta_key_id.json
   {:summary "Create meta-data json for collection. X2"
-   :description "- Example:\n```\n{\"json\": \"{\\\"description\\\":null,\\\"external_uris\\\":[],\\\"meta_key_id\\\":\\\"research_video:rv_annotations\\\",\\\"term\\\":\\\"Installation22a\\\"}\"}\n```"
+   :description "\n
+   - 25a5d974-1855-458b-b6ba-cc3272a4865b \n
+   - research_video:test_me \n
+   - FYI: you've got to create an meta_keys with Metadata:JSON \n
+   - Example:\n```\n{\"json\": \"{\\\"description\\\":null,\\\"external_uris\\\":[],\\\"meta_key_id\\\":\\\"research_video:rv_annotations\\\",\\\"term\\\":\\\"Installation22a\\\"}\"}\n```"
    :handler handle_create-meta-data-json
    :middleware [jqh/ring-wrap-add-media-resource
                 jqh/ring-wrap-authorization-edit-metadata]
@@ -461,11 +534,17 @@
                     ;:body s/Any
 
                     :body MetaDataJSON
+                    ;:body MetaDataJSONRsponse
 
                     }}})
 
 (def collection_id.meta_key_id.keyword.keyword_id
-  {:summary "Create meta-data keyword for collection."
+  {
+   :summary "Create meta-data keyword for collection. S1"
+   :description "- col 2e9fa545-2d8b-418d-82bb-368b07841716\n
+- mkid madek_core:keywords\n
+- kwid a5f60d77-31a5-4688-93e1-3351a1a06b1d"
+
    :handler handle_create-meta-data-keyword
    :middleware [;wrap-me-add-meta-data
                 wrap-add-keyword
@@ -476,10 +555,38 @@
                        :meta_key_id s/Str
                        :keyword_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data keyword."
+
+                    ;{
+                    ; "meta_data": {
+                    ;               "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                    ;               "media_entry_id": null,
+                    ;               "collection_id": "2e9fa545-2d8b-418d-82bb-368b07841716",
+                    ;               "type": "MetaDatum::Keywords",
+                    ;               "meta_key_id": "madek_core:keywords",
+                    ;               "string": null,
+                    ;               "id": "f25f8929-24cd-4776-85ed-fa215b1bca05",
+                    ;               "meta_data_updated_at": "2024-12-05T12:14:58.646707Z",
+                    ;               "json": null,
+                    ;               "other_media_entry_id": null
+                    ;               },
+                    ; "md_keywords": [
+                    ;                 {
+                    ;                  "id": "2d69acd7-a7a0-457c-9901-83b4fa746715",
+                    ;                  "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+                    ;                  "meta_datum_id": "f25f8929-24cd-4776-85ed-fa215b1bca05",
+                    ;                  "keyword_id": "a5f60d77-31a5-4688-93e1-3351a1a06b1d",
+                    ;                  "created_at": "2025-01-16T18:24:56.045177Z",
+                    ;                  "updated_at": "2025-01-16T18:24:56.045177Z",
+                    ;                  "meta_data_updated_at": "2025-01-16T18:24:56.045177Z",
+                    ;                  "position": 0
+                    ;                  }
+                    ;                 ]
+                    ; }
+
                     :body s/Any}}})
 
 (def collection_id.meta_key_id.people.person_id
-  {:summary "Create meta-data people for media-entry"
+  {:summary "Create meta-data people for media-entry S4"
    :handler handle_create-meta-data-people
    :middleware [;wrap-me-add-meta-data
                 wrap-add-person
@@ -490,7 +597,33 @@
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data people."
-                    :body s/Any}}})
+                    :body s/Any
+
+
+                    ;{
+                    ; "meta_data": {
+                    ;               "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                    ;               "media_entry_id": null,
+                    ;               "collection_id": "2e9fa545-2d8b-418d-82bb-368b07841716",
+                    ;               "type": "MetaDatum::People",
+                    ;               "meta_key_id": "zhdk_bereich:institutional_affiliation",
+                    ;               "string": null,
+                    ;               "id": "9eb1bff5-1391-40e8-bb45-614bd61c39a0",
+                    ;               "meta_data_updated_at": "2024-12-05T12:14:58.646707Z",
+                    ;               "json": null,
+                    ;               "other_media_entry_id": null
+                    ;               },
+                    ; "md_people": {
+                    ;               "meta_data_people/meta_datum_id": "9eb1bff5-1391-40e8-bb45-614bd61c39a0",
+                    ;               "meta_data_people/person_id": "5d94f56a-8031-4a69-8937-0f723ce6bab2",
+                    ;               "meta_data_people/created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
+                    ;               "meta_data_people/meta_data_updated_at": "2025-01-16T18:45:29.610660Z",
+                    ;               "meta_data_people/id": "917be688-7a55-4d1c-8ce3-0e4a5a027cb8",
+                    ;               "meta_data_people/position": 0
+                    ;               }
+                    ; }
+
+                    }}})
 
 (def collection_id.meta_key_id.role.role_id
   {:summary "Create meta-data role for media-entry B2"

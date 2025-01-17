@@ -9,10 +9,11 @@
 
 
 
-              [madek.api.constants :refer [FILE_STORAGE_DIR]]
+            [madek.api.constants :refer [FILE_STORAGE_DIR]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
+            [madek.api.resources.shared.core :as fl]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -460,7 +461,7 @@
   ["/media-entry"
    {:openapi {:tags ["api/media-entry"]}}
    ["/"
-    {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready")
+    {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready L1")
             :handler handle_create-media-entry
             :swagger {:consumes "multipart/form-data"
                       :produces "application/json"}
@@ -477,7 +478,7 @@
                          :multipart {:file multipart/temp-file-part}}}}]
 
    ["/:media_entry_id"
-    {:get {:summary "Get media-entry for id."
+    {:get {:summary (fl/?token? "Get media-entry for id. L2 b24aaccf-ab37-491e-aebe-61e4f7762804")
            :handler handle_get-media-entry
            :swagger {:produces "application/json"}
            :content-type "application/json"
