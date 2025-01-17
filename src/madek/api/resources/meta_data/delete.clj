@@ -236,7 +236,41 @@
                                                           :meta_key_id s/Str
                                                           :keyword_id s/Uuid}}
                                       :responses {200 {:description "Returns the deleted meta-data."
-                                                       :body s/Any}}})
+                                                       ;:body s/Any
+
+
+                                                       ;{
+                                                       ; "meta_data": {
+                                                       ;               "created_by_id": "98954f14-0f95-4de6-b7d5-0113643cb2b3",
+                                                       ;               "media_entry_id": "a0040f48-020e-47bd-ae10-df7b28c8ff9c",
+                                                       ;               "collection_id": null,
+                                                       ;               "type": "MetaDatum::Keywords",
+                                                       ;               "meta_key_id": "zhdk_bereich:project_type",
+                                                       ;               "string": null,
+                                                       ;               "id": "8d626684-76eb-4953-ba67-44ace3d87292",
+                                                       ;               "meta_data_updated_at": "2025-01-17T17:25:08.918321Z",
+                                                       ;               "json": null,
+                                                       ;               "other_media_entry_id": null
+                                                       ;               },
+                                                       ; "md_keywords": [
+                                                       ;                 {
+                                                       ;                  "id": "a97cc120-6899-4e61-ade6-ce3df67dd80b",
+                                                       ;                  "created_by_id": "98954f14-0f95-4de6-b7d5-0113643cb2b3",
+                                                       ;                  "meta_datum_id": "8d626684-76eb-4953-ba67-44ace3d87292",
+                                                       ;                  "keyword_id": "1ecab382-d875-45c2-aeef-4420b702ec69",
+                                                       ;                  "created_at": "2019-06-28T13:24:59.889018Z",
+                                                       ;                  "updated_at": "2019-06-28T13:24:59.889018Z",
+                                                       ;                  "meta_data_updated_at": "2019-06-28T13:24:59.889018Z",
+                                                       ;                  "position": 0
+                                                       ;                  }
+                                                       ;                 ]
+                                                       ; }
+
+                                                       :body {:meta_data s/Any
+                                                              :md_keywords s/Any}
+
+
+                                                       }}})
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
