@@ -103,7 +103,8 @@
    {:openapi {:tags ["api/media-entry"]}}
    ; TODO media-entry preview auth
    ["/:media_entry_id/preview"
-    {:get {:summary "Get preview for media-entry id."
+    {:get {
+           :summary "Get preview for media-entry id. (TODO: replace size by enum[small .. tall])"
            :handler handle_get-preview
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
                         ;            media-files.authorization/ring-wrap-authorize-metadata-and-previews
@@ -118,7 +119,8 @@
 
    ; TODO media-entry preview auth
    ["/:media_entry_id/preview/data-stream"
-    {:get {:summary "Get preview for media-entry id."
+    {:get {
+           :summary "Get preview for media-entry id. (TODO: replace size by enum[small .. tall])"
            :handler preview/get-preview-file-data-stream
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
                         wrap-add-preview-for-media-file

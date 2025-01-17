@@ -467,15 +467,17 @@
                       :produces "application/json"}
             :content-type "application/json"
             :accept "multipart/form-data"
+            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
+                         :multipart {:file multipart/temp-file-part}}
             :middleware [authorization/wrap-authorized-user]
             ; cannot use schema, need to use spec for multiplart
             :coercion spec/coercion
+
             :responses {200 {:description "Returns the created media-entry."
                              :body any?}
                         406 {:description "Could not create media-entry."
                              :body any?}}
-            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
-                         :multipart {:file multipart/temp-file-part}}}}]
+            }}]
 
    ["/:media_entry_id"
     {:get {:summary (fl/?token? "Get media-entry for id. L2 b24aaccf-ab37-491e-aebe-61e4f7762804")

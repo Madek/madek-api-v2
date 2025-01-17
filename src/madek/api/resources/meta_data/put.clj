@@ -159,7 +159,21 @@
                                                        :meta_key_id s/Str}
                                                 :body {:string s/Str}}
                                    :responses {200 {:description "Returns the updated meta-data."
-                                                    :body s/Any}}})
+
+                                                    ;:body s/Any
+                                                    :body {:created_by_id s/Uuid
+                                                           :media_entry_id (s/maybe s/Uuid)
+                                                           :collection_id (s/maybe s/Uuid)
+                                                           :type s/Str
+                                                           :meta_key_id s/Str
+                                                           :string s/Str
+                                                           :id s/Uuid
+                                                           :meta_data_updated_at (s/maybe s/Any)
+                                                           :json (s/maybe s/Any)
+                                                           :other_media_entry_id (s/maybe s/Any)
+                                                           }
+
+                                                    }}})
 
 (def collection.meta_key_id.json {:summary (fl/?token? "Update meta-data json for collection. X5")
                                   :description "- 25a5d974-1855-458b-b6ba-cc3272a4865b\n
