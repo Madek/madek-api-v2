@@ -168,7 +168,7 @@
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
                          406 {:description "Creation failed."
-                              :schema string?
+                              :body string?
                               :examples {"application/json" {:message "Could not create full_text."}}}}}}]
 
     ["/full_text/:media_resource_id"
@@ -181,7 +181,7 @@
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
                          406 {:description "Creation failed."
-                              :schema string?
+                              :body string?
                               :examples {"application/json" {:message "Could not create full_text."}}}}
              :middleware [wrap-authorize-admin!]}
       :put {:summary (sd/sum_adm "Update full_text.")
@@ -193,7 +193,7 @@
             :responses {200 {:description "Returns the updated full_text."
                              :body ::response-schema-def}
                         406 {:description "Update failed."
-                             :schema string?
+                             :body string?
                              :examples {"application/json" {:message "Could not update full_text."}}}}
             :handler handle_update-full_texts}
 
@@ -205,7 +205,7 @@
                :responses {200 {:description "Returns the deleted full_text."
                                 :body ::response-schema-def}
                            406 {:description "Deletion failed."
-                                :schema string?
+                                :body string?
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}
                :handler handle_delete-full_texts}}]]])
 
@@ -243,7 +243,7 @@
                                      }
                               }
                          406 {:description "Creation failed."
-                              :schema s/Str
+                              :body s/Str
                               :examples {"application/json" {:message "Could not create full_text."}}}}
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
@@ -263,7 +263,7 @@
                                     }
                              }
                         406 {:description "Update failed."
-                             :schema s/Str
+                             :body s/Str
                              :examples {"application/json" {:message "Could not update full_text."}}}}
             :handler handle_update-full_texts}
 
@@ -281,7 +281,7 @@
                                        }
                                 }
                            406 {:description "Deletion failed."
-                                :schema s/Str
+                                :body s/Str
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}
                :handler handle_delete-full_texts}}]]])
 
@@ -323,7 +323,7 @@ where e.id=t.media_resource_id"
                                      }
                               }
                          406 {:description "Creation failed."
-                              :schema s/Str
+                              :body s/Str
                               :examples {"application/json" {:message "Could not create full_text."}}}}
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
@@ -339,7 +339,7 @@ where e.id=t.media_resource_id"
                              :body s/Any}
                         406 {:description "Update failed."
 
-                             ;:schema s/Str
+                             ;:body s/Str
 
                              :body {:media_resource_id s/Uuid
                                     :text s/Str
@@ -363,6 +363,6 @@ where e.id=t.media_resource_id"
 
                                 }
                            406 {:description "Deletion failed."
-                                :schema s/Str
+                                :body s/Str
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}
                :handler handle_delete-full_texts}}]]])
