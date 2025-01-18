@@ -162,7 +162,50 @@
                                                                 :meta_key_id s/Str
                                                                 :keyword_id s/Uuid}}
                                             :responses {200 {:description "Returns the deleted meta-data."
-                                                             :body s/Any}}})
+                                                             ;:body s/Any
+
+                                                             :body {
+                                                                    :meta_data s/Any
+                                                                    :md_keywords s/Any
+                                                                    ;"meta_data": {
+                                                                    ;              "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                                                                    ;              "media_entry_id": null,
+                                                                    ;              "collection_id": "2e9fa545-2d8b-418d-82bb-368b07841716",
+                                                                    ;              "type": "MetaDatum::Keywords",
+                                                                    ;              "meta_key_id": "madek_core:keywords",
+                                                                    ;              "string": null,
+                                                                    ;              "id": "f25f8929-24cd-4776-85ed-fa215b1bca05",
+                                                                    ;              "meta_data_updated_at": "2025-01-16T18:24:56.045177Z",
+                                                                    ;              "json": null,
+                                                                    ;              "other_media_entry_id": null
+                                                                    ;              },
+                                                                    ;"md_keywords": [
+                                                                    ;                {
+                                                                    ;                 "id": "178b596e-d0a5-443e-879b-cca5057137b7",
+                                                                    ;                 "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                                                                    ;                 "meta_datum_id": "f25f8929-24cd-4776-85ed-fa215b1bca05",
+                                                                    ;                 "keyword_id": "aa1c9ff4-005c-4fbd-b4e2-9b9ec7e8bc31",
+                                                                    ;                 "created_at": "2024-12-05T12:14:58.830258Z",
+                                                                    ;                 "updated_at": "2024-12-05T12:14:58.830258Z",
+                                                                    ;                 "meta_data_updated_at": "2024-12-05T12:14:58.646707Z",
+                                                                    ;                 "position": 0
+                                                                    ;                 },
+                                                                    ;                {
+                                                                    ;                 "id": "f4b50f67-f0d1-42d9-9c99-1a7f79f7743f",
+                                                                    ;                 "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                                                                    ;                 "meta_datum_id": "f25f8929-24cd-4776-85ed-fa215b1bca05",
+                                                                    ;                 "keyword_id": "b2a92aa5-2dac-4203-8e83-7787b473904b",
+                                                                    ;                 "created_at": "2024-12-05T12:14:58.836569Z",
+                                                                    ;                 "updated_at": "2024-12-05T12:14:58.836569Z",
+                                                                    ;                 "meta_data_updated_at": "2024-12-05T12:14:58.646707Z",
+                                                                    ;                 "position": 0
+                                                                    ;                 }
+                                                                    ;                ]
+                                                                    }
+
+
+
+                                                             }}})
 
 ;(def meta_key_id.role.role_id.person_id {:summary "Delete meta-data role for media-entry."
 ;                                         :handler handle_delete-meta-data-role
@@ -255,19 +298,61 @@
                                                                   :meta_key_id s/Str
                                                                   :person_id s/Uuid}}
                                               :responses {200 {:description "Returns the deleted meta-data."
-                                                               :body s/Any}}})
+                                                               ;:body s/Any
 
-(def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
-                                     :handler handle_delete-meta-data-keyword
-                                     :middleware [wrap-add-keyword
-                                                  jqh/ring-wrap-add-media-resource
-                                                  jqh/ring-wrap-authorization-edit-metadata]
-                                     :coercion reitit.coercion.schema/coercion
-                                     :parameters {:path {:collection_id s/Uuid
-                                                         :meta_key_id s/Str
-                                                         :keyword_id s/Uuid}}
-                                     :responses {200 {:description "Returns the deleted meta-data."
-                                                      :body s/Any}}})
+
+                                                               :body {
+                                                                      :meta_data s/Any
+                                                                      :md_people s/Any
+                                                                      }
+
+
+                                                               ;{
+                                                               ; "meta_data": {
+                                                               ;               "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                                                               ;               "media_entry_id": null,
+                                                               ;               "collection_id": "03fe1dc5-4f38-44fe-9e29-a294fbc7aeee",
+                                                               ;               "type": "MetaDatum::People",
+                                                               ;               "meta_key_id": "madek_core:authors",
+                                                               ;               "string": null,
+                                                               ;               "id": "7f775726-d6b0-424c-9b06-fa0e39586609",
+                                                               ;               "meta_data_updated_at": "2017-08-02T12:14:07.425871Z",
+                                                               ;               "json": null,
+                                                               ;               "other_media_entry_id": null
+                                                               ;               },
+                                                               ; "md_people": [
+                                                               ;               {
+                                                               ;                "meta_datum_id": "7f775726-d6b0-424c-9b06-fa0e39586609",
+                                                               ;                "person_id": "b6934e58-e6de-42de-939c-ebe0756acb8a",
+                                                               ;                "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                                                               ;                "meta_data_updated_at": "2017-08-02T12:14:07.425871Z",
+                                                               ;                "id": "231c6667-7847-46bb-a3f5-4082a549fd3e",
+                                                               ;                "position": 0
+                                                               ;                },
+                                                               ;               {
+                                                               ;                "meta_datum_id": "7f775726-d6b0-424c-9b06-fa0e39586609",
+                                                               ;                "person_id": "d18ca872-bd76-43fe-9e2b-0b26e19b8be4",
+                                                               ;                "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
+                                                               ;                "meta_data_updated_at": "2017-08-02T12:14:07.425871Z",
+                                                               ;                "id": "69e09740-637d-4fee-bd23-42ff83f28b26",
+                                                               ;                "position": 0
+                                                               ;                }
+                                                               ;               ]
+                                                               ; }
+
+                                                               }}})
+
+;(def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
+;                                     :handler handle_delete-meta-data-keyword
+;                                     :middleware [wrap-add-keyword
+;                                                  jqh/ring-wrap-add-media-resource
+;                                                  jqh/ring-wrap-authorization-edit-metadata]
+;                                     :coercion reitit.coercion.schema/coercion
+;                                     :parameters {:path {:collection_id s/Uuid
+;                                                         :meta_key_id s/Str
+;                                                         :keyword_id s/Uuid}}
+;                                     :responses {200 {:description "Returns the deleted meta-data."
+;                                                      :body s/Any}}})
 
 
 (def MetaDataSchema2
@@ -403,17 +488,17 @@
 
                                                              }}})
 
-(def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
-                                     :handler handle_delete-meta-data-keyword
-                                     :middleware [wrap-add-keyword
-                                                  jqh/ring-wrap-add-media-resource
-                                                  jqh/ring-wrap-authorization-edit-metadata]
-                                     :coercion reitit.coercion.schema/coercion
-                                     :parameters {:path {:collection_id s/Uuid
-                                                         :meta_key_id s/Str
-                                                         :keyword_id s/Uuid}}
-                                     :responses {200 {:description "Returns the deleted meta-data."
-                                                      :body s/Any}}})
+;(def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
+;                                     :handler handle_delete-meta-data-keyword
+;                                     :middleware [wrap-add-keyword
+;                                                  jqh/ring-wrap-add-media-resource
+;                                                  jqh/ring-wrap-authorization-edit-metadata]
+;                                     :coercion reitit.coercion.schema/coercion
+;                                     :parameters {:path {:collection_id s/Uuid
+;                                                         :meta_key_id s/Str
+;                                                         :keyword_id s/Uuid}}
+;                                     :responses {200 {:description "Returns the deleted meta-data."
+;                                                      :body s/Any}}})
 
 (def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key A3"
                                            :description "- 124e558f-9c89-4256-8c59-6731b4cb0a49
