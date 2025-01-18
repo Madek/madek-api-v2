@@ -78,15 +78,21 @@
                           (sql/where [:and
                                       [:= :meta_datum_id md-id]
                                       [:= :person_id person-id]])
+                          (sql/returning :*)
                           sql-format)
-            del-result (jdbc/execute-one! tx sql-query)]
+            del-result (jdbc/execute! tx sql-query)
+
+
+            p (println ">o> abc.del-result" del-result)
+            ]
         (sd/logwrite req (str "\nhandle_delete-meta-data-people:"
                               "\nmr-id: " (:id mr)
                               " meta-key: " meta-key-id
                               " person-id: " person-id
                               " result: " del-result))
 
-        (if (= 1 (:next.jdbc/update-count del-result))
+        ;(if (= 1 (:next.jdbc/update-count del-result))
+        (if (= 1 (count del-result))
           (sd/response_ok {:meta_data md
                            MD_KEY_PEOPLE_DATA (db-get-meta-data-people md-id tx)})
           (sd/response_failed {:message "Failed to delete meta data people"} 406))))

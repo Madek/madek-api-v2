@@ -694,7 +694,46 @@
                     ;                 ]
                     ; }
 
-                    :body s/Any}}})
+                    ;:body s/Any
+                    :body {
+                           :meta_data s/Any
+                           :md_keywords s/Any
+                           }
+
+
+                    }}})
+
+
+(require '[schema.core :as s])
+
+;; Define the schema for `meta_data`
+(def MetaDataSchema5
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id s/Uuid
+   :type s/Str
+   :meta_key_id s/Str
+   :string s/Str
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Str)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+;; Define the schema for `md_people`
+(def MdPeopleSchema5
+  {:meta_data_people/meta_datum_id s/Uuid
+   :meta_data_people/person_id s/Uuid
+   :meta_data_people/created_by_id s/Uuid
+   :meta_data_people/meta_data_updated_at s/Any
+   :meta_data_people/id s/Uuid
+   :meta_data_people/position s/Any})
+
+;; Define the top-level schema
+(def ResponseSchema5
+  {:meta_data MetaDataSchema
+   :md_people MdPeopleSchema})
+
+
 
 (def collection_id.meta_key_id.people.person_id
   {:summary "Create meta-data people for media-entry S4"
@@ -708,7 +747,8 @@
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data people."
-                    :body s/Any
+                    ;:body s/Any
+                    :body ResponseSchema5
 
 
                     ;{
@@ -736,6 +776,37 @@
 
                     }}})
 
+
+
+;(require '[schema.core :as s])
+
+;; Define the schema for `meta_data`
+(def MetaDataSchema3
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id s/Uuid
+   :type s/Str
+   :meta_key_id s/Str
+   :string s/Str
+   :id s/Uuid
+   :meta_data_updated_at s/Inst
+   :json (s/maybe s/Str)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+;; Define the schema for an item in `md_roles`
+(def MdRoleItemSchema3
+  {:meta_data_roles/id s/Uuid
+   :meta_data_roles/meta_datum_id s/Uuid
+   :meta_data_roles/person_id s/Uuid
+   :meta_data_roles/role_id s/Uuid
+   :meta_data_roles/position s/Int})
+
+;; Define the top-level schema
+(def ResponseSchema3
+  {:meta_data MetaDataSchema3
+   :md_roles [MdRoleItemSchema3]}) ;; Note: `md_roles` is a vector of `MdRoleItemSchema`
+
+
 (def collection_id.meta_key_id.role.role_id
   {:summary "Create meta-data role for media-entry B2"
    :handler handle_create-meta-data-role
@@ -747,4 +818,8 @@
                        :meta_key_id s/Str
                        :role_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data role."
-                    :body s/Any}}})
+                    ;:body s/Any
+                    :body ResponseSchema3
+
+
+                    }}})
