@@ -436,8 +436,35 @@
 
                     }}})
 
+(def MetaDataSchema
+  {:created_by_id s/Uuid
+   :media_entry_id s/Uuid
+   :collection_id (s/maybe s/Uuid)
+   :type s/Str
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   ;:meta_data_updated_at s/Inst
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Str)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+;; Define the schema for the `md_people` field
+(def MdPeopleSchema
+  {:meta_data_people/meta_datum_id s/Uuid
+   :meta_data_people/person_id s/Uuid
+   :meta_data_people/created_by_id s/Uuid
+   ;:meta_data_people/meta_data_updated_at s/Inst
+   :meta_data_people/meta_data_updated_at s/Any
+   :meta_data_people/id s/Uuid
+   :meta_data_people/position s/Int})
+
+;; Define the top-level schema
+(def ResponseSchema
+  {:meta_data MetaDataSchema
+   :md_people MdPeopleSchema})
 (def media_entry_id.meta-datum.meta_key_id.people.person_id
-  {:summary "Create meta-data people for a media-entries meta-key."
+  {:summary "Create meta-data people for a media-entries meta-key. U1"
    :handler handle_create-meta-data-people
    :middleware [wrap-add-person
                 jqh/ring-wrap-add-media-resource
@@ -448,7 +475,11 @@
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data people."
-                    :body s/Any}}})
+                    ;:body s/Any
+
+                    :body ResponseSchema
+
+                    }}})
 
 (def media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position
   {:summary "Create meta-data role for media-entry. B1"

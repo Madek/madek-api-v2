@@ -103,23 +103,43 @@
         md (db-get-meta-data mr meta-key-id MD_TYPE_ROLES tx)
         md-id (-> md :id)
         ;mdr (db-get-meta-data-roles md-id)
-        del-clause (dbh/sql-update-clause
-                    "meta_datum_id" md-id
-                    "role_id" role-id
-                    "person_id" person-id)
+        ;del-clause (dbh/sql-update-clause
+        ;            "meta_datum_id" md-id
+        ;            "role_id" role-id
+        ;            "person_id" person-id)
+
+        ;p (println ">o> abc.del-clause" del-clause)
+
+        p (println ">o> abc1" md-id (type md-id))
+        p (println ">o> abc2" role-id (type role-id))
+        p (println ">o> abc3" person-id (type person-id))
+
         sql-query (-> (sql/delete-from :meta_data_roles)
-                      (sql/where del-clause)
+
+                      ;(sql/where del-clause)
+
+                      (dbh/sql-update-clause-new "meta_datum_id" md-id
+                        "role_id" role-id
+                        "person_id" person-id)
+
+                      (sql/returning :*)
                       sql-format)
-        del-result (jdbc/execute! tx sql-query)]
+
+        p (println ">o> abc.sql-query" sql-query)
+        del-result (jdbc/execute! tx sql-query)
+
+        p (println ">o> abc.del-result" del-result)
+        ]
 
     (sd/logwrite req (str "handle_delete-meta-data-role:"
                           " mr-id: " (:id mr)
                           " meta-key: " meta-key-id
                           " role-id: " role-id
                           " person-id: " person-id
-                          " clause: " del-clause
+                          ;" clause: " del-clause
                           " result: " del-result))
-    (if (< 1 (first del-result))
+    ;(if (< 1 (first del-result))
+    (if (= 1 (count del-result))
       (sd/response_ok {:meta_data md
                        MD_KEY_ROLES_DATA (db-get-meta-data-roles md-id tx)})
       (sd/response_failed "Could not delete meta-data role." 406))))
@@ -138,19 +158,51 @@
                                             :responses {200 {:description "Returns the deleted meta-data."
                                                              :body s/Any}}})
 
-(def meta_key_id.role.role_id.person_id {:summary "Delete meta-data role for media-entry."
-                                         :handler handle_delete-meta-data-role
-                                         :middleware [wrap-add-role
-                                                      wrap-add-person
-                                                      jqh/ring-wrap-add-media-resource
-                                                      jqh/ring-wrap-authorization-edit-metadata]
-                                         :coercion reitit.coercion.schema/coercion
-                                         :parameters {:path {:media_entry_id s/Uuid
-                                                             :meta_key_id s/Str
-                                                             :role_id s/Uuid
-                                                             :person_id s/Uuid}}
-                                         :responses {200 {:description "Returns the deleted meta-data."
-                                                          :body s/Any}}})
+;(def meta_key_id.role.role_id.person_id {:summary "Delete meta-data role for media-entry."
+;                                         :handler handle_delete-meta-data-role
+;                                         :middleware [wrap-add-role
+;                                                      wrap-add-person
+;                                                      jqh/ring-wrap-add-media-resource
+;                                                      jqh/ring-wrap-authorization-edit-metadata]
+;                                         :coercion reitit.coercion.schema/coercion
+;                                         :parameters {:path {:media_entry_id s/Uuid
+;                                                             :meta_key_id s/Str
+;                                                             :role_id s/Uuid
+;                                                             :person_id s/Uuid}}
+;                                         :responses {200 {:description "Returns the deleted meta-data."
+;                                                          :body s/Any}}})
+
+
+(require '[schema.core :as s])
+
+;; Define the schema for `meta_data`
+(def MetaDataSchema
+  {:created_by_id s/Uuid
+   :media_entry_id s/Uuid
+   :collection_id (s/maybe s/Uuid)
+   :type s/Str
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Str)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+;; Define the schema for each item in `md_people`
+(def MdPeopleItemSchema
+  {:meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :created_by_id s/Uuid
+   :meta_data_updated_at s/Any
+   :id s/Uuid
+   :position s/Int})
+
+;; Define the top-level schema
+(def ResponseSchema
+  {:meta_data MetaDataSchema
+   :md_people [MdPeopleItemSchema]}) ;; Note: `md_people` is a list of `MdPeopleItemSchema`
+
+
 
 (def media_entry.meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
                                                :handler handle_delete-meta-data-people
@@ -162,7 +214,19 @@
                                                                    :meta_key_id s/Str
                                                                    :person_id s/Uuid}}
                                                :responses {200 {:description "Returns the deleted meta-data."
-                                                                :body s/Any}}})
+
+
+                                                                ;:body s/Any
+                                                                :body ResponseSchema
+
+                                                                ;406
+                                                                ;{
+                                                                ; "message": {
+                                                                ;             "message": "Failed to delete meta data people"
+                                                                ;             }
+                                                                ; }
+
+                                                                }}})
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
@@ -200,6 +264,32 @@
                                                       :body s/Any}}})
 
 
+(def MetaDataSchema2
+  {:created_by_id s/Uuid
+   :media_entry_id s/Uuid
+   :collection_id (s/maybe s/Uuid)
+   :type s/Str
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Str)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+;; Define the schema for each item in `md_roles`
+(def MdRoleItemSchema2
+  {:id s/Uuid
+   :meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :role_id (s/maybe s/Uuid)
+   :position s/Any})
+
+;; Define the top-level schema
+(def ResponseSchema2
+  {:meta_data MetaDataSchema2
+   :md_roles [MdRoleItemSchema2]}) ;; Note: `md_roles` is a vector of `MdRoleItemSchema`
+
+
 (def meta_key_id.role.role_id.person_id {:summary "Delete meta-data role for media-entry."
                                          :handler handle_delete-meta-data-role
                                          :middleware [wrap-add-role
@@ -212,19 +302,25 @@
                                                              :role_id s/Uuid
                                                              :person_id s/Uuid}}
                                          :responses {200 {:description "Returns the deleted meta-data."
-                                                          :body s/Any}}})
 
-(def meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
-                                   :handler handle_delete-meta-data-people
-                                   :middleware [wrap-add-person
-                                                jqh/ring-wrap-add-media-resource
-                                                jqh/ring-wrap-authorization-edit-metadata]
-                                   :coercion reitit.coercion.schema/coercion
-                                   :parameters {:path {:media_entry_id s/Uuid
-                                                       :meta_key_id s/Str
-                                                       :person_id s/Uuid}}
-                                   :responses {200 {:description "Returns the deleted meta-data."
-                                                    :body s/Any}}})
+                                                          :body ResponseSchema2
+
+
+
+
+                                                          }}})
+
+;(def meta_key_id.people.person_id {:summary "Delete meta-data people for media-entry"
+;                                   :handler handle_delete-meta-data-people
+;                                   :middleware [wrap-add-person
+;                                                jqh/ring-wrap-add-media-resource
+;                                                jqh/ring-wrap-authorization-edit-metadata]
+;                                   :coercion reitit.coercion.schema/coercion
+;                                   :parameters {:path {:media_entry_id s/Uuid
+;                                                       :meta_key_id s/Str
+;                                                       :person_id s/Uuid}}
+;                                   :responses {200 {:description "Returns the deleted meta-data."
+;                                                    :body s/Any}}})
 
 (def meta_key_id.keyword.keyword_id2 {:summary "Delete meta-data keyword for media-entry."
                                       :handler handle_delete-meta-data-keyword
@@ -272,6 +368,19 @@
 
                                                        }}})
 
+
+(def MetaDataSchema
+  {:created_by_id s/Uuid
+   :media_entry_id s/Uuid
+   :collection_id (s/maybe s/Uuid)
+   :type s/Str
+   :meta_key_id s/Str
+   :string s/Str
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Str)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
                                             :middleware [jqh/ring-wrap-add-media-resource
@@ -281,7 +390,12 @@
                                             :parameters {:path {:media_entry_id s/Uuid
                                                                 :meta_key_id s/Str}}
                                             :responses {200 {:description "Returns the deleted meta-data."
-                                                             :body s/Any}}})
+
+                                                             ;:body s/Any
+                                                             :body MetaDataSchema
+
+
+                                                             }}})
 
 (def meta_key_id.keyword.keyword_id {:summary "Delete meta-data keyword for collection."
                                      :handler handle_delete-meta-data-keyword

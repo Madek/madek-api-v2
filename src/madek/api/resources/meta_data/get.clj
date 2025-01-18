@@ -69,6 +69,8 @@
             mdr (db-get-meta-data-roles md-id tx)
             mdr-rids (map (-> :role_id) mdr)
             mdr-pids (map (-> :person_id) mdr)
+
+            p (println ">o> abc.mdr-rids" mdr-rids)
             roles (map #(dbh/query-eq-find-one :roles :id % tx) mdr-rids)
             people (map #(dbh/query-eq-find-one :people :id % tx) mdr-pids)
             result {:meta_data md
@@ -991,8 +993,17 @@ madek_core:subtitle
 
                                                              ;:body s/Any
 
-                                                             :body [{
-                                                                     :meta-data s/Any
+                                                             :body {
+                                                                     :meta-data   {:created_by_id s/Uuid
+                                                                                   :media_entry_id s/Uuid
+                                                                                   :collection_id (s/maybe s/Uuid)
+                                                                                   :type s/Str
+                                                                                   :meta_key_id s/Str
+                                                                                   :string s/Str
+                                                                                   :id s/Uuid
+                                                                                   :meta_data_updated_at s/Any
+                                                                                   :json (s/maybe s/Str)
+                                                                                   :other_media_entry_id (s/maybe s/Uuid)}
                                                                      ;(s/optional-key :defaultmetadata) s/Str
                                                                      ;(s/optional-key :defaultdata) s/Str
 
@@ -1001,7 +1012,7 @@ madek_core:subtitle
 
                                                                      ;(s/optional-key :md_keywords) s/Any
                                                                      ;(s/optional-key :keywords) s/Any
-                                                                     }]
+                                                                     }
 
                                                              }}})
 
