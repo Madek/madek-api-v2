@@ -148,7 +148,21 @@
                                                 :meta_key_id s/Str}
                                          :body {:string s/Str}}
                             :responses {200 {:description "Returns the updated meta-data."
-                                             :body s/Any}}})
+                                             ;:body s/Any
+
+                                             :body  {:created_by_id s/Uuid
+                                                     :media_entry_id s/Uuid
+                                                     :collection_id (s/maybe s/Uuid)
+                                                     :type s/Str
+                                                     :meta_key_id s/Str
+                                                     :string s/Str
+                                                     :id s/Uuid
+                                                     :meta_data_updated_at s/Any
+                                                     :json (s/maybe s/Str)
+                                                     :other_media_entry_id (s/maybe s/Uuid)}
+
+
+                                             }}})
 
 (def media_entry.meta_key_id.text {:summary "Update meta-data text for media-entry"
                                    :handler handle_update-meta-data-text
