@@ -126,6 +126,27 @@
   ([col-name row-data col-name2 row-data2 col-name3 row-data3]
    [(str col-name " = ? AND " col-name2 " = ? AND " col-name3 " = ? ") row-data row-data2 row-data3]))
 
+
+(defn sql-update-clause-new
+  "Generates an sql update clause"
+
+
+  ;([col-name row-data]
+  ; [(str col-name " = ?") row-data])
+  ;([col-name row-data col-name2 row-data2]
+  ; [(str col-name " = ? AND " col-name2 " = ? ") row-data row-data2])
+
+
+
+  ([query col-name row-data col-name2 row-data2 col-name3 row-data3]
+   ;[(str col-name " = ? AND " col-name2 " = ? AND " col-name3 " = ? ") row-data row-data2 row-data3]
+
+   (-> query
+       (sql/where [:= (keyword col-name) row-data] [:= (keyword col-name2) row-data2] [:= (keyword col-name3) row-data3])
+       )
+
+   ))
+
 (defn hsql-upd-clause-format
   "Transforms honey sql to sql update clause"
   [sql-cls]
