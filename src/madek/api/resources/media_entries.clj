@@ -239,7 +239,7 @@
 
       (info "handle_create-media-entry" "\nmime-type\n" mime)
       (if (nil? auth)
-        (sd/response_failed "Not authed" 406)
+        (sd/response_failed "Not authenticated" 406)
         (create-media_entry file auth mime collection-id tx)))))
 
 (def ISO8601TimestampWithoutMS
