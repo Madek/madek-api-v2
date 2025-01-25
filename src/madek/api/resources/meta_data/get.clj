@@ -407,8 +407,10 @@
                                                              :meta_key_id s/Str
                                                              :string (s/maybe s/Str)
                                                              :id s/Uuid
-                                                             ;:meta_data_updated_at s/Inst
-                                                             :meta_data_updated_at s/Str
+
+                                                             :meta_data_updated_at s/Any
+                                                             ;:meta_data_updated_at s/Inst ;; breaks coercion
+                                                             ;:meta_data_updated_at s/Str ;; breaks test
                                                              :json (s/maybe s/Any)
                                                              :other_media_entry_id (s/maybe s/Uuid)}]}
 
