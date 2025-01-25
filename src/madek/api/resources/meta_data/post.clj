@@ -3,12 +3,12 @@
             [cheshire.core :as cheshire]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [madek.api.utils.helper :refer [to-uuid]]
-
             [logbug.catcher :as catcher]
+
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.helper :refer [to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
@@ -63,9 +63,6 @@
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion
-
-
-
 
 (defn handle_create-meta-data-json
   [req]
@@ -143,7 +140,7 @@
 (defn db-create-meta-data-roles
   [db md-id role-id person-id position]
   (let [data {:meta_datum_id (to-uuid md-id)
-              :person_id person-id                          ;;is nil
+              :person_id person-id ;;is nil
               :role_id role-id
               ;:position position
               }
@@ -152,11 +149,9 @@
 
                data
 
-               (assoc data :position position)
+               (assoc data :position position))
 
-               )
-
-    ;2024-12-31T16:24:57.434Z NX-41294 ERROR [madek.api.resources.meta_data.post:189] - Could not create md role #error {
+;2024-12-31T16:24:57.434Z NX-41294 ERROR [madek.api.resources.meta_data.post:189] - Could not create md role #error {
     ;:cause "ERROR: The types of related meta_data and meta_keys must be identical\n  Wobei: PL/pgSQL function check_meta_data_meta_key_type_consistency() line 8 at RAISE"
     ;:via
     ;[{:type org.postgresql.util.PSQLException
@@ -166,7 +161,7 @@
 
         sql-query (-> (sql/insert-into :meta_data_roles)
                       (sql/values [data])
-                      (sql/returning :*)                    ;; FIXME: is correct but key-prefix is still in use
+                      (sql/returning :*) ;; FIXME: is correct but key-prefix is still in use
                       sql-format)
         result (jdbc/execute! db sql-query)]
     result))
@@ -225,7 +220,6 @@
             position (-> req :parameters :path :position)
             p (println ">o> abc" user-id)
 
-
             tx (:tx req)]
 
         (if-let [result (create_md_and_role mr meta-key-id role-id person-id position user-id tx)]
@@ -239,8 +233,7 @@
 ;; ######## handler ################################################
 
 (def meta-datum.meta_key_id.text
-  {
-   :summary "Create meta-data text for media-entry A2"
+  {:summary "Create meta-data text for media-entry A2"
    :description "- 8cd394a8-b26e-4f17-aa01-9c71f1a413fd\n- media_object:test_me"
    :handler handle_create-meta-data-text
    :middleware [jqh/ring-wrap-add-media-resource
@@ -261,15 +254,10 @@
                            :id s/Uuid
                            :meta_data_updated_at (s/maybe s/Any)
                            :json (s/maybe s/Any)
-                           :other_media_entry_id (s/maybe s/Any)
-                           }
+                           :other_media_entry_id (s/maybe s/Any)}
 
-                    ;:body {s/Any}
-
-
-
+;:body {s/Any}
                     }}})
-
 (def meta-datum.meta_key_id.text-date
   {:summary "Create meta-data text-date for media-entry"
    :handler handle_create-meta-data-text-date
@@ -283,8 +271,7 @@
 
                     ;:body s/Any
 
-
-                    ;{
+;{
                     ; "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
                     ; "media_entry_id": "d28fea93-7ed9-439d-9a9b-a4b3c164cc10",
                     ; "collection_id": null,
@@ -297,24 +284,16 @@
                     ; "other_media_entry_id": null
                     ; }
 
-                    :body {
-                           :created_by_id s/Uuid
-                            :media_entry_id (s/maybe s/Uuid)
-                            :collection_id (s/maybe s/Uuid)
-                            :type s/Str
-                            :meta_key_id s/Str
-                            :string s/Str
-                            :id s/Uuid
-                            :meta_data_updated_at (s/maybe s/Any)
-                            :json (s/maybe s/Any)
-                            :other_media_entry_id (s/maybe s/Any)
-                           }
-
-                    }}})
-
-
-
-
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id (s/maybe s/Uuid)
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Any)}}}})
 
 ;25a5d974-1855-458b-b6ba-cc3272a4865b
 ;research_video:rv_annotations
@@ -335,7 +314,6 @@
 ;          "some_boolean" : true
 ;          },
 
-
 (s/defschema MetaDataJSON
   {:created_by_id s/Uuid
    :media_entry_id (s/maybe s/Uuid)
@@ -351,8 +329,7 @@
    :other_media_entry_id (s/maybe s/Uuid)})
 
 (def meta-datum.meta_key_id.json
-  {
-   :summary "Create meta-data json for media-entry S3"
+  {:summary "Create meta-data json for media-entry S3"
    :description "- 2befd736-48bc-403e-ac69-9a94011e9470\n-test_me:test_me"
    :handler handle_create-meta-data-json
    :middleware [jqh/ring-wrap-add-media-resource
@@ -374,8 +351,7 @@
                            :meta_data_updated_at (s/maybe s/Any)
                            ;:json s/Str
                            :json s/Any
-                           :other_media_entry_id (s/maybe s/Any)
-                            }
+                           :other_media_entry_id (s/maybe s/Any)}
                     ;{
                     ; "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
                     ; "media_entry_id": "2befd736-48bc-403e-ac69-9a94011e9470",
@@ -390,12 +366,9 @@
                     ;          },
                     ; "other_media_entry_id": null
                     ; }
-
                     }}})
-
 (def meta-datum.meta_key_id.keyword.keyword_id
-  {
-   :summary "Create meta-data keyword for media-entry."
+  {:summary "Create meta-data keyword for media-entry."
    :description "- a0040f48-020e-47bd-ae10-df7b28c8ff9c\n
 - zhdk_bereich:project_type\n
 - 5a55f216-432c-4804-b1b9-9d943b00911b"
@@ -411,12 +384,10 @@
    :responses {200 {:description "Returns the created meta-data keyword."
                     ;:body s/Any
 
-
                     :body {:meta_data s/Any
-                           :md_keywords s/Any
-                           }
+                           :md_keywords s/Any}
 
-                    ;{
+;{
                     ; "meta_data": {
                     ;               "created_by_id": "98954f14-0f95-4de6-b7d5-0113643cb2b3",
                     ;               "media_entry_id": "a0040f48-020e-47bd-ae10-df7b28c8ff9c",
@@ -442,9 +413,7 @@
                     ;                  }
                     ;                 ]
                     ; }
-
                     }}})
-
 (def MetaDataSchema
   {:created_by_id s/Uuid
    :media_entry_id (s/maybe s/Uuid)
@@ -486,9 +455,7 @@
    :responses {200 {:description "Returns the created meta-data people."
                     ;:body s/Any
 
-                    :body ResponseSchema
-
-                    }}})
+                    :body ResponseSchema}}})
 
 (def media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position
   {:summary "Create meta-data role for media-entry. B1"
@@ -506,13 +473,10 @@
    :responses {200 {:description "Returns the created meta-data role."
 
                     ;:body s/Any
-                    :body {
-                           :meta_data s/Any
-                           :md_roles s/Any
-                           }
+                    :body {:meta_data s/Any
+                           :md_roles s/Any}
 
-
-                    ;{
+;{
                     ; "meta_data": {
                     ;               "created_by_id": "c0bc861e-e8b2-4a27-9303-44e31a3246e6",
                     ;               "media_entry_id": "8cd394a8-b26e-4f17-aa01-9c71f1a413fd",
@@ -532,12 +496,9 @@
                     ;               }
                     ;              ]
                     ; }
-
                     }}})
-
 (def collection_id.meta-datum:meta_key_id.text
-  {
-   :summary "Create meta-data text for collection. A1"
+  {:summary "Create meta-data text for collection. A1"
    :description "- Add entry to meta_key
    - 124e558f-9c89-4256-8c59-6731b4cb0a49
    - media_content:test"
@@ -551,8 +512,7 @@
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
-   :responses {
-               200 {:description "Returns the created meta-data text."
+   :responses {200 {:description "Returns the created meta-data text."
                     ;:body s/Any}
 
                ;{
@@ -568,8 +528,7 @@
                ; "other_media_entry_id": null
                ; }
 
-                    :body {
-                           :created_by_id s/Uuid
+                    :body {:created_by_id s/Uuid
                            :media_entry_id (s/maybe s/Uuid)
                            :collection_id s/Uuid
                            :type s/Str
@@ -582,21 +541,13 @@
                            ;:meta_data_updated_at s/Str
 
                            :json (s/maybe s/Any)
-                           :other_media_entry_id (s/maybe s/Uuid)
+                           :other_media_entry_id (s/maybe s/Uuid)}}
 
-
-                           }
-                    }
                500 {:description "Returns the cause of error."
-                                :body {:message s/Str}}
-
-               }
-
-   })
+                    :body {:message s/Str}}}})
 
 (def collection_id.meta-datum:meta_key_id.text-date
-  {
-   :summary "Create meta-data json for collection."
+  {:summary "Create meta-data json for collection."
    :description "- 211dd424-7093-468b-855c-8c1519422021
    - media_content:mee"
 
@@ -606,15 +557,12 @@
    :coercion reitit.coercion.schema/coercion
    :parameters {:path {:collection_id s/Uuid
                        :meta_key_id s/Str}
-                :body {:string s/Str}
+                :body {:string s/Str}}
 
-
-                }
    :responses {200 {:description "Returns the created meta-data text-date."
                     ;:body s/Any
 
-                    :body {
-                           :created_by_id s/Uuid
+                    :body {:created_by_id s/Uuid
                            :media_entry_id (s/maybe s/Uuid)
                            :collection_id s/Uuid
                            :type s/Str
@@ -627,14 +575,7 @@
                            ;:meta_data_updated_at s/Str
 
                            :json (s/maybe s/Any)
-                           :other_media_entry_id (s/maybe s/Uuid)
-
-
-                           }
-
-                    }}})
-
-
+                           :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def collection_id.meta_key_id.json
   {:summary "Create meta-data json for collection. X2"
@@ -655,12 +596,9 @@
 
                     :body MetaDataJSON
                     ;:body MetaDataJSONRsponse
-
                     }}})
-
 (def collection_id.meta_key_id.keyword.keyword_id
-  {
-   :summary "Create meta-data keyword for collection. S1"
+  {:summary "Create meta-data keyword for collection. S1"
    :description "- col 2e9fa545-2d8b-418d-82bb-368b07841716\n
 - mkid madek_core:keywords\n
 - kwid a5f60d77-31a5-4688-93e1-3351a1a06b1d"
@@ -704,14 +642,8 @@
                     ; }
 
                     ;:body s/Any
-                    :body {
-                           :meta_data s/Any
-                           :md_keywords s/Any
-                           }
-
-
-                    }}})
-
+                    :body {:meta_data s/Any
+                           :md_keywords s/Any}}}})
 
 (require '[schema.core :as s])
 
@@ -742,8 +674,6 @@
   {:meta_data MetaDataSchema
    :md_people MdPeopleSchema})
 
-
-
 (def collection_id.meta_key_id.people.person_id
   {:summary "Create meta-data people for media-entry S4"
    :handler handle_create-meta-data-people
@@ -759,8 +689,7 @@
                     ;:body s/Any
                     :body ResponseSchema5
 
-
-                    ;{
+;{
                     ; "meta_data": {
                     ;               "created_by_id": "10fc1e68-a9cb-4863-b4f0-bf26cb70efdb",
                     ;               "media_entry_id": null,
@@ -782,11 +711,7 @@
                     ;               "meta_data_people/position": 0
                     ;               }
                     ; }
-
                     }}})
-
-
-
 ;(require '[schema.core :as s])
 
 ;; Define the schema for `meta_data`
@@ -815,7 +740,6 @@
   {:meta_data MetaDataSchema3
    :md_roles [MdRoleItemSchema3]}) ;; Note: `md_roles` is a vector of `MdRoleItemSchema`
 
-
 (def collection_id.meta_key_id.role.role_id
   {:summary "Create meta-data role for media-entry B2"
    :handler handle_create-meta-data-role
@@ -828,7 +752,4 @@
                        :role_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data role."
                     ;:body s/Any
-                    :body ResponseSchema3
-
-
-                    }}})
+                    :body ResponseSchema3}}})

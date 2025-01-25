@@ -242,10 +242,9 @@
                                            :responses {200 {:description "Returns the meta-data for the media-entry."
                                                             ;:body s/Any
                                                             :body {:meta-data s/Any
-                                                                   :media_entry_id s/Uuid
-                                                                   }
+                                                                   :media_entry_id s/Uuid}
 
-                                                            ;{
+;{
                                                             ; "meta-data": [
                                                             ;               {
                                                             ;                "media_entry_id": "b24aaccf-ab37-491e-aebe-61e4f7762804",
@@ -371,9 +370,7 @@
                                                             ;               ],
                                                             ; "media_entry_id": "b24aaccf-ab37-491e-aebe-61e4f7762804"
                                                             ; }
-
                                                             }}})
-
 (def meta-data-role.meta_data_role_id {:summary " Get meta-data role for id "
                                        :handler meta-datum/handle_get-meta-datum-role
                                        :description " Get meta-datum-role for id. returns 404, if no such meta-data role exists. "
@@ -401,9 +398,9 @@
                                                 :meta-data [{:media_entry_id (s/maybe s/Uuid)
                                                              :collection_id s/Uuid
                                                              :type (s/enum "MetaDatum::Text"
-                                                                     "MetaDatum::People"
-                                                                     "MetaDatum::TextDate"
-                                                                     "MetaDatum::Keywords")
+                                                                           "MetaDatum::People"
+                                                                           "MetaDatum::TextDate"
+                                                                           "MetaDatum::Keywords")
                                                              :meta_key_id s/Str
                                                              :string (s/maybe s/Str)
                                                              :id s/Uuid
@@ -412,10 +409,7 @@
                                                              ;:meta_data_updated_at s/Inst ;; breaks coercion
                                                              ;:meta_data_updated_at s/Str ;; breaks test
                                                              :json (s/maybe s/Any)
-                                                             :other_media_entry_id (s/maybe s/Uuid)}]}
-
-                                               }}})
-
+                                                             :other_media_entry_id (s/maybe s/Uuid)}]}}}})
 
 ;(s/defschema MetaDatum
 ;  {:media_entry_id (s/maybe s/Uuid)
@@ -488,8 +482,6 @@
 ;
 ;(s/defschema Entries [Entry])
 
-
-
 ;; TODO
 (s/def Entry
   {:meta-data s/Any
@@ -513,14 +505,7 @@
                                       :responses {200 {:description "Returns the meta-data for the collection."
                                                        ;:body s/Any
 
-
-                                                       :body [Entry]
-
-
-                                                       }}})
-
-
-
+                                                       :body [Entry]}}})
 
 ;(s/defschema KeywordEntry
 ;  {:meta-data s/Any
@@ -528,8 +513,7 @@
 ;   :keywords s/Any})
 
 (s/defschema KeywordEntry
-  {
-   ;:meta_data s/Any
+  {;:meta_data s/Any
    ;:meta-data s/Any
 
    ;; FIXME: support meta-data only
@@ -539,11 +523,11 @@
    ;(s/optional-key :meta-data) s/Any
    (s/optional-key :keywords) s/Any
    (s/optional-key :keywords_ids) s/Any
-   (s/optional-key  :md_keywords) s/Any
-   (s/optional-key  :defaultmetadata) s/Any
-   (s/optional-key  :defaultdata) s/Any
-   (s/optional-key  :people) s/Any
-   (s/optional-key  :md_people) s/Any
+   (s/optional-key :md_keywords) s/Any
+   (s/optional-key :defaultmetadata) s/Any
+   (s/optional-key :defaultdata) s/Any
+   (s/optional-key :people) s/Any
+   (s/optional-key :md_people) s/Any
    ;:keywords s/Any
    })
 
@@ -570,10 +554,7 @@ madek_core:subtitle
                                            :responses {200 {:description "Returns the meta-data for the collection and meta-key."
                                                             ;:body s/Any
 
-                                                            :body KeywordEntry
-
-                                                            }}})
-
+                                                            :body KeywordEntry}}})
 
 ;(s/defschema MetaData
 ;  {:created_by_id s/Uuid
@@ -615,9 +596,6 @@ madek_core:subtitle
 ;   :md_keywords [MdKeyword]
 ;   :keywords [Keyword]})
 
-
-
-
 ; TODO
 ; 25a5d974-1855-458b-b6ba-cc3272a4865b
 ; media_content:portrayed_object_materials
@@ -633,9 +611,7 @@ madek_core:subtitle
                                      :responses {200 {:description "Returns the meta-data keywords for the collection."
                                                       ;:body s/Any
 
-                                                      :body KeywordEntry
-
-                                                      }}})
+                                                      :body KeywordEntry}}})
 
 ;(s/defschema MetaData
 ;  {:created_by_id s/Uuid
@@ -679,20 +655,13 @@ madek_core:subtitle
 ;   :md_people [MdPerson]
 ;   :people [Person]})
 
-
-
-
-
 (s/defschema PeopleEntry
   {:meta_data s/Any
    :people_ids s/Any
    :md_people s/Any
    :people s/Any})
 
-
-
-(def meta_key_id.people2 {
-                          :summary "Get meta-data people for collection meta-key. S2"
+(def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key. S2"
                           :description "- 2e9fa545-2d8b-418d-82bb-368b07841716\n
 - mkid zhdk_bereich:institutional_affiliation
 "
@@ -705,12 +674,7 @@ madek_core:subtitle
                           :responses {200 {:description "Returns the meta-data people for the collection."
                                            ;:body s/Any
 
-                                           :body PeopleEntry
-
-                                           }}})
-
-
-
+                                           :body PeopleEntry}}})
 
 (def media_entry_id.meta-data-related {:summary (fl/?token? "Get meta-data for media-entry. L8")
                                        :handler handle_get-mr-meta-data-with-related
@@ -723,16 +687,11 @@ madek_core:subtitle
                                        :responses {200 {:description "Returns the meta-data for the media-entry."
 
                                                         ;:body s/Any
-                                                        :body [{
-                                                                :meta-data s/Any
+                                                        :body [{:meta-data s/Any
                                                                 (s/optional-key :defaultmetadata) s/Str
                                                                 (s/optional-key :defaultdata) s/Str
                                                                 (s/optional-key :md_keywords) s/Any
-                                                                (s/optional-key :keywords) s/Any
-                                                                }]
-
-
-                                                        }}})
+                                                                (s/optional-key :keywords) s/Any}]}}})
 
 ;[
 ; {
@@ -976,12 +935,10 @@ madek_core:subtitle
 ;  }
 ; ]
 
-
 ;2befd736-48bc-403e-ac69-9a94011e9470
 ;madek_core:title
 
-(def media_entry_id.meta-datum.meta_key_id {
-                                            :summary "Get meta-data for media-entry and meta-key. X6"
+(def media_entry_id.meta-datum.meta_key_id {:summary "Get meta-data for media-entry and meta-key. X6"
                                             :description "- 2befd736-48bc-403e-ac69-9a94011e9470\n - madek_core:title"
                                             :handler handle_get-meta-key-meta-data
                                             :middleware [wrap-add-meta-key
@@ -995,21 +952,20 @@ madek_core:subtitle
 
                                                              ;:body s/Any
 
-                                                             :body {
-                                                                     :meta-data   {:created_by_id s/Uuid
-                                                                                   :media_entry_id s/Uuid
-                                                                                   :collection_id (s/maybe s/Uuid)
-                                                                                   :type s/Str
-                                                                                   :meta_key_id s/Str
-                                                                                   :string (s/maybe s/Str)
-                                                                                   :id s/Uuid
-                                                                                   :meta_data_updated_at s/Any
+                                                             :body {:meta-data {:created_by_id s/Uuid
+                                                                                :media_entry_id s/Uuid
+                                                                                :collection_id (s/maybe s/Uuid)
+                                                                                :type s/Str
+                                                                                :meta_key_id s/Str
+                                                                                :string (s/maybe s/Str)
+                                                                                :id s/Uuid
+                                                                                :meta_data_updated_at s/Any
                                                                                    ;:json (s/maybe s/Str)
-                                                                                   :json (s/maybe s/Any)
-                                                                                   :other_media_entry_id (s/maybe s/Uuid)}
+                                                                                :json (s/maybe s/Any)
+                                                                                :other_media_entry_id (s/maybe s/Uuid)}
 
                                                                     (s/optional-key :defaultmetadata) s/Str
-                                                                     (s/optional-key :defaultdata) s/Str
+                                                                    (s/optional-key :defaultdata) s/Str
 
                                                                      ;:defaultmetadata s/Str
                                                                      ;:defaultdata s/Str
@@ -1025,12 +981,8 @@ madek_core:subtitle
 
                                                                      ;(s/optional-key :md_keywords) s/Any
                                                                      ;(s/optional-key :keywords) s/Any
-                                                                     }
-
-                                                             }}})
-
-(def media_entry.meta_key_id.keyword {
-                                      :summary "Get meta-data keywords for media-entries meta-key"
+                                                                    }}}})
+(def media_entry.meta_key_id.keyword {:summary "Get meta-data keywords for media-entries meta-key"
                                       :description "- a0040f48-020e-47bd-ae10-df7b28c8ff9c\n- zhdk_bereich:project_type"
                                       :handler handle_get-meta-data-keywords
                                       :middleware [;wrap-me-add-meta-data
@@ -1041,8 +993,7 @@ madek_core:subtitle
                                                           :meta_key_id s/Str}}
                                       :responses {200 {:description "Returns the meta-data keywords for the media-entry."
                                                        ;:body s/Any
-                                                       :body {
-                                                              :meta_data s/Any
+                                                       :body {:meta_data s/Any
                                                               :keywords_ids s/Any
                                                               :md_keywords s/Any
                                                               :keywords s/Any}
@@ -1090,13 +1041,9 @@ madek_core:subtitle
                                                        ;               }
                                                        ;              ]
                                                        ; }
-
-
                                                        }}})
-
 ;; collection
-(def meta_key_id.people {
-                         :summary "Get meta-data people for media-entries meta-key. K1"
+(def meta_key_id.people {:summary "Get meta-data people for media-entries meta-key. K1"
                          :description "- a0040f48-020e-47bd-ae10-df7b28c8ff9c\n- zhdk_bereich:institutional_affiliation"
                          :handler handle_get-meta-data-people
                          :middleware [;wrap-me-add-meta-data
@@ -1109,16 +1056,12 @@ madek_core:subtitle
 
                                           ;:body s/Any
 
-
-                                          :body {
-
-                                                 :meta_data s/Any
+                                          :body {:meta_data s/Any
                                                  :people_ids s/Any
                                                  :md_people s/Any
-                                                 :people s/Any
-                                                 }
+                                                 :people s/Any}
 
-                                          ;{
+;{
                                           ; "meta_data": {
                                           ;               "created_by_id": "98954f14-0f95-4de6-b7d5-0113643cb2b3",
                                           ;               "media_entry_id": "a0040f48-020e-47bd-ae10-df7b28c8ff9c",
@@ -1163,11 +1106,8 @@ madek_core:subtitle
                                           ;             }
                                           ;            ]
                                           ; }
-
                                           }}})
-
-(def meta_key_id.role {
-                       :summary "Get meta-data role for media-entry. K7"
+(def meta_key_id.role {:summary "Get meta-data role for media-entry. K7"
                        :description "- 3f961ce6-1a10-477a-b3b3-ba933fe70e28\n- media_object:creative_participants_roles"
                        :handler handle_get-meta-data-roles
                        :middleware [jqh/ring-wrap-add-media-resource
@@ -1179,8 +1119,7 @@ madek_core:subtitle
 
                                         ;:body s/Any
 
-
-                                        ;{
+;{
                                         ; "meta_data": {
                                         ;               "created_by_id": "3d5e7743-14c2-46a1-8c23-19d0ccbbda15",
                                         ;               "media_entry_id": "3f961ce6-1a10-477a-b3b3-ba933fe70e28",
@@ -1231,17 +1170,12 @@ madek_core:subtitle
                                         ;            ]
                                         ; }
 
-                                        :body {
-                                               :meta_data s/Any
+                                        :body {:meta_data s/Any
                                                :roles_ids s/Any
                                                :people_ids s/Any
                                                :md_roles s/Any
                                                :roles s/Any
-                                               :people s/Any
-                                               }
-
-
-                                        }}})
+                                               :people s/Any}}}})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

@@ -6,9 +6,6 @@
             [honey.sql.helpers :as sql]
             [madek.api.authorization :as authorization]
 
-
-
-
             [madek.api.constants :refer [FILE_STORAGE_DIR]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
@@ -299,21 +296,20 @@
   (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
            :opt-un [::sp/col_arcs ::sp/col_meta_data]))
 
-
 ;; -----------------------
 
 ;; Define media entry spec
 (sa/def :me1/media_entry
   (st/spec {:spec (sa/keys :req-un [::sp/id]
-                    :opt-un [::sp/responsible_user_id
-                             ::sp/get_full_size
-                             ::sp/creator_id
-                             ::sp/updated_at
-                             ::sp/edit_session_updated_at
-                             ::sp/is_published
-                             ::sp/get_metadata_and_previews
-                             ::sp/meta_data_updated_at
-                             ::sp/created_at])
+                           :opt-un [::sp/responsible_user_id
+                                    ::sp/get_full_size
+                                    ::sp/creator_id
+                                    ::sp/updated_at
+                                    ::sp/edit_session_updated_at
+                                    ::sp/is_published
+                                    ::sp/get_metadata_and_previews
+                                    ::sp/meta_data_updated_at
+                                    ::sp/created_at])
             :description "Represents a media entry with optional metadata"}))
 
 ;; FIXME: can be null
@@ -322,20 +318,17 @@
 ;            :description "Represents metadata, which can be null or any value"}))
 (sa/def :me1/meta_data (st/spec {:spec any?}))
 
-
 ;; FIXME: can be null
 ;(sa/def :me1/media_files
 ;  (st/spec {:spec (sa/coll-of any? :kind vector?)
 ;            :description "An array of media files"}))
 (sa/def :me1/media_files (st/spec {:spec any?}))
 
-
 ;; FIXME: can be null
 ;(sa/def :me1/previews
 ;  (st/spec {:spec (sa/coll-of any? :kind vector?)
 ;            :description "An array of previews"}))
 (sa/def :me1/previews (st/spec {:spec any?}))
-
 
 (sa/def :me1/media_entries
   (st/spec {:spec (sa/coll-of :me1/media_entry)
@@ -345,13 +338,10 @@
 (sa/def ::media-entry-response2-def
   (st/spec {:spec (sa/keys :req-un [:me1/media_entries :me1/meta_data :me1/media_files :me1/previews]
                     ;:opt-un []
-                    )
+                           )
             ;:description "Represents the full response structure"
             }))
-
-
 ;; -----------------------
-
 
 (sa/def ::media-entries-resp-def
   (sa/keys :opt-un
@@ -476,8 +466,7 @@
             :responses {200 {:description "Returns the created media-entry."
                              :body any?}
                         406 {:description "Could not create media-entry."
-                             :body any?}}
-            }}]
+                             :body any?}}}}]
 
    ["/:media_entry_id"
     {:get {:summary (fl/?token? "Get media-entry for id. L2 b24aaccf-ab37-491e-aebe-61e4f7762804")

@@ -5,13 +5,13 @@
             [logbug.catcher :as catcher]
             [madek.api.pagination :as pagination]
             [madek.api.resources.shared.core :as sd]
-            [madek.api.utils.helper :refer [to-uuid]]
-
             [madek.api.resources.shared.db_helper :as dbh]
+
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
+            [madek.api.utils.helper :refer [to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec :as spec]
@@ -142,10 +142,8 @@
                             ;:body s/Any
 
                             :body {:media_resource_id s/Uuid
-                                   :text s/Str
-                                   }
+                                   :text s/Str}}}
 
-                            }}
            :parameters {:path {:media_resource_id s/Uuid}}
            :middleware [(wrap-find-full_text :media_resource_id true)]}}]])
 
@@ -221,9 +219,8 @@
             :responses {200 {:description "Returns the full_text. 015425fd-3123-4b7f-977f-2c65f2eddf0a"
                              ;:body s/Any}}
                              :body {:collection_id s/Uuid
-                                    :text s/Str
-                                    }
-            }}
+                                    :text s/Str}}}
+
             :middleware [jqh/ring-wrap-add-media-resource
                          jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]}
@@ -239,9 +236,8 @@
                               ;:body s/Any
 
                               :body {:collection_id s/Uuid
-                                     :text s/Str
-                                     }
-                              }
+                                     :text s/Str}}
+
                          406 {:description "Creation failed."
                               :body s/Str
                               :examples {"application/json" {:message "Could not create full_text."}}}}
@@ -259,9 +255,8 @@
                              ;:body s/Any
 
                              :body {:collection_id s/Uuid
-                                    :text s/Str
-                                    }
-                             }
+                                    :text s/Str}}
+
                         406 {:description "Update failed."
                              :body s/Str
                              :examples {"application/json" {:message "Could not update full_text."}}}}
@@ -277,9 +272,8 @@
                                 ;:body s/Any
 
                                 :body {:collection_id s/Uuid
-                                       :text s/Str
-                                       }
-                                }
+                                       :text s/Str}}
+
                            406 {:description "Deletion failed."
                                 :body s/Str
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}
@@ -301,9 +295,8 @@ where e.id=t.media_resource_id"
                              ;:body s/Any
 
                              :body {:media_resource_id s/Uuid
-                                    :text s/Str
-                                    }
-                             }}
+                                    :text s/Str}}}
+
             :middleware [jqh/ring-wrap-add-media-resource
                          jqh/ring-wrap-authorization-view
                          (wrap-find-full_text :media_entry_id true)]}
@@ -319,9 +312,8 @@ where e.id=t.media_resource_id"
                               ;:body s/Any
 
                               :body {:media_resource_id s/Uuid
-                                     :text s/Str
-                                     }
-                              }
+                                     :text s/Str}}
+
                          406 {:description "Creation failed."
                               :body s/Str
                               :examples {"application/json" {:message "Could not create full_text."}}}}
@@ -342,8 +334,7 @@ where e.id=t.media_resource_id"
                              ;:body s/Str
 
                              :body {:media_resource_id s/Uuid
-                                    :text s/Str
-                                    }
+                                    :text s/Str}
 
                              :examples {"application/json" {:message "Could not update full_text."}}}}
             :handler handle_update-full_texts}
@@ -358,10 +349,8 @@ where e.id=t.media_resource_id"
                                 ;:body s/Any
 
                                 :body {:media_resource_id s/Uuid
-                                       :text s/Str
-                                       }
+                                       :text s/Str}}
 
-                                }
                            406 {:description "Deletion failed."
                                 :body s/Str
                                 :examples {"application/json" {:message "Could not delete full_text."}}}}

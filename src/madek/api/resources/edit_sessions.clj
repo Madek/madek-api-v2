@@ -199,7 +199,6 @@
                             ; "media_entry_id": "2b79da4c-2a79-4553-801f-1392888184ee",
                             ; "collection_id": null
                             ; },
-
                             }}
            :parameters {:query ::query-usr-def}}}]
 

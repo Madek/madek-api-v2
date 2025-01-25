@@ -124,8 +124,7 @@
           tx (:tx request)
           result (build-result-related-data collection-id auth-entity full-data data tx)
 
-          p (println ">o> abc.result" result)
-          ]
+          p (println ">o> abc.result" result)]
       (sd/response_ok result)))
   ;(catch Exception e
   ;  (println ">o> abc??" (.getMessage e))

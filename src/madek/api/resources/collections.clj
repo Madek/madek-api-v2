@@ -175,7 +175,7 @@
    (s/optional-key :edit_session_updated_at) s/Any
 
    ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-   (s/optional-key :clipboard_user_id) (s/maybe s/Str)      ; is a string OR just cast it to uuid in response
+   (s/optional-key :clipboard_user_id) (s/maybe s/Str) ; is a string OR just cast it to uuid in response
    (s/optional-key :workflow_id) (s/maybe s/Uuid)
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
 
@@ -261,7 +261,7 @@
    {:openapi {:tags ["api/collection"]}}
    ["collections"
     {:get
-     {:summary (fl/?no-auth?(sd/sum_usr "Query/List collections."))
+     {:summary (fl/?no-auth? (sd/sum_usr "Query/List collections."))
       :handler handle_get-index
       :coercion spec/coercion
       :parameters {:query :collection-query/query-def}
@@ -302,8 +302,7 @@
                        422 {:description "Could not get collection."
                             :body s/Any}}}
 
-     :put {
-           :summary (fl/?token? (sd/sum_usr "Update collection for id."))
+     :put {:summary (fl/?token? (sd/sum_usr "Update collection for id."))
            :description "
 b8a02655-b499-4516-8c96-e18ff849698e\n\n
 {\n  \"layout\": \"grid\",\n  \"is_master\": true,\n  \"sorting\": \"title ASC\",\n  \"default_context_id\": null,\n  \"workflow_id\": null,\n  \"default_resource_type\": \"collections\"\n}

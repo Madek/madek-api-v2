@@ -185,8 +185,7 @@
                             :body s/Any}}}}]
 
    ["/conf-link/:id"
-    {:get {
-           :summary (sd/sum_adm "Get confidential link by id. L3")
+    {:get {:summary (sd/sum_adm "Get confidential link by id. L3")
            :description
            " - b24aaccf-ab37-491e-aebe-61e4f7762804
 - bd702e91-f4b7-4454-bf94-4a4eb2c87560"

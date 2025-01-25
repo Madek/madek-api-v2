@@ -59,8 +59,7 @@
 
       :delete delete/delete.meta_key_id.keyword.keyword_id}]
 
-
-    ;f76b4d7c-6a62-461b-a3ef-cb81eaaabdcf
+;f76b4d7c-6a62-461b-a3ef-cb81eaaabdcf
     ;zhdk_bereich:institutional_affiliation
 
     ["/:meta_key_id/people"

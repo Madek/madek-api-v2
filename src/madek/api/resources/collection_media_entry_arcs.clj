@@ -37,8 +37,7 @@
       sql-format))
 
 (defn arcs [req]
-  (let [
-        query-params (-> req :parameters :query)
+  (let [query-params (-> req :parameters :query)
         p (println ">o> abc.query-params" query-params)
 
         query-params (-> req :parameters :path)
@@ -224,8 +223,7 @@
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:collection_id s/Uuid
                           :media_entry_id s/Uuid}
-                   :body schema_collection-media-entry-arc-create
-                   }
+                   :body schema_collection-media-entry-arc-create}
       :responses {200 {:description "Returns the created collection media-entry arc."
                        :body schema_collection-media-entry-arc-response}
                   404 {:description "Collection media-entry arc not found."

@@ -106,9 +106,8 @@
   (let [search (-> request :parameters :path path-param)
         tx (:tx request)
         p (println ">o> abc.path-param" path-param)
-        p (println ">o> abc" search db_table db_col_name)
+        p (println ">o> abc" search db_table db_col_name)]
 
-        ]
     (println ">>> req-find-data: " search " " db_table " " db_col_name)
     (if-let [result-db (dbh/query-eq-find-one db_table db_col_name search tx)]
       (handler (assoc request reqkey result-db))
@@ -183,18 +182,15 @@
 
 (def s_cnv_acc "Convenience access.")
 
-
 ;; TODO: tags for roles that has to be confirmed @drtom
 (defn ?sum_usr_pub? [text] (apply str "?PUBLIC/USER Context? " text))
 (defn ?sum_pub? [text] (apply str "?PUBLIC Context? " text))
 (defn ?sum_usr? [text] (apply str "?USER Context? " text))
 
-
 ;; Flag to
 (defn ?token? [text] (apply str text " [mr/ IST / token-auth]"))
 (defn ?session? [text] (apply str text " [mr / IST / session-auth]"))
 (defn ?no-auth? [text] (apply str text " [mr / IST / no-auth]"))
-
 
 (defn sum_todo [text] (apply str "TODO: " text))
 (defn sum_pub [text] (apply str "PUBLIC Context: " text))

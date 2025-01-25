@@ -3,13 +3,10 @@
    [clojure.tools.logging :as logging]
    [logbug.debug :as debug]))
 
-
-
 (defn pr [str fnc]
   ;(println ">oo> HELPER / " str fnc)(println ">oo> HELPER / " str fnc)
   (println ">oo> " str fnc)
-  fnc
-  )
+  fnc)
 (defn auth-info [request]
   (if-let [auth-entity (pr ">o> auth-ent?" (:authenticated-entity request))
 

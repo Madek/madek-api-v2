@@ -69,7 +69,7 @@
           (if (authorized? auth-entity media-resource scope (:tx request))
             (handler request)
             ;else
-            {:status 403 :body {:message "Not authorized for media-resource" }}))
+            {:status 403 :body {:message "Not authorized for media-resource"}}))
 
         ;else
         {:status 401 :body {:message "Not authorized"}}))

@@ -29,8 +29,7 @@
         db-result (jdbc/execute! (:tx req) query)
 
         te_print (println "db-result: " db-result)
-        te_print (println "db-result1: " (first db-result))
-        ]
+        te_print (println "db-result1: " (first db-result))]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
@@ -68,7 +67,6 @@
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
 
-
             p (println ">o> abc1" parent-id (type parent-id))
             p (println ">o> abc2" child-id (type child-id))
 
@@ -82,23 +80,17 @@
             ;sql (-> sql-map sql-format)
 
             ins-data (if (nil? (:order ins-data))
-                   (dissoc ins-data :order)
-                   (let [
-                         ins-data (assoc ins-data "order" (:order ins-data) )
-                         ins-data (dissoc ins-data :order)
-                         ] ins-data
-                           )
-                   )
-
+                       (dissoc ins-data :order)
+                       (let [ins-data (assoc ins-data "order" (:order ins-data))
+                             ins-data (dissoc ins-data :order)] ins-data))
 
             query (-> (sql/insert-into :collection_collection_arcs)
                       (sql/values [ins-data])
                       (sql/returning :*)
                       sql-format)
 
-            p (println ">o> abc.query" query)
+            p (println ">o> abc.query" query)]
 
-            ]
         (if-let [ins-res (next.jdbc/execute-one! (:tx req) query)]
         ;(if-let [ins-res (next.jdbc/execute! (:tx req) [sql ins-data])]
           (sd/response_ok ins-res)
@@ -117,27 +109,22 @@
 
             data (if (nil? (:order data))
                    (dissoc data :order)
-                   (let [
-                         data (assoc data "order" (:order data) )
-                         data (dissoc data :order)
-                         ] data
-                     )
-                   )
+                   (let [data (assoc data "order" (:order data))
+                         data (dissoc data :order)] data))
 
             p (println ">o> data1b" (:collection_collection_arcs.order data) (type (:order data)))
 
             query (-> (sql/update :collection_collection_arcs)
                       (sql/set data)
                       (sql/where [:= :parent_id parent-id]
-                                  [:= :child_id child-id])
+                                 [:= :child_id child-id])
                       (sql/returning :*)
                       sql-format)
             p (println ">o> abc.query" query)
             tx (:tx req)
             result (next.jdbc/execute! tx query)
 
-            p (println ">o> abc.result" result)
-            ]
+            p (println ">o> abc.result" result)]
 
         (if (= 1 (count result))
         ;(if (= 1 (first result))
@@ -170,8 +157,7 @@
             delresult (next.jdbc/execute! tx query)
             p (println ">o> abc.delresult1" delresult)
             p (println ">o> abc.delresult2" (= 1 (first delresult)))
-            p (println ">o> abc.delresult3" (first delresult))
-            ]
+            p (println ">o> abc.delresult3" (first delresult))]
 
         (if (first delresult)
         ;(if (= 1 (first delresult))

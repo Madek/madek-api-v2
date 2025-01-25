@@ -79,7 +79,6 @@
           "\nupd-data\n" upd-data)
     (handle_update-meta-data-text-base req md-type upd-data)))
 
-
 (s/defschema JsonContent
   {:term s/Str
    :description (s/maybe s/Str)
@@ -135,8 +134,7 @@
                                                            :meta_data_updated_at (s/maybe s/Any)
                                                            ;:json s/Str
                                                            :json (s/maybe s/Any)
-                                                           :other_media_entry_id (s/maybe s/Any)
-                                                           }
+                                                           :other_media_entry_id (s/maybe s/Any)}
                                                     ;:body MetaDataJSON
                                                     }}})
 
@@ -151,19 +149,16 @@
                             :responses {200 {:description "Returns the updated meta-data."
                                              ;:body s/Any
 
-                                             :body  {:created_by_id s/Uuid
-                                                     :media_entry_id s/Uuid
-                                                     :collection_id (s/maybe s/Uuid)
-                                                     :type s/Str
-                                                     :meta_key_id s/Str
-                                                     :string s/Str
-                                                     :id s/Uuid
-                                                     :meta_data_updated_at s/Any
-                                                     :json (s/maybe s/Str)
-                                                     :other_media_entry_id (s/maybe s/Uuid)}
-
-
-                                             }}})
+                                             :body {:created_by_id s/Uuid
+                                                    :media_entry_id s/Uuid
+                                                    :collection_id (s/maybe s/Uuid)
+                                                    :type s/Str
+                                                    :meta_key_id s/Str
+                                                    :string s/Str
+                                                    :id s/Uuid
+                                                    :meta_data_updated_at s/Any
+                                                    :json (s/maybe s/Str)
+                                                    :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def media_entry.meta_key_id.text {:summary "Update meta-data text for media-entry"
                                    :handler handle_update-meta-data-text
@@ -185,10 +180,7 @@
                                                            :id s/Uuid
                                                            :meta_data_updated_at (s/maybe s/Any)
                                                            :json (s/maybe s/Any)
-                                                           :other_media_entry_id (s/maybe s/Any)
-                                                           }
-
-                                                    }}})
+                                                           :other_media_entry_id (s/maybe s/Any)}}}})
 
 (def collection.meta_key_id.json {:summary (fl/?token? "Update meta-data json for collection. X5")
                                   :description "- 25a5d974-1855-458b-b6ba-cc3272a4865b\n
@@ -205,19 +197,16 @@
                                   :responses {200 {:description "Returns the updated meta-data."
 
                                                    ;:body s/Any
-                                                   :body  {:created_by_id s/Uuid
-                                                           :media_entry_id (s/maybe s/Uuid)
-                                                           :collection_id s/Uuid
-                                                           :type s/Str
-                                                           :meta_key_id s/Str
-                                                           :string (s/maybe s/Str)
-                                                           :id s/Uuid
-                                                           :meta_data_updated_at s/Any
-                                                           :json {:foo s/Str} ;; Define the structure of the nested `json` field
-                                                           :other_media_entry_id (s/maybe s/Uuid)}
-
-
-                                                   }}})
+                                                   :body {:created_by_id s/Uuid
+                                                          :media_entry_id (s/maybe s/Uuid)
+                                                          :collection_id s/Uuid
+                                                          :type s/Str
+                                                          :meta_key_id s/Str
+                                                          :string (s/maybe s/Str)
+                                                          :id s/Uuid
+                                                          :meta_data_updated_at s/Any
+                                                          :json {:foo s/Str} ;; Define the structure of the nested `json` field
+                                                          :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def text.meta_key_id.text-date {:summary "Update meta-data text-date for collection."
                                  :handler handle_update-meta-data-text-date
@@ -239,10 +228,7 @@
                                                          :id s/Uuid
                                                          :meta_data_updated_at s/Any
                                                          :json (s/maybe s/Str)
-                                                         :other_media_entry_id (s/maybe s/Uuid)}
-
-
-                                                  }}})
+                                                         :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def meta_key_id.text {:summary "Update meta-data text for collection."
                        :handler handle_update-meta-data-text
@@ -257,17 +243,13 @@
                                     :body {:string s/Str}}
                        :responses {200 {:description "Returns the updated meta-data."
                                         ;:body s/Any
-                                        :body   {:created_by_id s/Uuid
-                                                 :media_entry_id (s/maybe s/Uuid)
-                                                 :collection_id s/Uuid
-                                                 :type s/Str
-                                                 :meta_key_id s/Str
-                                                 :string s/Str
-                                                 :id s/Uuid
-                                                 :meta_data_updated_at s/Any
-                                                 :json (s/maybe s/Str)
-                                                 :other_media_entry_id (s/maybe s/Uuid)}
-
-
-
-                                        }}})
+                                        :body {:created_by_id s/Uuid
+                                               :media_entry_id (s/maybe s/Uuid)
+                                               :collection_id s/Uuid
+                                               :type s/Str
+                                               :meta_key_id s/Str
+                                               :string s/Str
+                                               :id s/Uuid
+                                               :meta_data_updated_at s/Any
+                                               :json (s/maybe s/Str)
+                                               :other_media_entry_id (s/maybe s/Uuid)}}}})
