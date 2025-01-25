@@ -520,7 +520,7 @@
                                                                            :collection_id s/Uuid
                                                                            :type s/Str
                                                                            :meta_key_id s/Str
-                                                                           :string s/Str
+                                                                           :string (s/maybe s/Str)
                                                                            :id s/Uuid
                                                                            ;:meta_data_updated_at (s/maybe s/Inst)
                                                                            :meta_data_updated_at (s/maybe s/Any)
