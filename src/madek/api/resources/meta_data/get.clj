@@ -184,7 +184,7 @@
    :type s/Str
    :value (s/->Either [[{:id s/Uuid}] s/Str])
    ;(s/optional-key :media_entry_id) s/Uuid
-   :media_entry_id s/Uuid
+   (s/optional-key :media_entry_id) s/Uuid
    (s/optional-key :collection_id) s/Uuid})
 
 (def schema_export_mdrole
