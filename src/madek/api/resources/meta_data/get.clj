@@ -1028,7 +1028,8 @@ madek_core:subtitle
                                                           :meta_key_id s/Str}}
                                       :responses {200 {:description "Returns the meta-data keywords for the media-entry."
                                                        ;:body s/Any
-                                                       :body {:meta-data s/Any
+                                                       :body {
+                                                              :meta_data s/Any
                                                               :keywords_ids s/Any
                                                               :md_keywords s/Any
                                                               :keywords s/Any}
