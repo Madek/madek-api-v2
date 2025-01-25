@@ -466,10 +466,11 @@
    :collection_id (s/maybe s/Uuid)
    :type s/Str
    :meta_key_id s/Str
-   :string s/Str
+   :string (s/maybe s/Str)
    :id s/Uuid
    :meta_data_updated_at s/Any
-   :json (s/maybe s/Str)
+   ;:json (s/maybe s/Str)
+   :json (s/maybe s/Any)
    :other_media_entry_id (s/maybe s/Uuid)})
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"

@@ -329,6 +329,13 @@
    :meta_key_id s/Str
    :external_uris [s/Str]})
 
+;"json" : {
+;          "seq" : [ 1, 2, null ],
+;          "zero_point" : -273.15,
+;          "some_boolean" : true
+;          },
+
+
 (s/defschema MetaDataJSON
   {:created_by_id s/Uuid
    :media_entry_id (s/maybe s/Uuid)
@@ -339,7 +346,8 @@
    :id s/Uuid
    :meta_data_updated_at s/Any ;; causes response error
    ;:meta_data_updated_at s/Str
-   :json JsonContent
+   ;:json JsonContent
+   :json (s/maybe s/Any)
    :other_media_entry_id (s/maybe s/Uuid)})
 
 (def meta-datum.meta_key_id.json
@@ -358,13 +366,14 @@
                     ;:body s/Any
                     :body {:created_by_id s/Uuid
                            :media_entry_id (s/maybe s/Uuid)
-                           :collection_id s/Uuid
+                           :collection_id (s/maybe s/Uuid)
                            :type s/Str
                            :meta_key_id s/Str
                            :string (s/maybe s/Str)
                            :id s/Uuid
                            :meta_data_updated_at (s/maybe s/Any)
-                           :json s/Str
+                           ;:json s/Str
+                           :json s/Any
                            :other_media_entry_id (s/maybe s/Any)
                             }
                     ;{
