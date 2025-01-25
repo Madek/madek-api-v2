@@ -1005,11 +1005,21 @@ madek_core:subtitle
                                                                                    ;:json (s/maybe s/Str)
                                                                                    :json (s/maybe s/Any)
                                                                                    :other_media_entry_id (s/maybe s/Uuid)}
-                                                                     ;(s/optional-key :defaultmetadata) s/Str
-                                                                     ;(s/optional-key :defaultdata) s/Str
 
-                                                                     :defaultmetadata s/Str
-                                                                     :defaultdata s/Str
+                                                                    (s/optional-key :defaultmetadata) s/Str
+                                                                     (s/optional-key :defaultdata) s/Str
+
+                                                                     ;:defaultmetadata s/Str
+                                                                     ;:defaultdata s/Str
+
+                                                                    (s/optional-key :md_keywords) s/Any
+                                                                    (s/optional-key :keywords) s/Any
+
+                                                                    (s/optional-key :md_people) s/Any
+                                                                    (s/optional-key :people) s/Any
+
+                                                                    (s/optional-key :md_roles) s/Any
+                                                                    (s/optional-key :roles) s/Any
 
                                                                      ;(s/optional-key :md_keywords) s/Any
                                                                      ;(s/optional-key :keywords) s/Any
