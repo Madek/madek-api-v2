@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -37,7 +38,17 @@
 
 (defn arcs [req]
   (let [query-params (-> req :parameters :query)
-        db-query (arcs-query query-params)
+        p (println ">o> abc.query-params" query-params)
+
+        query-params (-> req :parameters :path)
+        p (println ">o> abc.query-params2" query-params)
+
+        params (merge query-params query-params)
+        p (println ">o> abc.params" params)
+
+        db-query (arcs-query params)
+
+        p (println ">o> abc.db-query" db-query)
         db-result (jdbc/execute! (:tx req) db-query)]
     (sd/response_ok {:collection-media-entry-arcs db-result})))
 
@@ -157,14 +168,14 @@
 (def schema_collection-media-entry-arc-create
   {(s/optional-key :highlight) s/Bool
    (s/optional-key :cover) (s/maybe s/Bool)
-   :id s/Uuid
+   ;:id s/Uuid
    (s/optional-key :position) (s/maybe s/Int)
    (s/optional-key :order) (s/maybe s/Num)})
 
 (def ring-routes
   ["/collection-media-entry-arcs"
    {:openapi {:tags ["api/collection"]}}
-   ["" {:get {:summary "Query collection media-entry arcs."
+   ["" {:get {:summary (fl/?no-auth? "Query collection media-entry arcs.")
               :handler arcs
               :swagger {:produces "application/json"}
               :coercion reitit.coercion.schema/coercion
@@ -173,7 +184,7 @@
               :responses {200 {:description "Returns the collection media-entry arcs."
                                :body {:collection-media-entry-arcs [schema_collection-media-entry-arc-response]}}}}}]
 
-   ["/:id" {:get {:summary "Get collection media-entry arc."
+   ["/:id" {:get {:summary (fl/?no-auth? "Get collection media-entry arc. 9b521e91-c977-4ee9-924b-ed97036409e3")
                   :handler arc
                   :swagger {:produces "application/json"}
                   :coercion reitit.coercion.schema/coercion
@@ -188,7 +199,7 @@
    {:openapi {:tags ["api/collection"]}}
    ["/media-entry-arcs"
     {:get
-     {:summary "Get collection media-entry arcs."
+     {:summary (fl/?token? "Get collection media-entry arcs.")
       :handler arcs
       :middleware [jqh/ring-wrap-add-media-resource
                    jqh/ring-wrap-authorization-view]
@@ -200,7 +211,7 @@
 
    ["/media-entry-arc/:media_entry_id"
     {:post
-     {:summary (sd/sum_usr "Create collection media-entry arc")
+     {:summary (fl/?token? (sd/sum_usr "Create collection media-entry arc"))
       :handler handle_create-col-me-arc
       ; TODO check: if collection edit md and relations is allowed checked
       ; not the media entry edit md
@@ -223,7 +234,7 @@
                        :body s/Any}}}
 
      :put
-     {:summary (sd/sum_usr "Update collection media-entry arc")
+     {:summary (fl/?token? (sd/sum_usr "Update collection media-entry arc"))
       :handler handle_update-col-me-arc
       :middleware [wrap-add-col-me-arc
                    jqh/ring-wrap-add-media-resource
@@ -243,7 +254,7 @@
                        :body s/Any}}}
 
      :delete
-     {:summary (sd/sum_usr "Delete collection media-entry arc")
+     {:summary (fl/?token? (sd/sum_usr "Delete collection media-entry arc"))
       :handler handle_delete-col-me-arc
       :middleware [wrap-add-col-me-arc
                    jqh/ring-wrap-add-media-resource

@@ -12,22 +12,25 @@
 <br/>
 
 ## Supported auth-methods
-1. **Basic auth**
-   1. username *(email OR login)*
-   2. pw
-
-2. **Api-Token** *(provides access to public endpoints only, not to /admin/)*
-   2. Insert token into basicAuth.username
-   2. Insert token into basicAuth.pw
-   3. Header: `Authorization: token <replace-this-by-token>`
+1. **Api-Token** *(provides access to public endpoints only, not to /admin/)*
+2. Header: `Authorization: token <replace-this-by-token>`
 
 <br/>
 
 ## Nice2Know
 1. No ROA-support anymore
 2. Swagger-Authorize
-   1. Public endpoints should have no lock
-   2. *Auth-endpoints* should have a lock that provides
+   1. Public endpoints have no lock
+   2. *Auth-endpoints* have a lock that provides
       1. **apiKey-form**
-      2. **basicAuth-form**
-   3. *Admin-Endpoints* should have a lock that provides **basicAuth-form only**
+3. Roles
+   1. PUBLIC....GET-ENDPOINTS
+   2. USER.......PUT/DELETE/POST-ENDPOINTS (Session/Token)
+   3. ADMIN.....GET/PUT/DELETE/POST-ENDPOINTS (Session/Token) 
+4. Permission-Tables
+   1. admins
+   2. auth_systems_users
+   3. collection_api_client_permission
+   4. collection_user_permission
+   5. media_entry_user_permissions
+   6. vocabulary_user_permissions

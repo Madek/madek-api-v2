@@ -10,7 +10,7 @@
 ; TODO response coercion
 (def meta-data-routes
   ["/meta-data"
-   {:openapi {:tags ["api/meta-data"]}}
+   {:openapi {:tags ["api/meta-data *"]}}
    ["/:meta_datum_id" {:get get/meta_datum_id}]
    ["/:meta_datum_id/data-stream" {:get get/meta_datum_id.data-stream}]
    ;:responses {200 {:body s/Any}
@@ -18,7 +18,7 @@
    ])
 (def role-routes
   ["/meta-data-role"
-   {:openapi {:tags ["api/meta-data-role"]}}
+   {:openapi {:tags ["api/meta-data-role *"]}}
    ["/:meta_data_role_id"
     {:get get/meta-data-role.meta_data_role_id}]])
 
@@ -58,6 +58,9 @@
      {:post post/collection_id.meta_key_id.keyword.keyword_id
 
       :delete delete/delete.meta_key_id.keyword.keyword_id}]
+
+;f76b4d7c-6a62-461b-a3ef-cb81eaaabdcf
+    ;zhdk_bereich:institutional_affiliation
 
     ["/:meta_key_id/people"
      {:get get/meta_key_id.people2}]

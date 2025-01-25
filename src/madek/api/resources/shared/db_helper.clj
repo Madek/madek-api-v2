@@ -98,6 +98,7 @@
 
 (defn sql-query-find-eq
   ([table-name col-name row-data]
+   (println ">o> sql-query-find-eq1" table-name col-name row-data (type row-data))
    (let [query (if (= col-name :media_entry_id)
                  (-> (build-query-base [table-name :vtable] :vtable.*)
                      (sql/join [:media_entries :me] [:= :vtable.media_entry_id :me.id])
@@ -110,6 +111,7 @@
      query))
 
   ([table-name col-name row-data col-name2 row-data2]
+   (println ">o> sql-query-find-eq2" row-data2)
    (let [query (-> (build-query-base table-name :*)
                    (sql/where [:= col-name (to-uuid row-data col-name)])
                    (sql/where [:= col-name2 (to-uuid row-data2 col-name2)])
@@ -123,6 +125,20 @@
    [(str col-name " = ? AND " col-name2 " = ? ") row-data row-data2])
   ([col-name row-data col-name2 row-data2 col-name3 row-data3]
    [(str col-name " = ? AND " col-name2 " = ? AND " col-name3 " = ? ") row-data row-data2 row-data3]))
+
+(defn sql-update-clause-new
+  "Generates an sql update clause"
+
+;([col-name row-data]
+  ; [(str col-name " = ?") row-data])
+  ;([col-name row-data col-name2 row-data2]
+  ; [(str col-name " = ? AND " col-name2 " = ? ") row-data row-data2])
+
+  ([query col-name row-data col-name2 row-data2 col-name3 row-data3]
+   ;[(str col-name " = ? AND " col-name2 " = ? AND " col-name3 " = ? ") row-data row-data2 row-data3]
+
+   (-> query
+       (sql/where [:= (keyword col-name) row-data] [:= (keyword col-name2) row-data2] [:= (keyword col-name3) row-data3]))))
 
 (defn hsql-upd-clause-format
   "Transforms honey sql to sql update clause"

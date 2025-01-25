@@ -9,7 +9,7 @@
 
 (def user-routes
   ["/"
-   {:openapi {:tags ["people"]}}
+   {:openapi {:tags ["people *"]}}
    ["people"
     {;:get index/route
      }]

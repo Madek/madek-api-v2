@@ -185,7 +185,10 @@
                             :body s/Any}}}}]
 
    ["/conf-link/:id"
-    {:get {:summary (sd/sum_adm "Get confidential link by id.")
+    {:get {:summary (sd/sum_adm "Get confidential link by id. L3")
+           :description
+           " - b24aaccf-ab37-491e-aebe-61e4f7762804
+- bd702e91-f4b7-4454-bf94-4a4eb2c87560"
            :handler handle_get-conf-link
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-permissions]
@@ -227,7 +230,7 @@
 ; TODO check can edit permissions
 (def user-col-routes
   ["/collection/:collection_id"
-   {:openapi {:tags ["api/collection/conf-links"]}}
+   {:openapi {:tags ["api/collection/conf-links *"]}}
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link

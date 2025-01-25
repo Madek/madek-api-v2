@@ -1,6 +1,8 @@
 (ns madek.api.web
   (:require
+
    [clojure.java.io :as io]
+
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
    [madek.api.authentication :as authentication]
@@ -9,6 +11,7 @@
    [madek.api.json-protocol]
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
+   [madek.api.resources.shared.core :as fl]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.cli :refer [long-opt-for-key]]
    [madek.api.utils.ring-audits :as ring-audits]
@@ -97,22 +100,22 @@
 
 (def auth-info-route
   ["/api-v2"
-   {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
+   {:openapi {:tags ["api/auth-info *"] :security ADMIN_AUTH_METHODS}}
    ["/auth-info"
     {:get
-     {:summary "Authentication help and info."
+     {:summary (fl/?no-auth? "Authentication help and info.")
       :handler auth-info/auth-info
       :middleware [authentication/wrap]
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:description "Authentication info."
-                       :schema {:type s/Str
-                                :id s/Uuid
-                                :login s/Str
-                                :created_at s/Any
-                                :email_address s/Str
-                                (s/optional-key :authentication-method) s/Str}}
+                       :body {:type s/Str
+                              :id s/Uuid
+                              :login s/Str
+                              :created_at s/Any
+                              :email_address s/Str
+                              (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
-                       :schema s/Str
+                       :body {:message s/Str}
                        :examples {"application/json" {:message "Not authorized"}}}}}}]])
 
 (def swagger-routes
