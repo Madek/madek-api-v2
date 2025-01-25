@@ -438,7 +438,7 @@
 
 (def MetaDataSchema
   {:created_by_id s/Uuid
-   :media_entry_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
    :collection_id (s/maybe s/Uuid)
    :type s/Str
    :meta_key_id s/Str
