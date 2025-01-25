@@ -37,7 +37,11 @@
 
 (defn arcs [req]
   (let [query-params (-> req :parameters :query)
-        db-query (arcs-query query-params)
+        path-params (-> req :parameters :path)
+        params (merge
+                (if (nil? query-params) {} query-params)
+                (if (nil? path-params) {} path-params))
+        db-query (arcs-query params)
         db-result (jdbc/execute! (:tx req) db-query)]
     (sd/response_ok {:collection-media-entry-arcs db-result})))
 
@@ -157,14 +161,13 @@
 (def schema_collection-media-entry-arc-create
   {(s/optional-key :highlight) s/Bool
    (s/optional-key :cover) (s/maybe s/Bool)
-   :id s/Uuid
    (s/optional-key :position) (s/maybe s/Int)
    (s/optional-key :order) (s/maybe s/Num)})
 
 (def ring-routes
   ["/collection-media-entry-arcs"
    {:openapi {:tags ["api/collection"]}}
-   ["" {:get {:summary "Query collection media-entry arcs."
+   ["" {:get {:summary (sd/?no-auth? "Query collection media-entry arcs.")
               :handler arcs
               :swagger {:produces "application/json"}
               :coercion reitit.coercion.schema/coercion
@@ -173,7 +176,7 @@
               :responses {200 {:description "Returns the collection media-entry arcs."
                                :body {:collection-media-entry-arcs [schema_collection-media-entry-arc-response]}}}}}]
 
-   ["/:id" {:get {:summary "Get collection media-entry arc."
+   ["/:id" {:get {:summary (sd/?no-auth? "Get collection media-entry arc.")
                   :handler arc
                   :swagger {:produces "application/json"}
                   :coercion reitit.coercion.schema/coercion
@@ -188,7 +191,7 @@
    {:openapi {:tags ["api/collection"]}}
    ["/media-entry-arcs"
     {:get
-     {:summary "Get collection media-entry arcs."
+     {:summary (sd/?token? "Get collection media-entry arcs.")
       :handler arcs
       :middleware [jqh/ring-wrap-add-media-resource
                    jqh/ring-wrap-authorization-view]
@@ -200,7 +203,7 @@
 
    ["/media-entry-arc/:media_entry_id"
     {:post
-     {:summary (sd/sum_usr "Create collection media-entry arc")
+     {:summary (sd/?token? (sd/sum_usr "Create collection media-entry arc"))
       :handler handle_create-col-me-arc
       ; TODO check: if collection edit md and relations is allowed checked
       ; not the media entry edit md
@@ -223,7 +226,7 @@
                        :body s/Any}}}
 
      :put
-     {:summary (sd/sum_usr "Update collection media-entry arc")
+     {:summary (sd/?token? (sd/sum_usr "Update collection media-entry arc"))
       :handler handle_update-col-me-arc
       :middleware [wrap-add-col-me-arc
                    jqh/ring-wrap-add-media-resource
@@ -243,7 +246,7 @@
                        :body s/Any}}}
 
      :delete
-     {:summary (sd/sum_usr "Delete collection media-entry arc")
+     {:summary (sd/?token? (sd/sum_usr "Delete collection media-entry arc"))
       :handler handle_delete-col-me-arc
       :middleware [wrap-add-col-me-arc
                    jqh/ring-wrap-add-media-resource

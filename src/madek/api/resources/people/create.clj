@@ -52,9 +52,7 @@
    :parameters {:body schema}
    :responses {201 {:description "Created."
                     :body get-person/schema}
-               409 {:description "Conflict."
-                    :schema s/Str
-                    :examples {"application/json" {:message "Violation of constraint"}}}}
+               409 (sd/create-error-message-response "Conflict." "Violation of constraint")}
    :summary "Create a person"
    :swagger {:produces "application/json"
              :consumes "application/json"}})

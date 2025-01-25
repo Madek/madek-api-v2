@@ -43,13 +43,9 @@
                          :parameters {:body c/schema_import-vocabulary}
                          :responses {200 {:description "Returns the created vocabulary."
                                           :body c/schema_export-vocabulary-admin}
-                                     406 {:description "Creation failed."
-                                          :schema s/Str
-                                          :examples {"application/json" {:message "Could not create vocabulary."}}}
-
-                                     500 {:description "Duplicate key"
-                                          :schema s/Str
-                                          :examples {"application/json" {:message "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists."}}}}
+                                     406 (sd/create-error-message-response "Creation failed." "Could not create vocabulary.")
+                                     ;; FIXME: change to 409
+                                     500 (sd/create-error-message-response "Duplicate key" "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists.")}
                          :swagger {:consumes "application/json" :produces "application/json"}})
 
 (def admin.vocabularies.users.user_id {:summary (sd/sum_adm "Create vocabulary user permissions")
@@ -68,12 +64,8 @@
 
                                        :responses {200 {:description "Returns the created vocabulary user permission."
                                                         :body c/schema_export-user-perms}
-                                                   404 {:description "Not found."
-                                                        :schema s/Str
-                                                        :examples {"application/json" {:message "{Vocabulary|User} entry not found"}}}
-                                                   409 {:description "Conflict."
-                                                        :schema s/Str
-                                                        :examples {"application/json" {:message "Entry already exists"}}}}})
+                                                   404 (sd/create-error-message-response "Not Found." "{Vocabulary|User} entry not found")
+                                                   409 (sd/create-error-message-response "Conflict." "Entry already exists")}})
 
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Create vocabulary group permissions")
                                         :handler permissions/handle_create-vocab-group-perms
@@ -86,15 +78,9 @@
                                                      :body c/schema_perms-update-user-or-group}
                                         :responses {200 {:description "Returns the created vocabulary group permission."
                                                          :body c/schema_export-group-perms}
-                                                    404 {:description "Not Found."
-                                                         :schema s/Str
-                                                         :examples {"application/json" {:message "Vocabulary entry not found"}}}
-                                                    406 {:description "Not Acceptable."
-                                                         :schema s/Str
-                                                         :examples {"application/json" {:message "Could not delete vocabulary group permission"}}}
-                                                    409 {:description "Conflict."
-                                                         :schema s/Str
-                                                         :examples {"application/json" {:message "Entry already exists"}}}}})
+                                                    404 (sd/create-error-message-response "Not Found." "Vocabulary entry not found")
+                                                    406 (sd/create-error-message-response "Not Acceptable." "Could not delete vocabulary group permission")
+                                                    409 (sd/create-error-message-response "Conflict." "Entry already exists")}})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

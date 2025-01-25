@@ -106,7 +106,7 @@
   (when-let [media-resource (:media-resource request)]
     (when-let [meta-data (get-meta-data request media-resource (:tx request))]
       (let [data (conj
-                  {:meta-data meta-data}
+                  {:meta_data meta-data}
                   (case (:type media-resource)
                     "MediaEntry" {:media_entry_id (:id media-resource)}
                     "Collection" {:collection_id (:id media-resource)}))]

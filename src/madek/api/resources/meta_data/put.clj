@@ -46,7 +46,7 @@
 
         (if (= 1 (::jdbc/update-count upd-result))
           (sd/response_ok result-data)
-          (sd/response_failed {:message "Failed to update meta data text base"} 406))))
+          (sd/response_failed "Failed to update meta data text base" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-meta-data-text
@@ -85,9 +85,18 @@
                                    :coercion reitit.coercion.schema/coercion
                                    :parameters {:path {:media_entry_id s/Uuid
                                                        :meta_key_id s/Str}
-                                                :body {:json s/Any}}
+                                                :body s/Any}
                                    :responses {200 {:description "Returns the updated meta-data."
-                                                    :body s/Any}}})
+                                                    :body {:created_by_id s/Uuid
+                                                           :media_entry_id (s/maybe s/Uuid)
+                                                           :collection_id (s/maybe s/Uuid)
+                                                           :type s/Str
+                                                           :meta_key_id s/Str
+                                                           :string (s/maybe s/Str)
+                                                           :id s/Uuid
+                                                           :meta_data_updated_at (s/maybe s/Any)
+                                                           :json (s/maybe s/Any)
+                                                           :other_media_entry_id (s/maybe s/Any)}}}})
 
 (def meta_key_id.text-date {:summary "Update meta-data text-date for media-entry"
                             :handler handle_update-meta-data-text-date
@@ -98,7 +107,16 @@
                                                 :meta_key_id s/Str}
                                          :body {:string s/Str}}
                             :responses {200 {:description "Returns the updated meta-data."
-                                             :body s/Any}}})
+                                             :body {:created_by_id s/Uuid
+                                                    :media_entry_id s/Uuid
+                                                    :collection_id (s/maybe s/Uuid)
+                                                    :type s/Str
+                                                    :meta_key_id s/Str
+                                                    :string s/Str
+                                                    :id s/Uuid
+                                                    :meta_data_updated_at s/Any
+                                                    :json (s/maybe s/Any)
+                                                    :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def media_entry.meta_key_id.text {:summary "Update meta-data text for media-entry"
                                    :handler handle_update-meta-data-text
@@ -109,9 +127,22 @@
                                                        :meta_key_id s/Str}
                                                 :body {:string s/Str}}
                                    :responses {200 {:description "Returns the updated meta-data."
-                                                    :body s/Any}}})
+                                                    :body {:created_by_id s/Uuid
+                                                           :media_entry_id (s/maybe s/Uuid)
+                                                           :collection_id (s/maybe s/Uuid)
+                                                           :type s/Str
+                                                           :meta_key_id s/Str
+                                                           :string s/Str
+                                                           :id s/Uuid
+                                                           :meta_data_updated_at (s/maybe s/Any)
+                                                           :json (s/maybe s/Any)
+                                                           :other_media_entry_id (s/maybe s/Any)}}}})
 
-(def collection.meta_key_id.json {:summary "Update meta-data json for collection."
+(def collection.meta_key_id.json {:summary (sd/?token? "Update meta-data json for collection. X5")
+                                  :description "- 25a5d974-1855-458b-b6ba-cc3272a4865b\n
+                                  - meta_key_id research_video:rv_annotations\n
+                                  - {\"json\": \"{\\\"test\\\":\\\"me\\\"}\"}
+                                  "
                                   :handler handle_update-meta-data-json
                                   :middleware [jqh/ring-wrap-add-media-resource
                                                jqh/ring-wrap-authorization-edit-metadata]
@@ -120,7 +151,16 @@
                                                       :meta_key_id s/Str}
                                                :body {:json s/Any}}
                                   :responses {200 {:description "Returns the updated meta-data."
-                                                   :body s/Any}}})
+                                                   :body {:created_by_id s/Uuid
+                                                          :media_entry_id (s/maybe s/Uuid)
+                                                          :collection_id s/Uuid
+                                                          :type s/Str
+                                                          :meta_key_id s/Str
+                                                          :string (s/maybe s/Str)
+                                                          :id s/Uuid
+                                                          :meta_data_updated_at s/Any
+                                                          :json (s/maybe s/Any)
+                                                          :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def text.meta_key_id.text-date {:summary "Update meta-data text-date for collection."
                                  :handler handle_update-meta-data-text-date
@@ -131,7 +171,16 @@
                                                      :meta_key_id s/Str}
                                               :body {:string s/Str}}
                                  :responses {200 {:description "Returns the updated meta-data."
-                                                  :body s/Any}}})
+                                                  :body {:created_by_id s/Uuid
+                                                         :media_entry_id (s/maybe s/Uuid)
+                                                         :collection_id (s/maybe s/Uuid)
+                                                         :type s/Str
+                                                         :meta_key_id s/Str
+                                                         :string s/Str
+                                                         :id s/Uuid
+                                                         :meta_data_updated_at s/Any
+                                                         :json (s/maybe s/Any)
+                                                         :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def meta_key_id.text {:summary "Update meta-data text for collection."
                        :handler handle_update-meta-data-text
@@ -145,4 +194,13 @@
                                            :meta_key_id s/Str}
                                     :body {:string s/Str}}
                        :responses {200 {:description "Returns the updated meta-data."
-                                        :body s/Any}}})
+                                        :body {:created_by_id s/Uuid
+                                               :media_entry_id (s/maybe s/Uuid)
+                                               :collection_id s/Uuid
+                                               :type s/Str
+                                               :meta_key_id s/Str
+                                               :string s/Str
+                                               :id s/Uuid
+                                               :meta_data_updated_at s/Any
+                                               :json (s/maybe s/Any)
+                                               :other_media_entry_id (s/maybe s/Uuid)}}}})

@@ -48,8 +48,9 @@
     (sd/response_failed "No such person found" 404)))
 
 (def route
-  {:summary (sd/sum_adm "Get person by uid")
-   :description "Get a person by uid (either uuid or pair of json encoded [institution, institutional_id]). Returns 404, if no such people exists."
+  {:summary (sd/?no-auth? (sd/sum_adm "Get person by uid"))
+   :description "Get a person by uid (either uuid or pair of json encoded [institution, institutional_id]).
+   Returns 404, if no such people exists."
    :handler handler
    :middleware []
    :swagger {:produces "application/json"}
@@ -58,6 +59,4 @@
    :parameters {:path {:id s/Str}}
    :responses {200 {:description "Person found."
                     :body schema}
-               404 {:description "Not found."
-                    :schema s/Str
-                    :examples {"application/json" {:message "No such person found."}}}}})
+               404 (sd/create-error-message-response "Not Found." "No such person found.")}})

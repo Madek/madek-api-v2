@@ -46,8 +46,8 @@ describe "a bunch of media entries with different properties" do
 
           response = client.get("/api-v2/media-entry/#{me_id}/meta-data")
           expect(response.status).to be == 200
-          expect(response.body["meta-data"][0]["media_entry_id"]).to eq(me_id)
-          meta_key_id = response.body["meta-data"][0]["meta_key_id"]
+          expect(response.body["meta_data"][0]["media_entry_id"]).to eq(me_id)
+          meta_key_id = response.body["meta_data"][0]["meta_key_id"]
 
           response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/#{meta_key_id}")
           expect(response.status).to be == 200
@@ -66,11 +66,11 @@ describe "a bunch of media entries with different properties" do
           media_entry_id = response.body["media_entry_id"]
           response = client.get("/api-v2/media-entry/#{me_id}/meta-data?media_entry_id=#{media_entry_id}")
           expect(response.status).to be == 200
-          expect(response.body["meta-data"][0]["media_entry_id"]).to eq(media_entry_id)
+          expect(response.body["meta_data"][0]["media_entry_id"]).to eq(media_entry_id)
 
           response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/#{meta_key_id}")
           expect(response.status).to be == 200
-          expect(response.body["meta-data"]["meta_key_id"]).to eq(meta_key_id)
+          expect(response.body["meta_data"]["meta_key_id"]).to eq(meta_key_id)
         end
 
         it "checks conf-links" do
@@ -126,12 +126,12 @@ describe "a bunch of media entries with different properties" do
 
           response = client.get("/api-v2/media-entry/#{me_id}/meta-data")
           expect(response.status).to be == 200
-          expect(response.body["meta-data"].count).to eq(6)
+          expect(response.body["meta_data"].count).to eq(6)
 
           ["test:people", "test:roles", "test:keywords"].each do |meta_key_id|
             response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/#{meta_key_id}")
             expect(response.status).to be == 200
-            expect(response.body["meta-data"]["media_entry_id"]).to eq(me_id)
+            expect(response.body["meta_data"]["media_entry_id"]).to eq(me_id)
           end
 
           response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/test:keywords/keyword")

@@ -54,14 +54,15 @@
 
   ([value key]
    (def keys-to-cast-to-uuid #{:user_id :id :group_id :person_id :collection_id :media_entry_id :accepted_usage_terms_id :delegation_id
-                               :uploader_id :created_by_id
+                               :uploader_id :created_by_id :media_resource_id
                                :keyword_id})
    (let [res (try
                (if (and (contains? keys-to-cast-to-uuid (keyword key)) (instance? String value))
                  (UUID/fromString value)
                  value)
                (catch Exception e
-                 (warn ">>> DEV-ERROR in to-uuid[value key], value=" value ", key=" key " exception=" (.getMessage e))
+                 (warn ">>> DEV-ERROR in to-uuid[value key], value=" value ", key=" key " exception=" (.getMessage e)
+                       ", continue with original value")
                  value))] res))
 
   ([value key table]

@@ -64,10 +64,15 @@
             child-id (-> req :parameters :path :child_id)
             data (-> req :parameters :body)
             ins-data (assoc data :parent_id parent-id :child_id child-id)
-            sql-map {:insert-into :collection_collection_arcs
-                     :values [ins-data]}
-            sql (-> sql-map sql-format)]
-        (if-let [ins-res (next.jdbc/execute! (:tx req) [sql ins-data])]
+            ins-data (if (nil? (:order ins-data))
+                       (dissoc ins-data :order)
+                       (let [ins-data (assoc ins-data "order" (:order ins-data))
+                             ins-data (dissoc ins-data :order)] ins-data))
+            query (-> (sql/insert-into :collection_collection_arcs)
+                      (sql/values [ins-data])
+                      (sql/returning :*)
+                      sql-format)]
+        (if-let [ins-res (next.jdbc/execute-one! (:tx req) query)]
           (sd/response_ok ins-res)
           (sd/response_failed "Could not create collection-collection-arc" 406))))
     (catch Exception e (sd/response_exception e))))
@@ -78,15 +83,20 @@
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
             data (-> req :parameters :body)
+            data (if (nil? (:order data))
+                   (dissoc data :order)
+                   (let [data (assoc data "order" (:order data))
+                         data (dissoc data :order)] data))
             query (-> (sql/update :collection_collection_arcs)
                       (sql/set data)
-                      (sql/where [:= :parent_id parent-id
-                                  := :child_id child-id])
+                      (sql/where [:= :parent_id parent-id]
+                                 [:= :child_id child-id])
+                      (sql/returning :*)
                       sql-format)
             tx (:tx req)
             result (next.jdbc/execute! tx query)]
 
-        (if (= 1 (first result))
+        (if (= 1 (count result))
           (sd/response_ok (dbh/query-eq-find-one
                            :collection_collection_arcs
                            :parent_id parent-id
@@ -108,13 +118,14 @@
                      tx)
             tx (:tx req)
             query (-> (sql/delete-from :collection_collection_arcs)
-                      (sql/where [:= :parent_id parent-id
-                                  := :child_id child-id])
+                      (sql/where [:and [:= :parent_id parent-id]
+                                  [:= :child_id child-id]])
+                      (sql/returning :*)
                       sql-format)
 
             delresult (next.jdbc/execute! tx query)]
 
-        (if (= 1 (first delresult))
+        (if (first delresult)
           (sd/response_ok olddata)
           (sd/response_failed "Could not delete collection collection arc." 422))))
     (catch Exception e (sd/response_exception e))))
@@ -146,7 +157,7 @@
    {:openapi {:tags ["api/collection"]}}
    [""
     {:get
-     {:summary "Query collection collection arcs."
+     {:summary (sd/?no-auth? "Query collection collection arcs.")
       :handler handle_query-arcs
       :coercion spec/coercion
       :parameters {:query ::group-id-query-def}
@@ -156,7 +167,7 @@
    ; TODO add permission checks
    ["/:id"
     {:get
-     {:summary "Get collection collection arcs."
+     {:summary (sd/?no-auth? "Get collection collection arcs.")
       :handler handle_get-arc
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
@@ -183,7 +194,7 @@
    ;]
    ["/collection-arc/:child_id"
     {:post
-     {:summary (sd/sum_todo "Create collection collection arc")
+     {:summary (sd/?no-auth? (sd/sum_todo "Create collection collection arc"))
       :handler handle_create-col-col-arc
       :swagger {:produces "application/json"
                 :consumes "application/json"}
@@ -197,7 +208,7 @@
                        :body s/Any}}}
 
      :get
-     {:summary "Get collection collection arcs."
+     {:summary (sd/?no-auth? "Get collection collection arcs.")
       :handler handle_arc-by-parent-and-child
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
@@ -211,7 +222,7 @@
 
      ; TODO col col arc update tests
      :put
-     {:summary (sd/sum_usr "Update collection collection arc")
+     {:summary (sd/?no-auth? (sd/sum_usr "Update collection collection arc"))
       :handler handle_update-arc
       :swagger {:produces "application/json"
                 :consumes "application/json"}
@@ -228,7 +239,7 @@
 
      ; TODO col col arc delete tests
      :delete
-     {:summary (sd/sum_usr "Delete collection collection arc")
+     {:summary (sd/?no-auth? (sd/sum_usr "Delete collection collection arc"))
       :handler handle_delete-arc
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion

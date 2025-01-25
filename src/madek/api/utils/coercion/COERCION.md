@@ -9,6 +9,11 @@ There are 2 ways to describe schema
 2. reitit.coercion.spec (more options to define default-value/description/.. of swagger-ui-fields)
    1. .. but it blows up code
 
+TODO
+--
+1. Avoid String-JSON parameters, cast it at BE
+2. Clarify auth-creds
+3. Unify: :meta_data vs :meta-data
 
 Nice2Know
 --

@@ -71,7 +71,7 @@ describe "generated runs" do
                 end
 
                 it "holds the proper value" do
-                  expect(response.body["meta-data"]["string"]).to eq(create_data)
+                  expect(response.body["meta_data"]["string"]).to eq(create_data)
                 end
               end
 

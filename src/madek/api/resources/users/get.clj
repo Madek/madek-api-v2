@@ -77,6 +77,4 @@
    :parameters {:path {:id s/Str}}
    :responses {200 {:description "User found."
                     :body schema}
-               404 {:description "Not Found."
-                    :schema s/Str
-                    :examples {"application/json" {:message "No such user."}}}}})
+               404 (sd/create-error-message-response "Not Found." "No such user.")}})

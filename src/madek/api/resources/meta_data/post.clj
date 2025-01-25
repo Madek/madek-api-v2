@@ -7,6 +7,7 @@
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.helper :refer [to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
@@ -34,7 +35,7 @@
 
         (if (= md-type (:type ins-result))
           (sd/response_ok ins-result)
-          (sd/response_failed {:message "Failed to add meta data text"} 406))))
+          (sd/response_failed "Failed to add meta data text" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion
@@ -57,7 +58,7 @@
 
         (if (= md-type (:type ins-result))
           (sd/response_ok ins-result)
-          (sd/response_failed {:message "Failed to add meta data text-date"} 406))))
+          (sd/response_failed "Failed to add meta data text-date" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion
@@ -82,7 +83,7 @@
 
         (if (= md-type (:type ins-result))
           (sd/response_ok ins-result)
-          (sd/response_failed {:message "Failed to add meta data json"} 406))))
+          (sd/response_failed "Failed to add meta data json" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion
@@ -136,12 +137,16 @@
 
 (defn db-create-meta-data-roles
   [db md-id role-id person-id position]
-  (let [data {:meta_datum_id md-id
+  (let [data {:meta_datum_id (to-uuid md-id)
               :person_id person-id
-              :role_id role-id
-              :position position}
+              :role_id role-id}
+        data (if (nil? position)
+               data
+               (assoc data :position position))
+
         sql-query (-> (sql/insert-into :meta_data_roles)
                       (sql/values [data])
+                      (sql/returning :*) ;; FIXME: is correct but key-prefix is still in use
                       sql-format)
         result (jdbc/execute! db sql-query)]
     result))
@@ -189,7 +194,7 @@
             user-id (-> req :authenticated-entity :id)
             meta-key-id (-> req :parameters :path :meta_key_id)
             role-id (-> req :parameters :path :role_id)
-            person-id (-> req :parameters :path :person_id)
+            person-id (-> req :authenticated-entity :person_id)
             position (-> req :parameters :path :position)
             tx (:tx req)]
 
@@ -213,8 +218,16 @@
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
    :responses {200 {:description "Returns the created meta-data text."
-                    :body s/Any}}})
-
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id (s/maybe s/Uuid)
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Any)}}}})
 (def meta-datum.meta_key_id.text-date
   {:summary "Create meta-data text-date for media-entry"
    :handler handle_create-meta-data-text-date
@@ -225,7 +238,28 @@
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
    :responses {200 {:description "Returns the created meta-data text-date."
-                    :body s/Any}}})
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id (s/maybe s/Uuid)
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Any)}}}})
+
+(s/defschema MetaDataJSON
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id s/Uuid
+   :type (s/enum "MetaDatum::JSON")
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Any)
+   :other_media_entry_id (s/maybe s/Uuid)})
 
 (def meta-datum.meta_key_id.json
   {:summary "Create meta-data json for media-entry"
@@ -237,8 +271,16 @@
                        :meta_key_id s/Str}
                 :body {:json s/Any}}
    :responses {200 {:description "Returns the created meta-data json."
-                    :body s/Any}}})
-
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id (s/maybe s/Uuid)
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string (s/maybe s/Str)
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json s/Any
+                           :other_media_entry_id (s/maybe s/Any)}}}})
 (def meta-datum.meta_key_id.keyword.keyword_id
   {:summary "Create meta-data keyword for media-entry."
    :handler handle_create-meta-data-keyword
@@ -251,7 +293,32 @@
                        :meta_key_id s/Str ;; is this meta_datum_id
                        :keyword_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data keyword."
-                    :body s/Any}}})
+                    :body {:meta_data s/Any
+                           :md_keywords s/Any}}}})
+
+(def MetaDataSchema4
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id (s/maybe s/Uuid)
+   :type s/Str
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Any)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+(def MdPeopleSchema4
+  {:meta_data_people/meta_datum_id s/Uuid
+   :meta_data_people/person_id s/Uuid
+   :meta_data_people/created_by_id s/Uuid
+   :meta_data_people/meta_data_updated_at s/Any
+   :meta_data_people/id s/Uuid
+   :meta_data_people/position s/Int})
+
+(def ResponseSchema4
+  {:meta_data MetaDataSchema4
+   :md_people MdPeopleSchema4})
 
 (def media_entry_id.meta-datum.meta_key_id.people.person_id
   {:summary "Create meta-data people for a media-entries meta-key."
@@ -265,7 +332,7 @@
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data people."
-                    :body s/Any}}})
+                    :body ResponseSchema4}}})
 
 (def media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position
   {:summary "Create meta-data role for media-entry."
@@ -281,8 +348,8 @@
                        :person_id s/Uuid
                        :position s/Int}}
    :responses {200 {:description "Returns the created meta-data role."
-                    :body s/Any}}})
-
+                    :body {:meta_data s/Any
+                           :md_roles s/Any}}}})
 (def collection_id.meta-datum:meta_key_id.text
   {:summary "Create meta-data text for collection."
    :handler handle_create-meta-data-text
@@ -296,7 +363,18 @@
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
    :responses {200 {:description "Returns the created meta-data text."
-                    :body s/Any}}})
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id s/Uuid
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Uuid)}}
+               500 {:description "Returns the cause of error."
+                    :body {:message s/Str}}}})
 
 (def collection_id.meta-datum:meta_key_id.text-date
   {:summary "Create meta-data json for collection."
@@ -308,7 +386,16 @@
                        :meta_key_id s/Str}
                 :body {:string s/Str}}
    :responses {200 {:description "Returns the created meta-data text-date."
-                    :body s/Any}}})
+                    :body {:created_by_id s/Uuid
+                           :media_entry_id (s/maybe s/Uuid)
+                           :collection_id s/Uuid
+                           :type s/Str
+                           :meta_key_id s/Str
+                           :string s/Str
+                           :id s/Uuid
+                           :meta_data_updated_at (s/maybe s/Any)
+                           :json (s/maybe s/Any)
+                           :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def collection_id.meta_key_id.json
   {:summary "Create meta-data json for collection."
@@ -320,7 +407,33 @@
                        :meta_key_id s/Str}
                 :body {:json s/Any}}
    :responses {200 {:description "Returns the created meta-data json."
-                    :body s/Any}}})
+                    :body MetaDataJSON}}})
+
+(def MetaDataSchema
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id s/Uuid
+   :type (s/enum "MetaDatum::Keywords")
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Any)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+(def MdKeywordsSchema
+  {:id s/Uuid
+   :created_by_id s/Uuid
+   :meta_datum_id s/Uuid
+   :keyword_id s/Uuid
+   :created_at s/Any
+   :updated_at s/Any
+   :meta_data_updated_at s/Any
+   :position s/Int})
+
+(def BodySchema
+  {:meta_data MetaDataSchema
+   :md_keywords [MdKeywordsSchema]})
 
 (def collection_id.meta_key_id.keyword.keyword_id
   {:summary "Create meta-data keyword for collection."
@@ -334,7 +447,32 @@
                        :meta_key_id s/Str
                        :keyword_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data keyword."
-                    :body s/Any}}})
+                    :body BodySchema}}})
+
+(def MetaDataSchema5
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id s/Uuid
+   :type s/Str
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Any)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+;; FIXME: remove key-prefix
+(def MdPeopleSchema5
+  {:meta_data_people/meta_datum_id s/Uuid
+   :meta_data_people/person_id s/Uuid
+   :meta_data_people/created_by_id s/Uuid
+   :meta_data_people/meta_data_updated_at s/Any
+   :meta_data_people/id s/Uuid
+   :meta_data_people/position s/Any})
+
+(def ResponseSchema5
+  {:meta_data MetaDataSchema5
+   :md_people MdPeopleSchema5})
 
 (def collection_id.meta_key_id.people.person_id
   {:summary "Create meta-data people for media-entry"
@@ -348,7 +486,30 @@
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data people."
-                    :body s/Any}}})
+                    :body ResponseSchema5}}})
+
+(def MetaDataSchema3
+  {:created_by_id s/Uuid
+   :media_entry_id (s/maybe s/Uuid)
+   :collection_id s/Uuid
+   :type s/Str
+   :meta_key_id s/Str
+   :string s/Str
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Any)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+(def MdRoleItemSchema3
+  {:meta_data_roles/id s/Uuid
+   :meta_data_roles/meta_datum_id s/Uuid
+   :meta_data_roles/person_id s/Uuid
+   :meta_data_roles/role_id s/Uuid
+   :meta_data_roles/position s/Int})
+
+(def ResponseSchema3
+  {:meta_data MetaDataSchema3
+   :md_roles [MdRoleItemSchema3]})
 
 (def collection_id.meta_key_id.role.role_id
   {:summary "Create meta-data role for media-entry"
@@ -361,4 +522,4 @@
                        :meta_key_id s/Str
                        :role_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data role."
-                    :body s/Any}}})
+                    :body ResponseSchema3}}})

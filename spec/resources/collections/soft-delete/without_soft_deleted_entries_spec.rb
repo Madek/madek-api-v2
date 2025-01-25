@@ -77,14 +77,14 @@ describe "filtering collections" do
       it "fetch all existing" do
         response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/meta-data")
         expect(response.status).to eq(200)
-        expect(response.body["meta-data"].count).to be > 0
+        expect(response.body["meta_data"].count).to be > 0
       end
     end
 
     describe "/api-v2/collection/{collection_id}/media-entry-related" do
       it "fetch all existing" do
         response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/meta-data-related")
-        mk = response.body.first["meta-data"]["meta_key_id"]
+        mk = response.body.first["meta_data"]["meta_key_id"]
 
         expect(response.status).to eq(200)
         expect(response.body.count).to eq(1)
@@ -102,7 +102,7 @@ describe "filtering collections" do
         expect(response.status).to eq(200)
         expect(response.body.count).to eq(1)
 
-        mk = response.body.first["meta-data"]["meta_key_id"]
+        mk = response.body.first["meta_data"]["meta_key_id"]
         response = client.get("/api-v2/collection/#{cid}/meta-datum/#{mk}")
         expect(response.status).to eq(200)
       end
@@ -116,7 +116,7 @@ describe "filtering collections" do
         expect(response.status).to eq(200)
         expect(response.body.count).to eq(1)
 
-        mk = response.body.first["meta-data"]["meta_key_id"]
+        mk = response.body.first["meta_data"]["meta_key_id"]
         response = client.get("/api-v2/collection/#{cid}/meta-datum/#{mk}/people")
 
         expect(response.status).to eq(200)

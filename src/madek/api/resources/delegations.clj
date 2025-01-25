@@ -148,9 +148,7 @@
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:description "Returns the delegation."
                             :body schema_export_delegations}
-                       404 {:description "Not Found."
-                            :schema s/Str
-                            :examples {"application/json" {:message "No such entity in :delegations as :id with <id>"}}}}}
+                       404 (sd/create-error-message-response "Not Found." "No such entity in :delegations as :id with <id>")}}
 
      :put {:summary (sd/sum_adm "Update delegations with id.")
            :handler handle_update-delegations
@@ -160,23 +158,15 @@
                         :body schema_update_delegations}
            :responses {200 {:description "Returns the updated delegation."
                             :body schema_export_delegations}
-                       404 {:description "Not Found."
-                            :schema s/Str
-                            :examples {"application/json" {:message "No such entity in :delegations as :id with <id>"}}}
-                       406 {:description "Not Acceptable."
-                            :schema s/Str
-                            :examples {"application/json" {:message "Could not update delegation."}}}}}
+                       404 (sd/create-error-message-response "Not Found." "No such entity in :delegations as :id with <id>")
+                       406 (sd/create-error-message-response "Not Acceptable." "Could not update delegation.")}
 
-     :delete {:summary (sd/sum_adm_todo "Delete delegation by id.")
-              :coercion reitit.coercion.schema/coercion
-              :handler handle_delete-delegation
-              :middleware [(wwrap-find-delegation :id :id true)]
-              :parameters {:path {:id s/Uuid}}
-              :responses {200 {:description "Returns the deleted delegation."
-                               :body schema_export_delegations}
-                          404 {:description "Not Found."
-                               :schema s/Str
-                               :examples {"application/json" {:message "No such delegation found"}}}
-                          406 {:description "Not Acceptable."
-                               :schema s/Str
-                               :examples {"application/json" {:message "Could not delete delegation."}}}}}}]])
+           :delete {:summary (sd/sum_adm_todo "Delete delegation by id.")
+                    :handler handle_delete-delegation
+                    :middleware [(wwrap-find-delegation :id :id true)]
+                    :parameters {:path {:id s/Uuid}}
+                    :coercion reitit.coercion.schema/coercion
+                    :responses {200 {:description "Returns the deleted delegation."
+                                     :body schema_export_delegations}
+                                404 (sd/create-error-message-response "Not Found." "No such delegation found.")
+                                406 (sd/create-error-message-response "Not Acceptable." "Could not delete delegation.")}}}}]])

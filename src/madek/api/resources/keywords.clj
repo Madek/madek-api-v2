@@ -183,23 +183,33 @@
    {:openapi {:tags ["keywords"] :security []}}
    ["keywords"
     {:get
-     {:summary (sd/sum_pub (d "Query / list keywords."))
+     {:summary (sd/?no-auth? (sd/sum_pub (d "Query / list keywords.")))
       :handler handle_usr-query-keywords
       :coercion spec/coercion
       :parameters {:query sp/schema_pagination_opt}
       :responses {200 {:description "Successful response, list of items."
                        :body ::response-body}
                   202 {:description "Successful response, list of items."
-                       :schema {}
-                       :examples {"application/json" {:message "Here are your items."
-                                                      :page 1
-                                                      :size 2
-                                                      :items [{:id 1, :name "Item 1"}
-                                                              {:id 2, :name "Item 2"}]}}}}}}]
+                       :body {}
+                       :example {:message "Here are your items."
+                                 :page 1
+                                 :size 2
+                                 :items [{:id 1, :name "Item 1"}
+                                         {:id 2, :name "Item 2"}]}}
+
+                  ;; FIXME
+                  ;202 (sd/create-examples-response  "Returns the list of static_pages." any?
+                  ;      [{:message "Here are your items."
+                  ;       :page 1
+                  ;       :size 2
+                  ;       :items [{:id 1, :name "Item 1"}
+                  ;               {:id 2, :name "Item 2"}]}]
+                  ;      )
+                  }}}]
 
    ["keywords/:id"
     {:get
-     {:summary (sd/sum_pub "Get keyword for id.")
+     {:summary (sd/?no-auth? (sd/sum_pub "Get keyword for id."))
       :handler handle_usr-get-keyword
       :middleware [wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion

@@ -85,14 +85,10 @@
             :parameters {:body schema_create-role}
             :responses {200 {:description "Returns the created role."
                              :body schema_export-role}
+                        403 (sd/create-error-message-response "Forbidden." "Violation of constraint.")
                         404 {:description "Not found."
                              :body s/Any}
-                        403 {:description "Forbidden."
-                             :schema s/Str
-                             :examples {"application/json" {:message "Violation of constraint."}}}
-                        406 {:description "Not Acceptable."
-                             :schema s/Str
-                             :examples {"application/json" {:message "Could not create role."}}}}}}]
+                        406 (sd/create-error-message-response "Not Acceptable." "Could not create role.")}}}]
 
    ["roles/:id"
     {:get {:summary (sd/sum_adm "Get role by id")
@@ -121,9 +117,7 @@
                             :body schema_export-role}
                        404 {:description "Not found."
                             :body s/Any}
-                       406 {:description "Not Acceptable."
-                            :schema s/Str
-                            :examples {"application/json" {:message "Could not update role."}}}}}
+                       406 (sd/create-error-message-response "Not Acceptable." "Could not update role.")}}
 
      :delete {:summary (sd/sum_adm "Delete role.")
               :handler role/handle_delete-role
@@ -133,12 +127,8 @@
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:description "Returns the deleted role."
                                :body schema_export-role}
-                          404 {:description "Not found."
-                               :schema s/Str
-                               :examples {"application/json" {:message "No such role."}}}
-                          406 {:description "Not Acceptable."
-                               :schema s/Str
-                               :examples {"application/json" {:message "Could not delete role."}}}}}}]])
+                          404 (sd/create-error-message-response "Not Found." "No such role.")
+                          406 (sd/create-error-message-response "Not Acceptable." "Could not delete role.")}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

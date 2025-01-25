@@ -9,6 +9,7 @@
    [madek.api.json-protocol]
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
+   [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.cli :refer [long-opt-for-key]]
    [madek.api.utils.ring-audits :as ring-audits]
@@ -100,20 +101,18 @@
    {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
    ["/auth-info"
     {:get
-     {:summary "Authentication help and info."
+     {:summary (sd/?no-auth? "Authentication help and info.")
       :handler auth-info/auth-info
       :middleware [authentication/wrap]
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:description "Authentication info."
-                       :schema {:type s/Str
-                                :id s/Uuid
-                                :login s/Str
-                                :created_at s/Any
-                                :email_address s/Str
-                                (s/optional-key :authentication-method) s/Str}}
-                  401 {:description "Creation failed."
-                       :schema s/Str
-                       :examples {"application/json" {:message "Not authorized"}}}}}}]])
+                       :body {:type s/Str
+                              :id s/Uuid
+                              :login s/Str
+                              :created_at s/Any
+                              :email_address s/Str
+                              (s/optional-key :authentication-method) s/Str}}
+                  401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]])
 
 (def swagger-routes
   ["/api-v2"
@@ -124,7 +123,7 @@
               ;; https://github.com/api-platform/core/issues/4531
               ;; https://clojurians-log.clojureverse.org/reitit/2023-05-03
               :info {:title "Madek API v2"
-                     :description (slurp (io/resource "md/api-description.md"))
+                     :description (slurp (io/resource (sd/doc "md/api-description.md")))
                      :version "0.1"
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"

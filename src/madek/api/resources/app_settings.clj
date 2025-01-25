@@ -184,7 +184,7 @@
   [["/"
     {:openapi {:tags ["app-settings"] :security []}}
     ["app-settings"
-     {:get {:summary (sd/sum_pub "Get App Settings.")
+     {:get {:summary (sd/?no-auth? (sd/sum_pub "Get App Settings."))
             :handler handle_get-app-settings
             :swagger {:produces "application/json"}
             :content-type "application/json"

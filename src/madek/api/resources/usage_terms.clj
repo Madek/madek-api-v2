@@ -92,7 +92,7 @@
    :title s/Str
    :version s/Str
    :intro s/Str
-   :body s/Str})
+   :body {:message s/Str}})
 
 (def schema_update_usage_terms
   {;:id s/Uuid
@@ -152,9 +152,7 @@
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:description "Returns the usage_term."
                             :body schema_export_usage_term}
-                       404 {:description "Not found."
-                            :schema s/Str
-                            :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}
+                       404 (sd/create-error-message-response "Not Found." "No such entity in :usage_terms as :id with <id>")}}
 
      :put {:summary (sd/sum_adm "Update usage_terms with id.")
            :handler handle_update-usage_terms
@@ -165,9 +163,7 @@
                         :body schema_update_usage_terms}
            :responses {200 {:description "Returns the updated usage_term."
                             :body schema_export_usage_term}
-                       404 {:description "Not found."
-                            :schema s/Str
-                            :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}
+                       404 (sd/create-error-message-response "Not Found." "No such entity in :usage_terms as :id with <id>")
                        406 {:description "Not Acceptable."
                             :body s/Any}}}
 
@@ -179,9 +175,7 @@
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:description "Returns the deleted usage_term."
                                :body schema_export_usage_term}
-                          404 {:description "Not found."
-                               :schema s/Str
-                               :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}}]])
+                          404 (sd/create-error-message-response "Not Found." "No such entity in :usage_terms as :id with <id>")}}}]])
 
 ; TODO usage_terms get the most recent one ?!?
 (def user-routes

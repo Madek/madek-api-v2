@@ -300,7 +300,7 @@
    {:openapi {:tags ["context-keys"] :security []}}
    ["context-keys"
     {:get
-     {:summary (sd/sum_pub "Query / List context_keys.")
+     {:summary (sd/?no-auth? (sd/sum_pub "Query / List context_keys."))
       :handler handle_usr-list-context_keys
       :coercion reitit.coercion.schema/coercion
       :parameters {:query {(s/optional-key :id) s/Uuid
@@ -309,26 +309,20 @@
                            (s/optional-key :is_required) s/Bool}}
       :responses {200 {:description "Returns the context_keys."
                        :body [schema_export_context_key]}
+                  403 (sd/create-error-message-response "Forbidden." "The token has no admin-privileges.")
                   406 {:description "Could not list context_keys."
                        :body s/Any}}}}]
 
    ["context-keys/:id"
     {:get
-     {:summary (sd/sum_pub "Get context_key by id.")
+     {:summary (sd/?no-auth? (sd/sum_pub "Get context_key by id."))
       :handler handle_usr-get-context_key
       :middleware [(wwrap-find-context_key :id :id true)]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:id s/Uuid}}
       :responses {200 {:description "Returns the context_key."
                        :body schema_export_context_key}
-
                   400 {:description "Bad request"
-                       :body {:body {:id s/Str :Keyword s/Str}
-                              :errors {:id s/Str}
-                              :type s/Str
-                              :coercion s/Str
-                              :value {:id s/Str}
-                              :in [s/Str]}}
-
+                       :body s/Any}
                   404 {:description "Not found"
                        :body s/Any}}}}]])

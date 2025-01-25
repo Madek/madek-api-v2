@@ -52,7 +52,7 @@
           "\n dresult: \n" dresult)
     (if (= 1 (::jdbc/update-count (first dresult)))
       (sd/response_ok {:deleted mr})
-      (sd/response_failed {:message "Failed to delete media entry"} 406))))
+      (sd/response_failed "Failed to delete media entry" 406))))
 
 (defn- get-context-keys-4-context [contextId tx]
   (map :meta_key_id
@@ -234,7 +234,7 @@
 
       (info "handle_create-media-entry" "\nmime-type\n" mime)
       (if (nil? auth)
-        (sd/response_failed "Not authed" 406)
+        (sd/response_failed "Not authenticated" 406)
         (create-media_entry file auth mime collection-id tx)))))
 
 (def ISO8601TimestampWithoutMS
@@ -294,6 +294,39 @@
   (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
            :opt-un [::sp/col_arcs ::sp/col_meta_data]))
 
+;; -----------------------
+
+(sa/def :me1/media_entry
+  (st/spec {:spec (sa/keys :req-un [::sp/id]
+                           :opt-un [::sp/responsible_user_id
+                                    ::sp/get_full_size
+                                    ::sp/creator_id
+                                    ::sp/updated_at
+                                    ::sp/edit_session_updated_at
+                                    ::sp/is_published
+                                    ::sp/get_metadata_and_previews
+                                    ::sp/meta_data_updated_at
+                                    ::sp/created_at])
+            :description "Represents a media entry with optional metadata"}))
+
+;; FIXME: can be null
+(sa/def :me1/meta_data (st/spec {:spec any?}))
+
+;; FIXME: can be null
+(sa/def :me1/media_files (st/spec {:spec any?}))
+
+;; FIXME: can be null
+(sa/def :me1/previews (st/spec {:spec any?}))
+
+(sa/def :me1/media_entries
+  (st/spec {:spec (sa/coll-of :me1/media_entry)
+            :description "An array of media entries"}))
+
+(sa/def ::media-entry-response2-def
+  (st/spec {:spec (sa/keys :req-un [:me1/media_entries :me1/meta_data :me1/media_files :me1/previews])}))
+
+;; -----------------------
+
 (sa/def ::media-entries-resp-def
   (sa/keys :opt-un
            [::sp/responsible_user_id ::sp/get_full_size ::sp/creator_id ::sp/updated_at
@@ -345,24 +378,24 @@
    {:openapi {:tags ["api/media-entries"]}}
    ["media-entries"
     {:get
-     {:summary "Query media-entries."
+     {:summary (sd/?sum_pub? "Query media-entries.")
       :handler handle_query_media_entry
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries."
-                       :schema ::media-entries-body-resp-def}
+                       :body ::media-entries-body-resp-def}
                   422 {:description "Unprocessable Entity."
-                       :schema any?}}}}]
+                       :body any?}}}}]
    ["media-entries-related-data"
     {:get
-     {:summary "Query media-entries with all related data."
+     {:summary (sd/?sum_usr? "Query media-entries with all related data.")
       :handler handle_query_media_entry-related-data
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries with all related data."
-                       :schema ::media-entry-response-def}}}}]])
+                       :body ::media-entry-response2-def}}}}]])
 
 (def ring-admin-routes
   ["/"
@@ -377,9 +410,9 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-adm-def}
       :responses {200 {:description "Returns the media-entries."
-                       :schema ::media-entries-body-resp-def}
+                       :body ::media-entries-body-resp-def}
                   422 {:description "Unprocessable Entity."
-                       :schema any?}}}}]
+                       :body any?}}}}]
 
    ["media-entries/:media_entry_id"
     {:put {:summary "Try publish media-entry for id / HERE!!!!"
@@ -408,18 +441,18 @@
                       :produces "application/json"}
             :content-type "application/json"
             :accept "multipart/form-data"
+            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
+                         :multipart {:file multipart/temp-file-part}}
             :middleware [authorization/wrap-authorized-user]
-            ; cannot use schema, need to use spec for multiplart
             :coercion spec/coercion
+            ;; TODO: missing swagger-file-upload-button, coercion
             :responses {200 {:description "Returns the created media-entry."
                              :body any?}
                         406 {:description "Could not create media-entry."
-                             :body any?}}
-            :parameters {:query (sa/keys :opt-un [::copy_me_id ::collection_id])
-                         :multipart {:file multipart/temp-file-part}}}}]
+                             :body any?}}}}]
 
    ["/:media_entry_id"
-    {:get {:summary "Get media-entry for id."
+    {:get {:summary (sd/?token? "Get media-entry for id.")
            :handler handle_get-media-entry
            :swagger {:produces "application/json"}
            :content-type "application/json"

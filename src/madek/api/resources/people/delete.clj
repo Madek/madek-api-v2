@@ -40,9 +40,5 @@
    :content-type "application/json"
    :parameters {:path {:id s/Uuid}}
    :responses {204 {:description "No Content." :body nil}
-               403 {:description "Forbidden."
-                    :schema s/Str
-                    :examples {"application/json" {:message "Violation of constraints."}}}
-               404 {:description "Not found."
-                    :schema s/Str
-                    :examples {"application/json" {:message "Person not found."}}}}})
+               403 (sd/create-error-message-response "Forbidden." "Violation of constraints.")
+               404 (sd/create-error-message-response "Not Found." "Person not found.")}})

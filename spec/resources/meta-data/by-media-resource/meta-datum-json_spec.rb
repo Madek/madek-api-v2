@@ -48,7 +48,7 @@ describe "generated runs" do
                 end
 
                 let :json_value do
-                  response.body["meta-data"]["json"]
+                  response.body["meta_data"]["json"]
                 end
 
                 it "holds the proper json value" do

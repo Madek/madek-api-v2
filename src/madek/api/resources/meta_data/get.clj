@@ -117,7 +117,7 @@
                                        (map (-> :role_id))
                                        (map #(dbh/query-eq-find-one :roles :id % tx)))
                    "default")
-        mde-result {:meta-data result
+        mde-result {:meta_data result
                     (keyword md-type-kw) mde
                     (keyword md-type-kw-data) mde-data}]
     ;(info "handle_get-meta-key-meta-data"
@@ -225,9 +225,8 @@
                                                  :body s/Any}}
                                 :parameters {:path {:meta_datum_id s/Uuid}}})
 
-(def media-entry.media_entry_id.meta-data {:summary "Get meta-data for media-entry."
+(def media-entry.media_entry_id.meta-data {:summary (sd/?token? "Get meta-data for media-entry.")
                                            :handler meta-data.index/get-index
-                                           :description "Example for meta_keys: ['s9r2epz5t2:i532t703bbkv628idkar']"
                                            ; TODO 401s test fails
                                            :middleware [jqh/ring-wrap-add-media-resource
                                                         jqh/ring-wrap-authorization-view]
@@ -236,8 +235,16 @@
                                                         :query {(s/optional-key :updated_after) s/Inst
                                                                 (s/optional-key :meta_keys) s/Str}}
                                            :responses {200 {:description "Returns the meta-data for the media-entry."
-                                                            :body s/Any}}})
-
+                                                            :body {:meta_data [{:media_entry_id s/Uuid
+                                                                                :collection_id (s/maybe s/Uuid)
+                                                                                :type (s/maybe (s/enum "MetaDatum::Text" "MetaDatum::People" "MetaDatum::Roles" "MetaDatum::TextDate" "MetaDatum::Keywords"))
+                                                                                :meta_key_id s/Str
+                                                                                :string (s/maybe s/Str)
+                                                                                :id s/Uuid
+                                                                                :meta_data_updated_at s/Any
+                                                                                :json (s/maybe s/Any)
+                                                                                :other_media_entry_id (s/maybe s/Uuid)}]
+                                                                   :media_entry_id s/Uuid}}}})
 (def meta-data-role.meta_data_role_id {:summary " Get meta-data role for id "
                                        :handler meta-datum/handle_get-meta-datum-role
                                        :description " Get meta-datum-role for id. returns 404, if no such meta-data role exists. "
@@ -248,7 +255,7 @@
                                                    404 {:description "Not found."
                                                         :body s/Any}}})
 
-(def collection_id.meta-data {:summary "Get meta-data for collection."
+(def collection_id.meta-data {:summary (sd/?token? "Get meta-data for collection.")
                               :handler meta-data.index/get-index
                               :middleware [jqh/ring-wrap-add-media-resource
                                            jqh/ring-wrap-authorization-view]
@@ -258,9 +265,30 @@
                                            :query {(s/optional-key :updated_after) s/Inst
                                                    (s/optional-key :meta_keys) s/Str}}
                               :responses {200 {:description "Returns the meta-data for the collection."
-                                               :body s/Any}}})
+                                               :body {:collection_id s/Uuid
+                                                      :meta_data [{:media_entry_id (s/maybe s/Uuid)
+                                                                   :collection_id s/Uuid
+                                                                   :type (s/enum "MetaDatum::Text"
+                                                                                 "MetaDatum::People"
+                                                                                 "MetaDatum::TextDate"
+                                                                                 "MetaDatum::Keywords")
+                                                                   :meta_key_id s/Str
+                                                                   :string (s/maybe s/Str)
+                                                                   :id s/Uuid
+                                                                   :meta_data_updated_at s/Any
+                                                                   :json (s/maybe s/Any)
+                                                                   :other_media_entry_id (s/maybe s/Uuid)}]}}}})
 
-(def collection_id.meta-data-related {:summary "Get meta-data for collection."
+(s/def KeywordEntry2
+  {:meta_data s/Any
+   (s/optional-key :defaultmetadata) s/Str
+   (s/optional-key :defaultdata) s/Str
+   (s/optional-key :md_people) s/Any
+   (s/optional-key :people) s/Any
+   (s/optional-key :md_keywords) s/Any
+   (s/optional-key :keywords) s/Any})
+
+(def collection_id.meta-data-related {:summary (sd/?token? "Get meta-data for collection.")
                                       :description (mslurp (io/resource "md/meta-data-related.md"))
                                       :handler handle_get-mr-meta-data-with-related
                                       :middleware [jqh/ring-wrap-add-media-resource
@@ -271,11 +299,21 @@
                                                    :query {(s/optional-key :updated_after) s/Inst
                                                            (s/optional-key :meta_keys) s/Str}}
                                       :responses {200 {:description "Returns the meta-data for the collection."
-                                                       :body s/Any}}})
+                                                       :body [KeywordEntry2]}}})
 
-(def collection_id.meta-datum.meta_key_id {:summary "Get meta-data for collection and meta-key."
+(s/defschema KeywordEntry
+  {;; FIXME: support meta-data only
+   (s/optional-key :meta_data) s/Any
+   (s/optional-key :keywords) s/Any
+   (s/optional-key :keywords_ids) s/Any
+   (s/optional-key :md_keywords) s/Any
+   (s/optional-key :defaultmetadata) s/Any
+   (s/optional-key :defaultdata) s/Any
+   (s/optional-key :people) s/Any
+   (s/optional-key :md_people) s/Any})
+
+(def collection_id.meta-datum.meta_key_id {:summary (sd/?no-auth? "Get meta-data for collection and meta-key.")
                                            :handler handle_get-meta-key-meta-data
-
                                            :middleware [wrap-add-meta-key
                                                         wrap-check-vocab
                                                         jqh/ring-wrap-add-media-resource
@@ -284,9 +322,9 @@
                                            :parameters {:path {:collection_id s/Uuid
                                                                :meta_key_id s/Str}}
                                            :responses {200 {:description "Returns the meta-data for the collection and meta-key."
-                                                            :body s/Any}}})
+                                                            :body KeywordEntry}}})
 
-(def collection.meta_key_id.keyword {:summary "Get meta-data keywords for collection meta-key"
+(def collection.meta_key_id.keyword {:summary (sd/?token? "Get meta-data keywords for collection meta-key")
                                      :handler handle_get-meta-data-keywords
                                      :middleware [;wrap-me-add-meta-data
                                                   jqh/ring-wrap-add-media-resource
@@ -295,7 +333,13 @@
                                      :parameters {:path {:collection_id s/Uuid
                                                          :meta_key_id s/Str}}
                                      :responses {200 {:description "Returns the meta-data keywords for the collection."
-                                                      :body s/Any}}})
+                                                      :body KeywordEntry}}})
+
+(s/defschema PeopleEntry
+  {:meta_data s/Any
+   :people_ids s/Any
+   :md_people s/Any
+   :people s/Any})
 
 (def meta_key_id.people2 {:summary "Get meta-data people for collection meta-key."
                           :handler handle_get-meta-data-people
@@ -305,9 +349,49 @@
                           :parameters {:path {:collection_id s/Uuid
                                               :meta_key_id s/Str}}
                           :responses {200 {:description "Returns the meta-data people for the collection."
-                                           :body s/Any}}})
+                                           :body PeopleEntry}}})
 
-(def media_entry_id.meta-data-related {:summary "Get meta-data for media-entry."
+(def MetaDataSchema2
+  {:media_entry_id s/Uuid
+   :type s/Str
+   :meta_key_id s/Str
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   (s/optional-key :collection_id) (s/maybe s/Uuid)
+   (s/optional-key :string) (s/maybe s/Str)
+   (s/optional-key :json) (s/maybe s/Any)
+   (s/optional-key :other_media_entry_id) (s/maybe s/Uuid)})
+
+(def MDKeywordsSchema2
+  {:id s/Uuid
+   :created_by_id s/Uuid
+   :meta_datum_id s/Uuid
+   :keyword_id s/Uuid
+   :created_at s/Any
+   :updated_at s/Any
+   :meta_data_updated_at s/Any
+   :position s/Int})
+
+(def KeywordsSchema2
+  {:id s/Uuid
+   :term s/Str
+   :rdf_class s/Str
+   (s/optional-key :description) (s/maybe s/Str)
+   (s/optional-key :external_uris) [s/Str]
+   (s/optional-key :meta_key_id) (s/maybe s/Str)
+   (s/optional-key :creator_id) (s/maybe s/Uuid)
+   (s/optional-key :updated_at) (s/maybe s/Inst)
+   (s/optional-key :created_at) (s/maybe s/Inst)
+   (s/optional-key :position) (s/maybe s/Int)})
+
+(def BodySchema2
+  [{:meta_data MetaDataSchema2
+    (s/optional-key :defaultmetadata) s/Str
+    (s/optional-key :defaultdata) s/Str
+    (s/optional-key :md_keywords) [MDKeywordsSchema2]
+    (s/optional-key :keywords) [KeywordsSchema2]}])
+
+(def media_entry_id.meta-data-related {:summary (sd/?token? "Get meta-data for media-entry.")
                                        :handler handle_get-mr-meta-data-with-related
                                        :middleware [jqh/ring-wrap-add-media-resource
                                                     jqh/ring-wrap-authorization-view]
@@ -316,7 +400,7 @@
                                                     :query {(s/optional-key :updated_after) s/Inst
                                                             (s/optional-key :meta_keys) s/Str}}
                                        :responses {200 {:description "Returns the meta-data for the media-entry."
-                                                        :body s/Any}}})
+                                                        :body BodySchema2}}})
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Get meta-data for media-entry and meta-key."
                                             :handler handle_get-meta-key-meta-data
@@ -328,7 +412,24 @@
                                             :parameters {:path {:media_entry_id s/Uuid
                                                                 :meta_key_id s/Str}}
                                             :responses {200 {:description "Returns the meta-data for the media-entry and meta-key."
-                                                             :body s/Any}}})
+                                                             :body {:meta_data {:created_by_id s/Uuid
+                                                                                :media_entry_id s/Uuid
+                                                                                :collection_id (s/maybe s/Uuid)
+                                                                                :type s/Str
+                                                                                :meta_key_id s/Str
+                                                                                :string (s/maybe s/Str)
+                                                                                :id s/Uuid
+                                                                                :meta_data_updated_at s/Any
+                                                                                :json (s/maybe s/Any)
+                                                                                :other_media_entry_id (s/maybe s/Uuid)}
+                                                                    (s/optional-key :defaultmetadata) s/Str
+                                                                    (s/optional-key :defaultdata) s/Str
+                                                                    (s/optional-key :md_keywords) s/Any
+                                                                    (s/optional-key :keywords) s/Any
+                                                                    (s/optional-key :md_people) s/Any
+                                                                    (s/optional-key :people) s/Any
+                                                                    (s/optional-key :md_roles) s/Any
+                                                                    (s/optional-key :roles) s/Any}}}})
 
 (def media_entry.meta_key_id.keyword {:summary "Get meta-data keywords for media-entries meta-key"
                                       :handler handle_get-meta-data-keywords
@@ -339,7 +440,50 @@
                                       :parameters {:path {:media_entry_id s/Uuid
                                                           :meta_key_id s/Str}}
                                       :responses {200 {:description "Returns the meta-data keywords for the media-entry."
-                                                       :body s/Any}}})
+                                                       :body {:meta_data s/Any
+                                                              :keywords_ids s/Any
+                                                              :md_keywords s/Any
+                                                              :keywords s/Any}}}})
+
+(def body-schema
+  {:meta_data
+   {:created_by_id s/Uuid
+    :media_entry_id s/Uuid
+    :collection_id (s/maybe s/Str)
+    :type s/Str
+    :meta_key_id s/Str
+    :string (s/maybe s/Str)
+    :id s/Uuid
+    :meta_data_updated_at s/Any
+    :json (s/maybe s/Any)
+    :other_media_entry_id (s/maybe s/Str)}
+
+   :people_ids
+   [s/Uuid]
+
+   :md_people
+   [{:meta_datum_id s/Uuid
+     :person_id s/Uuid
+     :created_by_id s/Uuid
+     :meta_data_updated_at s/Any
+     :id s/Uuid
+     :position s/Int}]
+
+   :people
+   [{:institution s/Str
+     :institutional_id (s/maybe s/Str)
+     :description (s/maybe s/Str)
+     :first_name (s/maybe s/Str)
+     :external_uris [s/Any]
+     :identification_info (s/maybe s/Any)
+     :searchable s/Str
+     :updated_at s/Any
+     :id s/Uuid
+     :last_name s/Str
+     :admin_comment (s/maybe s/Str)
+     :pseudonym s/Str
+     :created_at s/Any
+     :subtype s/Str}]})
 
 ;; collection
 (def meta_key_id.people {:summary "Get meta-data people for media-entries meta-key."
@@ -351,7 +495,50 @@
                          :parameters {:path {:media_entry_id s/Uuid
                                              :meta_key_id s/Str}}
                          :responses {200 {:description "Returns the meta-data people for the media-entry."
-                                          :body s/Any}}})
+                                          :body body-schema}}})
+
+(def MetaDataSchema
+  {:created_by_id s/Uuid
+   :media_entry_id s/Uuid
+   :collection_id (s/maybe s/Uuid)
+   :type (s/enum "MetaDatum::Roles")
+   :meta_key_id s/Str
+   :string (s/maybe s/Str)
+   :id s/Uuid
+   :meta_data_updated_at s/Any
+   :json (s/maybe s/Any)
+   :other_media_entry_id (s/maybe s/Uuid)})
+
+(def MdRolesSchema
+  {:id s/Uuid
+   :meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :role_id (s/maybe s/Uuid)
+   :position s/Int})
+
+(def PeopleSchema
+  {:institution s/Str
+   :institutional_id (s/maybe s/Str)
+   :description (s/maybe s/Str)
+   :first_name s/Str
+   :external_uris [s/Str]
+   :identification_info (s/maybe s/Str)
+   :searchable s/Str
+   :updated_at s/Any
+   :id s/Uuid
+   :last_name s/Str
+   :admin_comment (s/maybe s/Str)
+   :pseudonym (s/maybe s/Str)
+   :created_at s/Any
+   :subtype (s/enum "Person")})
+
+(def BodySchema
+  {:meta_data MetaDataSchema
+   :roles_ids [s/Any]
+   :people_ids [s/Uuid]
+   :md_roles [MdRolesSchema]
+   :roles [s/Any]
+   :people [PeopleSchema]})
 
 (def meta_key_id.role {:summary "Get meta-data role for media-entry."
                        :handler handle_get-meta-data-roles
@@ -361,7 +548,7 @@
                        :parameters {:path {:media_entry_id s/Uuid
                                            :meta_key_id s/Str}}
                        :responses {200 {:description "Returns the meta-data role for the media-entry."
-                                        :body s/Any}}})
+                                        :body BodySchema}}})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

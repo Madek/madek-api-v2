@@ -76,7 +76,7 @@ context "A media-entry resource with get_metadata_and_previews permission" do
             # end
             it "contains the meta-datum " do
               # expect(meta_data_response.body['meta-data'].map{|x| x[:id]}).to \
-              expect(meta_data_response.body["meta-data"][0]["id"]).to \
+              expect(meta_data_response.body["meta_data"][0]["id"]).to \
                 include @meta_datum_text.id
             end
           end

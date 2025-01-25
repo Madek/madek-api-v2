@@ -109,9 +109,8 @@
 (def schema_export_static_page
   {:id s/Uuid
    :name s/Str
-   ;:contents sd/schema_ml_list                              ; TODO: fix this, "contents" : "(not (map? a-java.util.HashMap))"
    :contents s/Any
-   :created_at s/Any ; TODO as Inst
+   :created_at s/Any
    :updated_at s/Any})
 
 ; TODO auth admin
@@ -132,38 +131,28 @@
             :middleware [wrap-authorize-admin!]
             :responses {200 {:description "Returns the created static_page."
                              :body schema_export_static_page}
-                        406 {:description "Not Acceptable."
-                             :body s/Str
-                             :examples {"application/json" {:message "Could not create static_page."}}}
-                        409 {:description "Conflict."
-                             :body s/Str
-                             :examples {"application/json" {:message "Entry already exists"}}}}}
+                        406 (sd/create-error-message-response "Not Acceptable." "Could not create static_page.")
+                        409 (sd/create-error-message-response "Conflict." "Entry already exists")}}
 
      :get {:summary (sd/sum_adm "List static_pages.")
            :handler handle_list-static_pages
            :coercion reitit.coercion.schema/coercion
            :middleware [wrap-authorize-admin!]
-           :responses {200 {:description "Returns the list of static_pages."
-                            :body (s/->Either [[schema_export_static_page] [{:id s/Uuid}]])
-                            :examples {"application/json" [{:id "uuid"
-                                                            :name "name"
-                                                            :contents [{:lang "de" :content "content"}]
-                                                            :created_at "2020-01-01T00:00:00Z"
-                                                            :updated_at "2020-01-01T00:00:00Z"}]}}
-                       201 {:description "Returns the list of static_pages."
-                            :body [schema_export_static_page]
-                            :examples {"application/json" [{:id "uuid"
-                                                            :name "name"
-                                                            :contents [{:lang "de" :content "content"}]
-                                                            :created_at "2020-01-01T00:00:00Z"
-                                                            :updated_at "2020-01-01T00:00:00Z"}]}}
-                       404 {:description "Not Found."
-                            :body s/Str
-                            :examples {"application/json" {:message "No static_pages found."}}}
-                       422 {:description "Unprocessable Entity."
-                            :body s/Str
-                            :examples {"application/json" {:message "Could not list static_pages."}}}}
-           :parameters {:query {(s/optional-key :full_data) s/Bool}}}}]
+           :responses {200 (sd/create-examples-response "Returns the list of static_pages." (s/->Either [[schema_export_static_page] [{:id s/Uuid}]])
+                                                        [{:id "uuid"
+                                                          :name "name"
+                                                          :contents [{:lang "de" :content "content"}]
+                                                          :created_at "2020-01-01T00:00:00Z"
+                                                          :updated_at "2020-01-01T00:00:00Z"}])
+                       201 (sd/create-examples-response "Returns the list of static_pages." [schema_export_static_page]
+                                                        [{:id "uuid"
+                                                          :name "name"
+                                                          :contents [{:lang "de" :content "content"}]
+                                                          :created_at "2020-01-01T00:00:00Z"
+                                                          :updated_at "2020-01-01T00:00:00Z"}])
+                       404 (sd/create-error-message-response "Not Found." "No static_pages found.")
+                       422 (sd/create-error-message-response "Unprocessable Entity." "Could not list static_pages.")}}
+     :parameters {:query {(s/optional-key :full_data) s/Bool}}}]
 
    ["static-pages/:id"
     {:get {:summary (sd/sum_adm "Get static_pages by id.")
@@ -174,9 +163,7 @@
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:description "Returns the static_page."
                             :body schema_export_static_page}
-                       404 {:description "Not Found."
-                            :body s/Str
-                            :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}}}
+                       404 (sd/create-error-message-response "Not Found." "No such entity in :static_pages as :id with <id>")}}
 
      :put {:summary (sd/sum_adm "Update static_pages with id.")
            :handler handle_update-static_page
@@ -189,9 +176,7 @@
                             :body schema_export_static_page}
                        406 {:description "Not Acceptable."
                             :body s/Any}
-                       404 {:description "Not Found."
-                            :body s/Str
-                            :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}}}
+                       404 (sd/create-error-message-response "Not Found." "No such entity in :static_pages as :id with <id>")}}
 
      :delete {:summary (sd/sum_adm "Delete static_page by id.")
               :coercion reitit.coercion.schema/coercion
@@ -201,10 +186,5 @@
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:description "Returns the deleted static_page."
                                :body schema_export_static_page}
-                          404 {:description "Not Found."
-                               :body s/Str
-                               :examples {"application/json" {:message "No such entity in :static_pages as :id with <id>"}}}
-
-                          422 {:description "Unprocessable Entity."
-                               :body s/Str
-                               :examples {"application/json" {:message "Could not delete static page."}}}}}}]])
+                          404 (sd/create-error-message-response "Not Found." "Entry already exists")
+                          422 (sd/create-error-message-response "Unprocessable Entity." "Could not delete static page.")}}}]])

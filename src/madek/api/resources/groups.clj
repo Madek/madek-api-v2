@@ -240,14 +240,9 @@
                      :accept "application/json"
                      :coercion reitit.coercion.schema/coercion
                      :parameters {:body schema_import-group}
-                     :responses {201 {:description "Created."
-                                      :body schema_export-group}
-                                 404 {:description "Not Found."
-                                      :body s/Str
-                                      :examples {"application/json" {:message "User entry not found"}}}
-                                 409 {:description "Conflict."
-                                      :body s/Str
-                                      :examples {"application/json" {:message "Entry already exists"}}}
+                     :responses {201 {:description "Created." :body schema_export-group}
+                                 404 (sd/create-error-message-response "Not Found." "User entry not found")
+                                 409 (sd/create-error-message-response "Conflict." "Entry already exists")
                                  500 {:description "Internal Server Error."
                                       :body s/Any}}}}]
 
@@ -265,21 +260,16 @@
 
                         :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                          :body schema_export-group}
-                                    404 {:description "Not Found."
-                                         :body s/Str
-                                         :examples {"application/json" {:message "No such group found"}}}}}
+                                    404 (sd/create-error-message-response "Not Found." "No such group found")}}
                   :delete {:summary "Deletes a group by id"
                            :description "Delete a group by id"
                            :handler handle_delete-group
                            :middleware [wrap-authorize-admin!]
                            :coercion reitit.coercion.schema/coercion
                            :parameters {:path {:id s/Uuid}}
-                           :responses {403 {:description "Forbidden."
-                                            :body s/Any}
-                                       ;; TODO: response of type octet-stream not yet supported?
-                                       204 {:description "No Content. The resource was deleted successfully."
-                                            :body nil
-                                            :examples {"application/json" nil}}}}
+                           :responses {204 {:description "No Content. The resource was deleted successfully."}
+                                       403 {:description "Forbidden."
+                                            :body s/Any}}}
                   :put {:summary "Get group by id"
                         :swagger {:produces "application/json"}
                         :content-type "application/json"
@@ -323,7 +313,7 @@
                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                      :body {:users [schema_export-group-min]}} ;groups/schema_export-group}
                                                 404 {:description "Not Found."
-                                                     :body s/Str}}}}]
+                                                     :body {:message s/Str}}}}}]
 
    ["groups/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
                                              :description "gid= uuid/institutional_id\n
@@ -340,9 +330,7 @@
 
                                              :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                               :body group-users/schema_export-group-user-simple}
-                                                         404 {:description "Creation failed."
-                                                              :body s/Any
-                                                              :examples {"application/json" {:message "No such group or user."}}}}}
+                                                         404 (sd/create-error-message-response "Creation failed." "No such group or user.")}}
 
                                        ; TODO error handling
                                        :put {:summary "Get group user by group-id and user-id"
@@ -359,9 +347,7 @@
 
                                              :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                               :body {:users [group-users/schema_export-group-user-simple]}}
-                                                         404 {:description "Creation failed."
-                                                              :body s/Str
-                                                              :examples {"application/json" {:message "No such group or user."}}}}} ; TODO error handling
+                                                         404 (sd/create-error-message-response "Creation failed." "No such group or user.")}} ; TODO error handling
                                        :delete {:summary "Deletes a group-user by group-id and user-id"
                                                 :description "Delete a group-user by group-id and user-id."
                                                 ;:swagger {:produces "application/json"}
@@ -372,11 +358,8 @@
                                                 :parameters {:path {:group-id s/Uuid :user-id s/Uuid}}
                                                 :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                                  :body {:users [group-users/schema_export-group-user-simple]}}
-                                                            404 {:description "Not Found."
-                                                                 :body s/Str
-                                                                 :examples {"application/json" {:message "No such group or user."}}}
-                                                            406 {:description "Could not delete group-user."
-                                                                 :body s/Str}}}}] ; TODO error handling
+                                                            404 (sd/create-error-message-response "Not Found." "No such group or user.")
+                                                            406 (sd/create-error-message-response "Could not delete group-user." "")}}}] ; TODO error handling
    ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

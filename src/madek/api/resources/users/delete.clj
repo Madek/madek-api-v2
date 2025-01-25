@@ -42,9 +42,5 @@
    :parameters {:path {:id s/Str}}
    :responses {200 {:description "Deleted."
                     :body get-user/schema}
-               403 {:description "Forbidden."
-                    :schema s/Str
-                    :examples {"application/json" {:message "References still exist"}}}
-               404 {:description "Not Found."
-                    :schema s/Str
-                    :examples {"application/json" {:message "No such user."}}}}})
+               403 (sd/create-error-message-response "Forbidden." "References still exist")
+               404 (sd/create-error-message-response "Not Found." "No such user.")}})

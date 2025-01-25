@@ -63,6 +63,4 @@
                 (wrap-find-user :id)]
    :responses {200 {:description "User updated."
                     :body get-user/schema}
-               404 {:description "Not Found."
-                    :schema s/Str
-                    :examples {"application/json" {:message "No such user."}}}}})
+               404 (sd/create-error-message-response "Not found." "No such user.")}})
