@@ -60,8 +60,8 @@
 
       (if-let [auth-entity (-> request :authenticated-entity)]
         ;(if (-> request :is_admin true?)
-        ;(if (-> request :is_admin)
-        (if true
+        (if (-> request :is_admin)
+        ;(if true
           ; do all as admin
           (handler request)
 
