@@ -5,6 +5,9 @@
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as fl]
+
+   [madek.api.constants :refer [presence]]
+
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -20,8 +23,12 @@
       sql-format))
 
 (defn arc [req]
+
+  (println ">o> abc.arcs 1 ???" )
+
   (let [id (-> req :parameters :path :id)
         db-query (arc-query id)
+        p (println ">o> db-query" db-query)
         db-result (jdbc/execute! (:tx req) db-query)]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
@@ -29,6 +36,7 @@
 
 ; TODO test query and paging
 (defn arcs-query [query-params]
+  (println ">o> abc.query-params" query-params)
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
       (dbh/build-query-param query-params :collection_id)
@@ -37,13 +45,20 @@
       sql-format))
 
 (defn arcs [req]
+  (println ">o> abc.arcs 2 ???" )
   (let [query-params (-> req :parameters :query)
         p (println ">o> abc.query-params" query-params)
 
-        query-params (-> req :parameters :path)
-        p (println ">o> abc.query-params2" query-params)
+        path-params (-> req :parameters :path)
+        p (println ">o> abc.query-params2" path-params)
 
-        params (merge query-params query-params)
+
+
+        params (merge
+                 (if (nil? query-params) {} query-params)
+                 (if (nil? path-params) {} path-params)
+                 )
+
         p (println ">o> abc.params" params)
 
         db-query (arcs-query params)
