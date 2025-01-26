@@ -205,7 +205,8 @@
                                                           :string (s/maybe s/Str)
                                                           :id s/Uuid
                                                           :meta_data_updated_at s/Any
-                                                          :json {:foo s/Str} ;; Define the structure of the nested `json` field
+                                                          ;:json {:foo s/Str} ;; Define the structure of the nested `json` field
+                                                          :json (s/maybe s/Any)
                                                           :other_media_entry_id (s/maybe s/Uuid)}}}})
 
 (def text.meta_key_id.text-date {:summary "Update meta-data text-date for collection."
@@ -220,7 +221,7 @@
 
                                                   ;:body s/Any
                                                   :body {:created_by_id s/Uuid
-                                                         :media_entry_id s/Uuid
+                                                         :media_entry_id (s/maybe s/Uuid)
                                                          :collection_id (s/maybe s/Uuid)
                                                          :type s/Str
                                                          :meta_key_id s/Str
