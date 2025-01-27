@@ -413,9 +413,6 @@
       :responses {200 {:description "Returns the media-entries with all related data."
                        :body ::media-entry-response2-def}}}}]])
 
-
-
-
 (def ring-admin-routes
   ["/"
    {:openapi {:tags ["admin/media-entries"]}}
@@ -484,60 +481,7 @@
            :responses {200 {:description "Returns the media-entry."
                             :body schema_media_entry}
                        404 {:description "Not found."
-                            :body s/Any
-
-
-                            :content {"application/json" {:description "test"
-                                                          :schema {:name s/Str
-                                                                   :contents sd/schema_ml_list
-                                                                   :created_at s/Any
-                                                                   :updated_at s/Any}
-                                                          :examples {:test {:description "test1 description"
-                                                                            :value {:id "uuid"
-                                                                                    :name :test
-                                                                                    :contents [{:lang "de" :content "content"}]
-                                                                                    :created_at "2020-01-01T00:00:00Z"
-                                                                                    :updated_at "2020-01-01T00:00:00Z"}}}}}
-
-                            }
-
-                       414
-
-                           {:description "Not found."
-                            :body {:message s/Str}
-
-
-                            :content {"application/json" {:description "test"
-                                                          :schema {:message s/Str}
-                                                          :examples {:test {:description "test1 description"
-                                                                            :value {:message "error-message test"}}}}}
-                            }
-                       424
-
-                           {:description "Not found."
-                            ;:body {:message s/Str}
-
-
-                            :content {"application/json" {
-                                                          ;:description "test"
-                                                          :schema {:message s/Str}
-                                                          :examples {:error {
-                                                                            ;:description "test1 description"
-                                                                            :value {:message "error-message test"}}}}}
-                            }
-
-
-                       434 (fl/create-example-response "fake error type" {:message s/Str} {:message "fake error message"})
-                       444 (fl/create-example-response  {:message s/Str} {:message "fake error message"})
-
-                       454 (fl/create-examples-response  {:message s/Str} [
-                                                                        {:name :test1 :value {:message "fake error message1"} :description "test-description1"}
-                                                                        {:name :test2 :value {:message "fake error message2"} :description "test-description2"}
-                                                                        ])
-
-
-
-                       }}
+                            :body s/Any}}}
 
      ; TODO Frage: wer kann einen Eintrag löschen
      :delete {:summary "Delete media-entry for id."
