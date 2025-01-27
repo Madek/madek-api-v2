@@ -211,13 +211,11 @@
 (defn create-error-message-response
 
 (  [message]
-  (create-example-response {:type "object"
-                            :properties {:message {:type "string"}}}
+  (create-example-response {:message s/Str}
                            {:message message}))
 
   (  [description message]
-  (create-example-response description {:type "object"
-                            :properties {:message {:type "string"}}}
+  (create-example-response description {:message s/Str}
                            {:message message}))
 
 
