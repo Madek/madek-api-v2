@@ -1,8 +1,6 @@
 (ns madek.api.web
   (:require
-
    [clojure.java.io :as io]
-
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
    [madek.api.authentication :as authentication]

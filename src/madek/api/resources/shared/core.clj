@@ -183,14 +183,48 @@
 (def s_cnv_acc "Convenience access.")
 
 ;; TODO: tags for roles that has to be confirmed @drtom
-(defn ?sum_usr_pub? [text] (apply str "?PUBLIC/USER Context? " text))
-(defn ?sum_pub? [text] (apply str "?PUBLIC Context? " text))
-(defn ?sum_usr? [text] (apply str "?USER Context? " text))
+;;
+(def show-mr-info true)
+(defn ?sum_usr_pub? [text] (if show-mr-info (apply str "?PUBLIC/USER Context? " text) ""))
+(defn ?sum_pub? [text] (if show-mr-info (apply str "?PUBLIC Context? " text)))
+(defn ?sum_usr? [text] (if show-mr-info (apply str "?USER Context? " text)))
 
 ;; Flag to
-(defn ?token? [text] (apply str text " [mr/ IST / token-auth]"))
-(defn ?session? [text] (apply str text " [mr / IST / session-auth]"))
-(defn ?no-auth? [text] (apply str text " [mr / IST / no-auth]"))
+(defn ?token? [text] (if show-mr-info (apply str text " [mr/ IST / token-auth]")))
+(defn ?session? [text] (if show-mr-info (apply str text " [mr / IST / session-auth]")))
+(defn ?no-auth? [text] (if show-mr-info (apply str text " [mr / IST / no-auth]")))
+
+
+(defn create-example-response
+
+  ([schema value]
+   {:content {"application/json" {:schema schema
+                                  :examples {:error {:value value}}}}})
+
+  ([description schema value]
+   {:description description
+    :content {"application/json" {:schema schema
+                                  :examples {:error {:value value}}}}})
+  )
+
+(defn create-examples-response
+  ([schema data]
+   {:content {"application/json" {:schema schema
+                                  :examples (into {}
+                                              (map (fn [{:keys [name value description]}]
+                                                     {name {:value value
+                                                            :description description}})
+                                                data))}}})
+
+  ([description schema data]
+   {:description description
+    :content {"application/json" {:schema schema
+                                  :examples (into {}
+                                              (map (fn [{:keys [name value description]}]
+                                                     {name {:value value
+                                                            :description description}})
+                                                data))}}}))
+
 
 (defn sum_todo [text] (apply str "TODO: " text))
 (defn sum_pub [text] (apply str "PUBLIC Context: " text))
