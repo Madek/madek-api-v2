@@ -62,7 +62,7 @@
                                         402 {:description "Bad request."
                                              :body {:body s/Any}}
                                         404 {:description "Not found."
-                                             :body s/Str
+                                             :body {:message s/Str}
                                              :example {:message "No such vocabulary."}}}})
 
 (def admin.vocabularies.id.perms {:summary (sd/sum_adm "Update vocabulary resource permissions")
@@ -76,10 +76,10 @@
                                   :responses {200 {:description "Success."
                                                    :body c/schema_export-vocabulary}
                                               404 {:description "Not found."
-                                                   :body s/Str
+                                                   :body {:message s/Str}
                                                    :example {:message "No such vocabulary."}}
                                               406 {:description "Not Acceptable."
-                                                   :body s/Str
+                                                   :body {:message s/Str}
                                                    :example {:message "Could not update vocabulary."}}}})
 
 (def admin.vocabularies.users.user_id {:summary (sd/sum_adm "Update vocabulary user permissions")
@@ -98,7 +98,7 @@
                                        :responses {200 {:description "Returns the updated vocabulary user permission."
                                                         :body c/schema_export-user-perms}
                                                    406 {:description "Not Acceptable."
-                                                        :body s/Str
+                                                        :body {:message s/Str}
                                                         :example {:message "Could not update vocabulary user permission"}}}})
 
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Update vocabulary group permissions")
@@ -117,10 +117,10 @@
                                         :responses {200 {:description "Returns the updated vocabulary group permission."
                                                          :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
-                                                         :body s/Str
+                                                         :body {:message s/Str}
                                                          :example {:message "No such vocabulary group permission"}}}
                                                     406 {:description "Not Acceptable."
-                                                         :body s/Str
+                                                         :body {:message s/Str}
                                                          :example {:message "Could not update vocabulary group permission"}}})
 
 ;### Debug ####################################################################

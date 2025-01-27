@@ -43,8 +43,8 @@
    :responses {200 {:description "Deleted."
                     :body get-user/schema}
                403 {:description "Forbidden."
-                    :body s/Str
+                    :body {:message s/Str}
                     :example {:message "References still exist"}}
                404 {:description "Not Found."
-                    :body s/Str
+                    :body {:message s/Str}
                     :example {:message "No such user."}}}})

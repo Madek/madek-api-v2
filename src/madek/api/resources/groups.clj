@@ -243,10 +243,10 @@
                      :responses {201 {:description "Created."
                                       :body schema_export-group}
                                  404 {:description "Not Found."
-                                      :body s/Str
+                                      :body {:message s/Str}
                                       :example {:message "User entry not found"}}
                                  409 {:description "Conflict."
-                                      :body s/Str
+                                      :body {:message s/Str}
                                       :example {:message "Entry already exists"}}
                                  500 {:description "Internal Server Error."
                                       :body s/Any}}}}]
@@ -266,7 +266,7 @@
                         :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                          :body schema_export-group}
                                     404 {:description "Not Found."
-                                         :body s/Str
+                                         :body {:message s/Str}
                                          :example {:message "No such group found"}}}}
                   :delete {:summary "Deletes a group by id"
                            :description "Delete a group by id"
@@ -323,7 +323,7 @@
                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                      :body {:users [schema_export-group-min]}} ;groups/schema_export-group}
                                                 404 {:description "Not Found."
-                                                     :body s/Str}}}}]
+                                                     :body {:message s/Str}}}}}]
 
    ["groups/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
                                              :description "gid= uuid/institutional_id\n
@@ -360,7 +360,7 @@
                                              :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                               :body {:users [group-users/schema_export-group-user-simple]}}
                                                          404 {:description "Creation failed."
-                                                              :body s/Str
+                                                              :body {:message s/Str}
                                                               :example {:message "No such group or user."}}}} ; TODO error handling
                                        :delete {:summary "Deletes a group-user by group-id and user-id"
                                                 :description "Delete a group-user by group-id and user-id."
@@ -373,10 +373,10 @@
                                                 :responses {200 {:description "OK - Returns a list of group users OR an empty list."
                                                                  :body {:users [group-users/schema_export-group-user-simple]}}
                                                             404 {:description "Not Found."
-                                                                 :body s/Str
+                                                                 :body {:message s/Str}
                                                                  :example {:message "No such group or user."}}
                                                             406 {:description "Could not delete group-user."
-                                                                 :body s/Str}}}}] ; TODO error handling
+                                                                 :body {:message s/Str}}}}}] ; TODO error handling
    ])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

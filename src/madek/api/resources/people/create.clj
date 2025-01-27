@@ -53,7 +53,7 @@
    :responses {201 {:description "Created."
                     :body get-person/schema}
                409 {:description "Conflict."
-                    :body s/Str
+                    :body {:message s/Str}
                     :example {:message "Violation of constraint"}}}
    :summary "Create a person"
    :swagger {:produces "application/json"

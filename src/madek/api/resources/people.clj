@@ -272,7 +272,7 @@
 ;      :coercion reitit.coercion.schema/coercion
 ;      :parameters {:path {:id s/Str}}
 ;      :responses {200 {:body schema_export_person}
-;                  404 {:body s/Str}}}
+;                  404 {:body {:message s/Str}}}}
 ;
 ;     :put
 ;     {:summary "Updates person entity fields"
@@ -286,7 +286,7 @@
 ;      :parameters {:path {:id s/Str}
 ;                   :body schema_update_person}
 ;      :responses {200 {:body schema_export_person}
-;                  404 {:body s/Str}}}
+;                  404 {:body {:message s/Str}}}}
 ;
 ;     :delete
 ;     {:summary "Deletes a person by id"
@@ -329,5 +329,5 @@
 ;                  :parameters {:path {:id s/Any}}
 ;
 ;                  :responses {200 {:body schema_export_person}
-;                              404 {:body s/Str}}}}]])
+;                              404 {:body {:message s/Str}}}}}]])
 ;(debug/debug-ns *ns*)

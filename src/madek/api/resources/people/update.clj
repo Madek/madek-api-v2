@@ -51,8 +51,8 @@
    :responses {200 {:description "Updated."
                     :body get-person/schema}
                404 {:description "Not found."
-                    :body s/Str
+                    :body {:message s/Str}
                     :example {:message "Person not found."}}
                409 {:description "Conflict."
-                    :body s/Str
+                    :body {:message s/Str}
                     :example {:message "Update of person failed"}}}})

@@ -92,7 +92,7 @@
    :title s/Str
    :version s/Str
    :intro s/Str
-   :body s/Str})
+   :body {:message s/Str}})
 
 (def schema_update_usage_terms
   {;:id s/Uuid
@@ -153,7 +153,7 @@
            :responses {200 {:description "Returns the usage_term."
                             :body schema_export_usage_term}
                        404 {:description "Not found."
-                            :body s/Str
+                            :body {:message s/Str}
                             :example {:message "No such entity in :usage_terms as :id with <id>"}}}}
 
      :put {:summary (sd/sum_adm "Update usage_terms with id.")
@@ -166,7 +166,7 @@
            :responses {200 {:description "Returns the updated usage_term."
                             :body schema_export_usage_term}
                        404 {:description "Not found."
-                            :body s/Str
+                            :body {:message s/Str}
                             :example {:message "No such entity in :usage_terms as :id with <id>"}}
                        406 {:description "Not Acceptable."
                             :body s/Any}}}
@@ -180,7 +180,7 @@
               :responses {200 {:description "Returns the deleted usage_term."
                                :body schema_export_usage_term}
                           404 {:description "Not found."
-                               :body s/Str
+                               :body {:message s/Str}
                                :example {:message "No such entity in :usage_terms as :id with <id>"}}}}}]])
 
 ; TODO usage_terms get the most recent one ?!?

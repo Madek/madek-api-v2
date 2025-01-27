@@ -44,11 +44,11 @@
                          :responses {200 {:description "Returns the created vocabulary."
                                           :body c/schema_export-vocabulary-admin}
                                      406 {:description "Creation failed."
-                                          :body s/Str
+                                          :body {:message s/Str}
                                           :example {:message "Could not create vocabulary."}}
 
                                      500 {:description "Duplicate key"
-                                          :body s/Str
+                                          :body {:message s/Str}
                                           :example {:message "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists."}}}
                          :swagger {:consumes "application/json" :produces "application/json"}})
 
@@ -89,13 +89,13 @@
                                         :responses {200 {:description "Returns the created vocabulary group permission."
                                                          :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
-                                                         :body s/Str
+                                                         :body {:message s/Str}
                                                          :example {:message "Vocabulary entry not found"}}
                                                     406 {:description "Not Acceptable."
-                                                         :body s/Str
+                                                         :body {:message s/Str}
                                                          :example {:message "Could not delete vocabulary group permission"}}
                                                     409 {:description "Conflict."
-                                                         :body s/Str
+                                                         :body {:message s/Str}
                                                          :example {:message "Entry already exists"}}}})
 
 ;### Debug ####################################################################

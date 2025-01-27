@@ -133,10 +133,10 @@
             :responses {200 {:description "Returns the created static_page."
                              :body schema_export_static_page}
                         406 {:description "Not Acceptable."
-                             :body s/Str
+                             :body {:message s/Str}
                              :example {:message "Could not create static_page."}}
                         409 {:description "Conflict."
-                             :body s/Str
+                             :body {:message s/Str}
                              :example {:message "Entry already exists"}}}}
 
      :get {:summary (sd/sum_adm "List static_pages.")
@@ -158,10 +158,10 @@
                                                             :created_at "2020-01-01T00:00:00Z"
                                                             :updated_at "2020-01-01T00:00:00Z"}]}
                        404 {:description "Not Found."
-                            :body s/Str
+                            :body {:message s/Str}
                             :example {:message "No static_pages found."}}
                        422 {:description "Unprocessable Entity."
-                            :body s/Str
+                            :body {:message s/Str}
                             :example {:message "Could not list static_pages."}}}}
            :parameters {:query {(s/optional-key :full_data) s/Bool}}}]
 
@@ -175,7 +175,7 @@
            :responses {200 {:description "Returns the static_page."
                             :body schema_export_static_page}
                        404 {:description "Not Found."
-                            :body s/Str
+                            :body {:message s/Str}
                             :example {:message "No such entity in :static_pages as :id with <id>"}}}}
 
      :put {:summary (sd/sum_adm "Update static_pages with id.")
@@ -190,7 +190,7 @@
                        406 {:description "Not Acceptable."
                             :body s/Any}
                        404 {:description "Not Found."
-                            :body s/Str
+                            :body {:message s/Str}
                             :example {:message "No such entity in :static_pages as :id with <id>"}}}}
 
      :delete {:summary (sd/sum_adm "Delete static_page by id.")
@@ -202,9 +202,15 @@
               :responses {200 {:description "Returns the deleted static_page."
                                :body schema_export_static_page}
                           404 {:description "Not Found."
-                               :body s/Str
-                               :example {:message "No such entity in :static_pages as :id with <id>"}}
+                               :body {:message s/Str}
+                               ;:example {:message "No such entity in :static_pages as :id with <id>"}
+                               ;:examples {"application/json" {:message "Entry already exists"}}
+                               :content {"application/json" {
+                                                             ;:schema
+                                                             :message "Entry already exists"}}
+                               }
+
 
                           422 {:description "Unprocessable Entity."
-                               :body s/Str
+                               :body {:message s/Str}
                                :example {:message "Could not delete static page."}}}}}]])

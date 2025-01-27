@@ -239,7 +239,7 @@
                                      :text s/Str}}
 
                          406 {:description "Creation failed."
-                              :body s/Str
+                              :body {:message s/Str}
                               :example {:message "Could not create full_text."}}}
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
@@ -258,7 +258,7 @@
                                     :text s/Str}}
 
                         406 {:description "Update failed."
-                             :body s/Str
+                             :body {:message s/Str}
                              :example {:message "Could not update full_text."}}}
             :handler handle_update-full_texts}
 
@@ -275,7 +275,7 @@
                                        :text s/Str}}
 
                            406 {:description "Deletion failed."
-                                :body s/Str
+                                :body {:message s/Str}
                                 :example {:message "Could not delete full_text."}}}
                :handler handle_delete-full_texts}}]]])
 
@@ -315,7 +315,7 @@ where e.id=t.media_resource_id"
                                      :text s/Str}}
 
                          406 {:description "Creation failed."
-                              :body s/Str
+                              :body {:message s/Str}
                               :example {:message "Could not create full_text."}}}
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
@@ -330,13 +330,9 @@ where e.id=t.media_resource_id"
             :responses {200 {:description "Returns the updated full_text."
                              :body s/Any}
                         406 {:description "Update failed."
-
-                             ;:body s/Str
-
                              :body {:media_resource_id s/Uuid
                                     :text s/Str}
-
-                             :example {:message "Could not update full_text."}}}
+                             }}
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
@@ -352,6 +348,6 @@ where e.id=t.media_resource_id"
                                        :text s/Str}}
 
                            406 {:description "Deletion failed."
-                                :body s/Str
+                                :body {:message s/Str}
                                 :example {:message "Could not delete full_text."}}}
                :handler handle_delete-full_texts}}]]])

@@ -88,10 +88,10 @@
                         404 {:description "Not found."
                              :body s/Any}
                         403 {:description "Forbidden."
-                             :body s/Str
+                             :body {:message s/Str}
                              :example {:message "Violation of constraint."}}
                         406 {:description "Not Acceptable."
-                             :body s/Str
+                             :body {:message s/Str}
                              :example {:message "Could not create role."}}}}}]
 
    ["roles/:id"
@@ -122,7 +122,7 @@
                        404 {:description "Not found."
                             :body s/Any}
                        406 {:description "Not Acceptable."
-                            :body s/Str
+                            :body {:message s/Str}
                             :example {:message "Could not update role."}}}}
 
      :delete {:summary (sd/sum_adm "Delete role.")
@@ -134,10 +134,10 @@
               :responses {200 {:description "Returns the deleted role."
                                :body schema_export-role}
                           404 {:description "Not found."
-                               :body s/Str
+                               :body {:message s/Str}
                                :example {:message "No such role."}}
                           406 {:description "Not Acceptable."
-                               :body s/Str
+                               :body {:message s/Str}
                                :example {:message "Could not delete role."}}}}}]])
 
 ;### Debug ####################################################################

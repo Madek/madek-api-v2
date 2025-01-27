@@ -60,5 +60,5 @@
    :responses {200 {:description "Person found."
                     :body schema}
                404 {:description "Not found."
-                    :body s/Str
+                    :body {:message s/Str}
                     :example {:message "No such person found."}}}})

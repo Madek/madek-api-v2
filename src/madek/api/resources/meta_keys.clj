@@ -233,10 +233,10 @@
             :responses {200 {:description "Returns the created meta-key."
                              :body schema_create-meta-key}
                         404 {:description "Duplicate key error"
-                             :body s/Str
+                             :body {:message s/Str}
                              :example {:msg "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists."}}
                         500 {:description "Internal Server Error"
-                             :body s/Str
+                             :body {:message s/Str}
                              :example {:msg "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\")."}}
                         406 {:description "Creation failed"
                              :body s/Any}}}}]
