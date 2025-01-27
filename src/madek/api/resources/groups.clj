@@ -244,10 +244,10 @@
                                       :body schema_export-group}
                                  404 {:description "Not Found."
                                       :body s/Str
-                                      :examples {"application/json" {:message "User entry not found"}}}
+                                      :example {:message "User entry not found"}}
                                  409 {:description "Conflict."
                                       :body s/Str
-                                      :examples {"application/json" {:message "Entry already exists"}}}
+                                      :example {:message "Entry already exists"}}
                                  500 {:description "Internal Server Error."
                                       :body s/Any}}}}]
 
@@ -267,7 +267,7 @@
                                          :body schema_export-group}
                                     404 {:description "Not Found."
                                          :body s/Str
-                                         :examples {"application/json" {:message "No such group found"}}}}}
+                                         :example {:message "No such group found"}}}}
                   :delete {:summary "Deletes a group by id"
                            :description "Delete a group by id"
                            :handler handle_delete-group
@@ -279,7 +279,7 @@
                                        ;; TODO: response of type octet-stream not yet supported?
                                        204 {:description "No Content. The resource was deleted successfully."
                                             :body nil
-                                            :examples {"application/json" nil}}}}
+                                            :example nil}}}
                   :put {:summary "Get group by id"
                         :swagger {:produces "application/json"}
                         :content-type "application/json"
@@ -342,7 +342,7 @@
                                                               :body group-users/schema_export-group-user-simple}
                                                          404 {:description "Creation failed."
                                                               :body s/Any
-                                                              :examples {"application/json" {:message "No such group or user."}}}}}
+                                                              :example {:message "No such group or user."}}}}
 
                                        ; TODO error handling
                                        :put {:summary "Get group user by group-id and user-id"
@@ -361,7 +361,7 @@
                                                               :body {:users [group-users/schema_export-group-user-simple]}}
                                                          404 {:description "Creation failed."
                                                               :body s/Str
-                                                              :examples {"application/json" {:message "No such group or user."}}}}} ; TODO error handling
+                                                              :example {:message "No such group or user."}}}} ; TODO error handling
                                        :delete {:summary "Deletes a group-user by group-id and user-id"
                                                 :description "Delete a group-user by group-id and user-id."
                                                 ;:swagger {:produces "application/json"}
@@ -374,7 +374,7 @@
                                                                  :body {:users [group-users/schema_export-group-user-simple]}}
                                                             404 {:description "Not Found."
                                                                  :body s/Str
-                                                                 :examples {"application/json" {:message "No such group or user."}}}
+                                                                 :example {:message "No such group or user."}}
                                                             406 {:description "Could not delete group-user."
                                                                  :body s/Str}}}}] ; TODO error handling
    ])

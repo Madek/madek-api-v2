@@ -234,10 +234,10 @@
                              :body schema_create-meta-key}
                         404 {:description "Duplicate key error"
                              :body s/Str
-                             :examples {"application/json" {:msg "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists."}}}
+                             :example {:msg "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists."}}
                         500 {:description "Internal Server Error"
                              :body s/Str
-                             :examples {"application/json" {:msg "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\")."}}}
+                             :example {:msg "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\")."}}
                         406 {:description "Creation failed"
                              :body s/Any}}}}]
 
@@ -258,7 +258,7 @@
                             :body map?}
                        422 {:description "Wrong format"
                             :body map?
-                            :examples {"application/json" {:message "Wrong meta_key_id format! See documentation. (fdas)"}}}}}
+                            :example {:message "Wrong meta_key_id format! See documentation. (fdas)"}}}}
 
      :put {:summary (sd/sum_adm "Update meta-key.")
            :handler handle_update_meta-key
@@ -275,7 +275,7 @@
                             :body ::schema_export-meta-key-adm}
                        406 {:description "Update failed"
                             :body string?
-                            :examples {"application/json" {:message "Could not update meta_key."}}}}}
+                            :example {:message "Could not update meta_key."}}}}
 
      :delete {:summary (sd/sum_adm "Delete meta-key.")
               :handler handle_delete_meta-key
@@ -287,7 +287,7 @@
                                :body ::schema_export-meta-key-adm}
                           406 {:description "Entry not found"
                                :body string?
-                               :examples {"application/json" {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}}
+                               :example {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}
                           422 {:description "Wrong format"
                                :body any?}}}}]])
 
@@ -319,9 +319,9 @@
                             :body ::schema_export-meta-key-usr}
                        404 {:description "No entry found for the given id"
                             :body map?
-                            :examples {"application/json" {:message "No such entity in :meta_keys as :id with not-existing:key"}}}
+                            :example {:message "No such entity in :meta_keys as :id with not-existing:key"}}
                        422 {:description "Wrong format"
                             :body map?
-                            :examples {"application/json" {:message "Wrong meta_key_id format! See documentation. (fdas)"}}}}}}]])
+                            :example {:message "Wrong meta_key_id format! See documentation. (fdas)"}}}}}]])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

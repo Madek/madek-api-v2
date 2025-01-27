@@ -192,11 +192,11 @@
                        :body ::response-body}
                   202 {:description "Successful response, list of items."
                        :body {}
-                       :examples {"application/json" {:message "Here are your items."
+                       :example {:message "Here are your items."
                                                       :page 1
                                                       :size 2
                                                       :items [{:id 1, :name "Item 1"}
-                                                              {:id 2, :name "Item 2"}]}}}}}}]
+                                                              {:id 2, :name "Item 2"}]}}}}}]
 
    ["keywords/:id"
     {:get

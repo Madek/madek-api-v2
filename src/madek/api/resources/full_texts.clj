@@ -167,7 +167,7 @@
                               :body ::response-schema-def}
                          406 {:description "Creation failed."
                               :body string?
-                              :examples {"application/json" {:message "Could not create full_text."}}}}}}]
+                              :example {:message "Could not create full_text."}}}}}]
 
     ["/full_text/:media_resource_id"
      {:post {:summary (sd/sum_adm "Create full_texts entry")
@@ -180,7 +180,7 @@
                               :body ::response-schema-def}
                          406 {:description "Creation failed."
                               :body string?
-                              :examples {"application/json" {:message "Could not create full_text."}}}}
+                              :example {:message "Could not create full_text."}}}
              :middleware [wrap-authorize-admin!]}
       :put {:summary (sd/sum_adm "Update full_text.")
             :coercion reitit.coercion.spec/coercion
@@ -192,7 +192,7 @@
                              :body ::response-schema-def}
                         406 {:description "Update failed."
                              :body string?
-                             :examples {"application/json" {:message "Could not update full_text."}}}}
+                             :example {:message "Could not update full_text."}}}
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_adm "Delete full_text.")
@@ -204,7 +204,7 @@
                                 :body ::response-schema-def}
                            406 {:description "Deletion failed."
                                 :body string?
-                                :examples {"application/json" {:message "Could not delete full_text."}}}}
+                                :example {:message "Could not delete full_text."}}}
                :handler handle_delete-full_texts}}]]])
 
 ; TODO full_texts: test wrap auth for collection
@@ -240,7 +240,7 @@
 
                          406 {:description "Creation failed."
                               :body s/Str
-                              :examples {"application/json" {:message "Could not create full_text."}}}}
+                              :example {:message "Could not create full_text."}}}
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
 
@@ -259,7 +259,7 @@
 
                         406 {:description "Update failed."
                              :body s/Str
-                             :examples {"application/json" {:message "Could not update full_text."}}}}
+                             :example {:message "Could not update full_text."}}}
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
@@ -276,7 +276,7 @@
 
                            406 {:description "Deletion failed."
                                 :body s/Str
-                                :examples {"application/json" {:message "Could not delete full_text."}}}}
+                                :example {:message "Could not delete full_text."}}}
                :handler handle_delete-full_texts}}]]])
 
 ; TODO full_texts: test wrap auth for media entry
@@ -316,7 +316,7 @@ where e.id=t.media_resource_id"
 
                          406 {:description "Creation failed."
                               :body s/Str
-                              :examples {"application/json" {:message "Could not create full_text."}}}}
+                              :example {:message "Could not create full_text."}}}
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
 
@@ -336,7 +336,7 @@ where e.id=t.media_resource_id"
                              :body {:media_resource_id s/Uuid
                                     :text s/Str}
 
-                             :examples {"application/json" {:message "Could not update full_text."}}}}
+                             :example {:message "Could not update full_text."}}}
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
@@ -353,5 +353,5 @@ where e.id=t.media_resource_id"
 
                            406 {:description "Deletion failed."
                                 :body s/Str
-                                :examples {"application/json" {:message "Could not delete full_text."}}}}
+                                :example {:message "Could not delete full_text."}}}
                :handler handle_delete-full_texts}}]]])
