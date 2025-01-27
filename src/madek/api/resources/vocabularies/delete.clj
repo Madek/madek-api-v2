@@ -50,10 +50,10 @@
                                              :body c/schema_export-vocabulary-admin}
                                         403 {:description "Forbidden."
                                              :body s/Str
-                                             :examples {"application/json" {:message "References still exist"}}}
+                                             :example {:message "References still exist"}}
                                         404 {:description "Not found."
                                              :body s/Str
-                                             :examples {"application/json" {:message "No such vocabulary."}}}
+                                             :example {:message "No such vocabulary."}}
                                         500 {:description "Deletion failed."
                                              :body s/Any}}
                             :swagger {:produces "application/json"}})
@@ -75,11 +75,11 @@
 
                                                   404 {:description "Not Found."
                                                        :body s/Str
-                                                       :examples {"application/json" {:message "No such vocabulary user permission."}}}
+                                                       :example {:message "No such vocabulary user permission."}}
 
                                                   406 {:description "Not Acceptable."
                                                        :body s/Str
-                                                       :examples {"application/json" {:message "Could not delete vocabulary user permission"}}}}})
+                                                       :example {:message "Could not delete vocabulary user permission"}}}})
 
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Delete vocabulary group permissions")
                                         :handler permissions/handle_delete-vocab-group-perms
@@ -93,11 +93,11 @@
                                                          :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
                                                          :body s/Str
-                                                         ;:examples {"application/json" {:message "Vocabulary entry not found"}}}
-                                                         :examples {"application/json" {:message "No such vocabulary group permission."}}}
+                                                         ;:example {:message "Vocabulary entry not found"}}}
+                                                         :example {:message "No such vocabulary group permission."}}
                                                     406 {:description "Not Acceptable."
                                                          :body s/Str
-                                                         :examples {"application/json" {:message "Could not delete vocabulary group permission"}}}}})
+                                                         :example {:message "Could not delete vocabulary group permission"}}}})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

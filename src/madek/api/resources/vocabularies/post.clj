@@ -45,11 +45,11 @@
                                           :body c/schema_export-vocabulary-admin}
                                      406 {:description "Creation failed."
                                           :body s/Str
-                                          :examples {"application/json" {:message "Could not create vocabulary."}}}
+                                          :example {:message "Could not create vocabulary."}}
 
                                      500 {:description "Duplicate key"
                                           :body s/Str
-                                          :examples {"application/json" {:message "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists."}}}}
+                                          :example {:message "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists."}}}
                          :swagger {:consumes "application/json" :produces "application/json"}})
 
 (def admin.vocabularies.users.user_id {:summary (sd/sum_adm "Create vocabulary user permissions")
@@ -90,13 +90,13 @@
                                                          :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
                                                          :body s/Str
-                                                         :examples {"application/json" {:message "Vocabulary entry not found"}}}
+                                                         :example {:message "Vocabulary entry not found"}}
                                                     406 {:description "Not Acceptable."
                                                          :body s/Str
-                                                         :examples {"application/json" {:message "Could not delete vocabulary group permission"}}}
+                                                         :example {:message "Could not delete vocabulary group permission"}}
                                                     409 {:description "Conflict."
                                                          :body s/Str
-                                                         :examples {"application/json" {:message "Entry already exists"}}}}})
+                                                         :example {:message "Entry already exists"}}}})
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

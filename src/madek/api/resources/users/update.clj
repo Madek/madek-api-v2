@@ -65,4 +65,4 @@
                     :body get-user/schema}
                404 {:description "Not Found."
                     :body s/Str
-                    :examples {"application/json" {:message "No such user."}}}}})
+                    :example {:message "No such user."}}}})

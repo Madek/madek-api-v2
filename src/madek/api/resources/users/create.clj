@@ -80,11 +80,11 @@
                     :body s/Any}
                404 {:description "Not Found."
                     :body s/Str
-                    :examples {"application/json" {:message "People entry not found"}}}
+                    :example {:message "People entry not found"}}
 
                409 {:description "Conflict."
                     :body s/Str
-                    :examples {"application/json" {:message "Entry already exists"}}}}
+                    :example {:message "Entry already exists"}}}
    :summary (sd/sum_adm "Create user.")
    :swagger {:consumes "application/json"
              :produces "application/json"}})
