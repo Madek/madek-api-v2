@@ -165,9 +165,15 @@
              :middleware [wrap-authorize-admin!]
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
-                         406 {:description "Creation failed."
-                              :body string?
-                              :example {:message "Could not create full_text."}}}}}]
+
+                         406 (sd/create-error-message-response "Creation failed." "Could not create full_text.")
+
+
+                         ;406 {:description "Creation failed."
+                         ;     :body string?
+                         ;     :example {:message "Could not create full_text."}}
+
+                         }}}]
 
     ["/full_text/:media_resource_id"
      {:post {:summary (sd/sum_adm "Create full_texts entry")
@@ -178,9 +184,15 @@
                           :body {:text string?}}
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
-                         406 {:description "Creation failed."
-                              :body string?
-                              :example {:message "Could not create full_text."}}}
+
+                         406 (sd/create-error-message-response "Creation failed." "Could not create full_text.")
+
+                         ;406 {:description "Creation failed."
+                         ;     :body string?
+                         ;     :example {:message "Could not create full_text."}}
+
+
+                         }
              :middleware [wrap-authorize-admin!]}
       :put {:summary (sd/sum_adm "Update full_text.")
             :coercion reitit.coercion.spec/coercion
@@ -190,9 +202,16 @@
                          (wrap-find-full_text :media_resource_id true)]
             :responses {200 {:description "Returns the updated full_text."
                              :body ::response-schema-def}
-                        406 {:description "Update failed."
-                             :body string?
-                             :example {:message "Could not update full_text."}}}
+
+                        406 (sd/create-error-message-response "Update failed." "Could not update full_text.")
+
+
+                        ;406 {:description "Update failed."
+                        ;     :body string?
+                        ;     :example {:message "Could not update full_text."}}
+
+
+                        }
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_adm "Delete full_text.")
@@ -202,9 +221,15 @@
                             (wrap-find-full_text :media_resource_id true)]
                :responses {200 {:description "Returns the deleted full_text."
                                 :body ::response-schema-def}
-                           406 {:description "Deletion failed."
-                                :body string?
-                                :example {:message "Could not delete full_text."}}}
+
+                           406 (sd/create-error-message-response "Deletion failed." "Could not delete full_text.")
+
+
+                           ;406 {:description "Deletion failed."
+                           ;     :body string?
+                           ;     :example {:message "Could not delete full_text."}}
+
+                           }
                :handler handle_delete-full_texts}}]]])
 
 ; TODO full_texts: test wrap auth for collection
@@ -217,7 +242,6 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}}
             :responses {200 {:description "Returns the full_text. 015425fd-3123-4b7f-977f-2c65f2eddf0a"
-                             ;:body s/Any}}
                              :body {:collection_id s/Uuid
                                     :text s/Str}}}
 
@@ -233,14 +257,17 @@
              :parameters {:path {:collection_id s/Str}
                           :body {:text s/Str}}
              :responses {200 {:description "Returns the created full_text."
-                              ;:body s/Any
-
                               :body {:collection_id s/Uuid
                                      :text s/Str}}
 
-                         406 {:description "Creation failed."
-                              :body {:message s/Str}
-                              :example {:message "Could not create full_text."}}}
+                         406 (sd/create-error-message-response "Creation failed." "Could not create full_text.")
+
+                         ;406 {:description "Creation failed."
+                         ;     :body {:message s/Str}
+                         ;     :example {:message "Could not create full_text."}}
+
+
+                         }
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
 
@@ -252,14 +279,18 @@
                          jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]
             :responses {200 {:description "Returns the updated full_text."
-                             ;:body s/Any
-
                              :body {:collection_id s/Uuid
                                     :text s/Str}}
 
-                        406 {:description "Update failed."
-                             :body {:message s/Str}
-                             :example {:message "Could not update full_text."}}}
+                        406 (sd/create-error-message-response "Update failed." "Could not update full_text.")
+
+
+                        ;406 {:description "Update failed."
+                        ;     :body {:message s/Str}
+                        ;     :example {:message "Could not update full_text."}}
+
+
+                        }
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
@@ -274,9 +305,15 @@
                                 :body {:collection_id s/Uuid
                                        :text s/Str}}
 
-                           406 {:description "Deletion failed."
-                                :body {:message s/Str}
-                                :example {:message "Could not delete full_text."}}}
+                           406 (sd/create-error-message-response "Deletion failed." "Could not delete full_text.")
+
+
+                           ;406 {:description "Deletion failed."
+                           ;     :body {:message s/Str}
+                           ;     :example {:message "Could not delete full_text."}}
+
+
+                           }
                :handler handle_delete-full_texts}}]]])
 
 ; TODO full_texts: test wrap auth for media entry
@@ -314,9 +351,15 @@ where e.id=t.media_resource_id"
                               :body {:media_resource_id s/Uuid
                                      :text s/Str}}
 
-                         406 {:description "Creation failed."
-                              :body {:message s/Str}
-                              :example {:message "Could not create full_text."}}}
+                         406 (sd/create-error-message-response "Creation failed." "Could not create full_text.")
+
+
+                         ;406 {:description "Creation failed."
+                         ;     :body {:message s/Str}
+                         ;     :example {:message "Could not create full_text."}}
+
+
+                         }
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
 
@@ -329,10 +372,13 @@ where e.id=t.media_resource_id"
                          (wrap-find-full_text :media_entry_id true)]
             :responses {200 {:description "Returns the updated full_text."
                              :body s/Any}
+
                         406 {:description "Update failed."
                              :body {:media_resource_id s/Uuid
-                                    :text s/Str}
-                             }}
+                                    :text s/Str}}
+
+
+                        }
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
@@ -342,12 +388,14 @@ where e.id=t.media_resource_id"
                             jqh/ring-wrap-authorization-edit-metadata
                             (wrap-find-full_text :media_entry_id true)]
                :responses {200 {:description "Returns the deleted full_text."
-                                ;:body s/Any
-
                                 :body {:media_resource_id s/Uuid
                                        :text s/Str}}
 
-                           406 {:description "Deletion failed."
-                                :body {:message s/Str}
-                                :example {:message "Could not delete full_text."}}}
+                           406 (sd/create-error-message-response "Deletion failed." "Could not delete full_text.")
+
+                           ;406 {:description "Deletion failed."
+                           ;     :body {:message s/Str}
+                           ;     :example {:message "Could not delete full_text."}}
+
+                           }
                :handler handle_delete-full_texts}}]]])
