@@ -54,7 +54,7 @@
                     :body get-person/schema}
                409 {:description "Conflict."
                     :body s/Str
-                    :examples {"application/json" {:message "Violation of constraint"}}}}
+                    :example {:message "Violation of constraint"}}}
    :summary "Create a person"
    :swagger {:produces "application/json"
              :consumes "application/json"}})

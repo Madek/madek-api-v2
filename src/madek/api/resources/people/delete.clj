@@ -42,7 +42,7 @@
    :responses {204 {:description "No Content." :body nil}
                403 {:description "Forbidden."
                     :body s/Str
-                    :examples {"application/json" {:message "Violation of constraints."}}}
+                    :example {:message "Violation of constraints."}}
                404 {:description "Not found."
                     :body s/Str
-                    :examples {"application/json" {:message "Person not found."}}}}})
+                    :example {:message "Person not found."}}}})

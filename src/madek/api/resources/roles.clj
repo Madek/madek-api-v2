@@ -89,10 +89,10 @@
                              :body s/Any}
                         403 {:description "Forbidden."
                              :body s/Str
-                             :examples {"application/json" {:message "Violation of constraint."}}}
+                             :example {:message "Violation of constraint."}}
                         406 {:description "Not Acceptable."
                              :body s/Str
-                             :examples {"application/json" {:message "Could not create role."}}}}}}]
+                             :example {:message "Could not create role."}}}}}]
 
    ["roles/:id"
     {:get {:summary (sd/sum_adm "Get role by id")
@@ -123,7 +123,7 @@
                             :body s/Any}
                        406 {:description "Not Acceptable."
                             :body s/Str
-                            :examples {"application/json" {:message "Could not update role."}}}}}
+                            :example {:message "Could not update role."}}}}
 
      :delete {:summary (sd/sum_adm "Delete role.")
               :handler role/handle_delete-role
@@ -135,10 +135,10 @@
                                :body schema_export-role}
                           404 {:description "Not found."
                                :body s/Str
-                               :examples {"application/json" {:message "No such role."}}}
+                               :example {:message "No such role."}}
                           406 {:description "Not Acceptable."
                                :body s/Str
-                               :examples {"application/json" {:message "Could not delete role."}}}}}}]])
+                               :example {:message "Could not delete role."}}}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

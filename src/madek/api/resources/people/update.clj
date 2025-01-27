@@ -52,7 +52,7 @@
                     :body get-person/schema}
                404 {:description "Not found."
                     :body s/Str
-                    :examples {"application/json" {:message "Person not found."}}}
+                    :example {:message "Person not found."}}
                409 {:description "Conflict."
                     :body s/Str
-                    :examples {"application/json" {:message "Update of person failed"}}}}})
+                    :example {:message "Update of person failed"}}}})

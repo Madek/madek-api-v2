@@ -61,4 +61,4 @@
                     :body schema}
                404 {:description "Not found."
                     :body s/Str
-                    :examples {"application/json" {:message "No such person found."}}}}})
+                    :example {:message "No such person found."}}}})

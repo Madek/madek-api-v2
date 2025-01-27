@@ -154,7 +154,7 @@
                             :body schema_export_usage_term}
                        404 {:description "Not found."
                             :body s/Str
-                            :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}
+                            :example {:message "No such entity in :usage_terms as :id with <id>"}}}}
 
      :put {:summary (sd/sum_adm "Update usage_terms with id.")
            :handler handle_update-usage_terms
@@ -167,7 +167,7 @@
                             :body schema_export_usage_term}
                        404 {:description "Not found."
                             :body s/Str
-                            :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}
+                            :example {:message "No such entity in :usage_terms as :id with <id>"}}
                        406 {:description "Not Acceptable."
                             :body s/Any}}}
 
@@ -181,7 +181,7 @@
                                :body schema_export_usage_term}
                           404 {:description "Not found."
                                :body s/Str
-                               :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}}]])
+                               :example {:message "No such entity in :usage_terms as :id with <id>"}}}}}]])
 
 ; TODO usage_terms get the most recent one ?!?
 (def user-routes
