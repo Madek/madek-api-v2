@@ -47,7 +47,7 @@
 
         (if (= 1 (::jdbc/update-count upd-result))
           (sd/response_ok result-data)
-          (sd/response_failed {:message "Failed to update meta data text base"} 406))))
+          (sd/response_failed "Failed to update meta data text base" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn handle_update-meta-data-text

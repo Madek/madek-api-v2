@@ -36,7 +36,7 @@
 
         (if (= md-type (:type ins-result))
           (sd/response_ok ins-result)
-          (sd/response_failed {:message "Failed to add meta data text"} 406))))
+          (sd/response_failed "Failed to add meta data text" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion
@@ -59,7 +59,7 @@
 
         (if (= md-type (:type ins-result))
           (sd/response_ok ins-result)
-          (sd/response_failed {:message "Failed to add meta data text-date"} 406))))
+          (sd/response_failed "Failed to add meta data text-date" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion
@@ -85,7 +85,7 @@
 
         (if (= md-type (:type ins-result))
           (sd/response_ok ins-result)
-          (sd/response_failed {:message "Failed to add meta data json"} 406))))
+          (sd/response_failed "Failed to add meta data json" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO tests, response coercion

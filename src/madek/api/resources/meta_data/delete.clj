@@ -90,7 +90,7 @@
         (if (= 1 (count del-result))
           (sd/response_ok {:meta_data md
                            MD_KEY_PEOPLE_DATA (db-get-meta-data-people md-id tx)})
-          (sd/response_failed {:message "Failed to delete meta data people"} 406))))
+          (sd/response_failed "Failed to delete meta data people" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
 ; TODO del meta-data if md-roles is empty ? sql-trigger ?

@@ -54,7 +54,7 @@
           "\n dresult: \n" dresult)
     (if (= 1 (::jdbc/update-count (first dresult)))
       (sd/response_ok {:deleted mr})
-      (sd/response_failed {:message "Failed to delete media entry"} 406))))
+      (sd/response_failed "Failed to delete media entry" 406))))
 
 (defn- get-context-keys-4-context [contextId tx]
   (map :meta_key_id
