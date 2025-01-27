@@ -44,11 +44,11 @@
                          :responses {200 {:description "Returns the created vocabulary."
                                           :body c/schema_export-vocabulary-admin}
                                      406 {:description "Creation failed."
-                                          :schema s/Str
+                                          :body s/Str
                                           :examples {"application/json" {:message "Could not create vocabulary."}}}
 
                                      500 {:description "Duplicate key"
-                                          :schema s/Str
+                                          :body s/Str
                                           :examples {"application/json" {:message "ERROR: duplicate key value violates unique constraint 'vocabularies_pkey' Detail: Key (id)=(toni_dokumentation2) already exists."}}}}
                          :swagger {:consumes "application/json" :produces "application/json"}})
 
@@ -69,11 +69,13 @@
                                        :responses {200 {:description "Returns the created vocabulary user permission."
                                                         :body c/schema_export-user-perms}
                                                    404 {:description "Not found."
-                                                        :schema s/Str
-                                                        :examples {"application/json" {:message "{Vocabulary|User} entry not found"}}}
+                                                        :body {:message s/Str}
+                                                        :example {:message "{Vocabulary|User} entry not found"}
+                                                        }
                                                    409 {:description "Conflict."
-                                                        :schema s/Str
-                                                        :examples {"application/json" {:message "Entry already exists"}}}}})
+                                                        :body {:message s/Str}
+                                                         :example {:message "Entry already exists"}
+                                                        }}})
 
 (def admin.vocabularies.group.group_id {:summary (sd/sum_adm_todo "Create vocabulary group permissions")
                                         :handler permissions/handle_create-vocab-group-perms
@@ -87,13 +89,13 @@
                                         :responses {200 {:description "Returns the created vocabulary group permission."
                                                          :body c/schema_export-group-perms}
                                                     404 {:description "Not Found."
-                                                         :schema s/Str
+                                                         :body s/Str
                                                          :examples {"application/json" {:message "Vocabulary entry not found"}}}
                                                     406 {:description "Not Acceptable."
-                                                         :schema s/Str
+                                                         :body s/Str
                                                          :examples {"application/json" {:message "Could not delete vocabulary group permission"}}}
                                                     409 {:description "Conflict."
-                                                         :schema s/Str
+                                                         :body s/Str
                                                          :examples {"application/json" {:message "Entry already exists"}}}}})
 
 ;### Debug ####################################################################

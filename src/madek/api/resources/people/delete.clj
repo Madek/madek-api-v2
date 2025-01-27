@@ -41,8 +41,8 @@
    :parameters {:path {:id s/Uuid}}
    :responses {204 {:description "No Content." :body nil}
                403 {:description "Forbidden."
-                    :schema s/Str
+                    :body s/Str
                     :examples {"application/json" {:message "Violation of constraints."}}}
                404 {:description "Not found."
-                    :schema s/Str
+                    :body s/Str
                     :examples {"application/json" {:message "Person not found."}}}}})

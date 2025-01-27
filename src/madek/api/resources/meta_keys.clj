@@ -253,7 +253,7 @@
            :coercion reitit.coercion.spec/coercion
            :parameters {:path ::meta-keys-id-query-def}
            :responses {200 {:description "Returns the meta-key."
-                            :schema ::schema_export-meta-key-adm}
+                            :body ::schema_export-meta-key-adm}
                        404 {:description "No entry found for the given id"
                             :body map?}
                        422 {:description "Wrong format"

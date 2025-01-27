@@ -191,7 +191,7 @@
       :responses {200 {:description "Successful response, list of items."
                        :body ::response-body}
                   202 {:description "Successful response, list of items."
-                       :schema {}
+                       :body {}
                        :examples {"application/json" {:message "Here are your items."
                                                       :page 1
                                                       :size 2

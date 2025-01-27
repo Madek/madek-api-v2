@@ -37,7 +37,7 @@
                             :responses {200 {:description "Returns the vocabulary."
                                              :body c/schema_export-vocabulary-admin}
                                         404 {:description "Creation failed."
-                                             :schema s/Str
+                                             :body s/Str
                                              :examples {"application/json" {:message "Vocabulary could not be found!"}}}}})
 
 (def admin.vocabularies.id.perms {:summary (sd/sum_adm "List vocabulary permissions")
@@ -50,7 +50,7 @@
                                   :responses {200 {:description "Returns the list of vocabulary permissions."
                                                    :body c/schema_export-perms_all}
                                               404 {:description "Not found."
-                                                   :schema s/Str
+                                                   :body s/Str
                                                    :examples {"application/json" {:message "No such vocabulary."}}}}})
 
 (def admin.vocabularies.users {:summary (sd/sum_adm_todo "List vocabulary user permissions")
@@ -76,7 +76,7 @@
                                        :responses {200 {:description "Returns the vocabulary user permission."
                                                         :body c/schema_export-user-perms}
                                                    404 {:description "Not found."
-                                                        :schema s/Str
+                                                        :body s/Str
                                                         :examples {"application/json" {:message "No such vocabulary user permission."}}}}})
 
 (def admin.vocabularies.groups {:summary (sd/sum_adm_todo "List vocabulary group permissions")
@@ -100,7 +100,7 @@
                                         :responses {200 {:description "Returns the vocabulary group permission."
                                                          :body c/schema_export-group-perms}
                                                     404 {:description "Not found."
-                                                         :schema s/Str
+                                                         :body s/Str
                                                          :examples {"application/json" {:message "No such vocabulary group permission."}}}}})
 
 (def user.vocabularies {:summary "Get list of vocabularies ids."
@@ -121,7 +121,7 @@
                            :responses {200 {:description "Returns the vocabulary."
                                             :body c/schema_export-vocabulary}
                                        404 {:description "Creation failed."
-                                            :schema s/Str
+                                            :body s/Str
                                             :examples {"application/json" {:message "Vocabulary could not be found!"}}}}})
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

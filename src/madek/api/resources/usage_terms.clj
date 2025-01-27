@@ -153,7 +153,7 @@
            :responses {200 {:description "Returns the usage_term."
                             :body schema_export_usage_term}
                        404 {:description "Not found."
-                            :schema s/Str
+                            :body s/Str
                             :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}
 
      :put {:summary (sd/sum_adm "Update usage_terms with id.")
@@ -166,7 +166,7 @@
            :responses {200 {:description "Returns the updated usage_term."
                             :body schema_export_usage_term}
                        404 {:description "Not found."
-                            :schema s/Str
+                            :body s/Str
                             :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}
                        406 {:description "Not Acceptable."
                             :body s/Any}}}
@@ -180,7 +180,7 @@
               :responses {200 {:description "Returns the deleted usage_term."
                                :body schema_export_usage_term}
                           404 {:description "Not found."
-                               :schema s/Str
+                               :body s/Str
                                :examples {"application/json" {:message "No such entity in :usage_terms as :id with <id>"}}}}}}]])
 
 ; TODO usage_terms get the most recent one ?!?

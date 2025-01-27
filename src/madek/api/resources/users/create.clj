@@ -79,11 +79,11 @@
                400 {:description "Bad Request"
                     :body s/Any}
                404 {:description "Not Found."
-                    :schema s/Str
+                    :body s/Str
                     :examples {"application/json" {:message "People entry not found"}}}
 
                409 {:description "Conflict."
-                    :schema s/Str
+                    :body s/Str
                     :examples {"application/json" {:message "Entry already exists"}}}}
    :summary (sd/sum_adm "Create user.")
    :swagger {:consumes "application/json"
