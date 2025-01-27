@@ -166,11 +166,11 @@
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
 
-                         ;406 (sd/create-error-message-response-spec "Creation failed." "Could not create full_text.")
+                         406 (sd/create-error-message-response-spec "Creation failed." "Could not create full_text.")
 
-                         406 {:description "Creation failed."
-                              :body string?
-                              :example {:message "Could not create full_text."}}
+                         ;406 {:description "Creation failed."
+                         ;     :body string?
+                         ;     :example {:message "Could not create full_text."}}
 
                          }}}]
 
@@ -184,11 +184,11 @@
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
 
-                         ;406 (sd/create-error-message-response-spec "Creation failed." "Could not create full_text.")
+                         406 (sd/create-error-message-response-spec "Creation failed." "Could not create full_text.")
 
-                         406 {:description "Creation failed."
-                              :body string?
-                              :example {:message "Could not create full_text."}}
+                         ;406 {:description "Creation failed."
+                         ;     :body string?
+                         ;     :example {:message "Could not create full_text."}}
 
 
                          }
@@ -202,11 +202,11 @@
             :responses {200 {:description "Returns the updated full_text."
                              :body ::response-schema-def}
 
-                        ;406 (sd/create-error-message-response-spec "Update failed." "Could not update full_text.")
+                        406 (sd/create-error-message-response-spec "Update failed." "Could not update full_text.")
 
-                        406 {:description "Update failed."
-                             :body string?
-                             :example {:message "Could not update full_text."}}
+                        ;406 {:description "Update failed."
+                        ;     :body string?
+                        ;     :example {:message "Could not update full_text."}}
 
 
                         }
@@ -220,11 +220,11 @@
                :responses {200 {:description "Returns the deleted full_text."
                                 :body ::response-schema-def}
 
-                           ;406 (sd/create-error-message-response-spec "Deletion failed." "Could not delete full_text.")
+                           406 (sd/create-error-message-response-spec "Deletion failed." "Could not delete full_text.")
 
-                           406 {:description "Deletion failed."
-                                :body string?
-                                :example {:message "Could not delete full_text."}}
+                           ;406 {:description "Deletion failed."
+                           ;     :body string?
+                           ;     :example {:message "Could not delete full_text."}}
 
                            }
                :handler handle_delete-full_texts}}]]])
