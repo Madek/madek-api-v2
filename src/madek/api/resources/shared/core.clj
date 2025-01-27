@@ -231,25 +231,25 @@
 
 
 
-(defn create-example-response2
-  ([schema value]
-   {:content {"application/json" {:schema schema
-                                  :examples {:error {:value value}}}}})
+;(defn create-example-response2
+;  ([schema value]
+;   {:content {"application/json" {:schema schema
+;                                  :examples {:error {:value value}}}}})
+;
+;  ([description schema value]
+;   {:description description
+;    :content {"application/json" {:schema schema
+;                                  :examples {:error {:value value}}}}})
+;  )
 
-  ([description schema value]
-   {:description description
-    :content {"application/json" {:schema schema
-                                  :examples {:error {:value value}}}}})
-  )
-
-(defn create-error-message-response2
+(defn create-error-message-response-spec
 
   (  [message]
-   (create-example-response2 {:message string?}
+   (create-example-response {:message string?}
      {:message message}))
 
   (  [description message]
-   (create-example-response2 description {:message string?}
+   (create-example-response description {:message string?}
      {:message message}))
   )
 

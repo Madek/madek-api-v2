@@ -266,7 +266,7 @@
                             :body map?}
 
 
-                       422 (sd/create-error-message-response "Wrong format" "Wrong meta_key_id format! See documentation.")
+                       422 (sd/create-error-message-response-spec "Wrong format" "Wrong meta_key_id format! See documentation.")
 
                        ;422 {:description "Wrong format"
                        ;     :body map?
@@ -289,11 +289,11 @@
            :responses {200 {:description "Returns the updated meta-key."
                             :body ::schema_export-meta-key-adm}
 
-                       406 (sd/create-error-message-response "Update failed" "Could not update meta_key.")
+                       ;406 (sd/create-error-message-response-spec "Update failed" "Could not update meta_key.")
 
-                       ;406 {:description "Update failed"
-                       ;     :body string?
-                       ;     :example {:message "Could not update meta_key."}}
+                       406 {:description "Update failed"
+                            :body string?
+                            :example {:message "Could not update meta_key."}}
 
 
                        }}
@@ -308,12 +308,12 @@
                                :body ::schema_export-meta-key-adm}
 
 
-                          406 (sd/create-error-message-response "Entry not found" "No such entity in :meta_keys as :id with copyright:test_me_now22")
+                          ;406 (sd/create-error-message-response-spec "Entry not found" "No such entity in :meta_keys as :id with copyright:test_me_now22")
 
+                          406 {:description "Entry not found"
+                               :body string?
+                               :example {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}
 
-                          ;406 {:description "Entry not found"
-                          ;     :body string?
-                          ;     :example {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}
                           422 {:description "Wrong format"
                                :body any?}}}}]])
 
@@ -345,17 +345,16 @@
                             :body ::schema_export-meta-key-usr}
 
 
-                       404 (sd/create-error-message-response  "No entry found for the given id"
-                             "No such entity in :meta_keys as :id with not-existing:key")
-                       422 (sd/create-error-message-response  "Wrong format" "Wrong meta_key_id format! See documentation.")
+                       ;404 (sd/create-error-message-response-spec  "No entry found for the given id"
+                       ;      "No such entity in :meta_keys as :id with not-existing:key")
+                       ;422 (sd/create-error-message-response-spec  "Wrong format" "Wrong meta_key_id format! See documentation.")
 
-
-                       ;404 {:description "No entry found for the given id"
-                       ;     :body map?
-                       ;     :example {:message "No such entity in :meta_keys as :id with not-existing:key"}}
-                       ;422 {:description "Wrong format"
-                       ;     :body map?
-                       ;     :example {:message "Wrong meta_key_id format! See documentation. (fdas)"}}
+                       404 {:description "No entry found for the given id"
+                            :body map?
+                            :example {:message "No such entity in :meta_keys as :id with not-existing:key"}}
+                       422 {:description "Wrong format"
+                            :body map?
+                            :example {:message "Wrong meta_key_id format! See documentation. (fdas)"}}
 
 
                        }}}]])
