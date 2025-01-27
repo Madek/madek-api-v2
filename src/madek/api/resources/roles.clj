@@ -87,12 +87,21 @@
                              :body schema_export-role}
                         404 {:description "Not found."
                              :body s/Any}
-                        403 {:description "Forbidden."
-                             :body {:message s/Str}
-                             :example {:message "Violation of constraint."}}
-                        406 {:description "Not Acceptable."
-                             :body {:message s/Str}
-                             :example {:message "Could not create role."}}}}}]
+
+
+                        403 (sd/create-error-message-response  "Forbidden." "Violation of constraint.")
+                        406 (sd/create-error-message-response "Not Acceptable." "Could not create role.")
+
+
+
+                        ;403 {:description "Forbidden."
+                        ;     :body {:message s/Str}
+                        ;     :example {:message "Violation of constraint."}}
+                        ;406 {:description "Not Acceptable."
+                        ;     :body {:message s/Str}
+                        ;     :example {:message "Could not create role."}}
+
+                        }}}]
 
    ["roles/:id"
     {:get {:summary (sd/sum_adm "Get role by id")
@@ -119,11 +128,17 @@
                         :body schema_update-role}
            :responses {200 {:description "Returns the updated role."
                             :body schema_export-role}
+
+
+
                        404 {:description "Not found."
                             :body s/Any}
-                       406 {:description "Not Acceptable."
-                            :body {:message s/Str}
-                            :example {:message "Could not update role."}}}}
+                       406 (sd/create-error-message-response "Not Acceptable." "Could not update role.")
+                       ;406 {:description "Not Acceptable."
+                       ;     :body {:message s/Str}
+                       ;     :example {:message "Could not update role."}}
+
+                       }}
 
      :delete {:summary (sd/sum_adm "Delete role.")
               :handler role/handle_delete-role
@@ -133,12 +148,21 @@
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:description "Returns the deleted role."
                                :body schema_export-role}
-                          404 {:description "Not found."
-                               :body {:message s/Str}
-                               :example {:message "No such role."}}
-                          406 {:description "Not Acceptable."
-                               :body {:message s/Str}
-                               :example {:message "Could not delete role."}}}}}]])
+
+
+
+                          404 (sd/create-error-message-response  "Not Found." "No such role.")
+                          406 (sd/create-error-message-response "Not Acceptable." "Could not delete role.")
+
+
+                          ;404 {:description "Not found."
+                          ;     :body {:message s/Str}
+                          ;     :example {:message "No such role."}}
+                          ;406 {:description "Not Acceptable."
+                          ;     :body {:message s/Str}
+                          ;     :example {:message "Could not delete role."}}
+
+                          }}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

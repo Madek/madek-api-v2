@@ -78,13 +78,22 @@
                     :body schema_post}
                400 {:description "Bad Request"
                     :body s/Any}
-               404 {:description "Not Found."
-                    :body {:message s/Str}
-                    :example {:message "People entry not found"}}
 
-               409 {:description "Conflict."
-                    :body {:message s/Str}
-                    :example {:message "Entry already exists"}}}
+
+               404 (sd/create-error-message-response  "Not Found." "People entry not found")
+               409 (sd/create-error-message-response "Conflict." "Entry already exists")
+
+
+
+               ;404 {:description "Not Found."
+               ;     :body {:message s/Str}
+               ;     :example {:message "People entry not found"}}
+               ;
+               ;409 {:description "Conflict."
+               ;     :body {:message s/Str}
+               ;     :example {:message "Entry already exists"}}
+
+               }
    :summary (sd/sum_adm "Create user.")
    :swagger {:consumes "application/json"
              :produces "application/json"}})

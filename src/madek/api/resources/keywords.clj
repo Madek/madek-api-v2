@@ -190,13 +190,23 @@
       :parameters {:query sp/schema_pagination_opt}
       :responses {200 {:description "Successful response, list of items."
                        :body ::response-body}
-                  202 {:description "Successful response, list of items."
-                       :body {}
-                       :example {:message "Here are your items."
-                                                      :page 1
-                                                      :size 2
-                                                      :items [{:id 1, :name "Item 1"}
-                                                              {:id 2, :name "Item 2"}]}}}}}]
+                  ;202 {:description "Successful response, list of items."
+                  ;     :body {}
+                  ;     :example {:message "Here are your items."
+                  ;                                    :page 1
+                  ;                                    :size 2
+                  ;                                    :items [{:id 1, :name "Item 1"}
+                  ;                                            {:id 2, :name "Item 2"}]}}
+
+                  202 (sd/create-examples-response  "Returns the list of static_pages." any?
+                        {:message "Here are your items."
+                         :page 1
+                         :size 2
+                         :items [{:id 1, :name "Item 1"}
+                                 {:id 2, :name "Item 2"}]}
+                        )
+
+                  }}}]
 
    ["keywords/:id"
     {:get

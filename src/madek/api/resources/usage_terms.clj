@@ -152,9 +152,13 @@
            :parameters {:path {:id s/Uuid}}
            :responses {200 {:description "Returns the usage_term."
                             :body schema_export_usage_term}
-                       404 {:description "Not found."
-                            :body {:message s/Str}
-                            :example {:message "No such entity in :usage_terms as :id with <id>"}}}}
+
+
+                       404 (sd/create-error-message-response  "Not Found." "No such entity in :usage_terms as :id with <id>")
+                       ;404 {:description "Not found."
+                       ;     :body {:message s/Str}
+                       ;     :example {:message "No such entity in :usage_terms as :id with <id>"}}
+                       }}
 
      :put {:summary (sd/sum_adm "Update usage_terms with id.")
            :handler handle_update-usage_terms
@@ -165,9 +169,13 @@
                         :body schema_update_usage_terms}
            :responses {200 {:description "Returns the updated usage_term."
                             :body schema_export_usage_term}
-                       404 {:description "Not found."
-                            :body {:message s/Str}
-                            :example {:message "No such entity in :usage_terms as :id with <id>"}}
+
+                       404 (sd/create-error-message-response  "Not Found." "No such entity in :usage_terms as :id with <id>")
+
+
+                       ;404 {:description "Not found."
+                       ;     :body {:message s/Str}
+                       ;     :example {:message "No such entity in :usage_terms as :id with <id>"}}
                        406 {:description "Not Acceptable."
                             :body s/Any}}}
 
@@ -179,9 +187,14 @@
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:description "Returns the deleted usage_term."
                                :body schema_export_usage_term}
-                          404 {:description "Not found."
-                               :body {:message s/Str}
-                               :example {:message "No such entity in :usage_terms as :id with <id>"}}}}}]])
+
+                          404 (sd/create-error-message-response  "Not Found." "No such entity in :usage_terms as :id with <id>")
+
+                          ;404 {:description "Not found."
+                          ;     :body {:message s/Str}
+                          ;     :example {:message "No such entity in :usage_terms as :id with <id>"}}
+
+                          }}}]])
 
 ; TODO usage_terms get the most recent one ?!?
 (def user-routes
