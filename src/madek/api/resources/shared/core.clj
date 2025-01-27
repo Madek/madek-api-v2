@@ -222,6 +222,46 @@
   )
 
 
+
+
+
+
+
+
+
+
+
+(defn create-example-response2
+  ([schema value]
+   {:content {"application/json" {:schema schema
+                                  :examples {:error {:value value}}}}})
+
+  ([description schema value]
+   {:description description
+    :content {"application/json" {:schema schema
+                                  :examples {:error {:value value}}}}})
+  )
+
+(defn create-error-message-response2
+
+  (  [message]
+   (create-example-response2 {:message string?}
+     {:message message}))
+
+  (  [description message]
+   (create-example-response2 description {:message string?}
+     {:message message}))
+  )
+
+
+
+
+
+
+
+
+
+
 (defn create-examples-response
   ([schema data]
    {:content {"application/json" {:schema schema

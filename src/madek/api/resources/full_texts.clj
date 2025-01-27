@@ -166,7 +166,7 @@
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
 
-                         406 (sd/create-error-message-response "Creation failed." "Could not create full_text.")
+                         406 (sd/create-error-message-response2 "Creation failed." "Could not create full_text.")
 
 
                          ;406 {:description "Creation failed."
@@ -185,7 +185,7 @@
              :responses {200 {:description "Returns the created full_text."
                               :body ::response-schema-def}
 
-                         406 (sd/create-error-message-response "Creation failed." "Could not create full_text.")
+                         406 (sd/create-error-message-response2 "Creation failed." "Could not create full_text.")
 
                          ;406 {:description "Creation failed."
                          ;     :body string?
@@ -203,7 +203,7 @@
             :responses {200 {:description "Returns the updated full_text."
                              :body ::response-schema-def}
 
-                        406 (sd/create-error-message-response "Update failed." "Could not update full_text.")
+                        406 (sd/create-error-message-response2 "Update failed." "Could not update full_text.")
 
 
                         ;406 {:description "Update failed."
@@ -222,7 +222,7 @@
                :responses {200 {:description "Returns the deleted full_text."
                                 :body ::response-schema-def}
 
-                           406 (sd/create-error-message-response "Deletion failed." "Could not delete full_text.")
+                           406 (sd/create-error-message-response2 "Deletion failed." "Could not delete full_text.")
 
 
                            ;406 {:description "Deletion failed."
@@ -372,13 +372,10 @@ where e.id=t.media_resource_id"
                          (wrap-find-full_text :media_entry_id true)]
             :responses {200 {:description "Returns the updated full_text."
                              :body s/Any}
-
                         406 {:description "Update failed."
                              :body {:media_resource_id s/Uuid
-                                    :text s/Str}}
-
-
-                        }
+                                    :text s/Str}
+                             }}
             :handler handle_update-full_texts}
 
       :delete {:summary (sd/sum_usr "Delete full_text.")
