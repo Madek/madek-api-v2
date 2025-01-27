@@ -59,12 +59,4 @@
    :parameters {:path {:id s/Str}}
    :responses {200 {:description "Person found."
                     :body schema}
-
-               404 (sd/create-error-message-response  "Not Found." "No such person found.")
-
-               ;404 {:description "Not found."
-               ;     :body {:message s/Str}
-               ;     :example {:message "No such person found."}}
-
-
-               }})
+               404 (sd/create-error-message-response  "Not Found." "No such person found.")   }})

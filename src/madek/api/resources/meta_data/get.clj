@@ -6,7 +6,6 @@
             [madek.api.resources.meta-data.index :as meta-data.index]
             [madek.api.resources.meta-data.meta-datum :as meta-datum]
             [madek.api.resources.meta_data.common :refer :all]
-            [madek.api.resources.shared.core :as fl]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -69,8 +68,6 @@
             mdr (db-get-meta-data-roles md-id tx)
             mdr-rids (map (-> :role_id) mdr)
             mdr-pids (map (-> :person_id) mdr)
-
-            p (println ">o> abc.mdr-rids" mdr-rids)
             roles (map #(dbh/query-eq-find-one :roles :id % tx) mdr-rids)
             people (map #(dbh/query-eq-find-one :people :id % tx) mdr-pids)
             result {:meta_data md
@@ -229,7 +226,7 @@
                                                  :body s/Any}}
                                 :parameters {:path {:meta_datum_id s/Uuid}}})
 
-(def media-entry.media_entry_id.meta-data {:summary (fl/?token? "Get meta-data for media-entry.L7")
+(def media-entry.media_entry_id.meta-data {:summary (sd/?token? "Get meta-data for media-entry.L7")
                                            :handler meta-data.index/get-index
                                            :description "- b24aaccf-ab37-491e-aebe-61e4f7762804"
                                            ; TODO 401s test fails
@@ -381,7 +378,7 @@
                                                    404 {:description "Not found."
                                                         :body s/Any}}})
 
-(def collection_id.meta-data {:summary (fl/?token? "Get meta-data for collection.")
+(def collection_id.meta-data {:summary (sd/?token? "Get meta-data for collection.")
                               :handler meta-data.index/get-index
                               :middleware [jqh/ring-wrap-add-media-resource
                                            jqh/ring-wrap-authorization-view]
@@ -492,7 +489,7 @@
    (s/optional-key :md_keywords) s/Any
    (s/optional-key :keywords) s/Any})
 
-(def collection_id.meta-data-related {:summary (fl/?token? "Get meta-data for collection.")
+(def collection_id.meta-data-related {:summary (sd/?token? "Get meta-data for collection.")
                                       :description (mslurp (io/resource "md/meta-data-related.md"))
                                       :handler handle_get-mr-meta-data-with-related
                                       :middleware [jqh/ring-wrap-add-media-resource
@@ -534,7 +531,7 @@
 ; 25a5d974-1855-458b-b6ba-cc3272a4865b
 ; media_content:portrayed_object_materials
 
-(def collection_id.meta-datum.meta_key_id {:summary (fl/?no-auth? "Get meta-data for collection and meta-key.")
+(def collection_id.meta-datum.meta_key_id {:summary (sd/?no-auth? "Get meta-data for collection and meta-key.")
 
                                            :description "
 81f47499-d7a9-4e28-9e58-c6e2db2334ea
@@ -600,7 +597,7 @@ madek_core:subtitle
 ; 25a5d974-1855-458b-b6ba-cc3272a4865b
 ; media_content:portrayed_object_materials
 
-(def collection.meta_key_id.keyword {:summary (fl/?token? "Get meta-data keywords for collection meta-key X1")
+(def collection.meta_key_id.keyword {:summary (sd/?token? "Get meta-data keywords for collection meta-key X1")
                                      :handler handle_get-meta-data-keywords
                                      :middleware [;wrap-me-add-meta-data
                                                   jqh/ring-wrap-add-media-resource
@@ -676,7 +673,7 @@ madek_core:subtitle
 
                                            :body PeopleEntry}}})
 
-(def media_entry_id.meta-data-related {:summary (fl/?token? "Get meta-data for media-entry. L8")
+(def media_entry_id.meta-data-related {:summary (sd/?token? "Get meta-data for media-entry. L8")
                                        :handler handle_get-mr-meta-data-with-related
                                        :middleware [jqh/ring-wrap-add-media-resource
                                                     jqh/ring-wrap-authorization-view]

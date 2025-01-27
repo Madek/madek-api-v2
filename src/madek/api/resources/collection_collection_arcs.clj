@@ -26,10 +26,7 @@
 
 (defn handle_get-arc [req]
   (let [query (arc-query req)
-        db-result (jdbc/execute! (:tx req) query)
-
-        te_print (println "db-result: " db-result)
-        te_print (println "db-result1: " (first db-result))]
+        db-result (jdbc/execute! (:tx req) query)]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
@@ -66,24 +63,14 @@
     (catcher/with-logging {}
       (let [parent-id (-> req :parameters :path :parent_id)
             child-id (-> req :parameters :path :child_id)
-
-            p (println ">o> abc1" parent-id (type parent-id))
-            p (println ">o> abc2" child-id (type child-id))
-
             data (-> req :parameters :body)
             ins-data (assoc data :parent_id parent-id :child_id child-id)
 
             p (println ">o> abc.ins-data" ins-data)
-
-            ;sql-map {:insert-into :collection_collection_arcs
-            ;         :values [ins-data]}
-            ;sql (-> sql-map sql-format)
-
             ins-data (if (nil? (:order ins-data))
                        (dissoc ins-data :order)
                        (let [ins-data (assoc ins-data "order" (:order ins-data))
                              ins-data (dissoc ins-data :order)] ins-data))
-
             query (-> (sql/insert-into :collection_collection_arcs)
                       (sql/values [ins-data])
                       (sql/returning :*)

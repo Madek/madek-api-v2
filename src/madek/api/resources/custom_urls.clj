@@ -168,8 +168,6 @@
            :handler handle_list-custom-urls
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Returns the custom_urls."
-                            ;:body s/Any
-
                             :body [{:id s/Str
                                     :media_entry_id (s/maybe s/Uuid)
                                     :collection_id (s/maybe s/Uuid)
@@ -179,7 +177,6 @@
                                     (s/optional-key :updator_id) s/Uuid
                                     (s/optional-key :created_at) s/Any
                                     (s/optional-key :updated_at) s/Any}]}
-
                        404 {:description "Not found."
                             :body s/Any}}
            :parameters {:query {(s/optional-key :full_data) s/Bool

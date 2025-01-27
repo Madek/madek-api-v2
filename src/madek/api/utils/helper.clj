@@ -61,7 +61,8 @@
                  (UUID/fromString value)
                  value)
                (catch Exception e
-                 (warn ">>> DEV-ERROR in to-uuid[value key], value=" value ", key=" key " exception=" (.getMessage e) ", continue with original value")
+                 (warn ">>> DEV-ERROR in to-uuid[value key], value=" value ", key=" key " exception=" (.getMessage e)
+                   ", continue with original value")
                  value))] res))
 
   ([value key table]

@@ -187,9 +187,6 @@
            :middleware [authorization/wrap-authorized-user]
            :coercion spec/coercion
            :responses {200 {:description "Returns the edit sessions."
-
-                            ;:body any?
-
                             :body :list/session
                             ;; TODO
                             ;{

@@ -50,19 +50,5 @@
    :middleware [wrap-authorize-admin!]
    :responses {200 {:description "Updated."
                     :body get-person/schema}
-
-
                404 (sd/create-error-message-response  "Not Found." "Person not found.")
-               409 (sd/create-error-message-response "Conflict." "Update of person failed")
-
-
-
-               ;404 {:description "Not found."
-               ;     :body {:message s/Str}
-               ;     :example {:message "Person not found."}}
-               ;409 {:description "Conflict."
-               ;     :body {:message s/Str}
-               ;     :example {:message "Update of person failed"}}
-
-
-               }})
+               409 (sd/create-error-message-response "Conflict." "Update of person failed")    }})

@@ -4,9 +4,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-
-   [madek.api.resources.shared.core :as fl]
-
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -187,7 +184,7 @@
   [["/"
     {:openapi {:tags ["app-settings *"] :security []}}
     ["app-settings"
-     {:get {:summary (fl/?no-auth? (sd/sum_pub "Get App Settings."))
+     {:get {:summary (sd/?no-auth? (sd/sum_pub "Get App Settings."))
             :handler handle_get-app-settings
             :swagger {:produces "application/json"}
             :content-type "application/json"

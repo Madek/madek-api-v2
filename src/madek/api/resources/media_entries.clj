@@ -5,12 +5,10 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.authorization :as authorization]
-
             [madek.api.constants :refer [FILE_STORAGE_DIR]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
-            [madek.api.resources.shared.core :as fl]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -462,14 +460,13 @@
             :middleware [authorization/wrap-authorized-user]
             ; cannot use schema, need to use spec for multiplart
             :coercion spec/coercion
-
             :responses {200 {:description "Returns the created media-entry."
                              :body any?}
                         406 {:description "Could not create media-entry."
                              :body any?}}}}]
 
    ["/:media_entry_id"
-    {:get {:summary (fl/?token? "Get media-entry for id. L2 b24aaccf-ab37-491e-aebe-61e4f7762804")
+    {:get {:summary (sd/?token? "Get media-entry for id. L2 b24aaccf-ab37-491e-aebe-61e4f7762804")
            :handler handle_get-media-entry
            :swagger {:produces "application/json"}
            :content-type "application/json"

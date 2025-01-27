@@ -4,7 +4,6 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
-
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -453,9 +452,7 @@
                        :meta_key_id s/Str
                        :person_id s/Uuid}}
    :responses {200 {:description "Returns the created meta-data people."
-                    ;:body s/Any
-
-                    :body ResponseSchema}}})
+                     :body ResponseSchema}}})
 
 (def media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position
   {:summary "Create meta-data role for media-entry. B1"

@@ -6,7 +6,6 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
-   [madek.api.resources.shared.core :as fl]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
@@ -232,20 +231,9 @@
             :coercion reitit.coercion.schema/coercion
             :responses {200 {:description "Returns the created meta-key."
                              :body schema_create-meta-key}
-
-
                         404 (sd/create-error-message-response  "Duplicate key error"
                               "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists.")
                         500 (sd/create-error-message-response "Internal Server Error" "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\").")
-
-
-                        ;404 {:description "Duplicate key error"
-                        ;     :body {:message s/Str}
-                        ;     :example {:msg "ERROR: duplicate key value violates unique constraint \\\"meta_keys_pkey\\\"\\n  Detail: Key (id)=(copyright:test_me_now31) already exists."}}
-                        ;500 {:description "Internal Server Error"
-                        ;     :body {:message s/Str}
-                        ;     :example {:msg "ERROR: new row for relation \"meta_keys\" violates check constraint \"meta_key_id_chars\"\n  Detail: Failing row contains (copyright-test_me_now10, t, MetaDatum::TextDate, t, 0, t, t, copyright, string, {People}, line, Keyword, \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\", \"de\"=>\"string\", \"en\"=>\"string\")."}}
-
                         406 {:description "Creation failed"
                              :body s/Any}}}}]
 
@@ -264,16 +252,7 @@
                             :body ::schema_export-meta-key-adm}
                        404 {:description "No entry found for the given id"
                             :body map?}
-
-
-                       422 (sd/create-error-message-response-spec "Wrong format" "Wrong meta_key_id format! See documentation.")
-
-                       ;422 {:description "Wrong format"
-                       ;     :body map?
-                       ;     :example {:message "Wrong meta_key_id format! See documentation. (fdas)"}}
-
-
-                       }}
+                       422 (sd/create-error-message-response-spec "Wrong format" "Wrong meta_key_id format! See documentation.")     }}
 
      :put {:summary (sd/sum_adm "Update meta-key.")
            :handler handle_update_meta-key
@@ -288,15 +267,7 @@
                         :body ::schema_update-meta-key}
            :responses {200 {:description "Returns the updated meta-key."
                             :body ::schema_export-meta-key-adm}
-
-                       406 (sd/create-error-message-response-spec "Update failed" "Could not update meta_key.")
-
-                       ;406 {:description "Update failed"
-                       ;     :body string?
-                       ;     :example {:message "Could not update meta_key."}}
-
-
-                       }}
+                       406 (sd/create-error-message-response-spec "Update failed" "Could not update meta_key.")  }}
 
      :delete {:summary (sd/sum_adm "Delete meta-key.")
               :handler handle_delete_meta-key
@@ -306,14 +277,7 @@
               :parameters {:path ::meta-keys-id-query-def}
               :responses {200 {:description "Returns the deleted meta-key."
                                :body ::schema_export-meta-key-adm}
-
-
                           406 (sd/create-error-message-response-spec "Entry not found" "No such entity in :meta_keys as :id with copyright:test_me_now22")
-
-                          ;406 {:description "Entry not found"
-                          ;     :body string?
-                          ;     :example {:message "No such entity in :meta_keys as :id with copyright:test_me_now22"}}
-
                           422 {:description "Wrong format"
                                :body any?}}}}]])
 
@@ -322,7 +286,7 @@
   ["/"
    {:openapi {:tags ["meta-keys *"]}}
    ["meta-keys"
-    {:get {:summary (fl/?no-auth? (sd/sum_usr_pub "Get all meta-key ids"))
+    {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get all meta-key ids"))
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
            :parameters {:query sp/schema_pagination_opt}
@@ -332,7 +296,7 @@
                             :body ::meta-keys-id-response-usr-def}}}}]
 
    ["meta-keys/:id"
-    {:get {:summary (fl/?no-auth? (sd/sum_usr_pub (v "Get meta-key by id")))
+    {:get {:summary (sd/?no-auth? (sd/sum_usr_pub (v "Get meta-key by id")))
            :description "Get meta-key by id. Returns 404, if no such meta-key exists."
            :content-type "application/json"
            :accept "application/json"
@@ -343,20 +307,8 @@
            :parameters {:path ::meta-keys-id-query-def}
            :responses {200 {:description "Returns the meta-key."
                             :body ::schema_export-meta-key-usr}
-
-
                        404 (sd/create-error-message-response-spec  "No entry found for the given id"
                              "No such entity in :meta_keys as :id with not-existing:key")
-                       422 (sd/create-error-message-response-spec  "Wrong format" "Wrong meta_key_id format! See documentation.")
-
-                       ;404 {:description "No entry found for the given id"
-                       ;     :body map?
-                       ;     :example {:message "No such entity in :meta_keys as :id with not-existing:key"}}
-                       ;422 {:description "Wrong format"
-                       ;     :body map?
-                       ;     :example {:message "Wrong meta_key_id format! See documentation. (fdas)"}}
-
-
-                       }}}]])
+                       422 (sd/create-error-message-response-spec  "Wrong format" "Wrong meta_key_id format! See documentation.")  }}}]])
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
