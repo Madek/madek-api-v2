@@ -112,9 +112,8 @@
                               :created_at s/Any
                               :email_address s/Str
                               (s/optional-key :authentication-method) s/Str}}
-                  401 {:description "Creation failed."
-                       :body {:message s/Str}
-                       :example {:message "Not authorized"}}}}}]])
+                  401 (fl/create-error-message-response "Creation failed." "Not authorized")
+                  }}}]])
 
 (def swagger-routes
   ["/api-v2"

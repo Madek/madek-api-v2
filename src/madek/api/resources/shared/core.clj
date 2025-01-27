@@ -195,8 +195,9 @@
 (defn ?no-auth? [text] (if show-mr-info (apply str text " [mr / IST / no-auth]")))
 
 
-(defn create-example-response
 
+
+(defn create-example-response
   ([schema value]
    {:content {"application/json" {:schema schema
                                   :examples {:error {:value value}}}}})
@@ -206,6 +207,22 @@
     :content {"application/json" {:schema schema
                                   :examples {:error {:value value}}}}})
   )
+
+(defn create-error-message-response
+
+(  [message]
+  (create-example-response {:type "object"
+                            :properties {:message {:type "string"}}}
+                           {:message message}))
+
+  (  [description message]
+  (create-example-response description {:type "object"
+                            :properties {:message {:type "string"}}}
+                           {:message message}))
+
+
+  )
+
 
 (defn create-examples-response
   ([schema data]
