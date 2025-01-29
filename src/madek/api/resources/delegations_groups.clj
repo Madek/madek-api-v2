@@ -20,7 +20,7 @@
   [req]
   (let [delegation_id (-> req :parameters :query :delegation_id)
         group_id (-> req :parameters :query :group_id)
-        col-sel (if (true? (-> req :parameters :query :full-data))
+        col-sel (if (true? (-> req :parameters :query :full_data))
                   (sql/select :*)
                   (sql/select :group_id))
         base-query (-> col-sel (sql/from :delegations_groups))
@@ -156,7 +156,7 @@
                         :body s/Any}}
        :parameters {:query {(s/optional-key :group_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid
-                            (s/optional-key :full-data) s/Bool}}}}]
+                            (s/optional-key :full_data) s/Bool}}}}]
 
     ["groups/delegation/groups/:delegation_id/:group_id"
      {:post
