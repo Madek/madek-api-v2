@@ -5,7 +5,7 @@ The madek-api2 is a JSON API for Madek.
 
 ## API v2 TODOs
 
-* Schemas:   
+* Schemas:
 
     * incomplete and too unspecific in many places
 
@@ -76,7 +76,7 @@ export http_resources_scope=ADMIN
 **Clojure-tests** can be triggered manually by: (not integrated in CI)
 ```bash
  clojure -M:test
-  
+
  clojure -M:test  madek.api.pagination-test.pagination-test.clj
  clojure -M:test test/*
 ```
@@ -96,10 +96,10 @@ Use `standardrb` and  `standardrb --fix`.
 
 ### API Docs (openApi)
 
-Swagger resource documentation http://localhost:3104/api-docs/index.html
+Swagger resource documentation http://localhost:3104/api-v2/api-docs/index.html
 
 #### Authentication & accessability
-1. **BasicAuth** by login/email & password (db::auth_systems_users.data) 
+1. **BasicAuth** by login/email & password (db::auth_systems_users.data)
    1. Distinguish between user/admin-endpoints (db:admin)
 2. **Token**
    1. Distinguish between user OR admin-endpoints (db:admin)
@@ -122,7 +122,7 @@ Create a config/settings.local.yml with content similar like:
 
 
 ### Config-parameters
-- `ZERO_BASED_PAGINATION`   
+- `ZERO_BASED_PAGINATION`
   Pagination: used to define `zero-based` OR `one-based pagination`
 
 
