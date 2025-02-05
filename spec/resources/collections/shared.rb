@@ -47,7 +47,7 @@ shared_context :full_setup_for_collections do
   let :client do
     puts "user.login: #{user.login}"
     puts "user.password: #{user.password}"
-    basic_auth_plain_faraday_json_client(user.login, user.password)
+    wtoken_header_plain_faraday_json_client(@token.token)
   end
 
   let :media_entries do

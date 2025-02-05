@@ -99,9 +99,7 @@ Use `standardrb` and  `standardrb --fix`.
 Swagger resource documentation http://localhost:3104/api-docs/index.html
 
 #### Authentication & accessability
-1. **BasicAuth** by login/email & password (db::auth_systems_users.data) 
-   1. Distinguish between user/admin-endpoints (db:admin)
-2. **Token**
+1. **Token**
    1. Distinguish between user OR admin-endpoints (db:admin)
    2. Distinguish between read OR modifiable-endpoints (db:token.scope_read/scope_write)
 

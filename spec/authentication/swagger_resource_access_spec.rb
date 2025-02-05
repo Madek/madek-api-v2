@@ -40,38 +40,19 @@ shared_context :user_token_without_creds_entity do |ctx|
   end
 end
 
-# ###################### BASIC-AUTH NOT SUPPORTED ANYMORE ####################################
+# ###################### INVALID TOKEN TESTS #############################################
 
-shared_context :test_proper_user_basic_auth do
+shared_context :test_proper_public_user do
   describe "Test access to api-docs and endpoints" do
-    context "with valid basicAuth-User (no rproxy-basicAuth)" do
+    context "with invalid db-token-User" do
       {
-        "/api-v2/app-settings" => 200, # public endpoint
-        "/api-v2/auth-info" => 401,
-
         "/api-v2/api-docs/index.html" => 200,
         "/api-v2/api-docs/index.css" => 200,
         "/api-v2/api-docs/swagger-ui.css" => 200,
         "/api-v2/api-docs/openapi.json" => 200
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get(url)
-          expect(response.status).to eq(code)
-        end
-      end
-    end
-
-    context "with invalid db-basicAuth-User" do
-      {
-        "/api-v2/app-settings" => 200, # public endpoint
-
-        "/api-v2/api-docs/index.html" => 200,
-        "/api-v2/api-docs/index.css" => 200,
-        "/api-v2/api-docs/swagger-ui.css" => 200,
-        "/api-v2/api-docs/openapi.json" => 200
-      }.each do |url, code|
-        it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
+          response = wtoken_header_plain_faraday_json_client_get("Not-existing-user", url)
           expect(response.status).to eq(code)
         end
       end
@@ -80,10 +61,21 @@ shared_context :test_proper_user_basic_auth do
         "/api-v2/auth-info" => 401
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client("Not-existing-user", "pw").get(url)
+          response = wtoken_header_plain_faraday_json_client_get("Not-existing-user", url)
 
           expect(response.status).to eq(code)
-          expect(response.body["message"]).to eq("Not authorized")
+          expect(response.body["message"]).to eq("Access denied due invalid token")
+        end
+      end
+
+      {
+        "/api-v2/app-settings" => 401
+      }.each do |url, code|
+        it "accessing #{url}    results in expected status-code" do
+          response = wtoken_header_plain_faraday_json_client_get("Not-existing-user", url)
+
+          expect(response.status).to eq(code)
+          expect(response.body["message"]).to eq("Access denied due invalid token")
         end
       end
     end
@@ -120,7 +112,7 @@ end
 
 describe "/auth-info resource" do
   context "Access to api-docs" do
-    include_context :user_entity, :test_proper_user_basic_auth
+    include_context :user_entity, :test_proper_public_user
   end
 end
 

@@ -85,7 +85,7 @@
   (if-let [token-secret (find-token-secret-in-header request)]
     (if-let [user-token (find-user-token-by-some-secret [token-secret] (:tx request))]
       (authenticate user-token handler request)
-      (create-response "No token for this token-secret found!"))
+      (create-response "Access denied due invalid token"))
     (handler request)))
 
 (defn wrap [handler]

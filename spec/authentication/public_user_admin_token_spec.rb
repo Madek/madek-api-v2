@@ -82,7 +82,7 @@ end
 
 ### TEST ENDPOINTS WITH MADEK-USER ##########################################
 
-shared_context :test_proper_user_basic_auth do
+shared_context :test_proper_public_user do
   describe "2) Test status-code as madek-user " do
     it "against POST endpoints " do
       user_url = "/api-v2/admin/full_text/"
@@ -140,7 +140,7 @@ shared_context :test_proper_user_basic_auth do
 
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get(url)
+          response = plain_faraday_json_client.get(url)
           expect(response.status).to eq(code)
         end
       end
@@ -161,8 +161,8 @@ describe "/auth-info resource" do
     end
   end
 
-  context "Basic Authentication" do
-    include_context :user_entity, :test_proper_user_basic_auth
+  context "Variants of authentication" do
+    include_context :user_entity, :test_proper_public_user
   end
 end
 

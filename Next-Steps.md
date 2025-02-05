@@ -16,7 +16,7 @@ Done
 Todo
 --
 1. Swagger-UI
-   1. Testen von Auth-Interface für BasicAuth & Token
+   1. Testen von Auth-Interface für Token
    2. Swagger-UI-Fields werden anders definiert & reitit.schema-Validierung muss anscheinend 
       via primärer Middlewarehandler validiert werden. Testen via UI & cUrl
    3. Generelle Verwendung von:
