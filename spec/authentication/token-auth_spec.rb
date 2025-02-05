@@ -30,9 +30,9 @@ describe "API-Token Authentication" do
           scope_write: true
       end
 
-      context "used in basic auth" do
+      context "used in token auth" do
         let :client do
-          basic_auth_plain_faraday_json_client(token.token, nil)
+          wtoken_header_plain_faraday_json_client(token.token)
         end
         it "accessing auth-info results in 401 because basic" do
           expect(response.status).to be == 401
@@ -44,9 +44,9 @@ describe "API-Token Authentication" do
           token.update! revoked: true
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           let :client do
-            basic_auth_plain_faraday_json_client(token.token, nil)
+            wtoken_header_plain_faraday_json_client(token.token)
           end
           it "accessing auth-info results in 401" do
             expect(response.status).to be == 401
@@ -57,7 +57,7 @@ describe "API-Token Authentication" do
 
     context "initially unrevoked token " do
       include_context :json_client_for_authenticated_token_user do
-        context "used in basic auth" do
+        context "used in token auth" do
           it "accessing auth-info results in 200" do
             expect(response.status).to be == 200
           end
@@ -68,7 +68,7 @@ describe "API-Token Authentication" do
             token.update! revoked: true
           end
 
-          context "used in basic auth" do
+          context "used in token auth" do
             it "accessing auth-info results in 401" do
               expect(response.status).to be == 401
             end
@@ -84,9 +84,9 @@ describe "API-Token Authentication" do
             scope_write: true, expires_at: (Time.zone.now - 1.day)
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           let :client do
-            basic_auth_plain_faraday_json_client(token.token, nil)
+            wtoken_header_plain_faraday_json_client(token.token)
           end
           it "accessing auth-info results in 401" do
             expect(response.status).to be == 401
@@ -97,9 +97,9 @@ describe "API-Token Authentication" do
           before :each do
             token.update! expires_at: (Time.zone.now + 1.day)
           end
-          context "used in basic auth" do
+          context "used in token auth" do
             let :client do
-              basic_auth_plain_faraday_json_client(token.token, nil)
+              wtoken_header_plain_faraday_json_client(token.token)
             end
             it "accessing auth-info results in 401" do
               expect(response.status).to be == 401
@@ -111,7 +111,7 @@ describe "API-Token Authentication" do
 
     context "read only token connection" do
       include_context :json_client_for_authenticated_token_user_read do
-        context "connection via token as basic auth user" do
+        context "connection via token as user" do
           it "enables to read the auth-info" do
             expect(response.status).to be == 200
           end
@@ -152,25 +152,25 @@ describe "API-Token Authentication" do
       end
 
       context "using an authorized token " do
-        context "used in basic auth" do
+        context "used in token auth" do
           it "accessing auth-info results in 200" do
             expect(response.status).to be == 200
           end
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           it "accessing auth-info results in 200" do
             expect(response.status).to be == 200
           end
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           it "accessing auth-info results in 200" do
             expect(response.status).to be == 200
           end
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           it "accessing auth-info results in 200" do
             expect(response.status).to be == 200
           end
@@ -186,25 +186,25 @@ describe "API-Token Authentication" do
       end
 
       context "using an authorized token " do
-        context "used in basic auth" do
+        context "used in token auth" do
           it "access forbidden auth-info results in 403" do
             expect(response.status).to be == 403
           end
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           it "access forbidden auth-info results in 403" do
             expect(response.status).to be == 403
           end
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           it "access forbidden auth-info results in 403" do
             expect(response.status).to be == 403
           end
         end
 
-        context "used in basic auth" do
+        context "used in token auth" do
           it "access forbidden auth-info results in 403" do
             expect(response.status).to be == 403
           end

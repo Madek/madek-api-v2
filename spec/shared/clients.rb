@@ -1,6 +1,6 @@
 shared_context :json_client_for_authenticated_entity do
   let :client do
-    basic_auth_plain_faraday_json_client(entity.login, entity.password)
+    wtoken_header_plain_faraday_json_client(token.token)
   end
 end
 
@@ -168,6 +168,6 @@ shared_context :authenticated_json_client do |_ctx|
   end
 
   let :authenticated_json_client do
-    basic_auth_plain_faraday_json_client(client_entity.login, client_entity.password)
+    wtoken_header_plain_faraday_json_client(token.token)
   end
 end

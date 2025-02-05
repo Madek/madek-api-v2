@@ -8,7 +8,8 @@ end
 
 shared_context :auth_media_entry_resource_via_plain_json do
   let :response do
-    basic_auth_plain_faraday_json_client(user.login, user.password).get("/api-v2/media-entry/#{media_entry.id}")
+    # wtoken_header_plain_faraday_json_client(user.login, user.password).get("/api-v2/media-entry/#{media_entry.id}")
+    wtoken_header_plain_faraday_json_client_get(@token.token, "/api-v2/media-entry/#{media_entry.id}")
   end
 end
 

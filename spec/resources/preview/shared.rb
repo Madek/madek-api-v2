@@ -39,7 +39,7 @@ end
 
 shared_context :auth_preview_resource_via_json do
   def auth_client_for_preview
-    basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
+    wtoken_header_plain_faraday_json_client(@token.token)
   end
   let :response do
     auth_client_for_preview.get("/api-v2/previews/#{@preview.id}")

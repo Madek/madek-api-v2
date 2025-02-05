@@ -28,7 +28,7 @@ end
 shared_context :test_proper_user_basic_auth do
   context "with basicAuth-user" do
     let :client do
-      basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
+      wtoken_header_plain_faraday_json_client(@token.token)
     end
 
     it "combined with other filter option" do
@@ -62,7 +62,7 @@ end
 shared_context :test_proper_admin_basic_auth do
   context "with admin-user" do
     let :client do
-      basic_auth_plain_faraday_json_client(@entity.login, @entity.password)
+      wtoken_header_plain_faraday_json_client(@token.token)
     end
 
     it "combined with other filter option" do

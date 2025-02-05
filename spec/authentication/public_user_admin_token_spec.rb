@@ -140,7 +140,8 @@ shared_context :test_proper_user_basic_auth do
 
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
-          response = basic_auth_plain_faraday_json_client(@entity.login, @entity.password).get(url)
+          # response = wtoken_header_plain_faraday_json_client(@token.token).get(url)
+          response = wtoken_header_plain_faraday_json_client_get(@token.token, url)
           expect(response.status).to eq(code)
         end
       end
