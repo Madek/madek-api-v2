@@ -93,7 +93,7 @@
                 ;              authentication/wrap
                               ;wrap-authorize-admin!
                 ;              ]}
-   {:openapi {:security [{:basicAuth [] "auth" []}]}}
+   {:openapi {:security [{"auth" []}]}}
 
    admins/ring-routes
    app-settings/admin-routes
