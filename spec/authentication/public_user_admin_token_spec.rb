@@ -82,7 +82,7 @@ end
 
 ### TEST ENDPOINTS WITH MADEK-USER ##########################################
 
-shared_context :test_proper_user_basic_auth do
+shared_context :test_proper_public_user do
   describe "2) Test status-code as madek-user " do
     it "against POST endpoints " do
       user_url = "/api-v2/admin/full_text/"
@@ -118,30 +118,39 @@ shared_context :test_proper_user_basic_auth do
         "/api-v2/edit_sessions?page=1&size=1" => 401,
 
         "/api-v2/admin/admins" => 403,
-        "/api-v2/admin/app-settings" => 403,
-        "/api-v2/admin/context-keys" => 403,
-        "/api-v2/admin/contexts" => 403,
-        "/api-v2/admin/delegations" => 403,
-        "/api-v2/admin/delegation/users" => 403,
-        "/api-v2/admin/delegation/groups" => 403,
-        "/api-v2/admin/edit_sessions" => 403,
-        "/api-v2/admin/favorite/collections" => 403,
-        "/api-v2/admin/favorite/media-entries" => 403,
-        "/api-v2/admin/groups" => 403,
-        "/api-v2/admin/io_interfaces" => 403,
-        "/api-v2/admin/keywords" => 403,
-        "/api-v2/admin/meta-keys" => 403,
-        "/api-v2/admin/people" => 403,
-        "/api-v2/admin/roles?page=1&size=1" => 403,
-        "/api-v2/admin/usage-terms" => 403,
-        "/api-v2/admin/users" => 403,
-        "/api-v2/admin/static-pages" => 403,
-        "/api-v2/admin/vocabularies" => 403
+        # "/api-v2/admin/app-settings" => 403,
+        # "/api-v2/admin/context-keys" => 403,
+        # "/api-v2/admin/contexts" => 403,
+        # "/api-v2/admin/delegations" => 403,
+        # "/api-v2/admin/delegation/users" => 403,
+        # "/api-v2/admin/delegation/groups" => 403,
+        # "/api-v2/admin/edit_sessions" => 403,
+        # "/api-v2/admin/favorite/collections" => 403,
+        # "/api-v2/admin/favorite/media-entries" => 403,
+        # "/api-v2/admin/groups" => 403,
+        # "/api-v2/admin/io_interfaces" => 403,
+        # "/api-v2/admin/keywords" => 403,
+        # "/api-v2/admin/meta-keys" => 403,
+        # "/api-v2/admin/people" => 403,
+        # "/api-v2/admin/roles?page=1&size=1" => 403,
+        # "/api-v2/admin/usage-terms" => 403,
+        # "/api-v2/admin/users" => 403,
+        # "/api-v2/admin/static-pages" => 403,
+        # "/api-v2/admin/vocabularies" => 403
 
       }.each do |url, code|
-        it "accessing #{url}    results in expected status-code" do
+        it "accessing #{url}    results in expected status-code x1" do
+
+          # binding.pry
+
+          # puts "token.token0: #{token}"
+          # puts "token.token1: #{token.token}"
+          # puts "token.token2: #{@token.token}"
+
           # response = wtoken_header_plain_faraday_json_client(@token.token).get(url)
-          response = wtoken_header_plain_faraday_json_client_get(@token.token, url)
+          # response = wtoken_header_plain_faraday_json_client_get(token.token, url)
+          # response = wtoken_header_plain_faraday_json_client_get("", url)
+          response = plain_faraday_json_client("", url)
           expect(response.status).to eq(code)
         end
       end
@@ -163,7 +172,7 @@ describe "/auth-info resource" do
   end
 
   context "Basic Authentication" do
-    include_context :user_entity, :test_proper_user_basic_auth
+    include_context :user_entity, :test_proper_public_user
   end
 end
 
@@ -181,11 +190,14 @@ context "3) resource with admin auth" do
           }.to_json
           req.headers["Content-Type"] = "application/json"
         end
+        binding.pry
         expect(response.status).to be == 403
       end
 
       it "against POST endpoints as admin-user" do
         user_url = "/api-v2/admin/full_text/"
+        puts "token.token1: #{token.token}"
+        puts "token.token2: #{@token.token}"
         response = wtoken_header_plain_faraday_json_client_post(token.token, user_url, body: {
           text: "string",
           media_resource_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"

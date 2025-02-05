@@ -1,10 +1,11 @@
 shared_context :json_client_for_authenticated_entity do
   let :client do
+    binding.pry
     wtoken_header_plain_faraday_json_client(token.token)
   end
 end
 
-shared_context :json_client_for_authenticated_user do |ctx|
+shared_context :json_client_for_public_user do |ctx|
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
@@ -13,7 +14,12 @@ shared_context :json_client_for_authenticated_user do |ctx|
     user
   end
 
-  include_context :json_client_for_authenticated_entity
+  # include_context :json_client_for_authenticated_entity
+  let :client do
+    # binding.pry
+    plain_faraday_json_client()
+  end
+
 
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx

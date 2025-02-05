@@ -12,11 +12,43 @@ shared_context :user_entity do |ctx|
   end
 end
 
+shared_context :user_token_entity do |ctx|
+  context "for Database User" do
+    before :each do
+      @entity = FactoryBot.create :user, password: "TOPSECRET"
+      # FactoryBot.create :admin, user: @entity
+      @token = ApiToken.create user: @entity, scope_read: true, scope_write: true
+
+    end
+    let :entity_type do
+      "User"
+    end
+    include_context ctx if ctx
+  end
+  end
+
+shared_context :admin_token_entity do |ctx|
+  context "for Database User" do
+    before :each do
+      @entity = FactoryBot.create :user, password: "TOPSECRET"
+      FactoryBot.create :admin, user: @entity
+      @token = ApiToken.create user: @entity, scope_read: true, scope_write: true
+
+    end
+    let :entity_type do
+      "User"
+    end
+    include_context ctx if ctx
+  end
+  end
+
 shared_context :admin_entity do |ctx|
   context "for Database User" do
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
       FactoryBot.create :admin, user: @entity
+      # @token = ApiToken.create user: @entity, scope_read: true, scope_write: true
+
     end
     let :entity_type do
       "User"
@@ -25,9 +57,15 @@ shared_context :admin_entity do |ctx|
   end
 end
 
-shared_context :test_proper_user_basic_auth do
-  context "with basicAuth-user" do
+
+#######################################################################################################################
+
+# Admin tests
+
+shared_context :test_proper_token_user do
+  context "with admin-user" do
     let :client do
+      # binding.pry
       wtoken_header_plain_faraday_json_client(@token.token)
     end
 
@@ -42,7 +80,7 @@ shared_context :test_proper_user_basic_auth do
       end
     end
 
-    it "combined with other filter option2" do
+    it "combined with other filter option" do
       @collection = create_collections_2_visible_2_deleted @entity
 
       response = client.get("/api-v2/collections?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
@@ -55,14 +93,17 @@ shared_context :test_proper_user_basic_auth do
   end
 end
 
+
 #######################################################################################################################
 
 # Admin tests
 
-shared_context :test_proper_admin_basic_auth do
+shared_context :test_proper_public_user do
   context "with admin-user" do
     let :client do
-      wtoken_header_plain_faraday_json_client(@token.token)
+      # binding.pry
+      # wtoken_header_plain_faraday_json_client(@token.token)
+      plain_faraday_json_client()
     end
 
     it "combined with other filter option" do
@@ -105,8 +146,10 @@ describe "/auth-info resource" do
   end
 
   context "Basic Authentication" do
-    include_context :user_entity, :test_proper_user_basic_auth
-    include_context :admin_entity, :test_proper_admin_basic_auth
+    include_context :user_entity, :test_proper_public_user
+    include_context :admin_entity, :test_proper_public_user
+    include_context :user_token_entity, :test_proper_token_user
+    include_context :admin_token_entity, :test_proper_token_user
   end
 end
 

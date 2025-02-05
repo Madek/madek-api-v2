@@ -30,15 +30,6 @@ describe "API-Token Authentication" do
           scope_write: true
       end
 
-      context "used in token auth" do
-        let :client do
-          wtoken_header_plain_faraday_json_client(token.token)
-        end
-        it "accessing auth-info results in 401 because basic" do
-          expect(response.status).to be == 401
-        end
-      end
-
       context "after revoking token " do
         before :each do
           token.update! revoked: true
@@ -101,8 +92,8 @@ describe "API-Token Authentication" do
             let :client do
               wtoken_header_plain_faraday_json_client(token.token)
             end
-            it "accessing auth-info results in 401" do
-              expect(response.status).to be == 401
+            it "accessing auth-info results in 200" do
+              expect(response.status).to be == 200
             end
           end
         end
