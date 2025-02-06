@@ -1,10 +1,10 @@
 shared_context :json_client_for_authenticated_entity do
   let :client do
-    basic_auth_plain_faraday_json_client(entity.login, entity.password)
+    wtoken_header_plain_faraday_json_client(token.token)
   end
 end
 
-shared_context :json_client_for_authenticated_user do |ctx|
+shared_context :json_client_for_public_user do |ctx|
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
@@ -13,7 +13,9 @@ shared_context :json_client_for_authenticated_user do |ctx|
     user
   end
 
-  include_context :json_client_for_authenticated_entity
+  let :client do
+    plain_faraday_json_client
+  end
 
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx
@@ -69,7 +71,7 @@ shared_context :json_client_for_authenticated_token_owner_user do |ctx|
     FactoryBot.create :user, password: "TOPSECRET"
   end
 
-  let :user_token do
+  let :token do
     ApiToken.create user: user, scope_read: true, scope_write: true
   end
 
@@ -82,7 +84,7 @@ shared_context :json_client_for_authenticated_token_owner_user do |ctx|
   end
 
   let :user_client do
-    wtoken_header_plain_faraday_json_client(user_token.token)
+    wtoken_header_plain_faraday_json_client(token.token)
   end
 
   let :user_client_no_creds do
@@ -168,6 +170,6 @@ shared_context :authenticated_json_client do |_ctx|
   end
 
   let :authenticated_json_client do
-    basic_auth_plain_faraday_json_client(client_entity.login, client_entity.password)
+    plain_faraday_json_client
   end
 end

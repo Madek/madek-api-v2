@@ -16,7 +16,6 @@ Metrics/LineLength:
 
 Style/FileName:
   Exclude:
-    - 'spec/authentication/basic-auth_spec.rb'
     - 'spec/authentication/session-auth_spec.rb'
     - 'spec/resources/media-entry/meta-data_spec.rb'
     - 'spec/resources/media-entry_spec.rb'
