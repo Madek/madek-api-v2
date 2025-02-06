@@ -7,7 +7,8 @@ shared_context :setup_owner_user_for_token_access_base do
   let(:owner_token) { ApiToken.create(user: owner, scope_read: true, scope_write: true, description: "owner_token") }
 
   let(:user) { FactoryBot.create(:user, password: "password", notes: "user") }
-  let(:user_token) { ApiToken.create(user: user, scope_read: true, scope_write: true, description: "user_token") }
+  let(:user_token) { ApiToken.create(user: user, scope_read: true, scope_write: true, description: "token") }
+  let(:token) { user_token }
 end
 
 shared_context :setup_owner_user_for_token_access do
@@ -28,7 +29,7 @@ describe "Getting a media-entry resource without authentication" do
     context :via_plain_json do
       include_context :auth_media_entry_resource_via_plain_json
       it "is forbidden 401" do
-        expect(response.status).to eq 401
+        expect(response.status).to eq 403
       end
     end
 
