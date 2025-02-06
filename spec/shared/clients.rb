@@ -1,6 +1,5 @@
 shared_context :json_client_for_authenticated_entity do
   let :client do
-    binding.pry
     wtoken_header_plain_faraday_json_client(token.token)
   end
 end
@@ -14,12 +13,9 @@ shared_context :json_client_for_public_user do |ctx|
     user
   end
 
-  # include_context :json_client_for_authenticated_entity
   let :client do
-    # binding.pry
-    plain_faraday_json_client()
+    plain_faraday_json_client
   end
-
 
   describe "JSON `client` for authenticated `user`" do
     include_context ctx if ctx
@@ -174,7 +170,6 @@ shared_context :authenticated_json_client do |_ctx|
   end
 
   let :authenticated_json_client do
-    # wtoken_header_plain_faraday_json_client(token.token)
-    plain_faraday_json_client()
+    plain_faraday_json_client
   end
 end

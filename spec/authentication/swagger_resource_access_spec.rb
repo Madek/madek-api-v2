@@ -70,7 +70,7 @@ shared_context :test_proper_public_user do
 
       {
         "/api-v2/app-settings" => 401
-        }.each do |url, code|
+      }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = wtoken_header_plain_faraday_json_client_get("Not-existing-user", url)
 

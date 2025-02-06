@@ -2,7 +2,6 @@ require "spec_helper"
 
 shared_context :auth_media_file_resource_via_json do
   let :client do
-    # wtoken_header_plain_faraday_json_client(@entity.login, @entity.password)
     wtoken_header_plain_faraday_json_client(@token.token)
   end
   let :url do

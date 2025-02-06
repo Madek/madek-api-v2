@@ -23,7 +23,7 @@ shared_context :user_token_entity do |ctx|
     end
     include_context ctx if ctx
   end
-  end
+end
 
 shared_context :admin_token_entity do |ctx|
   context "for Database User" do
@@ -37,7 +37,7 @@ shared_context :admin_token_entity do |ctx|
     end
     include_context ctx if ctx
   end
-  end
+end
 
 shared_context :admin_entity do |ctx|
   context "for Database User" do
@@ -52,13 +52,12 @@ shared_context :admin_entity do |ctx|
   end
 end
 
-
 #######################################################################################################################
 
 # Admin tests
 
 shared_context :test_proper_token_user do
-  context "with admin-user" do
+  context "with token-user" do
     let :client do
       wtoken_header_plain_faraday_json_client(@token.token)
     end
@@ -87,15 +86,14 @@ shared_context :test_proper_token_user do
   end
 end
 
-
 #######################################################################################################################
 
 # Admin tests
 
 shared_context :test_proper_public_user do
-  context "with admin-user" do
+  context "with public-user" do
     let :client do
-      plain_faraday_json_client()
+      plain_faraday_json_client
     end
 
     it "combined with other filter option" do

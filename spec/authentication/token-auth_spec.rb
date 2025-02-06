@@ -102,7 +102,7 @@ describe "API-Token Authentication" do
 
     context "read only token connection" do
       include_context :json_client_for_authenticated_token_user_read do
-        context "connection via token as user" do
+        context "connection via token as token-user" do
           it "enables to read the auth-info" do
             expect(response.status).to be == 200
           end

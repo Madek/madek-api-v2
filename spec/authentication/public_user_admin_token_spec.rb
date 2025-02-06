@@ -140,17 +140,6 @@ shared_context :test_proper_public_user do
 
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code x1" do
-
-          # binding.pry
-
-          # puts "token.token0: #{token}"
-          # puts "token.token1: #{token.token}"
-          # puts "token.token2: #{@token.token}"
-
-          # response = wtoken_header_plain_faraday_json_client(@token.token).get(url)
-          # response = wtoken_header_plain_faraday_json_client_get(token.token, url)
-          # response = wtoken_header_plain_faraday_json_client_get("", url)
-          # response = plain_faraday_json_client("", url)
           response = plain_faraday_json_client.get(url)
           expect(response.status).to eq(code)
         end
@@ -182,9 +171,6 @@ end
 context "3) resource with admin auth" do
   describe "Test status-code as public-user " do
     include_context :json_client_for_authenticated_token_admin do
-
-      # let(:token) { @token }
-
       it "against POST endpoints " do
         user_url = "/api-v2/admin/full_text/"
         response = plain_faraday_json_client.post(user_url) do |req|
@@ -194,14 +180,11 @@ context "3) resource with admin auth" do
           }.to_json
           req.headers["Content-Type"] = "application/json"
         end
-        binding.pry
         expect(response.status).to be == 403
       end
 
       it "against POST endpoints as admin-user" do
         user_url = "/api-v2/admin/full_text/"
-        # puts "token.token1: #{token.token}"
-        # puts "token.token2: #{@token.token}"
         response = wtoken_header_plain_faraday_json_client_post(token.token, user_url, body: {
           text: "string",
           media_resource_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"

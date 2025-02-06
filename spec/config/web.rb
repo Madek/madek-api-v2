@@ -25,32 +25,6 @@ def plain_faraday_json_client
   end
 end
 
-# @deprecated
-# def wtoken_header_plain_faraday_json_client(login, password)
-#   @wtoken_header_plain_faraday_json_client ||= Faraday.new(
-#     url: api_base_url,
-#     headers: {accept: "application/json"}
-#   ) do |conn|
-#     conn.request :basic_auth, login, password
-#     yield(conn) if block_given?
-#     conn.response :json, content_type: /\bjson$/
-#     conn.adapter Faraday.default_adapter
-#   end
-# end
-#
-# @deprecated
-# def basic_auth_wtoken_header_plain_faraday_json_client(login, password, token)
-#   @wtoken_header_plain_faraday_json_client ||= Faraday.new(
-#     url: api_base_url,
-#     headers: {accept: "application/json", Authorization: "token #{token}"}
-#   ) do |conn|
-#     conn.request :basic_auth, login, password
-#     yield(conn) if block_given?
-#     conn.response :json, content_type: /\bjson$/
-#     conn.adapter Faraday.default_adapter
-#   end
-# end
-
 def wtoken_header_plain_faraday_json_client(token)
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
