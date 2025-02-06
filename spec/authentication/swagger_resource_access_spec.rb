@@ -40,7 +40,7 @@ shared_context :user_token_without_creds_entity do |ctx|
   end
 end
 
-# ###################### BASIC-AUTH NOT SUPPORTED ANYMORE ####################################
+# ###################### INVALID TOKEN TESTS #############################################
 
 shared_context :test_proper_public_user do
   describe "Test access to api-docs and endpoints" do

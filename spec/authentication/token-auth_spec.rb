@@ -20,7 +20,7 @@ describe "API-Token Authentication" do
     client.get("/api-v2/auth-info")
   end
 
-  context "revoking the token using deactivated basicAuth " do
+  context "revoking the token " do
     context "initially unrevoked token " do
       let :user do
         FactoryBot.create :user, password: "TOPSECRET"

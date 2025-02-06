@@ -135,7 +135,7 @@ describe "/auth-info resource" do
     end
   end
 
-  context "Basic Authentication" do
+  context "Variants of authentication" do
     include_context :user_entity, :test_proper_public_user
     include_context :admin_entity, :test_proper_public_user
     include_context :user_token_entity, :test_proper_token_user
