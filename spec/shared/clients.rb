@@ -88,18 +88,18 @@ shared_context :json_client_for_authenticated_token_owner_user do |ctx|
   end
 
   let :user_client do
-    wtoken_header_plain_faraday_json_client(user_token.token)
+    wtoken_header_plain_faraday_json_client(token.token)
   end
 
   let :user_client_no_creds do
     wtoken_header_plain_faraday_json_client(user_token_no_creds.token)
   end
 
-  let :user do
+  let :owner do
     FactoryBot.create :user, password: "OWNER-TOPSECRET"
   end
 
-  let :token do
+  let :owner_token do
     ApiToken.create user: owner, scope_read: true, scope_write: true
   end
 

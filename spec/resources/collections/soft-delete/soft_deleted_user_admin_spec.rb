@@ -16,9 +16,7 @@ shared_context :user_token_entity do |ctx|
   context "for Database User" do
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
-      # FactoryBot.create :admin, user: @entity
       @token = ApiToken.create user: @entity, scope_read: true, scope_write: true
-
     end
     let :entity_type do
       "User"
@@ -33,7 +31,6 @@ shared_context :admin_token_entity do |ctx|
       @entity = FactoryBot.create :user, password: "TOPSECRET"
       FactoryBot.create :admin, user: @entity
       @token = ApiToken.create user: @entity, scope_read: true, scope_write: true
-
     end
     let :entity_type do
       "User"
@@ -47,8 +44,6 @@ shared_context :admin_entity do |ctx|
     before :each do
       @entity = FactoryBot.create :user, password: "TOPSECRET"
       FactoryBot.create :admin, user: @entity
-      # @token = ApiToken.create user: @entity, scope_read: true, scope_write: true
-
     end
     let :entity_type do
       "User"
@@ -65,7 +60,6 @@ end
 shared_context :test_proper_token_user do
   context "with admin-user" do
     let :client do
-      # binding.pry
       wtoken_header_plain_faraday_json_client(@token.token)
     end
 
@@ -101,8 +95,6 @@ end
 shared_context :test_proper_public_user do
   context "with admin-user" do
     let :client do
-      # binding.pry
-      # wtoken_header_plain_faraday_json_client(@token.token)
       plain_faraday_json_client()
     end
 
