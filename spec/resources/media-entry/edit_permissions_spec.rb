@@ -1,25 +1,29 @@
 require "spec_helper"
 require "shared/audit-validator"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
+require Pathname(File.expand_path("../../", __FILE__)).join("audits/shared")
 
 shared_context :setup_owner_user_for_token_access_base do
-  let(:owner) { FactoryBot.create(:user, password: "owner", notes: "owner") }
-  let(:owner_token) { ApiToken.create(user: owner, scope_read: true, scope_write: true, description: "owner_token") }
+  let!(:owner) { FactoryBot.create(:user, password: "owner", notes: "owner") }
+  let!(:owner_token) { ApiToken.create(user: owner, scope_read: true, scope_write: true, description: "owner_token") }
 
-  let(:user) { FactoryBot.create(:user, password: "password", notes: "user") }
-  let(:user_token) { ApiToken.create(user: user, scope_read: true, scope_write: true, description: "token") }
-  let(:token) { user_token }
+  let!(:user) { FactoryBot.create(:user, password: "password", notes: "user") }
+  let!(:user_token) { ApiToken.create(user: user, scope_read: true, scope_write: true, description: "token") }
+  let!(:token) { user_token }
+
+  before(:each) { remove_all_audits }
 end
 
 shared_context :setup_owner_user_for_token_access do
   include_context :setup_owner_user_for_token_access_base
 
-  let(:media_entry) do
+  let!(:media_entry) do
     me = FactoryBot.create(:media_entry, get_metadata_and_previews: false, responsible_user: owner)
     FactoryBot.create :media_file_for_image, media_entry: me
     me
   end
-  let(:media_file) { FactoryBot.create(:media_file_for_image, media_entry: media_entry) }
+
+  let!(:media_file) { FactoryBot.create(:media_file_for_image, media_entry: media_entry) }
 end
 
 describe "Getting a media-entry resource without authentication" do
@@ -208,30 +212,44 @@ describe "Getting a media-entry resource with authentication" do
         edit_permissions: true
       })
       expect(user_perm.status).to eq 200
+      expect_audit_entries_count(1, 26, 1)
     end
 
+    before(:each) { remove_all_audits }
+
     it "edit resource perms is allowed 200" do
+      expect_audit_entries_count(0, 0, 0)
       response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
       expect(response.status).to eq 200
 
       uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/resource/get_metadata_and_previews/true"
       edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
       expect(edit.status).to eq 200
-      expect_audit_entries_count(2, 30, 2) # FIXME
+      expect_audit_entries_count(1, 1, 1)
     end
 
-    it "edit user perms is allowed 200" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
-      expect(response.status).to eq 200
+    describe "For media_entry_user_permission " do
+      it "edit user perms with new value is allowed 200" do
+        expect_audit_entries_count(0, 0, 0)
+        response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+        expect(response.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/true"
-      edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
-      expect(edit.status).to eq 200
-      expect_audit_entries_count(2, 29, 2) # FIXME
-    end
+        uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/false"
+        edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
+        expect(edit.status).to eq 200
+        expect_audit_entries_count(1, 1, 1)
+      end
 
-    it "edit group perms is allowed 200" do
-      # TODO
+      it "edit user perms with same value is allowed 200" do
+        expect_audit_entries_count(0, 0, 0)
+        response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+        expect(response.status).to eq 200
+
+        uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/true"
+        edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
+        expect(edit.status).to eq 200
+        expect_audit_entries_count(1, 0, 1)
+      end
     end
   end
 end
