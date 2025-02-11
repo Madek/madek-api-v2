@@ -44,12 +44,16 @@ def wtoken_header_plain_faraday_json_client_post(token, url, body: nil)
   token_header_plain_faraday_json_client(:post, url, token, body: body)
 end
 
+def wtoken_header_plain_faraday_json_client_patch(token, url, body: nil)
+  token_header_plain_faraday_json_client(:patch, url, token, body: body)
+end
+
 def wtoken_header_plain_faraday_json_client_delete(token, url)
   token_header_plain_faraday_json_client(:delete, url, token)
 end
 
-def wtoken_header_plain_faraday_json_client_put(token, url)
-  token_header_plain_faraday_json_client(:put, url, token)
+def wtoken_header_plain_faraday_json_client_put(token, url, body: nil)
+  token_header_plain_faraday_json_client(:put, url, token, body: body)
 end
 
 def token_header_plain_faraday_json_client(method, url, token, body: nil, headers: {})
