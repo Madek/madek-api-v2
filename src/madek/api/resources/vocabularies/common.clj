@@ -48,16 +48,24 @@
 (def schema_export-user-perms
   {:id s/Uuid
    :user_id s/Uuid
+   :creator_id s/Uuid
+   :updator_id (s/maybe s/Uuid)
    :vocabulary_id s/Str
    :use s/Bool
-   :view s/Bool})
+   :view s/Bool
+   :created_at s/Any
+   :updated_at (s/maybe s/Any)})
 
 (def schema_export-group-perms
   {:id s/Uuid
    :group_id s/Uuid
+   :creator_id s/Uuid
+   :updator_id (s/maybe s/Uuid)
    :vocabulary_id s/Str
    :use s/Bool
-   :view s/Bool})
+   :view s/Bool
+   :created_at s/Any
+   :updated_at (s/maybe s/Any)})
 
 (def schema_export-perms_all
   {:vocabulary {:id s/Str

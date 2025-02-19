@@ -91,11 +91,12 @@
 
 ; TODO logwrite
 (defn update-user-permissions
-  [resource mr-type user-id perm-name perm-val tx]
+  [resource mr-type user-id auth-entity-id perm-name perm-val tx]
 
   (let [mr-id (:id resource)
         tname (c/user-table mr-type)
-        perm-data {(keyword perm-name) perm-val}
+        perm-data (assoc {(keyword perm-name) perm-val}
+                         :updator_id auth-entity-id)
         update-stmt (-> (sql/update tname)
                         (sql/set perm-data)
                         (c/sql-cls-resource-and mr-type mr-id :user_id user-id)
@@ -161,10 +162,11 @@
 
 ; TODO logwrite
 (defn update-group-permissions
-  [resource mr-type group-id perm-name perm-val tx]
+  [resource mr-type group-id auth-entity-id perm-name perm-val tx]
   (let [mr-id (:id resource)
         tname (c/group-table mr-type)
-        perm-data {(keyword perm-name) perm-val}
+        perm-data (assoc {(keyword perm-name) perm-val}
+                         :updator_id auth-entity-id)
         update-stmt (-> (sql/update tname)
                         (sql/set perm-data)
                         (c/sql-cls-resource-and mr-type mr-id :group_id group-id)

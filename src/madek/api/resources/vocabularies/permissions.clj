@@ -100,11 +100,13 @@
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
             uid (-> req :parameters :path :user_id)
+            auth-entity-id (-> req :authenticated-entity :id)
             data (-> req :parameters :body)
             tx (:tx req)
             ins-data (assoc data
                             :vocabulary_id vid
-                            :user_id uid)
+                            :user_id uid
+                            :creator_id auth-entity-id)
             query (-> (sql/insert-into :vocabulary_user_permissions)
                       (sql/values [ins-data])
                       (sql/returning :*)
@@ -120,7 +122,9 @@
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
             uid (to-uuid (-> req :parameters :path :user_id))
-            upd-data (-> req :parameters :body)
+            auth-entity-id (-> req :authenticated-entity :id)
+            upd-data (-> req :parameters :body
+                         (assoc :updator_id auth-entity-id))
             tx (:tx req)
             query (-> (sql/update :vocabulary_user_permissions)
                       (sql/set upd-data)
@@ -178,11 +182,13 @@
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
+            auth-entity-id (-> req :authenticated-entity :id)
             data (-> req :parameters :body)
             tx (:tx req)
             ins-data (assoc data
                             :vocabulary_id vid
-                            :group_id gid)
+                            :group_id gid
+                            :creator_id auth-entity-id)
             query (-> (sql/insert-into :vocabulary_group_permissions)
                       (sql/values [ins-data])
                       (sql/returning :*)
@@ -198,12 +204,14 @@
     (catcher/with-logging {}
       (let [vid (-> req :parameters :path :id)
             gid (-> req :parameters :path :group_id)
+            auth-entity-id (-> req :authenticated-entity :id)
             tx (:tx req)]
         (if-let [old-data (dbh/query-eq-find-one
                            :vocabulary_group_permissions
                            :vocabulary_id vid
                            :group_id gid tx)]
-          (let [upd-data (-> req :parameters :body)
+          (let [upd-data (-> req :parameters :body
+                             (assoc :updator_id auth-entity-id))
                 query (-> (sql/update :vocabulary_group_permissions)
                           (sql/set upd-data)
                           (sql/where [:= :vocabulary_id vid] [:= :group_id gid])
