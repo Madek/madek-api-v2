@@ -51,13 +51,17 @@
   (try
     (catcher/with-logging {}
       (let [user-id (-> req :parameters :path :user_id)
+            auth-entity-id (-> req :authenticated-entity :id)
             perm-name (keyword (-> req :parameters :path :perm_name))
             perm-val (-> req :parameters :path :perm_val)
             mr (-> req :media-resource)
             tx (:tx req)
             mr-type (mr-table-type mr)]
         (if-let [old-perm (mr-permissions/query-get-user-permission mr mr-type user-id tx)]
-          (let [upd-result (mr-permissions/update-user-permissions mr mr-type user-id perm-name perm-val tx)]
+          (let [upd-result (mr-permissions/update-user-permissions mr mr-type
+                                                                   user-id auth-entity-id
+                                                                   perm-name perm-val
+                                                                   tx)]
             (if (= 1 (::jdbc/update-count upd-result))
               (sd/response_ok (mr-permissions/query-get-user-permission mr mr-type user-id tx))
               (sd/response_failed (str "Could not update permissions" upd-result) 400)))
@@ -69,13 +73,17 @@
   (try
     (catcher/with-logging {}
       (let [group-id (-> req :parameters :path :group_id)
+            auth-entity-id (-> req :authenticated-entity :id)
             perm-name (keyword (-> req :parameters :path :perm_name))
             perm-val (-> req :parameters :path :perm_val)
             tx (:tx req)
             mr (-> req :media-resource)
             mr-type (mr-table-type mr)]
         (if-let [old-data (mr-permissions/query-get-group-permission mr mr-type group-id tx)]
-          (let [upd-result (mr-permissions/update-group-permissions mr mr-type group-id perm-name perm-val tx)]
+          (let [upd-result (mr-permissions/update-group-permissions mr mr-type
+                                                                    group-id auth-entity-id
+                                                                    perm-name perm-val
+                                                                    tx)]
             (if (= 1 (::jdbc/update-count upd-result))
               (sd/response_ok (mr-permissions/query-get-group-permission mr mr-type group-id tx))
               (sd/response_failed (str "Could not update permissions" upd-result) 400)))
