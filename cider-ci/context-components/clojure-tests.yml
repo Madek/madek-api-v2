@@ -2,6 +2,10 @@ generate_tasks:
   include_match: test/.*_test.clj
 
 task_defaults:
+
+  traits:
+    ci-ax101-06: true
+
   ports:
     API_V2_HTTP_PORT:
       min: 3100
