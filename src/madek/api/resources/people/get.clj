@@ -23,7 +23,6 @@
 
 (def schema
   {:created_at s/Any
-   :creator_id (s/maybe s/Uuid)
    :description (s/maybe s/Str)
    :external_uris [s/Str]
    :first_name (s/maybe s/Str)
@@ -35,7 +34,6 @@
    :pseudonym (s/maybe s/Str)
    :subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    :updated_at s/Any
-   :updator_id (s/maybe s/Uuid)
    :identification_info (s/maybe s/Str)})
 
 (defn handler

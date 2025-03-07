@@ -38,7 +38,6 @@
 (def schema
   {:accepted_usage_terms_id (s/maybe s/Uuid)
    :created_at s/Any
-   :creator_id (s/maybe s/Uuid)
 
    ;:email (s/with-fn-validation valid-email? s/Str)
 
@@ -60,8 +59,7 @@
    ;:settings (s/with-fn-validation valid-json? s/Str) ;; Validate settings as JSON ;; broken
    (s/optional-key :settings) v/vector-or-hashmap-validation
 
-   :updated_at s/Any
-   :updator_id (s/maybe s/Uuid)})
+   :updated_at s/Any})
 
 (defn handler
   [{user :user :as req}]
