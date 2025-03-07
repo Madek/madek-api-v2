@@ -12,9 +12,22 @@
    [spec-tools.core :as st]
    [taoensso.timbre :refer [debug]]))
 
-(sa/def :usr/people (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/description ::sp/external_uris ::sp-nil/first_name
-                                      ::sp/institution ::sp-nil/institutional_id ::sp-nil/last_name ::sp-nil/admin_comment ::sp-nil/pseudonym ::sp/subtype ::sp/updated_at
-                                      ::sp-nil/identification_info]))
+(sa/def :usr/people
+  (sa/keys :req-un [::sp/id
+                    ::sp/created_at
+                    ::sp-nil/creator_id
+                    ::sp-nil/description
+                    ::sp/external_uris
+                    ::sp-nil/first_name
+                    ::sp/institution
+                    ::sp-nil/institutional_id
+                    ::sp-nil/last_name
+                    ::sp-nil/admin_comment
+                    ::sp-nil/pseudonym
+                    ::sp/subtype
+                    ::sp/updated_at
+                    ::sp-nil/updator_id
+                    ::sp-nil/identification_info]))
 
 (sa/def :usr-people-list/people (st/spec {:spec (sa/coll-of :usr/people)
                                           :description "A list of persons"}))
@@ -23,6 +36,7 @@
 
 (def schema
   {:created_at s/Any
+   :creator_id (s/maybe s/Uuid)
    :description (s/maybe s/Str)
    :external_uris [s/Str]
    :first_name (s/maybe s/Str)
@@ -34,6 +48,7 @@
    :pseudonym (s/maybe s/Str)
    :subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    :updated_at s/Any
+   :updator_id (s/maybe s/Uuid)
    :identification_info (s/maybe s/Str)})
 
 (defn handler

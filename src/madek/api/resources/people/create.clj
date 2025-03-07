@@ -14,10 +14,14 @@
    [taoensso.timbre :refer [error]]))
 
 (defn handle-create-person
-  [{{data :body} :parameters tx :tx :as req}]
+  [{{data :body} :parameters
+    {auth-entity-id :id} :authenticated-entity
+    tx :tx :as req}]
   (try
     (let [{id :id} (-> (sql/insert-into :people)
-                       (sql/values [(convert-map-if-exist data)])
+                       (sql/values [(-> data
+                                        convert-map-if-exist
+                                        (assoc :creator_id auth-entity-id))])
                        sql-format
                        ((partial jdbc/execute-one! tx) {:return-keys true}))]
       (sd/response_ok (find-person-by-uid id tx) 201))

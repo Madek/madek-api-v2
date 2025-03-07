@@ -478,11 +478,13 @@
      :identification_info (s/maybe s/Any)
      :searchable s/Str
      :updated_at s/Any
+     :updator_id (s/maybe s/Uuid)
      :id s/Uuid
      :last_name s/Str
      :admin_comment (s/maybe s/Str)
      :pseudonym s/Str
      :created_at s/Any
+     :creator_id (s/maybe s/Uuid)
      :subtype s/Str}]})
 
 ;; collection
@@ -525,11 +527,13 @@
    :identification_info (s/maybe s/Str)
    :searchable s/Str
    :updated_at s/Any
+   :updator_id (s/maybe s/Uuid)
    :id s/Uuid
    :last_name s/Str
    :admin_comment (s/maybe s/Str)
    :pseudonym (s/maybe s/Str)
    :created_at s/Any
+   :creator_id (s/maybe s/Uuid)
    :subtype (s/enum "Person")})
 
 (def BodySchema
