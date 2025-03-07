@@ -14,7 +14,6 @@
 (def user-select-keys
   [:users.accepted_usage_terms_id
    :users.created_at
-   :users.creator_id
    :users.email
    :users.first_name
    :users.id
@@ -27,8 +26,7 @@
    :users.password_sign_in_enabled
    :users.person_id
    :users.settings
-   :users.updated_at
-   :users.updator_id])
+   :users.updated_at])
 
 (defn where-uid
   "Adds a where condition to the users users query against a unique id. The uid

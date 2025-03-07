@@ -12,7 +12,6 @@
 
 (def people-select-keys
   [:people.created_at
-   :people.creator_id
    :people.description
    :people.external_uris
    :people.id
@@ -24,7 +23,6 @@
    :people.pseudonym
    :people.subtype
    :people.updated_at
-   :people.updator_id
    :people.identification_info])
 
 (defn where-uid

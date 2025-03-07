@@ -28,7 +28,6 @@
   (sa/keys :req-un [::sp/id
                     ::sp-nil/accepted_usage_terms_id
                     ::sp/created_at
-                    ::sp-nil/creator_id
                     ::sp-nil/first_name
                     ::sp/institution
                     ::sp-nil/institutional_id
@@ -39,8 +38,7 @@
                     ::sp-nil/login
                     ::sp-nil/notes
                     ::sp/person_id
-                    ::sp/updated_at
-                    ::sp-nil/updator_id]
+                    ::sp/updated_at]
            :opt-un [::sp/email ::sp/settings]))
 
 (sa/def :users-list/users (st/spec {:spec (sa/coll-of ::users-resp-def)
@@ -51,7 +49,6 @@
 (def schema
   {:accepted_usage_terms_id (s/maybe s/Uuid)
    :created_at s/Any
-   :creator_id (s/maybe s/Uuid)
 
    ;:email (s/with-fn-validation valid-email? s/Str)
 
@@ -73,8 +70,7 @@
    ;:settings (s/with-fn-validation valid-json? s/Str) ;; Validate settings as JSON ;; broken
    (s/optional-key :settings) v/vector-or-hashmap-validation
 
-   :updated_at s/Any
-   :updator_id (s/maybe s/Uuid)})
+   :updated_at s/Any})
 
 (defn handler
   [{user :user :as req}]

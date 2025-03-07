@@ -59,7 +59,6 @@
    :login s/Str
    :searchable s/Str
    :updated_at s/Any
-   :updator_id (s/maybe s/Uuid)
    :accepted_usage_terms_id (s/maybe s/Uuid)
    :id s/Uuid
    :password_sign_in_enabled (s/maybe s/Bool)
@@ -68,8 +67,7 @@
    :last_signed_in_at (s/maybe s/Any)
    :autocomplete s/Any
    :emails_locale (s/maybe s/Any)
-   :created_at s/Any
-   :creator_id (s/maybe s/Uuid)})
+   :created_at s/Any})
 
 ;; post /users
 (def route
