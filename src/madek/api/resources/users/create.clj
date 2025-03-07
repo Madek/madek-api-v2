@@ -15,10 +15,14 @@
 
 ;#### create ##################################################################
 
-(defn handle-create-user
-  [{{data :body} :parameters tx :tx :as req}]
+(defn handle-create-user [{{data :body} :parameters
+                           {auth-entity-id :id} :authenticated-entity
+                           tx :tx
+                           :as req}]
   (try
-    (let [data (convert-map-if-exist data)
+    (let [data (-> data
+                   convert-map-if-exist
+                   (assoc :creator_id auth-entity-id))
           query (-> (sql/insert-into :users)
                     (sql/values [data])
                     (sql/returning :*)

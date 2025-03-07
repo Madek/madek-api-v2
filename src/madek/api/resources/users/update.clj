@@ -28,8 +28,11 @@
 (defn update-user-handler
   [{{data :body} :parameters
     {user-id :id} :path-params
+    {auth-entity-id :id} :authenticated-entity
     tx :tx :as req}]
-  (if (update-user user-id data tx)
+  (if (update-user user-id
+                   (assoc data :updator_id auth-entity-id)
+                   tx)
     (sd/response_ok (find-user-by-uid user-id tx) 200)
     (sd/response_not_found "No such user.")))
 
