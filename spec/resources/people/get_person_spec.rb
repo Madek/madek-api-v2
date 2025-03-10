@@ -30,7 +30,8 @@ context "people" do
             person.with_indifferent_access.except(:created_at, :updated_at, :searchable)
           ).to eq(
             @person.attributes
-              .with_indifferent_access.except(:created_at, :updated_at, :searchable)
+              .with_indifferent_access.except(:created_at, :updated_at, :searchable,
+                :creator_id, :updator_id)
           )
         end
       end

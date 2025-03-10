@@ -4,29 +4,13 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.resources.users.columns :refer [user-select-keys]]
    [madek.api.utils.helper :refer [convert-userid]]
    [next.jdbc :as jdbc]))
 
 ;;; schema ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; sql ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def user-select-keys
-  [:users.accepted_usage_terms_id
-   :users.created_at
-   :users.email
-   :users.first_name
-   :users.id
-   :users.institution
-   :users.institutional_id
-   :users.last_name
-   :users.last_signed_in_at
-   :users.login
-   :users.notes
-   :users.password_sign_in_enabled
-   :users.person_id
-   :users.settings
-   :users.updated_at])
 
 (defn where-uid
   "Adds a where condition to the users users query against a unique id. The uid

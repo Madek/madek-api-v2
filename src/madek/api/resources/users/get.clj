@@ -24,11 +24,22 @@
     (catch Exception e
       false)))
 
-(sa/def ::users-resp-def (sa/keys :req-un [::sp/id ::sp-nil/accepted_usage_terms_id ::sp/created_at ::sp-nil/first_name
-                                           ::sp/institution ::sp-nil/institutional_id ::sp/is_admin ::sp/password_sign_in_enabled
-                                           ::sp-nil/last_name ::sp-nil/last_signed_in_at ::sp-nil/login ::sp-nil/notes
-                                           ::sp/person_id ::sp/updated_at]
-                                  :opt-un [::sp/email ::sp/settings]))
+(sa/def ::users-resp-def
+  (sa/keys :req-un [::sp/id
+                    ::sp-nil/accepted_usage_terms_id
+                    ::sp/created_at
+                    ::sp-nil/first_name
+                    ::sp/institution
+                    ::sp-nil/institutional_id
+                    ::sp/is_admin
+                    ::sp/password_sign_in_enabled
+                    ::sp-nil/last_name
+                    ::sp-nil/last_signed_in_at
+                    ::sp-nil/login
+                    ::sp-nil/notes
+                    ::sp/person_id
+                    ::sp/updated_at]
+           :opt-un [::sp/email ::sp/settings]))
 
 (sa/def :users-list/users (st/spec {:spec (sa/coll-of ::users-resp-def)
                                     :description "A list of persons"}))

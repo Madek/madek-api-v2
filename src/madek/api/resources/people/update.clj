@@ -27,9 +27,12 @@
 (defn update-person-handler
   [{{data :body} :parameters
     {person-id :id} :path-params
+    {auth-entity-id :id} :authenticated-entity
     tx :tx :as req}]
   (if-let [person (find-person-by-uid person-id tx)]
-    (if (update-person person-id data tx)
+    (if (update-person person-id
+                       (assoc data :updator_id auth-entity-id)
+                       tx)
       {:status 200 :body (find-person-by-uid person-id tx)}
       (throw (ex-info "Update of person failed" {:status 409})))
     {:status 404 :body {:message "Person not found."}}))

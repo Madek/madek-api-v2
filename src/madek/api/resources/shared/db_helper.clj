@@ -5,16 +5,18 @@
             [java-time.api :as jt]
             [logbug.catcher :as catcher]
             [madek.api.constants :as mc]
+            [madek.api.resources.people.common :as people-common]
+            [madek.api.resources.users.columns :as users-columns]
             [madek.api.utils.helper :refer [to-uuid]]
             [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
-            [taoensso.timbre :refer [error info]]))
+            [taoensso.timbre :refer [error info spy]]))
 
 ; begin db-helpers
 ; TODO move to sql file
 ; TODO sql injection protection
 (defn build-query-base [table-key col-keys]
-  (-> (sql/select col-keys)
+  (-> (apply sql/select col-keys)
       (sql/from table-key)))
 
 (defn build-query-param [query query-params param]
@@ -96,24 +98,49 @@
        query
        (-> query (sql/where [:like db-param qval]))))))
 
+(defn table->col-keys
+  ([table] (table->col-keys table nil))
+  ([table alias]
+   (let [all :*
+         col-keys (case table
+                    :people (conj people-common/people-select-keys
+                                  :people.searchable)
+                    :users users-columns/user-select-keys
+                    [(if alias
+                       (->> all name
+                            (str (name alias) ".")
+                            keyword)
+                       all)])]
+     (if alias
+       (map #(-> %
+                 name
+                 (clojure.string/replace (re-pattern (name table))
+                                         alias)
+                 keyword)
+            col-keys)
+       col-keys))))
+
 (defn sql-query-find-eq
   ([table-name col-name row-data]
    (let [query (if (= col-name :media_entry_id)
-                 (-> (build-query-base [table-name :vtable] :vtable.*)
+                 (-> (build-query-base [table-name :vtable]
+                                       (table->col-keys table-name :vtable))
                      (sql/join [:media_entries :me] [:= :vtable.media_entry_id :me.id])
                      (sql/where [:= :me.id (to-uuid row-data col-name table-name)])
                      (->non-soft-deleted "me")
                      sql-format)
-                 (-> (build-query-base table-name :*)
+                 (-> (build-query-base table-name (table->col-keys table-name))
                      (sql/where [:= col-name (to-uuid row-data col-name table-name)])
                      sql-format))]
      query))
 
   ([table-name col-name row-data col-name2 row-data2]
-   (let [query (-> (build-query-base table-name :*)
+   (let [query (-> (build-query-base table-name (table->col-keys table-name))
                    (sql/where [:= col-name (to-uuid row-data col-name)])
                    (sql/where [:= col-name2 (to-uuid row-data2 col-name2)])
-                   sql-format)] query)))
+                   (sql-format :inline true)
+                   spy)]
+     query)))
 
 (defn sql-update-clause
   "Generates an sql update clause"
@@ -137,7 +164,7 @@
 
 (defn query-find-all
   [table-key col-keys tx]
-  (let [db-query (-> (build-query-base table-key col-keys)
+  (let [db-query (-> (build-query-base table-key (table->col-keys table-key))
                      sql-format)
         db-result (jdbc/execute! tx db-query)]
     db-result))
