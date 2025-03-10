@@ -15,7 +15,7 @@
 
 (defn handle-create-person
   [{{data :body} :parameters
-    {auth-entity-id :id} :authenticated-entity
+    {auth-entity-id :id auth-admin? :is_admin} :authenticated-entity
     tx :tx :as req}]
   (try
     (let [{id :id} (-> (sql/insert-into :people)
@@ -24,7 +24,7 @@
                                         (assoc :creator_id auth-entity-id))])
                        sql-format
                        ((partial jdbc/execute-one! tx) {:return-keys true}))]
-      (sd/response_ok (find-person-by-uid id tx) 201))
+      (sd/response_ok (find-person-by-uid id tx auth-admin?) 201))
     (catch Exception e
       (error "handle-create-person failed" {:request req})
       (sd/parsed_response_exception e))))
