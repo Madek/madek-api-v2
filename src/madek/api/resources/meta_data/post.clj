@@ -7,7 +7,7 @@
             [madek.api.resources.meta_data.common :refer :all]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
-            [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.helper :refer [to-uuid strip-prefixes-generic]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
@@ -148,7 +148,8 @@
                       (sql/values [data])
                       (sql/returning :*) ;; FIXME: is correct but key-prefix is still in use
                       sql-format)
-        result (jdbc/execute! db sql-query)]
+        result (-> (jdbc/execute! db sql-query)
+                   strip-prefixes-generic)]
     result))
 
 (defn- create_md_and_role
@@ -223,7 +224,7 @@
                            :collection_id (s/maybe s/Uuid)
                            :type s/Str
                            :meta_key_id s/Str
-                           :string s/Str
+                           :string (s/maybe s/Str)
                            :id s/Uuid
                            :meta_data_updated_at (s/maybe s/Any)
                            :json (s/maybe s/Any)
@@ -243,7 +244,7 @@
                            :collection_id (s/maybe s/Uuid)
                            :type s/Str
                            :meta_key_id s/Str
-                           :string s/Str
+                           :string (s/maybe s/Str)
                            :id s/Uuid
                            :meta_data_updated_at (s/maybe s/Any)
                            :json (s/maybe s/Any)
@@ -309,12 +310,12 @@
    :other_media_entry_id (s/maybe s/Uuid)})
 
 (def MdPeopleSchema4
-  {:meta_data_people/meta_datum_id s/Uuid
-   :meta_data_people/person_id s/Uuid
-   :meta_data_people/created_by_id s/Uuid
-   :meta_data_people/meta_data_updated_at s/Any
-   :meta_data_people/id s/Uuid
-   :meta_data_people/position s/Int})
+  {:meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :created_by_id s/Uuid
+   :meta_data_updated_at s/Any
+   :id s/Uuid
+   :position s/Int})
 
 (def ResponseSchema4
   {:meta_data MetaDataSchema4
@@ -368,7 +369,7 @@
                            :collection_id s/Uuid
                            :type s/Str
                            :meta_key_id s/Str
-                           :string s/Str
+                           :string (s/maybe s/Str)
                            :id s/Uuid
                            :meta_data_updated_at (s/maybe s/Any)
                            :json (s/maybe s/Any)
@@ -391,7 +392,7 @@
                            :collection_id s/Uuid
                            :type s/Str
                            :meta_key_id s/Str
-                           :string s/Str
+                           :string (s/maybe s/Str)
                            :id s/Uuid
                            :meta_data_updated_at (s/maybe s/Any)
                            :json (s/maybe s/Any)
@@ -463,12 +464,12 @@
 
 ;; FIXME: remove key-prefix
 (def MdPeopleSchema5
-  {:meta_data_people/meta_datum_id s/Uuid
-   :meta_data_people/person_id s/Uuid
-   :meta_data_people/created_by_id s/Uuid
-   :meta_data_people/meta_data_updated_at s/Any
-   :meta_data_people/id s/Uuid
-   :meta_data_people/position s/Any})
+  {:meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :created_by_id s/Uuid
+   :meta_data_updated_at s/Any
+   :id s/Uuid
+   :position s/Any})
 
 (def ResponseSchema5
   {:meta_data MetaDataSchema5
@@ -494,25 +495,25 @@
    :collection_id s/Uuid
    :type s/Str
    :meta_key_id s/Str
-   :string s/Str
+   :string (s/maybe s/Str)
    :id s/Uuid
    :meta_data_updated_at s/Any
    :json (s/maybe s/Any)
    :other_media_entry_id (s/maybe s/Uuid)})
 
 (def MdRoleItemSchema3
-  {:meta_data_roles/id s/Uuid
-   :meta_data_roles/meta_datum_id s/Uuid
-   :meta_data_roles/person_id s/Uuid
-   :meta_data_roles/role_id s/Uuid
-   :meta_data_roles/position s/Int})
+  {:id s/Uuid
+   :meta_datum_id s/Uuid
+   :person_id s/Uuid
+   :role_id s/Uuid
+   :position s/Int})
 
 (def ResponseSchema3
   {:meta_data MetaDataSchema3
    :md_roles [MdRoleItemSchema3]})
 
 (def collection_id.meta_key_id.role.role_id
-  {:summary "Create meta-data role for media-entry"
+  {:summary "Create meta-data role for collection"
    :handler handle_create-meta-data-role
    :middleware [wrap-add-role
                 jqh/ring-wrap-add-media-resource

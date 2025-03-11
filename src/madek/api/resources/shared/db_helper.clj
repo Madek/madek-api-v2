@@ -151,8 +151,17 @@
   ([col-name row-data col-name2 row-data2 col-name3 row-data3]
    [(str col-name " = ? AND " col-name2 " = ? AND " col-name3 " = ? ") row-data row-data2 row-data3]))
 
+(defn has-one! [coll]
+  (if (and (seq coll) (= 1 (count coll)))
+    true
+    (throw (ex-info "Expected one result, got none or more" {:status 422}))))
+
 (defn sql-update-fnc-clause
   "Generates an sql update clause"
+  ([query col-name row-data]
+   (-> query
+       (sql/where [:= (keyword col-name) row-data])))
+
   ([query col-name row-data col-name2 row-data2 col-name3 row-data3]
    (-> query
        (sql/where [:= (keyword col-name) row-data] [:= (keyword col-name2) row-data2] [:= (keyword col-name3) row-data3]))))

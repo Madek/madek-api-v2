@@ -45,11 +45,12 @@
                           :resource_type mr-type
                           :resource_id mr-id
                           :token token))
-            sql-map {:insert-into :confidential_links
-                     :values [ins-data]}
-            sql (-> sql-map sql-format)
-            ins-result (jdbc/execute! (:tx req) [sql ins-data])]
-        (if-let [result (first ins-result)]
+            insert-stmt (-> (sql/insert-into :confidential_links)
+                            (sql/values [ins-data])
+                            (sql/returning :*)
+                            sql-format)
+            result (jdbc/execute-one! (:tx req) insert-stmt)]
+        (if result
           (sd/response_ok result)
           (sd/response_failed "Could not create confidential link." 406))))
     (catch Exception ex (sd/response_exception ex))))
@@ -83,13 +84,13 @@
             query (-> (sql/update :confidential_links)
                       (sql/set upd-data)
                       (sql/where [:= :id id])
+                      (sql/returning :*)
                       sql-format)
-
-            upd-result (jdbc/execute! (:tx req) query)]
+            upd-result (jdbc/execute-one! (:tx req) query)]
 
         (sd/logwrite req (str "handle_update-conf-link:" "\nupdate data: " upd-data "\nresult: " upd-result))
-        (if (= 1 (first upd-result))
-          (sd/response_ok (dbh/query-eq-find-one :confidential_links :id id (:tx req)))
+        (if upd-result
+          (sd/response_ok upd-result)
           (sd/response_failed (str "Failed update confidential link: " id) 406))))
 
     (catch Exception ex (sd/response_exception ex))))
@@ -102,11 +103,12 @@
         (if-let [del-data (dbh/query-eq-find-one :confidential_links :id id (:tx req))]
           (let [query (-> (sql/delete-from :confidential_links)
                           (sql/where [:= :id id])
+                          (sql/returning :*)
                           sql-format)
 
                 del-result (jdbc/execute! (:tx req) query)]
             (sd/logwrite req (str "handle_delete-conf-link:" "\ndelete data: " del-data "\nresult: " del-result))
-            (if (= 1 (first del-result))
+            (if del-result
               (sd/response_ok del-data)
               (sd/response_failed (str "Failed delete confidential link: " id) 406)))
           (sd/response_not_found "No such confidential link"))))

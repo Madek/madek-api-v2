@@ -13,7 +13,7 @@
 
 (defonce ^:private ds* (atom nil))
 
-(def builder-fn-options-default
+(def builder-fn-options-default "remove attribute-prefixes"
   {:builder-fn jdbc-rs/as-unqualified-lower-maps})
 
 (defn get-ds []

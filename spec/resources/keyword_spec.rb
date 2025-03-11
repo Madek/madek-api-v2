@@ -12,6 +12,7 @@ context "Getting a keyword resource without authentication" do
 
   it "responds with 200" do
     expect(plain_json_response.status).to be == 200
+    expect(plain_json_response.body).to be_a(Hash)
   end
 
   it "has the proper data" do
@@ -42,8 +43,15 @@ context "Getting keywords by pagination" do
     resp2 = plain_faraday_json_client.get("/api-v2/keywords?page=2&size=5")
     expect(resp2.status).to be == 200
     expect(resp2.body["data"].count).to be 5
+    expect(resp2.body["pagination"].count).to be
 
     expect(lists_of_maps_different?(resp1.body["data"], resp2.body["data"])).to eq true
+  end
+
+  it "responses with 200" do
+    resp = plain_faraday_json_client.get("/api-v2/keywords")
+    expect(resp.status).to be == 200
+    expect(resp.body["keywords"].count).to be 10
   end
 
   it "responses with 200" do

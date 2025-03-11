@@ -73,6 +73,52 @@ describe "filtering collections" do
       end
     end
 
+    describe "Modify /api-v2/collection/{collection_id}/media-entry-arcs" do
+      it "fetch all existing" do
+        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arcs")
+        expect(response.status).to eq(200)
+      end
+
+      it "returns status 200 for GET request" do
+        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arcs")
+        expect(response.status).to eq(200)
+      end
+
+      it "creates, updates & deletes a new media entry arc" do
+        media_entry_id = media_entries.first.id
+        response = client.post("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}") do |req|
+          req.body = {
+            "highlight" => true,
+            "cover" => true,
+            "position" => 0,
+            "order" => 0
+          }.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+        expect(response.status).to eq(200)
+        expect(response.body["media_entry_id"]).to eq media_entry_id
+
+        response = client.put("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}") do |req|
+          req.body = {
+            "highlight" => false,
+            "cover" => false,
+            "position" => 1,
+            "order" => 1
+          }.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+        expect(response.status).to eq(200)
+        expect(response.body["media_entry_id"]).to eq media_entry_id
+
+        media_entry_id = media_entries.first.id
+        response = client.delete("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}")
+        expect(response.status).to eq(200)
+
+        response = client.delete("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}")
+        expect(response.status).to eq(404)
+      end
+    end
+
     describe "/api-v2/collection/{collection_id}/meta-data" do
       it "fetch all existing" do
         response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/meta-data")
@@ -146,6 +192,192 @@ describe "filtering collections" do
           expect(response.status).to eq(200)
           expect(response.body["id"]).to eq(id)
         end
+      end
+
+      context "with soft-deleted entries" do
+        before :each do
+          response = client.get("/api-v2/collections")
+          expect(response.status).to be == 200
+          @collection_id = response.body["collections"][0]["id"]
+          @collection = Collection.find(@collection_id)
+          @meta_key_people = FactoryBot.create :meta_key_people
+          @meta_datum = FactoryBot.create :meta_datum_people,
+            collection: @collection,
+            meta_key: @meta_key_people
+
+          @meta_key_people = FactoryBot.create :meta_key_roles
+          @person = FactoryBot.create(:person)
+          p2 = FactoryBot.create(:person)
+          @r1 = FactoryBot.create(:role)
+
+          FactoryBot.create(:meta_datum_people, people: [@person, p2])
+          FactoryBot.create(:meta_datum_roles,
+            collection: @collection,
+            people_with_roles: [{person: @person, role: @r1},
+              {person: p2, role: @r1}])
+
+          @meta_key_people = MetaKey.find_by(id: attributes_for(:meta_key_keywords)[:id]) \
+            || FactoryBot.create(:meta_key_keywords)
+
+          @meta_datum = FactoryBot.create :meta_datum_keywords,
+            collection: @collection,
+            meta_key: @meta_key_people
+
+          @meta_key_people = FactoryBot.create :meta_key_json
+          @meta_datum = FactoryBot.create :meta_datum_json,
+            collection: @collection,
+            meta_key: @meta_key_people
+        end
+
+        it "checks meta-datum" do
+          response = client.get("/api-v2/collections")
+          expect(response.status).to be == 200
+          collection_id = response.body["collections"][0]["id"]
+
+          response = client.get("/api-v2/collection/#{collection_id}")
+          expect(response.status).to be == 200
+          expect(response.body["id"]).to eq(collection_id)
+
+          response = client.get("/api-v2/collection/#{collection_id}/meta-data")
+          expect(response.status).to be == 200
+
+          ["test:people", "test:roles", "test:keywords"].each do |meta_key_id|
+            response = client.get("/api-v2/collection/#{collection_id}/meta-datum/#{meta_key_id}")
+            expect(response.status).to be == 200
+            expect(response.body["meta_data"]["collection_id"]).to eq(collection_id)
+          end
+
+          # json
+          kw = "test:keywords2"
+          FactoryBot.create(:meta_key_json, id: kw)
+          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/#{kw}/json") do |req|
+            req.body = {
+              json: "{}"
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+          expect(response.body).to be
+
+          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/#{kw}")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.get("/api-v2/collection/#{collection_id}/meta-data-related")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.get("/api-v2/collection/#{collection_id}/meta-data")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.put("/api-v2/collection/#{collection_id}/meta-datum/#{kw}/json") do |req|
+            req.body = {
+              json: {"foo" => "bar"}.to_json.to_s
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/#{kw}")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/#{kw}")
+          expect(response.status).to be == 404
+
+          # keyword
+          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword")
+          expect(response.status).to be == 200
+
+          person_id = response.body["keywords_ids"].second
+
+          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          expect(response.status).to be == 406
+
+          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          expect(response.status).to be == 200
+
+          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          expect(response.status).to be == 200
+
+          # people
+          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/test:people/people")
+          expect(response.status).to be == 200
+          expect(response.body["md_people"].count).to be 3
+
+          person_id = response.body["people_ids"].second
+
+          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:people/people/#{person_id}")
+          expect(response.status).to be == 406
+
+          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/test:people/people/#{person_id}")
+          expect(response.status).to be == 200
+
+          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:people/people/#{person_id}")
+          expect(response.status).to be == 200
+
+          # role
+          # FYI: not implemented
+          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/test:roles/role")
+          expect(response.status).to be == 404
+
+          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:roles/role/#{@r1.id}")
+          expect(response.status).to be == 200
+
+          # FYI: not implemented
+          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/test:roles/role/#{@r1.id}/#{@person.id}")
+          expect(response.status).to be == 404
+        end
+      end
+
+      it "fetch all existing conf-links" do
+        response = client.get("/api-v2/collections")
+        expect(response.status).to eq(200)
+        expect(response.body["collections"].count).to be > 0
+        me_id = response.body["collections"].first["id"]
+
+        response = client.get("/api-v2/collection/#{me_id}")
+        expect(response.status).to be == 200
+        expect(response.body["id"]).to eq(me_id)
+
+        response = client.get("/api-v2/collection/#{me_id}/conf-links")
+        expect(response.status).to be == 200
+        expect(response.body.count).to eq(0)
+
+        response = client.post("/api-v2/collection/#{me_id}/conf-links") do |req|
+          req.body = {
+            "revoked" => false,
+            "description" => "new conf link",
+            "expires_at" => (Time.zone.now + 10.day)
+          }.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+        expect(response.status).to be == 200
+        cl_id = response.body["id"]
+
+        response = client.get("/api-v2/collection/#{me_id}/conf-links")
+        expect(response.status).to be == 200
+        expect(response.body.count).to eq(1)
+
+        response = client.put("/api-v2/collection/#{me_id}/conf-link/#{cl_id}") do |req|
+          req.body = {
+            "revoked" => false,
+            "description" => "new conf link",
+            "expires_at" => (Time.zone.now + 5.day)
+          }.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+        expect(response.status).to be == 200
+
+        conf_link_id = response.body["id"]
+        response = client.get("/api-v2/collection/#{me_id}/conf-link/#{conf_link_id}")
+        expect(response.status).to be == 200
+        expect(response.body["id"]).to eq(conf_link_id)
+
+        response = client.delete("/api-v2/collection/#{me_id}/conf-link/#{conf_link_id}")
+        expect(response.status).to be == 200
+        expect(response.body["id"]).to eq(conf_link_id)
       end
     end
   end

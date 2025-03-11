@@ -162,9 +162,9 @@
 ; nur der admin?
 
 (def edit-routes
-  [["/full_text"
+  [["/full_texts"
     {:openapi {:tags ["admin/full_text"] :security ADMIN_AUTH_METHODS}}
-    ["/"
+    [""
      {:post {:summary (sd/sum_adm "Create full_texts entry????")
              :swagger {:consumes "application/json" :produces "application/json"}
              :handler handle_create-full_texts
@@ -176,7 +176,7 @@
                               :body ::response-schema-def}
                          406 (sd/create-error-message-response-spec "Creation failed." "Could not create full_text.")}}}]
 
-    ["/full_text/:media_resource_id"
+    ["/:media_resource_id"
      {:post {:summary (sd/sum_adm "Create full_texts entry")
              :swagger {:consumes "application/json" :produces "application/json"}
              :handler handle_create-full_texts

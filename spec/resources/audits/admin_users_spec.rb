@@ -117,10 +117,10 @@ describe "Admin/User API with authentication with created user" do
       expect_audit_entries_count(1, 1, 1)
     end
 
-    it "audits the DELETE 403er request by admin_user" do
+    it "audits the DELETE 422er request by admin_user" do
       expect_audit_entries_count(0, 0, 0)
       response = wtoken_header_plain_faraday_json_client_delete(admin_user_token.token, "/api-v2/admin/users/#{admin_user_id}")
-      expect(response.status).to eq(403)
+      expect(response.status).to eq(422)
       expect(response.body["message"]).to eq("References still exist")
       expect_audit_entries_count(1, 0, 1)
     end

@@ -87,9 +87,33 @@ describe "a bunch of media entries with different properties" do
           expect(response.status).to be == 200
           expect(response.body[0]["resource_id"]).to eq(me_id)
 
-          conf_link_id = response.body[0]["id"]
+          response = client.post("/api-v2/media-entry/#{me_id}/conf-links") do |req|
+            req.body = {
+              "revoked" => false,
+              "description" => "new conf link",
+              "expires_at" => (Time.zone.now + 10.day)
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+          expect(response.status).to be == 200
+          cl_id = response.body["id"]
 
+          response = client.put("/api-v2/media-entry/#{me_id}/conf-link/#{cl_id}") do |req|
+            req.body = {
+              "revoked" => false,
+              "description" => "new conf link",
+              "expires_at" => (Time.zone.now + 5.day)
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+          expect(response.status).to be == 200
+
+          conf_link_id = response.body["id"]
           response = client.get("/api-v2/media-entry/#{me_id}/conf-link/#{conf_link_id}")
+          expect(response.status).to be == 200
+          expect(response.body["id"]).to eq(conf_link_id)
+
+          response = client.delete("/api-v2/media-entry/#{me_id}/conf-link/#{conf_link_id}")
           expect(response.status).to be == 200
           expect(response.body["id"]).to eq(conf_link_id)
         end
@@ -134,13 +158,88 @@ describe "a bunch of media entries with different properties" do
             expect(response.body["meta_data"]["media_entry_id"]).to eq(me_id)
           end
 
+          # json
+          kw = "test:keywords2"
+          FactoryBot.create(:meta_key_json, id: kw)
+          response = client.post("/api-v2/media-entry/#{me_id}/meta-datum/#{kw}/json") do |req|
+            req.body = {
+              json: "{}"
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+          expect(response.body).to be
+
+          response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/#{kw}")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.get("/api-v2/media-entry/#{me_id}/meta-data-related")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.get("/api-v2/media-entry/#{me_id}/meta-data")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.put("/api-v2/media-entry/#{me_id}/meta-datum/#{kw}/json") do |req|
+            req.body = {
+              json: {"foo" => "bar"}.to_json.to_s
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.delete("/api-v2/media-entry/#{me_id}/meta-datum/#{kw}")
+          expect(response.status).to be == 200
+          expect(response.body).to be
+
+          response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/#{kw}")
+          expect(response.status).to be == 404
+
+          # keyword
           response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/test:keywords/keyword")
           expect(response.status).to be == 200
 
-          response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/test:people/people")
+          person_id = response.body["keywords_ids"].second
+
+          response = client.post("/api-v2/media-entry/#{me_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          expect(response.status).to be == 406
+
+          response = client.delete("/api-v2/media-entry/#{me_id}/meta-datum/test:keywords/keyword/#{person_id}")
           expect(response.status).to be == 200
 
+          response = client.post("/api-v2/media-entry/#{me_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          expect(response.status).to be == 200
+
+          # people
+          response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/test:people/people")
+          expect(response.status).to be == 200
+          expect(response.body["md_people"].count).to be 3
+
+          person_id = response.body["people_ids"].second
+
+          response = client.post("/api-v2/media-entry/#{me_id}/meta-datum/test:people/people/#{person_id}")
+          expect(response.status).to be == 406
+
+          response = client.delete("/api-v2/media-entry/#{me_id}/meta-datum/test:people/people/#{person_id}")
+          expect(response.status).to be == 200
+
+          response = client.post("/api-v2/media-entry/#{me_id}/meta-datum/test:people/people/#{person_id}")
+          expect(response.status).to be == 200
+
+          # role
           response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/test:roles/role")
+          expect(response.status).to be == 200
+
+          role_id = response.body["roles"].first["id"]
+          person_id = response.body["md_roles"].second["person_id"]
+          response = client.post("/api-v2/media-entry/#{me_id}/meta-datum/test:roles/role/#{role_id}/#{person_id}/11")
+          expect(response.status).to be == 200
+
+          role_id = response.body["md_roles"].first["role_id"]
+          person_id = response.body["md_roles"].first["person_id"]
+          response = client.delete("/api-v2/media-entry/#{me_id}/meta-datum/test:roles/role/#{role_id}/#{person_id}")
           expect(response.status).to be == 200
         end
       end

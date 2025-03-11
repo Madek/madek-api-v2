@@ -114,11 +114,12 @@
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:description "Authentication info."
                        :body {:type s/Str
-                              :id s/Uuid
-                              :login s/Str
-                              :created_at s/Any
-                              :email_address s/Str
-                              (s/optional-key :authentication-method) s/Str}}
+                              (s/optional-key :id) s/Uuid
+                              (s/optional-key :login) s/Str
+                              (s/optional-key :created_at) s/Any
+                              (s/optional-key :email_address) s/Str
+                              (s/optional-key :authentication-method) s/Str
+                              (s/optional-key :session-expires-at) s/Any}}
                   401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]])
 
 (def swagger-routes

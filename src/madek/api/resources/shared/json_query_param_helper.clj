@@ -25,13 +25,32 @@
 
 ; begin json query param helpers
 
-(defn try-as-json [value]
-  (try (cheshire/parse-string value)
-       (catch Exception _
-         value)))
+(defn try-as-json
+  ([value]
+   (try (cheshire/parse-string value)
+        (catch Exception _
+          value)))
+  ([value default]
+   (try (cheshire/parse-string value)
+        (catch Exception _
+          (cheshire/parse-string default)))))
+
+(defn map-as-json!
+  ([value]
+   (try
+     (cond
+       (not (map? value)) (throw (Exception. "Value is not a map")))
+     (cheshire/parse-string (cheshire/generate-string value))
+     (catch Exception _
+       (throw (ex-info "Value is not in a valid JSON format" {:status 400})))))
+  ([value key]
+   (try
+     (when (not (map? value)) (throw (Exception. "Value is not a map")))
+     (cheshire/parse-string (cheshire/generate-string value))
+     (catch Exception _
+       (throw (ex-info (str "Value is not in a valid JSON format: " (name key) "=" value) {:status 400}))))))
 
 (defn- *ring-wrap-parse-json-query-parameters [request handler]
-  ;((assoc-in request [:query-params2] (-> request :parameters :query))
   (handler (assoc request :query-params
                   (->> request :query-params
                        (map (fn [[k v]] [k (try-as-json v)]))

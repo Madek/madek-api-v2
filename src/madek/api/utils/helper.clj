@@ -1,11 +1,38 @@
 (ns madek.api.utils.helper
   (:require [cheshire.core :as json]
             [honey.sql :refer [format] :rename {format sql-format}]
-            [pghstore-clj.core :refer [to-hstore]]
+            [pghstore-clj.core :refer [to-hstore THstorable]]
             [taoensso.timbre :refer [warn]])
-  (:import (java.util UUID)))
+  (:import (clojure.lang IPersistentMap)
+           (java.util UUID)
+           (org.postgresql.util PGobject)))
 
 (def LOAD-SWAGGER-DESCRIPTION-FROM-FILE true)
+
+(defn strip-prefixes
+  "Strips namespace prefixes from all keyword keys in a map."
+  [m]
+  (when (map? m)
+    (into {}
+          (map (fn [[k v]]
+                 [(if (keyword? k)
+                    (keyword (name k))
+                    k)
+                  v])
+               m))))
+
+(defn strip-prefixes-generic
+  "Strips table/namespace prefixes from keyword keys.
+   - If given a vector of maps, returns a vector of modified maps.
+   - If given a single map, returns a modified map.
+   - If nil or empty, returns [] or {} accordingly."
+  [input]
+  (cond
+    (nil? input) input
+    (map? input) (strip-prefixes input)
+    (and (vector? input) (every? map? input))
+    (mapv strip-prefixes input)
+    :else input))
 
 ;; [madek.api.utils.helper :refer [verify-full_data]]
 (defn verify-full_data
@@ -103,6 +130,14 @@
     (update m k f)
     m))
 
+(defn to-jsonb-stm
+  ([value]
+   [:cast (json/generate-string value) :jsonb])
+  ([map key]
+   (let [value (get map key)
+         value (if (nil? value) "'{}'" (json/generate-string value))]
+     (assoc map key [:cast value :jsonb]))))
+
 ;; Used for columns of jsonb type
 ; [madek.api.utils.helper :refer [convert-map-if-exist]]
 (defn convert-map-if-exist [m]
@@ -112,6 +147,7 @@
       (modify-if-exists :default_resource_type #(if (contains? m :default_resource_type) [:cast % :public.collection_default_resource_type]))
       (modify-if-exists :sorting #(if (contains? m :sorting) [:cast % :public.collection_sorting]))
       (modify-if-exists :json #(if (contains? m :json) [:cast (json/generate-string %) :jsonb]))
+      (modify-if-exists :configuration #(if (contains? m :configuration) [:cast (json/generate-string %) :jsonb]))
       (modify-if-exists :institutional_directory_inactive_since #(when % [:cast % ::timestamptz]))
 
       ;; uuid
@@ -147,6 +183,18 @@
       (modify-if-exists :copyright_notice_templates #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
       (modify-if-exists :allowed_people_subtypes #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
       (modify-if-exists :person_info_fields #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))))
+
+(extend-protocol THstorable
+  IPersistentMap
+  (to-hstore [this]
+    (let [pgobj (doto (PGobject.)
+                  (.setType "hstore")
+                  (.setValue
+                   (->> this
+                        (map (fn [[k v]]
+                               (str "\"" (name k) "\"=>\"" (str v) "\"")))
+                        (clojure.string/join ", "))))]
+      pgobj)))
 
 ; [madek.api.utils.helper :refer [cast-to-hstore]]
 (defn cast-to-hstore [data]

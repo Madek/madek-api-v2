@@ -14,7 +14,7 @@
    [madek.api.utils.coercion.spec-alpha-definition-any :as sp-any]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.coercion.spec-alpha-definition-str :as sp-str]
-   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist cast-to-hstore convert-map-if-exist
+   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist
                                    replace-java-hashmaps mslurp replace-java-hashmaps v]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
@@ -99,21 +99,19 @@
 (defn handle_update_meta-key [req]
   (let [data (-> req :parameters :body)
         id (-> req :path-params :id)
-        dwid (assoc data :id id)
+        dwid (-> data
+                 (assoc :id id)
+                 (cast-to-hstore)
+                 (convert-map-if-exist))
         tx (:tx req)
-        dwid (convert-map-if-exist (cast-to-hstore dwid))
         sql-query (-> (sql/update :meta_keys)
                       (sql/set dwid)
                       (sql/returning :*)
                       (sql/where [:= :id id])
                       sql-format)
-        db-result (jdbc/execute-one! tx sql-query)
-        db-result (replace-java-hashmaps db-result)]
-
-    (info "handle_update_meta-key:"
-          "\nid: " id
-          "\ndwid\n" dwid)
-
+        db-result (-> (jdbc/execute-one! tx sql-query)
+                      (replace-java-hashmaps))]
+    (info "handle_update_meta-key:" "\nid: " id "\ndwid\n" dwid)
     (if db-result
       (sd/response_ok db-result)
       (sd/response_failed "Could not update meta_key." 406))))
@@ -146,10 +144,11 @@
    :is_enabled_for_collections s/Bool
    :vocabulary_id s/Str
 
-   (s/optional-key :allowed_people_subtypes) [(s/enum "People" "PeopleGroup")] ; TODO check more people subtypes?!?
+   (s/optional-key :allowed_people_subtypes) [(s/enum "Person" "People" "PeopleGroup")] ; TODO check more people subtypes?!?
    (s/optional-key :text_type) s/Str
    (s/optional-key :allowed_rdf_class) (s/maybe s/Str)
-
+   (s/optional-key :multiple_selection) s/Bool
+   (s/optional-key :selection_field_type) s/Str
    (s/optional-key :labels) (s/maybe sd/schema_ml_list)
    (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
    (s/optional-key :hints) (s/maybe sd/schema_ml_list)
@@ -163,7 +162,20 @@
                                            ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints ::sp-nil/documentation_urls
                                            ::sp-nil/admin_comment]))
 
-(sa/def ::schema_update-meta-key (sa/keys :req-un [::sp-str/id]))
+(sa/def ::schema_update-meta-key
+  (sa/keys
+   :req-un [::sp-str/id
+            ::sp/vocabulary_id
+            ::sp-any/labels ::sp-any/descriptions ::sp-any/hints ::sp-any/documentation_urls]
+   :opt-un [::sp/is_extensible_list ::sp/meta_datum_object_type ::sp/keywords_alphabetical_order ::sp/position
+            ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections
+            ::sp/allowed_people_subtypes ::sp/text_type ::sp-nil/allowed_rdf_class
+            ::sp/io_mappings
+            ::sp/admin_comment
+            ::sp/multiple_selection
+            ::sp/selection_field_type
+            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
+            ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2]))
 
 (sa/def ::schema_export-meta-key-usr
   (sa/keys
@@ -173,6 +185,8 @@
             ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections
             ::sp/allowed_people_subtypes ::sp/text_type ::sp-nil/allowed_rdf_class
             ::sp/io_mappings
+            ::sp/multiple_selection
+            ::sp/selection_field_type
             ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
             ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2]))
 
@@ -185,6 +199,8 @@
             ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections
             ::sp/allowed_people_subtypes ::sp/text_type ::sp-nil/allowed_rdf_class
             ::sp/io_mappings
+            ::sp/multiple_selection
+            ::sp/selection_field_type
             ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
             ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2 ::sp/admin_comment_2]))
 

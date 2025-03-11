@@ -6,7 +6,7 @@
             [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
-            [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
+            [madek.api.utils.helper :refer [convert-map-if-exist strip-prefixes-generic to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
@@ -144,7 +144,8 @@
                       (sql/values [data])
                       (sql/returning :*)
                       sql-format)
-        result (jdbc/execute-one! db sql-query)]
+        result (-> (jdbc/execute-one! db sql-query)
+                   strip-prefixes-generic)]
 
     ;(info "db-create-meta-data-people" "\npeople-data\n" data "\nresult\n" result)
     result))

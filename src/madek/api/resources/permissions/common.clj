@@ -23,16 +23,14 @@
                                    :is_published
                                    :get_metadata_and_previews
                                    :get_full_size
-                                   ; TODO delegations
-                                   ])
+                                   :responsible_delegation_id])
      "Collection" (select-keys mr [:id
                                    :creator_id
                                    :responsible_user_id
                                    :clipboard_user_id
                                    :workflow_id
                                    :get_metadata_and_previews
-                                   ; TODO delegations
-                                   ])
+                                   :responsible_delegation_id])
      :default (throw ((ex-info "Invalid media-resource type" {:status 500}))))))
 
 (def schema_update-collection-perms

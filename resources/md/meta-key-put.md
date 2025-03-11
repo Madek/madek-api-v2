@@ -15,6 +15,6 @@
   "hints": {"de": "string-11", "en": "string-11"},
   "keywords_alphabetical_order": true,
   "text_type": "line",
-  "allowed_people_subtypes": ["People"]
+  "allowed_people_subtypes": ["Person"]
 }
 ```

@@ -23,6 +23,32 @@ describe "filtering collections" do
       end
     end
 
+    describe "/api-v2/collection/*/collection-arcs/" do
+      it "fetches, creates, updates, and deletes a collection-arc" do
+        child_id = parent_collection.collections.first.id
+        response = client.get("/api-v2/collection/#{parent_collection.id}/collection-arc/#{child_id}")
+        expect(response.status).to eq(200)
+
+        new_child = FactoryBot.create(:collection)
+        create_data = {"highlight" => true, "order" => 0, "position" => 0}
+        response = client.post("/api-v2/collection/#{parent_collection.id}/collection-arc/#{new_child.id}") do |req|
+          req.body = create_data.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+        expect(response.status).to eq(200)
+
+        update_data = {"highlight" => false, "order" => 2, "position" => 1}
+        response = client.put("/api-v2/collection/#{parent_collection.id}/collection-arc/#{new_child.id}") do |req|
+          req.body = update_data.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+        expect(response.status).to eq(200)
+
+        response = client.delete("/api-v2/collection/#{parent_collection.id}/collection-arc/#{new_child.id}")
+        expect(response.status).to eq(200)
+      end
+    end
+
     describe "/api-v2/collection-collection-arcs/" do
       it "fetch all existing" do
         response = client.get("/api-v2/collection-collection-arcs")

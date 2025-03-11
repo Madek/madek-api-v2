@@ -112,7 +112,7 @@
                                                     :collection_id (s/maybe s/Uuid)
                                                     :type s/Str
                                                     :meta_key_id s/Str
-                                                    :string s/Str
+                                                    :string (s/maybe s/Str)
                                                     :id s/Uuid
                                                     :meta_data_updated_at s/Any
                                                     :json (s/maybe s/Any)
@@ -132,7 +132,7 @@
                                                            :collection_id (s/maybe s/Uuid)
                                                            :type s/Str
                                                            :meta_key_id s/Str
-                                                           :string s/Str
+                                                           :string (s/maybe s/Str)
                                                            :id s/Uuid
                                                            :meta_data_updated_at (s/maybe s/Any)
                                                            :json (s/maybe s/Any)
@@ -176,7 +176,7 @@
                                                          :collection_id (s/maybe s/Uuid)
                                                          :type s/Str
                                                          :meta_key_id s/Str
-                                                         :string s/Str
+                                                         :string (s/maybe s/Str)
                                                          :id s/Uuid
                                                          :meta_data_updated_at s/Any
                                                          :json (s/maybe s/Any)
@@ -199,7 +199,7 @@
                                                :collection_id s/Uuid
                                                :type s/Str
                                                :meta_key_id s/Str
-                                               :string s/Str
+                                               :string (s/maybe s/Str)
                                                :id s/Uuid
                                                :meta_data_updated_at s/Any
                                                :json (s/maybe s/Any)

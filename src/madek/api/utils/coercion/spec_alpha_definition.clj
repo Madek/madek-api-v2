@@ -120,6 +120,8 @@
 (sa/def ::is_enabled_for_public_use (st/spec {:spec any?}))
 (sa/def ::is_enabled_for_public_view (st/spec {:spec any?}))
 (sa/def ::io_mappings (st/spec {:spec any?}))
+(sa/def ::multiple_selection (st/spec {:spec boolean?}))
+(sa/def ::selection_field_type (st/spec {:spec string?}))
 (sa/def ::id_2 (st/spec {:spec any?}))
 (sa/def ::text_type (st/spec {:spec string?}))
 (sa/def ::descriptions (st/spec {:spec string?}))

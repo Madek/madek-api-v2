@@ -6,6 +6,7 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.helper :refer [to-jsonb-stm]]
             [madek.api.utils.helper :refer [verify-full_data]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -28,25 +29,24 @@
     (sd/response_ok workflow)))
 
 (defn handle_create-workflow [req]
-
   (try
     (catcher/with-logging {}
-      (let [data (-> req :parameters :body)
-            conf-data-or-str (:configuration data)
-            conf-data (jqh/try-as-json conf-data-or-str)
-            uid (-> req :authenticated-entity :id)
-            ins-data (assoc data :creator_id uid :configuration (with-meta conf-data {:pgtype "jsonb"}))
+      (let [data (-> req :parameters :body
+                     (assoc :creator_id (-> req :authenticated-entity :id)))
+            ins-data (if (contains? data :configuration)
+                       (assoc data :configuration (-> (jqh/map-as-json! (:configuration data) :configuration)
+                                                      (to-jsonb-stm)))
+                       data)
             sql-query (-> (sql/insert-into :workflows)
                           (sql/values [ins-data])
+                          (sql/returning :*)
                           sql-format)
-            ins-res (jdbc/execute-one! (:tx req) sql-query)]
-
+            ins-res (jdbc/execute! (:tx req) sql-query)]
         (info "handle_create-workflow: "
               "\ndata:\n" ins-data
               "\nresult:\n" ins-res)
-
-        (if-let [result (::jdbc/update-count ins-res)]
-          (sd/response_ok result)
+        (if (dbh/has-one! ins-res)
+          (sd/response_ok (first ins-res))
           (sd/response_failed "Could not create workflow." 406))))
     (catch Exception e (sd/response_exception e))))
 
@@ -55,34 +55,34 @@
     (catcher/with-logging {}
       (let [data (-> req :parameters :body)
             id (-> req :parameters :path :id)
-            tx (:tx req)
+            data (if (contains? data :configuration)
+                   (assoc data :configuration (-> (jqh/map-as-json! (:configuration data) :configuration)
+                                                  (to-jsonb-stm)))
+                   data)
             dwid (assoc data :id id)
-            upd-query (dbh/sql-update-clause "id" (str id))
             sql-query (-> (sql/update :workflows)
                           (sql/set dwid)
-                          (sql/where upd-query)
+                          (dbh/sql-update-fnc-clause "id" id)
+                          (sql/returning :*)
                           sql-format)
             upd-result (jdbc/execute! (:tx req) sql-query)]
-
         (info "handle_update-workflow: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
-
-        (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (dbh/query-eq-find-one :workflows :id id tx))
+        (if (dbh/has-one! upd-result)
+          (sd/response_ok (first upd-result))
           (sd/response_failed "Could not update workflow." 406))))
     (catch Exception e (sd/response_exception e))))
 
 (defn handle_delete-workflow [req]
   (try
     (catcher/with-logging {}
-      (let [olddata (-> req :workflow)
-            id (-> req :parameters :path :id)
+      (let [id (-> req :parameters :path :id)
             sql-query (-> (sql/delete-from :workflows)
                           (sql/where [:= :id id])
+                          (sql/returning :*)
                           sql-format)
             delresult (jdbc/execute! (:tx req) sql-query)]
-
-        (if (= 1 (::jdbc/update-count delresult))
-          (sd/response_ok olddata)
+        (if (dbh/has-one! delresult)
+          (sd/response_ok (first delresult))
           (sd/response_failed "Could not delete workflow." 422))))
     (catch Exception e (sd/response_exception e))))
 
@@ -93,15 +93,13 @@
                                     :workflow true))))
 
 (def schema_create_workflow
-  {;:id is db assigned or optional
-   :name s/Str
+  {:name s/Str
    (s/optional-key :is_active) s/Bool
    ; TODO docu is json
    (s/optional-key :configuration) s/Any})
 
 (def schema_update_workflow
-  {;:id s/Uuid
-   (s/optional-key :name) s/Str
+  {(s/optional-key :name) s/Str
    (s/optional-key :is_active) s/Bool
    ; TODO docu is json
    (s/optional-key :configuration) s/Any})

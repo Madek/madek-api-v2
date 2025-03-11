@@ -235,15 +235,15 @@
                                                         :query {(s/optional-key :updated_after) s/Inst
                                                                 (s/optional-key :meta_keys) s/Str}}
                                            :responses {200 {:description "Returns the meta-data for the media-entry."
-                                                            :body {:meta_data [{:media_entry_id s/Uuid
-                                                                                :collection_id (s/maybe s/Uuid)
-                                                                                :type (s/maybe (s/enum "MetaDatum::Text" "MetaDatum::People" "MetaDatum::Roles" "MetaDatum::TextDate" "MetaDatum::Keywords"))
-                                                                                :meta_key_id s/Str
-                                                                                :string (s/maybe s/Str)
-                                                                                :id s/Uuid
-                                                                                :meta_data_updated_at s/Any
-                                                                                :json (s/maybe s/Any)
-                                                                                :other_media_entry_id (s/maybe s/Uuid)}]
+                                                            :body {:meta_data [(s/->Either [{:media_entry_id s/Uuid
+                                                                                             :collection_id (s/maybe s/Uuid)
+                                                                                             :type (s/maybe (s/enum "MetaDatum::Text" "MetaDatum::People" "MetaDatum::Roles" "MetaDatum::TextDate" "MetaDatum::Keywords"))
+                                                                                             :meta_key_id s/Str
+                                                                                             :string (s/maybe s/Str)
+                                                                                             :id s/Uuid
+                                                                                             :meta_data_updated_at s/Any
+                                                                                             :json (s/maybe s/Any)
+                                                                                             :other_media_entry_id (s/maybe s/Uuid)} s/Any])]
                                                                    :media_entry_id s/Uuid}}}})
 (def meta-data-role.meta_data_role_id {:summary " Get meta-data role for id "
                                        :handler meta-datum/handle_get-meta-datum-role
@@ -266,27 +266,29 @@
                                                    (s/optional-key :meta_keys) s/Str}}
                               :responses {200 {:description "Returns the meta-data for the collection."
                                                :body {:collection_id s/Uuid
-                                                      :meta_data [{:media_entry_id (s/maybe s/Uuid)
-                                                                   :collection_id s/Uuid
-                                                                   :type (s/enum "MetaDatum::Text"
-                                                                                 "MetaDatum::People"
-                                                                                 "MetaDatum::TextDate"
-                                                                                 "MetaDatum::Keywords")
-                                                                   :meta_key_id s/Str
-                                                                   :string (s/maybe s/Str)
-                                                                   :id s/Uuid
-                                                                   :meta_data_updated_at s/Any
-                                                                   :json (s/maybe s/Any)
-                                                                   :other_media_entry_id (s/maybe s/Uuid)}]}}}})
+                                                      :meta_data [(s/->Either [{:media_entry_id (s/maybe s/Uuid)
+                                                                                :collection_id s/Uuid
+                                                                                :type (s/enum "MetaDatum::Text"
+                                                                                              "MetaDatum::People"
+                                                                                              "MetaDatum::TextDate"
+                                                                                              "MetaDatum::Keywords")
+                                                                                :meta_key_id s/Str
+                                                                                :string (s/maybe s/Str)
+                                                                                :id s/Uuid
+                                                                                :meta_data_updated_at s/Any
+                                                                                :json (s/maybe s/Any)
+                                                                                :other_media_entry_id (s/maybe s/Uuid)} s/Any])]}}}})
 
 (s/def KeywordEntry2
-  {:meta_data s/Any
-   (s/optional-key :defaultmetadata) s/Str
-   (s/optional-key :defaultdata) s/Str
-   (s/optional-key :md_people) s/Any
-   (s/optional-key :people) s/Any
-   (s/optional-key :md_keywords) s/Any
-   (s/optional-key :keywords) s/Any})
+  (s/->Either [{:meta_data s/Any
+                (s/optional-key :defaultmetadata) s/Str
+                (s/optional-key :defaultdata) s/Str
+                (s/optional-key :md_people) s/Any
+                (s/optional-key :people) s/Any
+                (s/optional-key :md_keywords) s/Any
+                (s/optional-key :keywords) s/Any
+                (s/optional-key :md_roles) s/Any
+                (s/optional-key :roles) s/Any} s/Any]))
 
 (def collection_id.meta-data-related {:summary (sd/?token? "Get meta-data for collection.")
                                       :description (mslurp (io/resource "md/meta-data-related.md"))
@@ -310,7 +312,9 @@
    (s/optional-key :defaultmetadata) s/Any
    (s/optional-key :defaultdata) s/Any
    (s/optional-key :people) s/Any
-   (s/optional-key :md_people) s/Any})
+   (s/optional-key :md_people) s/Any
+   (s/optional-key :roles) s/Any
+   (s/optional-key :md_roles) s/Any})
 
 (def collection_id.meta-datum.meta_key_id {:summary (sd/?no-auth? "Get meta-data for collection and meta-key.")
                                            :handler handle_get-meta-key-meta-data
@@ -373,21 +377,25 @@
    :position s/Int})
 
 (def KeywordsSchema2
-  {:id s/Uuid
-   :term s/Str
-   :rdf_class s/Str
-   (s/optional-key :description) (s/maybe s/Str)
-   (s/optional-key :external_uris) [s/Str]
-   (s/optional-key :meta_key_id) (s/maybe s/Str)
-   (s/optional-key :creator_id) (s/maybe s/Uuid)
-   (s/optional-key :updated_at) (s/maybe s/Inst)
-   (s/optional-key :created_at) (s/maybe s/Inst)
-   (s/optional-key :position) (s/maybe s/Int)})
+  (s/->Either [{:id s/Uuid
+                :term s/Str
+                :rdf_class s/Str
+                (s/optional-key :description) (s/maybe s/Str)
+                (s/optional-key :external_uris) [s/Str]
+                (s/optional-key :meta_key_id) (s/maybe s/Str)
+                (s/optional-key :creator_id) (s/maybe s/Uuid)
+                (s/optional-key :updated_at) (s/maybe (s/->Either [s/Inst s/Str]))
+                (s/optional-key :created_at) (s/maybe (s/->Either [s/Inst s/Str]))
+                (s/optional-key :position) (s/maybe s/Int)} s/Any]))
 
 (def BodySchema2
   [{:meta_data MetaDataSchema2
     (s/optional-key :defaultmetadata) s/Str
     (s/optional-key :defaultdata) s/Str
+    (s/optional-key :people) s/Any
+    (s/optional-key :md_people) s/Any
+    (s/optional-key :md_roles) s/Any
+    (s/optional-key :roles) s/Any
     (s/optional-key :md_keywords) [MDKeywordsSchema2]
     (s/optional-key :keywords) [KeywordsSchema2]}])
 
