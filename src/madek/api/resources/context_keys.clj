@@ -300,7 +300,7 @@
    {:openapi {:tags ["context-keys"] :security []}}
    ["context-keys"
     {:get
-     {:summary (sd/?no-auth? (sd/sum_pub "Query / List context_keys."))
+     {:summary (sd/?no-auth? (sd/sum_pub "Query / List context_keys. [OK]"))
       :handler handle_usr-list-context_keys
       :coercion reitit.coercion.schema/coercion
       :parameters {:query {(s/optional-key :id) s/Uuid
@@ -315,7 +315,7 @@
 
    ["context-keys/:id"
     {:get
-     {:summary (sd/?no-auth? (sd/sum_pub "Get context_key by id."))
+     {:summary (sd/?no-auth? (sd/sum_pub "Get context_key by id. [OK]"))
       :handler handle_usr-get-context_key
       :middleware [(wwrap-find-context_key :id :id true)]
       :coercion reitit.coercion.schema/coercion
