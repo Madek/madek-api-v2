@@ -281,7 +281,9 @@
   (let [handler (case (http-resources-scope-key options)
                   "ALL" (middleware (wrap-reload app-all))
                   "ADMIN" (middleware app-admin)
-                  "USER" (middleware app-user))]
+                  "USER" (middleware app-user))
+        handler (middleware app-user)
+        ]
     (http-server/start handler options)))
 
 ;### Debug ####################################################################
