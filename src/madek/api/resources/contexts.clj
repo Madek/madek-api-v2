@@ -211,7 +211,7 @@
   ["/"
    {:openapi {:tags ["contexts"]}}
    ["contexts"
-    {:get {:summary (sd/?no-auth? (sd/sum_usr "List contexts."))
+    {:get {:summary (sd/?no-auth? (sd/sum_usr "List contexts. [OK]"))
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion
            :middleware [authorization/wrap-authorized-user]
@@ -223,7 +223,7 @@
                             :body s/Any}}}}]
    ; edit context
    ["contexts/:id"
-    {:get {:summary (sd/?no-auth? (sd/sum_usr "Get contexts by id."))
+    {:get {:summary (sd/?no-auth? (sd/sum_usr "Get contexts by id. [OK]"))
            :handler handle_usr-get-context
            :middleware [authorization/wrap-authorized-user (wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion

@@ -183,7 +183,7 @@
    {:openapi {:tags ["keywords"] :security []}}
    ["keywords"
     {:get
-     {:summary (sd/?no-auth? (sd/sum_pub (d "Query / list keywords.")))
+     {:summary (sd/?no-auth? (sd/sum_pub (d "Query / list keywords. [OK]")))
       :handler handle_usr-query-keywords
       :coercion spec/coercion
       :parameters {:query sp/schema_pagination_opt}
@@ -209,7 +209,7 @@
 
    ["keywords/:id"
     {:get
-     {:summary (sd/?no-auth? (sd/sum_pub "Get keyword for id."))
+     {:summary (sd/?no-auth? (sd/sum_pub "Get keyword for id. [OK]"))
       :handler handle_usr-get-keyword
       :middleware [wrap-find-keyword]
       :coercion reitit.coercion.schema/coercion
