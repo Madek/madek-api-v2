@@ -61,8 +61,10 @@
     (sd/response_failed "No such person found" 404)))
 
 (def route
-  {:summary (sd/?no-auth? (sd/sum_adm "Get person by uid"))
-   :description "Get a person by uid (either uuid or pair of json encoded [institution, institutional_id]).
+  {:summary (sd/?no-auth? (sd/sum_adm "Get person by id [OK]"))
+   :description "Get a person by id\n
+- person_id (uuid)
+- OR pair of url-encoded [institution, institutional_id], example: [\"local\", \"pki4x8j\"]\n\n
    Returns 404, if no such people exists."
    :handler handler
    :middleware []
