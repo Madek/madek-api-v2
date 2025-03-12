@@ -290,7 +290,7 @@
   ["/"
    {:openapi {:tags ["meta-keys"]}}
    ["meta-keys"
-    {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get all meta-key ids"))
+    {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get all meta-key ids [OK]"))
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys
            :parameters {:query sp/schema_pagination_opt}
@@ -300,7 +300,7 @@
                             :body ::meta-keys-id-response-usr-def}}}}]
 
    ["meta-keys/:id"
-    {:get {:summary (sd/?no-auth? (sd/sum_usr_pub (v "Get meta-key by id")))
+    {:get {:summary (sd/?no-auth? (sd/sum_usr_pub (v "Get meta-key by id [OK]")))
            :description "Get meta-key by id. Returns 404, if no such meta-key exists."
            :content-type "application/json"
            :accept "application/json"
