@@ -3,6 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.authorization :as authorization]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -213,6 +214,8 @@
     {:get {:summary (sd/?no-auth? (sd/sum_usr "List contexts."))
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion
+           :middleware [authorization/wrap-authorized-user]
+
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
            :responses {200 {:description "Returns the contexts."
                             :body [schema_export_contexts_usr]}
@@ -222,7 +225,7 @@
    ["contexts/:id"
     {:get {:summary (sd/?no-auth? (sd/sum_usr "Get contexts by id."))
            :handler handle_usr-get-context
-           :middleware [(wwrap-find-context :id :id true)]
+           :middleware [authorization/wrap-authorized-user (wwrap-find-context :id :id true)]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:id s/Str}}
            :responses {200 {:description "Returns the context."
