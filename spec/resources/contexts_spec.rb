@@ -3,59 +3,50 @@ require "cgi"
 require "timecop"
 require Pathname(File.expand_path("../../", __FILE__)).join("shared")
 
-context "Getting a context resource without authentication" do
+describe "Context Resource Access" do
   before :each do
-    @keywords = []
-    10.times do
-      @keywords << FactoryBot.create(:context_key)
-    end
+    @keywords = Array.new(10) { FactoryBot.create(:context_key) }
   end
 
-  context "public context-key" do
-
+  context "Unauthenticated access to contexts" do
     let(:client) { plain_faraday_json_client }
 
-    describe "query context-key (unauthenticated)" do
-      let(:plain_json_response) do
-        plain_faraday_json_client.get("/api-v2/contexts")
-      end
+    describe "Fetching all contextss" do
+      let(:plain_json_response) { client.get("/api-v2/contexts") }
 
-      it "responds with 401 Unauthorized" do
+      it "returns 401 Unauthorized" do
         expect(plain_json_response.status).to eq(401)
       end
     end
 
-    describe "query context-key (unauthenticated)" do
+    describe "Fetching a specific contexts" do
       let(:plain_json_response) do
         binding.pry
-        plain_faraday_json_client.get("/api-v2/contexts/#{@keywords.first.context_id}")
+        client.get("/api-v2/contexts/#{@keywords.first.context_id}")
       end
 
-      it "responds with 401 Unauthorized" do
+      it "returns 401 Unauthorized" do
         expect(plain_json_response.status).to eq(401)
       end
     end
   end
 
-  context "protected context-key" do
+  context "Authenticated access to protected contexts" do
+    include_context :json_client_for_authenticated_token_user
 
-    include_context :json_client_for_authenticated_token_user do
-
-      it "accesses protected resource with valid session cookie" do
-        resp = client.get("/api-v2/auth-info")
-        expect(resp.status).to eq(200)
-      end
-
-      it "accesses protected resource with valid session cookie" do
-        resp = client.get("/api-v2/contexts")
-        expect(resp.status).to eq(200)
-
-        context_id=resp.body.first["id"]
-        resp = client.get("/api-v2/contexts/#{context_id}")
-        expect(resp.status).to eq(200)
-        expect(resp.body["id"]).to eq(context_id)
-      end
+    it "allows access to auth-info endpoint with a valid token" do
+      response = client.get("/api-v2/auth-info")
+      expect(response.status).to eq(200)
     end
 
+    it "allows access to context resources with a valid token" do
+      response = client.get("/api-v2/contexts")
+      expect(response.status).to eq(200)
+
+      context_id = response.body.first["id"]
+      response = client.get("/api-v2/contexts/#{context_id}")
+      expect(response.status).to eq(200)
+      expect(response.body["id"]).to eq(context_id)
+    end
   end
 end
