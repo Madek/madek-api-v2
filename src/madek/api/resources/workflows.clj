@@ -185,7 +185,7 @@
   ["/"
    {:openapi {:tags ["workflows"]}}
    ["workflows"
-    {:post {:summary (sd/sum_auth "Create workflow.")
+    {:post {:summary (sd/sum_auth "Create workflow. [OK]")
             :handler handle_create-workflow
             :middleware [authorization/wrap-authorized-user]
             :coercion reitit.coercion.schema/coercion
@@ -195,7 +195,7 @@
                         406 {:description "Could not create workflow."
                              :body s/Any}}}
 
-     :get {:summary (sd/sum_auth "List workflows.")
+     :get {:summary (sd/sum_auth "List workflows. [OK]")
            :handler handle_list-workflows
            :middleware [authorization/wrap-authorized-user]
            :coercion reitit.coercion.schema/coercion
@@ -207,7 +207,7 @@
                             :body s/Any}}}}]
 
    ["workflows/:id"
-    {:get {:summary (sd/sum_auth "Get workflow by id.")
+    {:get {:summary (sd/sum_auth "Get workflow by id. [OK]")
            :handler handle_get-workflow
            :middleware [authorization/wrap-authorized-user
                         (wwrap-find-workflow :id)]
@@ -218,7 +218,7 @@
                        404 {:description "Workflow not found."
                             :body s/Any}}}
 
-     :put {:summary (sd/sum_auth "Update workflow with id.")
+     :put {:summary (sd/sum_auth "Update workflow with id. [OK]")
            :handler handle_update-workflow
            :middleware [authorization/wrap-authorized-user
                         (wwrap-find-workflow :id)]
@@ -232,7 +232,7 @@
                        406 {:description "Could not update workflow."
                             :body s/Any}}}
 
-     :delete {:summary (sd/sum_auth "Delete workflow by id.")
+     :delete {:summary (sd/sum_auth "Delete workflow by id. [OK]")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-workflow
               :middleware [authorization/wrap-authorized-user
