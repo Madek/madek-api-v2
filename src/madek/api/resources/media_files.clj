@@ -67,7 +67,7 @@
   ["/media-file"
    {:openapi {:tags ["api/media-file"]}}
    ["/:media_file_id"
-    {:get {:summary (sd/sum_usr_pub "Get media-file for id.")
+    {:get {:summary (sd/sum_auth "Get media-file for id.")
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler media-file/get-media-file
@@ -81,7 +81,7 @@
                             :body s/Any}}}}]
 
    ["/:media_file_id/data-stream"
-    {:get {:summary (sd/sum_usr_pub "Get media-file data-stream for id.")
+    {:get {:summary (sd/sum_auth "Get media-file data-stream for id.")
            :handler media-file/get-media-file-data-stream
            :middleware [wrap-find-and-add-media-file
                         media-files.authorization/wrap-auth-media-file-full_size]

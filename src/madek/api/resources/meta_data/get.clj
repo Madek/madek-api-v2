@@ -195,7 +195,7 @@
 (def meta_datum_id {:handler meta-datum/get-meta-datum
                     :middleware [jqh/ring-wrap-add-meta-datum-with-media-resource
                                  jqh/ring-wrap-authorization-view]
-                    :summary "Get meta-data for id"
+                    :summary (sd/sum_auth "Get meta-data for id")
                     :description "Get meta-data for id. TODO: should return 404, if no such meta-data role exists."
                     :coercion reitit.coercion.schema/coercion
                     :parameters {:path {:meta_datum_id s/Uuid}}
@@ -212,7 +212,7 @@
                                 ; TODO json meta-data: fix response conversion error
                                 :middleware [jqh/ring-wrap-add-meta-datum-with-media-resource
                                              jqh/ring-wrap-authorization-view]
-                                :summary "Get meta-data data-stream."
+                                :summary (sd/sum_auth "Get meta-data data-stream.")
                                 :description "Get meta-data data-stream."
                                 :coercion reitit.coercion.schema/coercion
                                 :responses {200 {:description "Returns the meta-data data-stream."
@@ -245,7 +245,7 @@
                                                                                 :json (s/maybe s/Any)
                                                                                 :other_media_entry_id (s/maybe s/Uuid)}]
                                                                    :media_entry_id s/Uuid}}}})
-(def meta-data-role.meta_data_role_id {:summary " Get meta-data role for id "
+(def meta-data-role.meta_data_role_id {:summary (sd/sum_pub " Get meta-data role for id ")
                                        :handler meta-datum/handle_get-meta-datum-role
                                        :description " Get meta-datum-role for id. returns 404, if no such meta-data role exists. "
                                        :coercion reitit.coercion.schema/coercion

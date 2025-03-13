@@ -115,7 +115,7 @@
                                                     404 (sd/create-error-message-response "Not found."
                                                                                           "No such vocabulary group permission.")}})
 
-(def user.vocabularies {:summary "Get list of vocabularies ids."
+(def user.vocabularies {:summary (sd/sum_pub "Get list of vocabularies ids. [OK]")
                         :description "Get list of vocabularies ids."
                         :handler get-index
                         :content-type "application/json"

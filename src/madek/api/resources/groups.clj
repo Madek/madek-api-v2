@@ -205,7 +205,7 @@
                      :responses {200 {:description "Returns a list of group ids."
                                       :body ::response-groups-body}}}}]
 
-    ["groups/:id" {:get {:summary "Get group by id"
+    ["groups/:id" {:get {:summary (sd/sum_adm "Get group by id / FIXME")
                          :description "Get group by id. Returns 404, if no such group exists."
                          :swagger {:produces "application/json"}
                          :content-type "application/json"

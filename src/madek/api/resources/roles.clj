@@ -38,16 +38,16 @@
 (def user-routes
   ["/"
    {:openapi {:tags ["roles"]}}
-   ["roles" {:get {:summary "Get list of roles."
+   ["roles" {:get {:summary (sd/sum_pub "Get list of roles.")
                    :description "Get list of roles."
                    :handler role/get-index
                    :coercion spec/coercion
-                   :parameters {:query sp/schema_pagination_opt}
+                   ;:parameters {:query sp/schema_pagination_opt}
                    :responses {200 {:description "Returns the roles."
                                     :body ::response-roles-body}}}}]
 
    ["roles/:id"
-    {:get {:summary "Get role by id"
+    {:get {:summary (sd/sum_pub "Get role by id")
            :description "Get a role by id. Returns 404, if no such role exists."
            :swagger {:produces "application/json"}
            :content-type "application/json"

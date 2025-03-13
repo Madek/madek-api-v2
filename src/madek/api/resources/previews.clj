@@ -74,7 +74,7 @@
   ["/previews"
    {:openapi {:tags ["api/previews"]}}
    ["/:preview_id"
-    {:get {:summary "Get preview for id."
+    {:get {:summary (sd/sum_auth "Get preview for id.")
            :swagger {:produces "application/json"}
            :content-type "application/json"
            :handler preview/get-preview
@@ -89,7 +89,7 @@
            :parameters {:path {:preview_id s/Uuid}}}}]
 
    ["/:preview_id/data-stream"
-    {:get {:summary "Get preview data-stream for id."
+    {:get {:summary (sd/sum_auth "Get preview data-stream for id.")
            :handler preview/get-preview-file-data-stream
            :middleware [ring-wrap-find-and-add-preview
                         ring-wrap-add-media-resource-preview
