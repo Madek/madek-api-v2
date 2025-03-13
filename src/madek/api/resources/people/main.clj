@@ -10,9 +10,6 @@
 (def user-routes
   ["/"
    {:openapi {:tags ["people"]}}
-   ["people"
-    {;:get index/route
-     }]
    ["people/:id"
     {:get get-person/route}]])
 

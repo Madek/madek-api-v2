@@ -6,6 +6,8 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.resources.users.common :refer [wrap-find-user]]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -67,7 +69,8 @@
 - OR pair of url-encoded [institution, institutional_id], example: [\"local\", \"pki4x8j\"]\n\n
    Returns 404, if no such people exists."
    :handler handler
-   :middleware []
+   :middleware [wrap-authorize-admin!
+                (wrap-find-user :id)]
    :swagger {:produces "application/json"}
    :coercion reitit.coercion.schema/coercion
    :content-type "application/json"

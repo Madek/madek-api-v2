@@ -101,7 +101,7 @@
    {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
    ["/auth-info"
     {:get
-     {:summary (sd/?no-auth? "Authentication help and info.")
+     {:summary (sd/sum_auth "Authentication help and info.")
       :handler auth-info/auth-info
       :middleware [authentication/wrap]
       :coercion reitit.coercion.schema/coercion

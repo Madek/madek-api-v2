@@ -268,7 +268,7 @@
   [["/media-entry/:media_entry_id/full_text"
     {:openapi {:tags ["media-entry/full_text"]}}
     ["/"
-     {:get {:summary (sd/sum_usr_pub "Get full_text.")
+     {:get {:summary (sd/sum_auth "Get full_text.")
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str}}
@@ -279,7 +279,7 @@
                          jqh/ring-wrap-authorization-view
                          (wrap-find-full_text :media_entry_id true)]}
 
-      :post {:summary (sd/sum_usr "Create full_text for collection")
+      :post {:summary (sd/sum_auth "Create full_text for collection")
              :swagger {:consumes "application/json"
                        :produces "application/json"}
              :handler handle_create-full_texts
@@ -293,7 +293,7 @@
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
 
-      :put {:summary (sd/sum_usr "Update full_text for collection.")
+      :put {:summary (sd/sum_auth "Update full_text for collection.")
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:media_entry_id s/Str}
                          :body {:text s/Str}}
@@ -307,7 +307,7 @@
                              :body s/Any}}
             :handler handle_update-full_texts}
 
-      :delete {:summary (sd/sum_usr "Delete full_text.")
+      :delete {:summary (sd/sum_auth "Delete full_text.")
                :coercion reitit.coercion.schema/coercion
                :parameters {:path {:media_entry_id s/Str}}
                :middleware [jqh/ring-wrap-add-media-resource
