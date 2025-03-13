@@ -93,6 +93,20 @@
     (update m k f)
     m))
 
+(defn to-jsonb-stm
+
+(  [value]
+  [:cast (json/generate-string value) :jsonb] )
+
+(  [map key]
+     (let [
+              value (get map key)
+              value (if (nil? value) "'{}'" (json/generate-string value))
+              ]
+              (assoc map key [:cast value :jsonb])
+       ))
+    )
+
 ;; Used for columns of jsonb type
 ; [madek.api.utils.helper :refer [convert-map-if-exist]]
 (defn convert-map-if-exist [m]
@@ -102,6 +116,7 @@
       (modify-if-exists :default_resource_type #(if (contains? m :default_resource_type) [:cast % :public.collection_default_resource_type]))
       (modify-if-exists :sorting #(if (contains? m :sorting) [:cast % :public.collection_sorting]))
       (modify-if-exists :json #(if (contains? m :json) [:cast (json/generate-string %) :jsonb]))
+      (modify-if-exists :configuration #(if (contains? m :configuration) [:cast (json/generate-string %) :jsonb]))
 
       ;; uuid
       (modify-if-exists :id #(if (contains? m :id) (to-uuid % :id)))

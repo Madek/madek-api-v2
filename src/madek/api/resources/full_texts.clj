@@ -205,7 +205,7 @@
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}}
             :responses {200 {:description "Returns the full_text."
-                             :body {:collection_id s/Uuid
+                             :body {:media_resource_id s/Uuid
                                     :text s/Str}}}
             :middleware [jqh/ring-wrap-add-media-resource
                          jqh/ring-wrap-authorization-edit-metadata
@@ -219,7 +219,7 @@
              :parameters {:path {:collection_id s/Str}
                           :body {:text s/Str}}
              :responses {200 {:description "Returns the created full_text."
-                              :body {:collection_id s/Uuid
+                              :body {:media_resource_id s/Uuid
                                      :text s/Str}}
                          406 (sd/create-error-message-response "Creation failed." "Could not create full_text.")}
              :middleware [jqh/ring-wrap-add-media-resource
@@ -233,7 +233,7 @@
                          jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]
             :responses {200 {:description "Returns the updated full_text."
-                             :body {:collection_id s/Uuid
+                             :body {:media_resource_id s/Uuid
                                     :text s/Str}}
                         406 (sd/create-error-message-response "Update failed." "Could not update full_text.")}
             :handler handle_update-full_texts}
@@ -245,7 +245,7 @@
                             jqh/ring-wrap-authorization-edit-metadata
                             (wrap-find-full_text :collection_id true)]
                :responses {200 {:description "Returns the deleted full_text."
-                                :body {:collection_id s/Uuid
+                                :body {:media_resource_id s/Uuid
                                        :text s/Str}}
                            406 (sd/create-error-message-response "Deletion failed." "Could not delete full_text.")}
                :handler handle_delete-full_texts}}]]])

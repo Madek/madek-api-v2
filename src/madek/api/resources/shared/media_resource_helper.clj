@@ -45,7 +45,12 @@
 (defn- public? [resource]
   (-> resource :get_metadata_and_previews boolean))
 
-(defn authorize-request-for-media-resource [request handler scope]
+(defn authorize-request-for-media-resource
+  "Considers
+    - is_public
+    - is_admin
+    - allowed access to media-resources by authenticated entities"
+  [request handler scope]
   ;(
   ;(info "auth-request-for-mr"
   ;              "\nscope: " scope
