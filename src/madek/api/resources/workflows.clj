@@ -1,7 +1,10 @@
 (ns madek.api.resources.workflows
-  (:require [honey.sql :refer [format] :rename {format sql-format}]
+  (:require [cheshire.core :as cheshire]
+            [cheshire.core :as json]
+            [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
+            [madek.api.utils.helper :refer [to-jsonb-stm]]
             [madek.api.authorization :as authorization]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
@@ -32,12 +35,44 @@
   (try
     (catcher/with-logging {}
       (let [data (-> req :parameters :body)
-            conf-data-or-str (:configuration data)
-            conf-data (jqh/try-as-json conf-data-or-str)
+
+            p (println ">o> abcX" data)
+
+            data (if (contains? data :configuration)
+                   (assoc data :configuration (-> (jqh/map-as-json! (:configuration data) :configuration)
+                                                  (to-jsonb-stm)
+                                                  ))
+                   data)
+
+
+;            conf-data-or-str (:configuration data)
+;
+;            p (println ">o> abc0" (type conf-data-or-str))
+;
+;
+;            ;conf-data-or-str (cheshire/generate-string conf-data-or-str)
+;
+;            p (println ">o> abc1" conf-data-or-str)
+;
+;            conf-data (jqh/map-as-json! conf-data-or-str :configuration)
+;            p (println ">o> abc2" conf-data)
+;
+;            ;conf-data (with-meta conf-data {:pgtype "jsonb"})
+;            ;p (println ">o> abc3" conf-data)
+;
+;            ;_ (throw (ex-info "configuration is not a valid json" {:status 400}))
+;
+;val (to-jsonb-stm conf-data)
+;            p (println ">o> abc3" conf-data)
+
+            p (println ">o> abc4" data)
+
+
             uid (-> req :authenticated-entity :id)
-            ins-data (assoc data :creator_id uid :configuration (with-meta conf-data {:pgtype "jsonb"}))
+            ins-data (assoc data :creator_id uid)
             sql-query (-> (sql/insert-into :workflows)
                           (sql/values [ins-data])
+                          (sql/returning :*)
                           sql-format)
             ins-res (jdbc/execute-one! (:tx req) sql-query)]
 
@@ -45,8 +80,9 @@
               "\ndata:\n" ins-data
               "\nresult:\n" ins-res)
 
-        (if-let [result (::jdbc/update-count ins-res)]
-          (sd/response_ok result)
+        ;(if-let [result (::jdbc/update-count ins-res)]
+        (if  ins-res
+          (sd/response_ok ins-res)
           (sd/response_failed "Could not create workflow." 406))))
     (catch Exception e (sd/response_exception e))))
 
@@ -56,6 +92,9 @@
       (let [data (-> req :parameters :body)
             id (-> req :parameters :path :id)
             tx (:tx req)
+
+            p (println ">o> abc.data" data)
+
             dwid (assoc data :id id)
             upd-query (dbh/sql-update-clause "id" (str id))
             sql-query (-> (sql/update :workflows)
