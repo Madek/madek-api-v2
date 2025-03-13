@@ -95,18 +95,32 @@
 
             p (println ">o> abc.data" data)
 
+            data (if (contains? data :configuration)
+                   (assoc data :configuration (-> (jqh/map-as-json! (:configuration data) :configuration)
+                                                  (to-jsonb-stm)
+                                                  ))
+                   data)
+
+
             dwid (assoc data :id id)
             upd-query (dbh/sql-update-clause "id" (str id))
+
+            p (println ">o> abc" (type id))
+
             sql-query (-> (sql/update :workflows)
                           (sql/set dwid)
-                          (sql/where upd-query)
+                          ;(sql/where upd-query)
+
+                          (dbh/sql-update-fnc-clause "id" id )
+(sql/returning :*)
                           sql-format)
             upd-result (jdbc/execute! (:tx req) sql-query)]
 
         (info "handle_update-workflow: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
-        (if (= 1 (::jdbc/update-count upd-result))
-          (sd/response_ok (dbh/query-eq-find-one :workflows :id id tx))
+        ;(if (= 1 (::jdbc/update-count upd-result))
+        (if upd-result
+          (sd/response_ok upd-result)
           (sd/response_failed "Could not update workflow." 406))))
     (catch Exception e (sd/response_exception e))))
 
@@ -117,11 +131,16 @@
             id (-> req :parameters :path :id)
             sql-query (-> (sql/delete-from :workflows)
                           (sql/where [:= :id id])
+                          (sql/returning :*)
                           sql-format)
-            delresult (jdbc/execute! (:tx req) sql-query)]
+            delresult (jdbc/execute! (:tx req) sql-query)
 
-        (if (= 1 (::jdbc/update-count delresult))
-          (sd/response_ok olddata)
+            ;delresult []
+            ]
+
+        ;(if (= 1 (::jdbc/update-count delresult))
+        (if (dbh/has-one! delresult)
+          (sd/response_ok delresult)
           (sd/response_failed "Could not delete workflow." 422))))
     (catch Exception e (sd/response_exception e))))
 
@@ -205,7 +224,7 @@
            :parameters {:path {:id s/Uuid}
                         :body schema_update_workflow}
            :responses {200 {:description "Returns the updated workflow."
-                            :body schema_export_workflow}
+                            :body [schema_export_workflow]}
                        404 {:description "Workflow not found."
                             :body s/Any}
                        406 {:description "Could not update workflow."
@@ -218,6 +237,6 @@
                            (wwrap-find-workflow :id)]
               :parameters {:path {:id s/Uuid}}
               :responses {200 {:description "Returns the deleted workflow."
-                               :body schema_export_workflow}
+                               :body [schema_export_workflow]}
                           404 {:description "Workflow not found."
                                :body s/Any}}}}]])
