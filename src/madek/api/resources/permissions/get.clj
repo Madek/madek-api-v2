@@ -70,7 +70,7 @@
 
 ;; ### handler ######################################################
 
-(def media-entry.media_entry_id.perms {:summary (sd/sum_usr_pub "List media-entry permissions.")
+(def media-entry.media_entry_id.perms {:summary (sd/sum_auth_view "List media-entry permissions.")
                                        :swagger {:produces "application/json"}
                                        :content-type "application/json"
                                        :handler handle_list-perms
@@ -81,7 +81,7 @@
                                        :responses {200 {:description "Returns the media-entry permissions."
                                                         :body schema_export_media-entry-permissions-all}}})
 
-(def media-entry.media_entry_id.perms.resources {:summary "Query media-entry permissions."
+(def media-entry.media_entry_id.perms.resources {:summary (sd/sum_auth_view "Query media-entry permissions.")
                                                  :swagger {:produces "application/json"}
                                                  :content-type "application/json"
                                                  :handler handle_get_entity_perms
@@ -92,7 +92,7 @@
                                                  :responses {200 {:description "Returns the media-entry permissions."
                                                                   :body schema_export-media-entry-perms}}})
 
-(def media-entry.media_entry_id.perms.users {:summary "Query media-entry user permissions."
+(def media-entry.media_entry_id.perms.users {:summary (sd/sum_auth_view "Query media-entry user permissions.")
                                              :swagger {:produces "application/json"}
                                              :content-type "application/json"
                                              :handler handle_list-user-perms
@@ -103,7 +103,7 @@
                                              :responses {200 {:description "Returns the media-entry user permissions."
                                                               :body [schema_export-media-entry-user-permission]}}})
 
-(def media-entry.media_entry_id.perms.user {:summary "Get media-entry user permissions."
+(def media-entry.media_entry_id.perms.user {:summary (sd/sum_auth_edit "Get media-entry user permissions.")
                                             :swagger {:produces "application/json"}
                                             :content-type "application/json"
                                             :handler handle_get-user-perms
@@ -115,7 +115,7 @@
                                             :responses {200 {:description "Returns the created media-entry user permission."
                                                              :body schema_export-media-entry-user-permission}}})
 
-(def media-entry.media_entry_id.perms.groups {:summary "Query media-entry group permissions."
+(def media-entry.media_entry_id.perms.groups {:summary (sd/sum_auth_view "Query media-entry group permissions.")
                                               :swagger {:produces "application/json"}
                                               :content-type "application/json"
                                               :handler handle_list-group-perms
@@ -126,7 +126,7 @@
                                               :responses {200 {:description "Returns the media-entry group permissions."
                                                                :body [schema_export-media-entry-group-permission]}}})
 
-(def media-entry.media_entry_id.perms.group.group_id {:summary "Get media-entry group permissions."
+(def media-entry.media_entry_id.perms.group.group_id {:summary (sd/sum_auth_edit "Get media-entry group permissions.")
                                                       :swagger {:produces "application/json"}
                                                       :content-type "application/json"
                                                       :handler handle_get-group-perms
@@ -138,7 +138,7 @@
                                                       :responses {200 {:description "Returns the created media-entry group permission."
                                                                        :body schema_export-media-entry-group-permission}}})
 
-(def collection.collection_id.perms {:summary "Query collection permissions."
+(def collection.collection_id.perms {:summary (sd/sum_auth_view "Query collection permissions.")
                                      :swagger {:produces "application/json"}
                                      :content-type "application/json"
                                      :handler handle_list-perms
@@ -149,7 +149,7 @@
                                      :responses {200 {:description "Returns the collection permissions."
                                                       :body schema_export_collection-permissions-all}}})
 
-(def collection.collection_id.perms.resources {:summary "Query collection permissions."
+(def collection.collection_id.perms.resources {:summary (sd/sum_auth_view "Query collection permissions.")
                                                :swagger {:produces "application/json"}
                                                :content-type "application/json"
                                                :handler handle_get_entity_perms
@@ -160,7 +160,7 @@
                                                :responses {200 {:description "Returns the collection permissions."
                                                                 :body schema_export-collection-perms}}})
 
-(def collection.collection_id.perms.users {:summary "Query collection permissions."
+(def collection.collection_id.perms.users {:summary (sd/sum_auth_view "Query collection permissions.")
                                            :swagger {:produces "application/json"}
                                            :content-type "application/json"
                                            :handler handle_list-user-perms
@@ -171,7 +171,7 @@
                                            :responses {200 {:description "Returns the collection user permissions."
                                                             :body [schema_export-collection-user-permission]}}})
 
-(def collection.collection_id.perms.user.user_id {:summary "Get collection user permissions."
+(def collection.collection_id.perms.user.user_id {:summary (sd/sum_auth_view "Get collection user permissions.")
                                                   :swagger {:produces "application/json"}
                                                   :content-type "application/json"
                                                   :handler handle_get-user-perms
@@ -183,7 +183,7 @@
                                                   :responses {200 {:description "Returns the created collection user permission."
                                                                    :body schema_export-collection-user-permission}}})
 
-(def collection.collection_id.perms.groups {:summary "Query collection permissions."
+(def collection.collection_id.perms.groups {:summary (sd/sum_auth_view "Query collection permissions.")
                                             :swagger {:produces "application/json"}
                                             :content-type "application/json"
                                             :handler handle_list-group-perms
@@ -194,7 +194,7 @@
                                             :responses {200 {:description "Returns the collection group permissions."
                                                              :body [schema_export-collection-group-permission]}}})
 
-(def collection.collection_id.perms.group.group_id {:summary "Get collection group permissions."
+(def collection.collection_id.perms.group.group_id {:summary (sd/sum_auth_edit "Get collection group permissions.")
                                                     :swagger {:produces "application/json"}
                                                     :content-type "application/json"
                                                     :handler handle_get-group-perms

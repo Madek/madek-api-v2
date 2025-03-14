@@ -38,7 +38,7 @@
 (def user-routes
   ["/"
    {:openapi {:tags ["roles"]}}
-   ["roles" {:get {:summary (sd/sum_pub "Get list of roles.")
+   ["roles" {:get {:summary (sd/sum_pub "Get list of roles. [OK]")
                    :description "Get list of roles."
                    :handler role/get-index
                    :coercion spec/coercion
@@ -47,7 +47,7 @@
                                     :body ::response-roles-body}}}}]
 
    ["roles/:id"
-    {:get {:summary (sd/sum_pub "Get role by id")
+    {:get {:summary (sd/sum_pub "Get role by id [OK]")
            :description "Get a role by id. Returns 404, if no such role exists."
            :swagger {:produces "application/json"}
            :content-type "application/json"

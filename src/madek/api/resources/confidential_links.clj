@@ -229,7 +229,7 @@
   ["/collection/:collection_id"
    {:openapi {:tags ["api/collection/conf-links"]}}
    ["/conf-links"
-    {:post {:summary (sd/sum_adm "Create confidential link.")
+    {:post {:summary (sd/sum_auth "Create confidential link.")
             :handler handle_create-conf-link
             :middleware [jqh/ring-wrap-add-media-resource
                          jqh/ring-wrap-authorization-edit-permissions]
@@ -241,7 +241,7 @@
                         406 {:description "Could not create confidential link."
                              :body s/Any}}}
 
-     :get {:summary (sd/sum_adm "List workflows.")
+     :get {:summary (sd/sum_auth "List workflows.")
            :handler handle_list-conf-links
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-permissions]
@@ -253,7 +253,7 @@
                             :body s/Any}}}}]
 
    ["/conf-link/:id"
-    {:get {:summary (sd/sum_adm "Get confidential link by id.")
+    {:get {:summary (sd/sum_auth "Get confidential link by id.")
            :handler handle_get-conf-link
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-permissions]
@@ -265,7 +265,7 @@
                        404 {:description "No such confidential link."
                             :body s/Any}}}
 
-     :put {:summary (sd/sum_adm "Update confidential link with id.")
+     :put {:summary (sd/sum_auth "Update confidential link with id.")
            :handler handle_update-conf-link
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-permissions]
@@ -280,7 +280,7 @@
                        406 {:description "Could not update confidential link."
                             :body s/Any}}}
 
-     :delete {:summary (sd/sum_adm "Delete confidential link by id.")
+     :delete {:summary (sd/sum_auth "Delete confidential link by id.")
               :coercion reitit.coercion.schema/coercion
               :handler handle_delete-conf-link
               :middleware [jqh/ring-wrap-add-media-resource

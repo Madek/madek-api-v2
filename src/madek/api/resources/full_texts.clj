@@ -139,7 +139,7 @@
   ["/"
    {:openapi {:tags ["full_texts"]}}
    ["full_texts"
-    {:get {:summary (sd/sum_usr "Query or list full_texts.")
+    {:get {:summary (sd/sum_pub "Query or list full_texts.")
            :handler handle_list-full_texts
            :coercion spec/coercion
            :responses {200 {:description "Returns the full_texts."
@@ -147,7 +147,7 @@
            :parameters {:query :ft-query/schema-query-def}}}]
 
    ["full_texts/:media_resource_id"
-    {:get {:summary (sd/sum_usr "Get full_text.")
+    {:get {:summary (sd/sum_pub "Get full_text.")
            :handler handle_get-full_text
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Returns the full_text."
@@ -213,7 +213,7 @@
   [["/collection/:collection_id/full_text"
     {:openapi {:tags ["collection/full_text"]}}
     ["/"
-     {:get {:summary (sd/sum_usr_pub "Get full_text.")
+     {:get {:summary (sd/sum_auth "Get full_text.")
             :handler handle_get-full_text
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}}
@@ -224,7 +224,7 @@
                          jqh/ring-wrap-authorization-edit-metadata
                          (wrap-find-full_text :collection_id true)]}
 
-      :post {:summary (sd/sum_usr "Create full_text for collection")
+      :post {:summary (sd/sum_auth "Create full_text for collection")
              :swagger {:consumes "application/json"
                        :produces "application/json"}
              :handler handle_create-full_texts
@@ -238,7 +238,7 @@
              :middleware [jqh/ring-wrap-add-media-resource
                           jqh/ring-wrap-authorization-edit-metadata]}
 
-      :put {:summary (sd/sum_usr "Update full_text for collection.")
+      :put {:summary (sd/sum_auth "Update full_text for collection.")
             :coercion reitit.coercion.schema/coercion
             :parameters {:path {:collection_id s/Str}
                          :body {:text s/Str}}
@@ -251,7 +251,7 @@
                         406 (sd/create-error-message-response "Update failed." "Could not update full_text.")}
             :handler handle_update-full_texts}
 
-      :delete {:summary (sd/sum_usr "Delete full_text.")
+      :delete {:summary (sd/sum_auth "Delete full_text.")
                :coercion reitit.coercion.schema/coercion
                :parameters {:path {:collection_id s/Str}}
                :middleware [jqh/ring-wrap-add-media-resource

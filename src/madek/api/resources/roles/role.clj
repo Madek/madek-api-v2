@@ -17,7 +17,14 @@
   (when-let [labels (:labels role)]
     (assoc role :labels (sd/transform_ml (:labels role)))))
 
-(defn- query-index
+(defn query-index
+  [query-params]
+  (-> (sql/select :roles.*)
+      (sql/from :roles)
+      ;(pagination/sql-offset-and-limit query-params)
+      (sql-format)))
+
+(defn query-index-paginated
   [query-params]
   (-> (sql/select :roles.*)
       (sql/from :roles)))

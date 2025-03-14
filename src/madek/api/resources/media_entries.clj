@@ -387,7 +387,7 @@
    {:openapi {:tags ["api/media-entries"]}}
    ["media-entries"
     {:get
-     {:summary (sd/?sum_pub? "Query media-entries.")
+     {:summary (sd/sum_pub "Query media-entries.")
       :handler handle_query_media_entry
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion

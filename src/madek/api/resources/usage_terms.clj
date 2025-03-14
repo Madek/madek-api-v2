@@ -182,7 +182,7 @@
   ["/"
    {:openapi {:tags ["usage-terms"] :security []}}
    ["usage-terms"
-    {:get {:summary (sd/sum_pub "List usage_terms.")
+    {:get {:summary (sd/sum_pub "List usage_terms. [OK]")
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
            :parameters {:query {(s/optional-key :full_data) s/Bool}}
@@ -190,7 +190,7 @@
                             :body [schema_export_usage_term]}}}}]
 
    ["usage-terms/:id"
-    {:get {:summary (sd/sum_pub "Get usage_terms by id.")
+    {:get {:summary (sd/sum_pub "Get usage_terms by id. [OK]")
            :handler handle_get-usage_term
            :middleware [(wwrap-find-usage_term :id)]
            :coercion reitit.coercion.schema/coercion

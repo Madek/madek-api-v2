@@ -12,7 +12,6 @@ shared_context :setup_owner_user_for_token_access_base do
   end
 
   let!(:owner_token) do
-    ApiToken.create(user: owner, scope_read: true, scope_write: true, description: "owner-token")
   end
 
   let!(:user) do

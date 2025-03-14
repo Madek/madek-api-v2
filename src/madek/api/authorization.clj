@@ -58,6 +58,13 @@
       (handler request)
       {:status 401 :body {:message "Not authorized"}})))
 
+;; TODO
+(defn wrap-authorized-user-feature-toggle [handler]
+  (fn [request]
+    (if-let [id (-> request :authenticated-entity :id)]
+      (handler request)
+      {:status 401 :body {:message "Not authorized"}})))
+
 (def destructive-methods #{:post :put :delete})
 
 (defn wrap-authorize-http-method [handler]

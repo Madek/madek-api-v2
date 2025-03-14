@@ -20,7 +20,8 @@
   (let [qd (verify-full_data req [:workflows.*] [:workflows.id])
         tx (:tx req)
         db-result (dbh/query-find-all :workflows qd tx)]
-    ;(info "handle_list-workflows" "\nqd\n" qd "\nresult\n" db-result)
+    ;(info "handle_list-
+    ; workflows" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_get-workflow

@@ -240,10 +240,13 @@
 
 (defn sum_todo [text] (apply str "TODO: " text))
 (defn sum_pub [text] (apply str "PUBLIC Context: " text))
-(defn sum_usr [text] (apply str "USER Context: " text))
+(defn sum_usr [text] (apply str "AUTH-USER Context: " text))
 (defn sum_usr_pub [text] (apply str "PUBLIC/USER Context: " text))
 (defn sum_adm [text] (apply str "ADMIN Context: " text))
-(defn sum_auth [text] (apply str "AUTHORIZED Context: " text))
+;(defn sum_auth [text] (apply str "AUTH-FOR-RESOURCE Context: " text))
+(defn sum_auth [text] (apply str "AUTH-USER Context: " text))
+(defn sum_auth_edit [text] (apply str "AUTH-USR-EDIT Context: " text))
+(defn sum_auth_view [text] (apply str "AUTH-USR-VIEW Context: " text))
 
 (defn sum_cnv [text] (apply str text " " s_cnv_acc))
 
