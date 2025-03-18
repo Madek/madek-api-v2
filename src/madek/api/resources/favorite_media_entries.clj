@@ -19,7 +19,7 @@
 
 (defn handle_list-favorite_media_entries
   [req]
-  (let [db-result (dbh/query-find-all :favorite_media_entries :* (:tx req))]
+  (let [db-result (dbh/query-find-all :favorite_media_entries [:*] (:tx req))]
     ;(info "handle_list-favorite_media_entry" "\nresult\n" db-result)
     (sd/response_ok db-result)))
 

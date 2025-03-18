@@ -316,9 +316,8 @@
                                                      :body {:message s/Str}}}}}]
 
    ["groups/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
-                                             :description "gid= uuid/institutional_id\n
-                                       user_id= uuid|email\n
-                                       Get group user by group-id and user-id."
+                                             :description "- gid = uuid / institutional_id\n
+- user_id = uuid | email"
                                              :swagger {:produces "application/json"}
                                              :content-type "application/json"
                                              :handler group-users/handle_get-group-user

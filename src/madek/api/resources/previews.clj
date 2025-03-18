@@ -64,6 +64,11 @@
    :updated_at s/Any
    :created_at s/Any})
 
+(def schema-image-size
+  {(s/optional-key :size)
+   ^{:description "The size of the media entry. Allowed values: small, small_125, medium, large, x-large, maximum"}
+   (s/enum "small" "small_125" "medium" "large" "x-large" "maximum")})
+
 ; TODO tests
 (def preview-routes
   ["/previews"
@@ -103,14 +108,14 @@
    {:openapi {:tags ["api/media-entry"]}}
    ; TODO media-entry preview auth
    ["/:media_entry_id/preview"
-    {:get {:summary "Get preview for media-entry id. (TODO: replace size by enum[small .. tall])"
+    {:get {:summary "Get preview for media-entry id."
            :handler handle_get-preview
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
                         ;            media-files.authorization/ring-wrap-authorize-metadata-and-previews
                         ]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
-                        :query {(s/optional-key :size) s/Str}}
+                        :query schema-image-size}
            :responses {200 {:description "Returns the preview."
                             :body schema_export_preview}
                        404 {:description "Not found."
@@ -118,7 +123,7 @@
 
    ; TODO media-entry preview auth
    ["/:media_entry_id/preview/data-stream"
-    {:get {:summary "Get preview for media-entry id. (TODO: replace size by enum[small .. tall])"
+    {:get {:summary "Get preview for media-entry id."
            :handler preview/get-preview-file-data-stream
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
                         wrap-add-preview-for-media-file
@@ -130,7 +135,7 @@
                             :body s/Any}}
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
-                        :query {(s/optional-key :size) s/Str}}}}]])
+                        :query schema-image-size}}}]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

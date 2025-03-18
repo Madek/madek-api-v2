@@ -6,6 +6,7 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.helper :refer [verify-full_data]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -13,9 +14,7 @@
 
 (defn handle_list-workflows
   [req]
-  (let [qd (if (true? (-> req :parameters :query :full_data))
-             :workflows.*
-             :workflows.id)
+  (let [qd (verify-full_data req [:workflows.*] [:workflows.id])
         tx (:tx req)
         db-result (dbh/query-find-all :workflows qd tx)]
     ;(info "handle_list-workflows" "\nqd\n" qd "\nresult\n" db-result)

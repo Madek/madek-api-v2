@@ -70,7 +70,7 @@
    In that case, the is_publishable of the entry is set to true."
   (let [eid (-> req :parameters :path :media_entry_id)
         tx (:tx req)
-        validationContexts (-> (dbh/query-find-all :app_settings :contexts_for_entry_validation tx)
+        validationContexts (-> (dbh/query-find-all :app_settings [:contexts_for_entry_validation] tx)
                                first
                                :contexts_for_entry_validation)
         contextKeys (first (map get-context-keys-4-context validationContexts))

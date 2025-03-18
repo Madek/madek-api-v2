@@ -7,6 +7,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [verify-full_data]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
@@ -14,9 +15,7 @@
 
 (defn handle_list-admin
   [req]
-  (let [qd (if (true? (-> req :parameters :query :full_data))
-             :admins.*
-             :admins.id)
+  (let [qd (verify-full_data req [:admins.*] [:admins.id])
         db-result (dbh/query-find-all :admins qd (:tx req))]
     (sd/response_ok {:admins db-result})))
 

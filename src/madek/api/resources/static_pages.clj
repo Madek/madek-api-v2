@@ -8,6 +8,7 @@
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
+   [madek.api.utils.helper :refer [verify-full_data]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -15,8 +16,7 @@
 
 (defn handle_list-static_pages
   [req]
-  (let [full-data (true? (-> req :parameters :query :full_data))
-        qd (if (true? full-data) :static_pages.* :static_pages.id)
+  (let [qd (verify-full_data req [:static_pages.*] [:static_pages.id])
         tx (:tx req)
         db-result (dbh/query-find-all :static_pages qd tx)]
     (sd/response_ok db-result)))
