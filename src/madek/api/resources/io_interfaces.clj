@@ -7,6 +7,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [verify-full_data]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -16,8 +17,7 @@
 
 (defn handle_list-io_interface
   [req]
-  (let [full_data (true? (-> req :parameters :query :full_data))
-        qd (if (true? full_data) :* :io_interfaces.id)
+  (let [qd (verify-full_data req [:io_interfaces.*] [:io_interfaces.id])
         tx (:tx req)
         db-result (dbh/query-find-all :io_interfaces qd tx)]
 
