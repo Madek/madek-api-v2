@@ -164,7 +164,8 @@
 
 (defn query-find-all
   [table-key col-keys tx]
-  (let [db-query (-> (build-query-base table-key (table->col-keys table-key))
+  (let [selected-cols (or (seq col-keys) (table->col-keys table-key))
+        db-query (-> (build-query-base table-key selected-cols)
                      sql-format)
         db-result (jdbc/execute! tx db-query)]
     db-result))

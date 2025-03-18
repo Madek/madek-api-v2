@@ -222,13 +222,21 @@ context "Getting context-keys with pagination" do
     it "responses with 200" do
       resp1 = client.get("/api-v2/admin/context-keys?page=1&size=5")
       expect(resp1.status).to be == 200
-      expect(resp1.body.count).to be 5
+      expect(resp1.body["data"].count).to be 5
 
       resp2 = client.get("/api-v2/admin/context-keys?page=2&size=5")
       expect(resp2.status).to be == 200
-      expect(resp2.body.count).to be 5
+      expect(resp2.body["data"].count).to be 5
+      expect(resp2.body["pagination"]).to be_a Hash
 
-      expect(lists_of_maps_different?(resp1.body, resp2.body)).to eq true
+      expect(lists_of_maps_different?(resp1.body["data"], resp2.body["data"])).to eq true
+    end
+
+    it "responses with 200" do
+      resp = client.get("/api-v2/admin/context-keys")
+      expect(resp.status).to be == 200
+      expect(resp.body.count).to be 10
+      expect(resp.body).to be_a Array
     end
   end
 end

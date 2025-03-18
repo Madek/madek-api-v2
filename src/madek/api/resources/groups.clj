@@ -4,7 +4,6 @@
             [clojure.spec.alpha :as sa]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
@@ -13,7 +12,8 @@
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-            [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+            [madek.api.utils.helper :refer [f mslurp]]
+            [madek.api.utils.pagination :refer [pagination-handler]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -42,7 +42,7 @@
 (defn get-group [id-or-institutional-group-id tx]
   (if-let [group (groups/find-group id-or-institutional-group-id tx)]
     {:body (dissoc group :previous_id :searchable)}
-    {:status 404 :body "No such group found"})) ; TODO: toAsk 204 No Content
+    {:status 404 :body {:message "No such group found"}})) ; TODO: toAsk 204 No Content
 
 ;### delete group ##############################################################
 
@@ -82,26 +82,26 @@
 ;### index ####################################################################
 ; TODO test query and paging
 (defn build-index-query [req]
-  (let [query-params (-> req :parameters :query)]
-    (-> (if (true? (:full_data query-params))
-          (sql/select :*)
-          (sql/select :id))
-        (sql/from :groups)
-        (sql/order-by [:id :asc])
-        (dbh/build-query-param query-params :id)
-        (dbh/build-query-param query-params :institutional_id)
-        (dbh/build-query-param query-params :type)
-        (dbh/build-query-param query-params :created_by_user_id)
-        (dbh/build-query-param-like query-params :name)
-        (dbh/build-query-param-like query-params :institutional_name)
-        (dbh/build-query-param-like query-params :institution)
-        (dbh/build-query-param-like query-params :searchable)
-        (pagination/sql-offset-and-limit query-params)
-        sql-format)))
+  (let [query-params (-> req :parameters :query)
+        base-query (-> (if (:full_data query-params)
+                         (sql/select :*)
+                         (sql/select :id))
+                       (sql/from :groups)
+                       (sql/order-by [:id :asc])
+                       (dbh/build-query-param query-params :id)
+                       (dbh/build-query-param query-params :institutional_id)
+                       (dbh/build-query-param query-params :type)
+                       (dbh/build-query-param query-params :created_by_user_id)
+                       (dbh/build-query-param-like query-params :name)
+                       (dbh/build-query-param-like query-params :institutional_name)
+                       (dbh/build-query-param-like query-params :institution)
+                       (dbh/build-query-param-like query-params :searchable))]
+    base-query))
 
 (defn index [req]
-  (let [result (jdbc/execute! (:tx req) (build-index-query req))]
-    (sd/response_ok {:groups result})))
+  (let [base-query (build-index-query req)
+        res (pagination-handler req base-query :groups)]
+    (sd/response_ok res)))
 
 ;### routes ###################################################################
 
@@ -142,10 +142,9 @@
 
 (defn handle_get-group [req]
   (let [group-id (-> req :parameters :path :id)
-        tx (:tx req)
-        id (-> (convert-groupid group-id) :group-id)]
-    (info "handle_get-group" "\nid\n" id)
-    (get-group id tx)))
+        tx (:tx req)]
+    (info "handle_get-group" "\nid\n" group-id)
+    (get-group group-id tx)))
 
 (defn handle_delete-group [req]
   (let [id (-> req :parameters :path :id)]
@@ -177,12 +176,12 @@
    :person-id s/Uuid})
 
 (sa/def ::group-id-def (sa/keys :req-un [::sp/group-id]))
-(sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp/institutional_id ::sp/person_id]))
+(sa/def ::group-id-resp-def (sa/keys :req-un [::sp/id ::sp/email ::sp-nil/institutional_id ::sp/person_id]))
 
 (sa/def :usr-users-list/users (st/spec {:spec (sa/coll-of ::group-id-resp-def)
                                         :description "A list of users"}))
 
-(sa/def ::response-users-body (sa/keys :req-un [:usr-users-list/users]))
+(sa/def ::response-users-body (sa/keys :opt-un [:usr-users-list/users ::sp/data ::sp/pagination]))
 
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
                                             ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
@@ -193,13 +192,13 @@
 (sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
                                           :description "A list of persons"}))
 
-(sa/def ::response-groups-body (sa/keys :req-un [:usr-groups-list/groups]))
+(sa/def ::response-groups-body (sa/keys :opt-un [:usr-groups-list/groups ::sp/data ::sp/pagination]))
 
 (def user-routes
   [["/"
     {:openapi {:tags ["groups"]}}
     ["groups" {:get {:summary "Get all group ids"
-                     :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
+                     :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
                      :handler index
                      :parameters {:query ::group-query-def}
                      :coercion spec/coercion
@@ -223,13 +222,13 @@
   ["/"
    {:openapi {:tags ["admin/groups"] :security ADMIN_AUTH_METHODS}}
    ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
-                    :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
+                    :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
                     :handler index
                     :middleware [wrap-authorize-admin!]
                     :parameters {:query ::group-query-def}
                     :coercion spec/coercion
                     :responses {200 {:description "Returns a list of group ids."
-                                     :body {:groups [(st/spec {:spec :usr/groups})]}}}} ;;ok
+                                     :body ::response-groups-body}}}
 
               :post {:summary (f "Create a group" "groups::person_id-not-exists")
                      :description "Create a group."
@@ -316,9 +315,8 @@
                                                      :body {:message s/Str}}}}}]
 
    ["groups/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
-                                             :description "gid= uuid/institutional_id\n
-                                       user_id= uuid|email\n
-                                       Get group user by group-id and user-id."
+                                             :description "- gid = uuid / institutional_id\n
+- user_id = uuid | email"
                                              :swagger {:produces "application/json"}
                                              :content-type "application/json"
                                              :handler group-users/handle_get-group-user

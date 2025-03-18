@@ -1,16 +1,16 @@
 (ns madek.api.utils.coercion.spec-alpha-definition
   (:require
    [clojure.spec.alpha :as sa]
-   [madek.api.pagination :refer [ZERO_BASED_PAGINATION DEFAULT_COUNT_SWAGGER DEFAULT_PAGE_SWAGGER]]
    [spec-tools.core :as st]))
 
-(sa/def ::page (st/spec {:spec int?
-                         :description (str "Page number " (when ZERO_BASED_PAGINATION "(zero-based pagination)"))
-                         :json-schema/default DEFAULT_PAGE_SWAGGER}))
+(sa/def ::page (st/spec {:spec pos-int?
+                         :description "Page number"}))
 
-(sa/def ::size (st/spec {:spec int?
-                         :description "Number of items per page"
-                         :json-schema/default DEFAULT_COUNT_SWAGGER}))
+(sa/def ::size (st/spec {:spec pos-int?
+                         :description "Number of items per page"}))
+
+(sa/def ::total_rows int?)
+(sa/def ::total_pages int?)
 
 (def schema_pagination_opt
   (sa/keys
@@ -98,6 +98,8 @@
 (sa/def ::institutional_directory_infos (st/spec {:spec (sa/coll-of string?)
                                                   :description "An array of strings"}))
 
+(sa/def ::data (st/spec {:spec (sa/coll-of any?)
+                         :description "An array of any types"}))
 (sa/def ::rdf_class (st/spec {:spec string?}))
 (sa/def ::scope (st/spec {:spec string?}))
 
@@ -120,9 +122,12 @@
 (sa/def ::io_mappings (st/spec {:spec any?}))
 (sa/def ::id_2 (st/spec {:spec any?}))
 (sa/def ::text_type (st/spec {:spec string?}))
+(sa/def ::descriptions (st/spec {:spec string?}))
 (sa/def ::position_2 (st/spec {:spec int?}))
 (sa/def ::col_meta_data (st/spec {:spec any?}))
 (sa/def ::labels (st/spec {:spec map?}))
+(sa/def ::pagination
+  (sa/keys :req-un [::total_rows ::total_pages ::page ::size]))
 (sa/def ::documentation_urls (st/spec {:spec list?}))
 (sa/def ::allowed_people_subtypes (st/spec {:spec any?}))
 

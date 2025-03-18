@@ -65,13 +65,19 @@ describe "ordering media entries" do
         it "responses with 200" do
           resp1 = client.get("/api-v2/media-entries?page=1&size=5")
           expect(resp1.status).to be == 200
-          expect(resp1.body["media_entries"].count).to be 5
+          expect(resp1.body["data"].count).to be 5
 
           resp2 = client.get("/api-v2/media-entries?page=2&size=5")
           expect(resp2.status).to be == 200
-          expect(resp2.body["media_entries"].count).to be 5
+          expect(resp2.body["data"].count).to be 5
 
-          expect(lists_of_maps_different?(resp1.body["media_entries"], resp2.body["media_entries"])).to eq true
+          expect(lists_of_maps_different?(resp1.body["data"], resp2.body["data"])).to eq true
+        end
+
+        it "responses with 200" do
+          resp = client.get("/api-v2/media-entries")
+          expect(resp.status).to be == 200
+          expect(resp.body["media_entries"].count).to be 30
         end
       end
 

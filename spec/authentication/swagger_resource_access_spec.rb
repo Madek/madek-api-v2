@@ -43,7 +43,7 @@ end
 # ###################### INVALID TOKEN TESTS #############################################
 
 shared_context :test_proper_public_user do
-  describe "Test access to api-docs and endpoints" do
+  describe "1) Test access to api-docs and endpoints" do
     context "with invalid db-token-User" do
       {
         "/api-v2/api-docs/index.html" => 200,
@@ -119,7 +119,7 @@ end
 # ###################### TOKEN ###########################################################
 
 shared_context :test_proper_user_token_auth do
-  describe "Test access to api-docs and endpoints" do
+  describe "2) Test access to api-docs and endpoints" do
     context "with valid token" do
       {
         "/api-v2/app-settings" => 200, # public endpoint
@@ -148,7 +148,7 @@ end
 # ###################### TOKEN WITHOUT CREDS #############################################
 
 shared_context :test_proper_user_token_without_creds_auth do
-  describe "Test access to api-docs and endpoints" do
+  describe "3) Test access to api-docs and endpoints" do
     context "with token without permissions" do
       {
         "/api-v2/app-settings" => 403, # public endpoint

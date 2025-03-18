@@ -3,11 +3,11 @@
    [clj-uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.pagination :as pagination]
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [convert-groupid-userid]]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -74,23 +74,22 @@
       (sql/join :groups_users [:= :users.id :groups_users.user_id])
       (sql/join :groups [:= :groups.id :groups_users.group_id])
       (sql/order-by [:users.id :asc])
-      (groups/sql-merge-where-id group-id)
-      (pagination/sql-offset-and-limit (-> request :parameters :query))
-      sql-format))
+      (groups/sql-merge-where-id group-id)))
 
 (defn group-users [group-id request]
-  (jdbc/execute! (:tx request)
-                 (group-users-query group-id request)))
+
+  (let [base-query (group-users-query group-id request)]
+    (pagination-handler request base-query :users)))
 
 (defn get-group-users [group-id request]
-  (sd/response_ok {:users (group-users group-id request)}))
+  (sd/response_ok (group-users group-id request)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn add-user [group-id user-id req]
   (info "add-user" group-id ":" user-id)
   (if-let [user (find-group-user group-id user-id (:tx req))]
-    (sd/response_ok {:users (group-users group-id req)})
+    (sd/response_ok (group-users group-id req))
     (let [tx (:tx req)
           group (groups/find-group group-id tx)
           user (find-user user-id (:tx req))]
@@ -101,7 +100,7 @@
                                (sql/values [{:group_id (:id group)
                                              :user_id (:id user)}])
                                sql-format))
-            (sd/response_ok {:users (group-users group-id req)}))))))
+            (sd/response_ok (group-users group-id req)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -113,7 +112,7 @@
                                    (-> (sql/delete-from :groups_users)
                                        (sql/where [:= :group_id (:id group)] [:= :user_id (:id user)])
                                        sql-format))]
-          (sd/response_ok {:users (group-users group-id req)}))
+          (sd/response_ok (group-users group-id req)))
         (sd/response_not_found "No such group"))
       (sd/response_not_found "No such group or user."))))
 
@@ -162,7 +161,10 @@
           del-users (clojure.set/difference current-group-users-ids target-group-users-ids)
           ins-users (clojure.set/difference target-group-users-ids current-group-users-ids)
           del-query (update-delete-query group-id del-users)
-          ins-query (update-insert-query group-id ins-users)]
+          ins-query (update-insert-query group-id ins-users)
+          data (-> (group-users-query group-id nil)
+                   sql-format)
+          res (jdbc/execute! tx data jdbc/unqualified-snake-kebab-opts)]
       ;(info "update-group-users" "\ncurr\n" current-group-users-ids "\ntarget\n" target-group-users-ids )
       ;(info "update-group-users" "\ndel-u\n" del-users)
       ;(info "update-group-users" "\nins-u\n" ins-users)
@@ -176,10 +178,8 @@
         (jdbc/execute!
          tx
          ins-query))
-
-      (sd/response_ok {:users (jdbc/execute! tx
-                                             (group-users-query group-id nil)
-                                             jdbc/unqualified-snake-kebab-opts)}))))
+      ;; FIXME: bug when PUT
+      (sd/response_ok {:users res}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

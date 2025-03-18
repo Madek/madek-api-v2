@@ -1,13 +1,12 @@
 (ns madek.api.resources.vocabularies.index
   (:require
    [clojure.string :as str]
-   [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.pagination :refer [sql-offset-and-limit]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
-   [next.jdbc :as jdbc]))
+   [madek.api.utils.pagination :refer [pagination-handler]]
+   [taoensso.timbre :refer [debug]]))
 
 (defn- where-clause
   [user-id tx]
@@ -22,10 +21,7 @@
   ([user-id query-params tx]
    (-> (sql/select :*)
        (sql/from :vocabularies)
-       (sql/where (where-clause user-id tx))
-       (sql-offset-and-limit query-params)
-       sql-format))
-
+       (sql/where (where-clause user-id tx))))
   ([user-id query-params request tx]
    (let [is_admin_endpoint (str/includes? (-> request :uri) "/admin/")
          select (if is_admin_endpoint
@@ -33,29 +29,27 @@
                   (sql/select :id :admin_comment :position :labels :descriptions))]
      (-> select
          (sql/from :vocabularies)
-         (sql/where (where-clause user-id tx))
-         (sql-offset-and-limit query-params)
-         sql-format))))
-
-(defn- query-index-resources [request]
-  (let [user-id (-> request :authenticated-entity :id)
-        tx (:tx request)
-        qparams (-> request :query-params)
-        query (base-query user-id qparams request tx)]
-
-    ;(info "query-index-resources: " query)
-    (jdbc/execute! tx query)))
+         (sql/where (where-clause user-id tx))))))
 
 (defn transform_ml [vocab]
   (assoc vocab
          :labels (sd/transform_ml (:labels vocab))
          :descriptions (sd/transform_ml (:descriptions vocab))))
 
+(defn- query-index-resources [request]
+  (let [user-id (-> request :authenticated-entity :id)
+        tx (:tx request)
+        qparams (-> request :query-params)
+        query (base-query user-id qparams request tx)
+        after-fnc (fn [res] (map transform_ml res))
+        result (pagination-handler request query :vocabularies after-fnc)]
+    (debug 'vocabularies result)
+    result))
+
 (defn get-index [request]
   (catcher/with-logging {}
-    (let [db-result (query-index-resources request)
-          result (map transform_ml db-result)]
-      (sd/response_ok {:vocabularies result}))))
+    (let [db-result (query-index-resources request)]
+      (sd/response_ok db-result))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

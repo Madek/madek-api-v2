@@ -3,7 +3,6 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
-            [madek.api.pagination :as pagination]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -11,6 +10,7 @@
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.pagination :refer [pagination-handler]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec :as spec]
@@ -28,10 +28,8 @@
         db-query (-> base-query
                      (sql/from :full_texts)
                      (dbh/build-query-param query-params :media_resource_id)
-                     (dbh/build-query-param-like query-params :text)
-                     (pagination/sql-offset-and-limit query-params)
-                     sql-format)
-        db-result (jdbc/execute! (:tx req) db-query)]
+                     (dbh/build-query-param-like query-params :text))
+        db-result (pagination-handler req db-query)]
 
     (info "handle_list-full_texts:" "\nquery:\n" db-query)
     (sd/response_ok db-result)))
@@ -115,10 +113,25 @@
 
 (sa/def :ft-query/schema-query-def (sa/keys :opt-un [::sp/full_data ::sp/media_resource_id ::sp/text ::sp/page ::sp/size]))
 
-(sa/def ::response-schema-def (sa/keys :req-un [::sp/media_resource_id] :opt-un [::sp/text]))
+(sa/def ::response-schema-def
+  (sa/keys :req-un [::sp/media_resource_id]
+           :opt-un [::sp/text]))
 
-(sa/def :usr-list/full-texts (st/spec {:spec (sa/coll-of ::response-schema-def)
-                                       :description "A list of full_texts"}))
+(sa/def :usr-list/full-texts-flat
+  (st/spec
+   {:spec (sa/coll-of ::response-schema-def :kind vector?)
+    :description "Flat list of full_texts (legacy format)"}))
+
+(sa/def :usr-list/full-texts-paginated
+  (st/spec
+   {:spec (sa/keys :req-un [::sp/data ::sp/pagination])
+    :description "Paginated list of full_texts"}))
+
+(sa/def :usr-list/full-texts
+  (st/spec
+   {:spec (sa/or :flat :usr-list/full-texts-flat
+                 :paginated :usr-list/full-texts-paginated)
+    :description "Supports both flat and paginated full_texts formats"}))
 
 ; TODO tests
 ; TODO howto access control or full_texts is public meta data

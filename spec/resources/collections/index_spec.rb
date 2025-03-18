@@ -50,6 +50,19 @@ describe "a bunch of collections with different properties" do
 
         it do
           expect(resource.status).to be == 200
+          expect(resource.body["collections"]).to be_a Array
+        end
+      end
+
+      describe "the collections resource" do
+        let :resource do
+          client.get("/api-v2/collections?page=1&size=5")
+        end
+
+        it do
+          expect(resource.status).to be == 200
+          expect(resource.body["data"]).to be_a Array
+          expect(resource.body["pagination"]).to be_a Hash
         end
       end
     end
@@ -105,6 +118,19 @@ describe "a bunch of collections with different properties" do
 
         it do
           expect(resource.status).to be == 200
+          expect(resource.body["collections"]).to be_a Array
+        end
+      end
+
+      describe "the collections resource" do
+        let :resource do
+          client.get("/api-v2/admin/collections?page=1&size=5")
+        end
+
+        it do
+          expect(resource.status).to be == 200
+          expect(resource.body["data"]).to be_a Array
+          expect(resource.body["pagination"]).to be_a Hash
         end
       end
     end

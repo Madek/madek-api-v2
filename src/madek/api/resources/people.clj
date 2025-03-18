@@ -2,7 +2,6 @@
   (:require [clj-uuid]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [madek.api.pagination :as pagination]
             [madek.api.resources.shared.db_helper :as dbh]
             [reitit.coercion.schema]))
 
@@ -75,7 +74,6 @@
      (dbh/build-query-param-like query-params :first_name)
      (dbh/build-query-param-like query-params :last_name)
      (dbh/build-query-param query-params :subtype)
-     (pagination/sql-offset-and-limit query-params)
      sql-format)))
 
 ;; TODO: not in use?

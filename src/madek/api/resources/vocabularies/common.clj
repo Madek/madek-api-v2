@@ -48,7 +48,7 @@
 (def schema_export-user-perms
   {:id s/Uuid
    :user_id s/Uuid
-   :creator_id s/Uuid
+   :creator_id (s/maybe s/Uuid)
    :updator_id (s/maybe s/Uuid)
    :vocabulary_id s/Str
    :use s/Bool
@@ -59,7 +59,7 @@
 (def schema_export-group-perms
   {:id s/Uuid
    :group_id s/Uuid
-   :creator_id s/Uuid
+   :creator_id (s/maybe s/Uuid)
    :updator_id (s/maybe s/Uuid)
    :vocabulary_id s/Str
    :use s/Bool

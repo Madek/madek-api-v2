@@ -6,6 +6,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [verify-full_data]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -13,8 +14,7 @@
 
 (defn handle_list-delegations
   [req]
-  (let [full-data (= "true" (get (-> req :query-params) "full-data"))
-        qd (if (true? full-data) :* :delegations.id)
+  (let [qd (verify-full_data req [:*] [:delegations.id])
         db-result (dbh/query-find-all :delegations qd (:tx req))]
     ;(info "handle_list-delegation" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
@@ -29,10 +29,15 @@
 (defn handle_create-delegations
   [req]
   (let [data (-> req :parameters :body)
-        sql-query (-> (sql/insert-into :delegations) (sql/values [data]) sql-format)
-        ins-res (jdbc/execute! (:tx req) sql-query)]
+        sql-query (-> (sql/insert-into :delegations) (sql/values [data]) (sql/returning :*) sql-format)
+        ins-res (jdbc/execute! (:tx req) sql-query)
+        auth-entity (:authenticated-entity req)
+        user (:id auth-entity)
+        data {:delegation_id (-> (first ins-res) :id)
+              :user_id user}
+        sql-query (-> (sql/insert-into :delegations_supervisors) (sql/values [data]) (sql/returning :*) sql-format)]
+    (jdbc/execute! (:tx req) sql-query)
     (if ins-res
-      ; TODO clean result
       (sd/response_ok (first ins-res))
       (sd/response_failed "Could not create delegation." 406))))
 
@@ -96,14 +101,20 @@
   {:id s/Uuid
    (s/optional-key :name) s/Str
    (s/optional-key :description) s/Str
-   (s/optional-key :admin_comment) (s/maybe s/Str)})
+   (s/optional-key :admin_comment) (s/maybe s/Str)
+   (s/optional-key :notifications_email) (s/maybe s/Str)
+   (s/optional-key :notify_all_members) s/Bool
+   (s/optional-key :beta_tester_notifications) s/Bool})
 
 ; TODO Inst coercion
 (def schema_export_delegations
   {:id s/Uuid
    :name s/Str
    :description s/Str
-   :admin_comment (s/maybe s/Str)})
+   :admin_comment (s/maybe s/Str)
+   (s/optional-key :notifications_email) (s/maybe s/Str)
+   (s/optional-key :notify_all_members) s/Bool
+   (s/optional-key :beta_tester_notifications) s/Bool})
 
 ; TODO more checks
 ; TODO response coercion
@@ -128,14 +139,10 @@
            :handler handle_list-delegations
            :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
-           :swagger {:produces "application/json"
-                     :parameters [{:name "full-data"
-                                   :in "query"
-                                   :description "Request full data."
-                                   :required true
-                                   :value false
-                                   :default false
-                                   :type "boolean"}]}
+           :parameters {:query {(s/optional-key :full_data)
+                                ^{:description "Choose between 2 variants of the response."
+                                  :default false}
+                                s/Bool}}
            :responses {200 {:description "Returns the list of delegations."
                             :body [schema_get_delegations]}}}}]
 
@@ -159,14 +166,14 @@
            :responses {200 {:description "Returns the updated delegation."
                             :body schema_export_delegations}
                        404 (sd/create-error-message-response "Not Found." "No such entity in :delegations as :id with <id>")
-                       406 (sd/create-error-message-response "Not Acceptable." "Could not update delegation.")}
+                       406 (sd/create-error-message-response "Not Acceptable." "Could not update delegation.")}}
 
-           :delete {:summary (sd/sum_adm_todo "Delete delegation by id.")
-                    :handler handle_delete-delegation
-                    :middleware [(wwrap-find-delegation :id :id true)]
-                    :parameters {:path {:id s/Uuid}}
-                    :coercion reitit.coercion.schema/coercion
-                    :responses {200 {:description "Returns the deleted delegation."
-                                     :body schema_export_delegations}
-                                404 (sd/create-error-message-response "Not Found." "No such delegation found.")
-                                406 (sd/create-error-message-response "Not Acceptable." "Could not delete delegation.")}}}}]])
+     :delete {:summary (sd/sum_adm_todo "Delete delegation by id.")
+              :handler handle_delete-delegation
+              :middleware [(wwrap-find-delegation :id :id true)]
+              :parameters {:path {:id s/Uuid}}
+              :coercion reitit.coercion.schema/coercion
+              :responses {200 {:description "Returns the deleted delegation."
+                               :body schema_export_delegations}
+                          404 (sd/create-error-message-response "Not Found." "No such delegation found.")
+                          406 (sd/create-error-message-response "Not Acceptable." "Could not delete delegation.")}}}]])

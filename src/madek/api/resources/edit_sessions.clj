@@ -5,7 +5,6 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
-   [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -13,6 +12,7 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -28,14 +28,12 @@
         (dbh/build-query-param query-params :id)
         (dbh/build-query-param query-params :user_id)
         (dbh/build-query-param query-params :collection_id)
-        (dbh/build-query-param query-params :media_entry_id)
-        (pagination/sql-offset-and-limit query-params)
-        sql-format)))
+        (dbh/build-query-param query-params :media_entry_id))))
 
 (defn handle_adm_list-edit-sessions
   [req]
   (let [db-query (build-query (-> req :parameters :query))
-        db-result (jdbc/execute! (:tx req) db-query)]
+        db-result (pagination-handler req db-query)]
     ;(info "handle_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -45,7 +43,7 @@
         user-id (-> req :authenticated-entity :id)
         usr-query (assoc req-query :user_id user-id)
         db-query (build-query usr-query)
-        db-result (jdbc/execute! (:tx req) db-query)]
+        db-result (pagination-handler req db-query)]
     ;(info "handle_usr_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
@@ -134,10 +132,12 @@
 
 (sa/def ::query-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/user_id ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
 
-(sa/def ::session-adm-def (sa/keys :req-un [::sp/id] :opt-un [::sp/user_id ::sp/created_at ::sp/media_entry_id ::sp-nil/collection_id]))
+(sa/def ::session-adm-def (sa/keys :req-un [::sp/id] :opt-un [::sp/user_id ::sp/created_at ::sp-nil/media_entry_id ::sp-nil/collection_id]))
 
 (sa/def :list/session (st/spec {:spec (sa/coll-of ::session-adm-def)
                                 :description "A list of sessions"}))
+
+(sa/def :list/edit-session-both (sa/keys :opt-un [::sp/data ::sp/pagination]))
 
 (def schema_export_edit_session
   {:id s/Uuid
@@ -155,7 +155,7 @@
            :middleware [wrap-authorize-admin!]
            :coercion spec/coercion
            :responses {200 {:description "Returns the edit sessions."
-                            :body :list/session}}
+                            :body (sa/or :flat :list/session :paginated :list/edit-session-both)}}
            :parameters {:query ::query-def}}}]
 
    ["edit_sessions/:id"
@@ -187,7 +187,7 @@
            :middleware [authorization/wrap-authorized-user]
            :coercion spec/coercion
            :responses {200 {:description "Returns the edit sessions."
-                            :body :list/session}}
+                            :body (sa/or :flat :list/session :paginated :list/edit-session-both)}}
            :parameters {:query ::query-usr-def}}}]
 
    ["edit_sessions/:id"

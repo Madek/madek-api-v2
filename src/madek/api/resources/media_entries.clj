@@ -12,6 +12,7 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
@@ -70,7 +71,7 @@
    In that case, the is_publishable of the entry is set to true."
   (let [eid (-> req :parameters :path :media_entry_id)
         tx (:tx req)
-        validationContexts (-> (dbh/query-find-all :app_settings :contexts_for_entry_validation tx)
+        validationContexts (-> (dbh/query-find-all :app_settings [:contexts_for_entry_validation] tx)
                                first
                                :contexts_for_entry_validation)
         contextKeys (first (map get-context-keys-4-context validationContexts))
@@ -252,6 +253,14 @@
             ::sp/full_data
             ::sp/page ::sp/size]))
 
+(sa/def ::media-entries-no-pagination-def
+  (sa/keys :opt-un
+           [::sp/collection_id ::sp/order ::sp/filter_by
+            ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
+            ::sp/me_edit_metadata ::sp/me_edit_permissions
+            ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
+            ::sp/full_data]))
+
 (sa/def ::media-entries-adm-def
   (sa/keys :opt-un
            [::sp/collection_id ::sp/order ::sp/filter_by
@@ -340,7 +349,7 @@
     :description "A list of media-entries"}))
 
 (sa/def ::media-entries-body-resp-def
-  (sa/keys :req-un [:media-entry-list/media_entries]))
+  (sa/keys :opt-un [:media-entry-list/media_entries ::sp/data ::sp/pagination]))
 
 (def schema_publish_failed
   {:message {:is_publishable s/Bool
@@ -350,7 +359,7 @@
 (def schema_media_entry
   {:id s/Uuid
    :creator_at s/Any
-   :creator_id s/Uuid
+   :creator_id (s/maybe s/Uuid)
    :responsible_user_id s/Uuid
    :is_published s/Bool
    :updated_at s/Any
@@ -361,7 +370,7 @@
   {:id s/Uuid
    :deleted_at s/Any
    :created_at s/Any
-   :creator_id s/Uuid
+   :creator_id (s/maybe s/Uuid)
    :responsible_user_id s/Uuid
    :responsible_delegation_id (s/maybe s/Uuid)
    :is_published s/Bool
@@ -389,17 +398,18 @@
                        :body any?}}}}]
    ["media-entries-related-data"
     {:get
-     {:summary (sd/?sum_usr? "Query media-entries with all related data.")
+     {:summary (sd/session-req (sd/?sum_usr? "Query media-entries with all related data."))
       :handler handle_query_media_entry-related-data
-      :middleware [jqh/ring-wrap-parse-json-query-parameters]
+      :middleware [authorization/wrap-authorized-user
+                   jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
-      :parameters {:query ::media-entries-def}
+      :parameters {:query ::media-entries-no-pagination-def}
       :responses {200 {:description "Returns the media-entries with all related data."
                        :body ::media-entry-response2-def}}}}]])
 
 (def ring-admin-routes
   ["/"
-   {:openapi {:tags ["admin/media-entries"]}}
+   {:openapi {:tags ["admin/media-entries"] :security ADMIN_AUTH_METHODS}}
 
    ["media-entries"
     {:get

@@ -31,7 +31,7 @@
 (sa/def :usr-people-list/people (st/spec {:spec (sa/coll-of :usr/people)
                                           :description "A list of persons"}))
 
-(sa/def ::response-people-body (sa/keys :req-un [:usr-people-list/people]))
+(sa/def ::response-people-body (sa/keys :opt-un [:usr-people-list/people ::sp/data ::sp/pagination]))
 
 (def schema
   {:created_at s/Any

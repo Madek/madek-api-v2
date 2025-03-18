@@ -7,6 +7,16 @@
 
 (def LOAD-SWAGGER-DESCRIPTION-FROM-FILE true)
 
+;; [madek.api.utils.helper :refer [verify-full_data]]
+(defn verify-full_data
+  "Returns the correct vector of columns based on the query parameter full_data."
+  [req vec-pos vec-neg]
+  (when (or (not (vector? vec-pos)) (not (vector? vec-neg)))
+    (throw (ex-info "full_data, vec-pos or vec-neg is not a vector." {:vec-pos vec-pos :vec-neg vec-neg})))
+  (if (true? (-> req :parameters :query :full_data))
+    vec-pos
+    vec-neg))
+
 ; [madek.api.utils.helper :refer [t d]]
 (defn t [s] (str s ".. MANUALLY TESTED"))
 (defn d [s] (str s " / doc-example"))

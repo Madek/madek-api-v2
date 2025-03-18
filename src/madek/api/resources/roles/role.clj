@@ -3,10 +3,10 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [cast-to-hstore]]
+   [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
 
@@ -20,16 +20,15 @@
 (defn- query-index
   [query-params]
   (-> (sql/select :roles.*)
-      (sql/from :roles)
-      (pagination/sql-offset-and-limit query-params)
-      (sql-format)))
+      (sql/from :roles)))
 
 (defn get-index
   [request]
   (let [query-params (-> request :parameters :query)
-        dbresult (jdbc/execute! (:tx request) (query-index query-params))
-        result (map transform-ml-role dbresult)]
-    (sd/response_ok {:roles result})))
+        base-query (query-index query-params)
+        after-fnc (fn [res] (map transform-ml-role res))
+        res (pagination-handler request base-query :roles after-fnc)]
+    (sd/response_ok res)))
 
 (defn query_role-find-one [id]
   (-> (sql/select :*)

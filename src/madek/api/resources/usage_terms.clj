@@ -7,6 +7,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [verify-full_data]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -14,8 +15,7 @@
 
 (defn handle_list-usage_term
   [req]
-  (let [full-data (true? (-> req :parameters :query :full_data))
-        qd (if (true? full-data) :usage_terms.* :usage_terms.id)
+  (let [qd (verify-full_data req [:usage_terms.*] [:usage_terms.id])
         tx (:tx req)
         db-result (dbh/query-find-all :usage_terms qd tx)]
     ;(->> db-result (map :id) set)

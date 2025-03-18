@@ -3,11 +3,11 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.helper :refer [cast-to-hstore to-uuid sql-format-quoted]]
+   [madek.api.utils.helper :refer [to-uuid sql-format-quoted]]
+   [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -31,9 +31,7 @@
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
       (dbh/build-query-param query-params :collection_id)
-      (dbh/build-query-param query-params :media_entry_id)
-      (pagination/sql-offset-and-limit query-params)
-      sql-format))
+      (dbh/build-query-param query-params :media_entry_id)))
 
 (defn arcs [req]
   (let [query-params (-> req :parameters :query)
@@ -42,8 +40,8 @@
                 (if (nil? query-params) {} query-params)
                 (if (nil? path-params) {} path-params))
         db-query (arcs-query params)
-        db-result (jdbc/execute! (:tx req) db-query)]
-    (sd/response_ok {:collection-media-entry-arcs db-result})))
+        db-result (pagination-handler req db-query :collection-media-entry-arcs)]
+    (sd/response_ok db-result)))
 
 (defn create-col-me-arc
   ([col-id me-id data tx]

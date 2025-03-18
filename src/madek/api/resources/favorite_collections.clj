@@ -8,6 +8,7 @@
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.helper :refer [f]]
+            [madek.api.utils.helper :refer [verify-full_data]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -19,9 +20,7 @@
 
 (defn handle_list-favorite_collection
   [req]
-  (let [col-sel (if (true? (-> req :parameters :query :full_data))
-                  :*
-                  :user_id)
+  (let [col-sel (verify-full_data req [:*] [:user_id])
         db-result (dbh/query-find-all :favorite_collections col-sel (:tx req))]
     (sd/response_ok db-result)))
 
@@ -180,7 +179,7 @@
     {:openapi {:tags ["admin/favorite/collections"] :security ADMIN_AUTH_METHODS}}
     ["collections"
      {:get
-      {:summary (sd/sum_adm (f "List favorite_collection users." " TODO: pagination?"))
+      {:summary (sd/sum_adm (f "List favorite_collection users."))
        :handler handle_list-favorite_collection
        :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion

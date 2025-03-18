@@ -1,13 +1,11 @@
 (ns madek.api.resources.collections.index
   (:require
-   [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.pagination :as pagination]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
-   [next.jdbc :as jdbc]))
+   [madek.api.utils.pagination :refer [pagination-handler]]
+   [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]))
 
 ;### collection_id ############################################################
 
@@ -46,24 +44,21 @@
                       (dbh/build-query-param query-params :responsible_user_id)
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params
-                                                          authenticated-entity)
-                      (pagination/sql-offset-and-limit query-params)
-                      sql-format)]
+                                                          authenticated-entity))]
     ;(logging/info "build-query"
     ;              "\nquery\n" query-params
     ;              "\nsql query:\n" sql-query)
     sql-query))
 
 (defn- query-index-resources [request]
-  (jdbc/execute! (:tx request) (build-query request)))
+  (pagination-handler request (build-query request) :collections))
 
 ;### index ####################################################################
 
 (defn get-index [request]
   (catcher/with-logging {}
     {:body
-     {:collections
-      (query-index-resources request)}}))
+     (query-index-resources request)}))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

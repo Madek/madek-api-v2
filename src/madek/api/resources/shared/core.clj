@@ -192,6 +192,7 @@
 (defn ?token? [text] (if SHOW_MR_INFO_DEV_MODE (apply str text " [mr/ IST / token-auth]")) text)
 (defn ?session? [text] (if SHOW_MR_INFO_DEV_MODE (apply str text " [mr / IST / session-auth]") text))
 (defn ?no-auth? [text] (if SHOW_MR_INFO_DEV_MODE (apply str text " [mr / IST / no-auth]") text))
+(defn session-req [text] (apply str text " [session required]"))
 
 (defn create-example-response
   ([schema value]
@@ -219,21 +220,21 @@
                             {:message message})))
 
 (defn create-examples-response
-  ([schema data]
+  ([schema examples]
    {:content {"application/json" {:schema schema
-                                  :examples (into {}
-                                                  (map (fn [{:keys [name value description]}]
-                                                         {name {:value value
-                                                                :description description}})
-                                                       data))}}})
-  ([description schema data]
+                                  :examples (vec
+                                             (map (fn [{:keys [summary value]}]
+                                                    {:summary summary
+                                                     :value value})
+                                                  examples))}}})
+  ([description schema examples]
    {:description description
     :content {"application/json" {:schema schema
-                                  :examples (into {}
-                                                  (map (fn [{:keys [name value description]}]
-                                                         {name {:value value
-                                                                :description description}})
-                                                       data))}}}))
+                                  :examples (vec
+                                             (map (fn [{:keys [summary value]}]
+                                                    {:summary summary
+                                                     :value value})
+                                                  examples))}}}))
 
 (defn sum_todo [text] (apply str "TODO: " text))
 (defn sum_pub [text] (apply str "PUBLIC Context: " text))

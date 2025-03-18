@@ -44,7 +44,7 @@
 (sa/def :users-list/users (st/spec {:spec (sa/coll-of ::users-resp-def)
                                     :description "A list of persons"}))
 
-(sa/def ::users-body-resp-def (sa/keys :req-un [:users-list/users]))
+(sa/def ::users-body-resp-def (sa/keys :opt-un [:users-list/users ::sp/page ::sp/size]))
 
 (def schema
   {:accepted_usage_terms_id (s/maybe s/Uuid)

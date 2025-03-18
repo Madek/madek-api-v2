@@ -1,14 +1,31 @@
 (ns madek.api.resources.vocabularies.get
   (:require
+   [clojure.spec.alpha :as sa]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.vocabularies.common :as c]
    [madek.api.resources.vocabularies.index :refer [get-index]]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [madek.api.resources.vocabularies.vocabulary :refer [get-vocabulary]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [reitit.coercion.schema]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [spec-tools.core :as st]))
+
+(sa/def ::descriptions map?)
+
+(sa/def :adm/schema_export-vocabulary
+  (sa/keys :req-un [::sp/id ::sp/position ::sp/labels ::descriptions]
+           :opt-un [::sp/admin_comment]))
+
+(sa/def :adm/vocabularies-response (st/spec {:spec (sa/coll-of :adm/schema_export-vocabulary)
+                                             :description "A list of vocabularies"}))
+
+(sa/def :adm/vocabularies-response-combined
+  (st/spec
+   {:spec (sa/or :flat :adm/vocabularies-response
+                 :paginated :adm/context-keys-response-paginated)
+    :description "Supports both flat and paginated full_texts formats"}))
 
 ;### DEFS ##################################################################
 
@@ -17,10 +34,10 @@
                          :handler get-index
                          :middleware [wrap-authorize-admin!]
                          :content-type "application/json"
-                         :swagger (jqh/generate-swagger-pagination-params)
-                         :coercion reitit.coercion.schema/coercion
+                         :coercion reitit.coercion.spec/coercion
+                         :parameters {:query sp/schema_pagination_opt}
                          :responses {200 {:description "Returns the list of vocabularies."
-                                          :body {:vocabularies [c/schema_export-vocabulary-admin]}}}})
+                                          :body :adm/vocabularies-response-combined}}})
 
 (def admin.vocabularies.id {:summary (sd/sum_adm "Get vocabulary by id.")
                             :handler get-vocabulary
@@ -102,11 +119,10 @@
                         :description "Get list of vocabularies ids."
                         :handler get-index
                         :content-type "application/json"
-                        :coercion reitit.coercion.schema/coercion
-                        :swagger (jqh/generate-swagger-pagination-params)
+                        :coercion reitit.coercion.spec/coercion
+                        :parameters {:query sp/schema_pagination_opt}
                         :responses {200 {:description "Returns the list of vocabularies."
-                                         :body {:vocabularies [c/schema_export-vocabulary]}}}})
-
+                                         :body :adm/vocabularies-response-combined}}})
 (def user.vocabularies.id {:summary "Get vocabulary by id."
                            :swagger {:produces "application/json"}
                            :content-type "application/json"

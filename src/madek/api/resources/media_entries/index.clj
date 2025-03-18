@@ -4,11 +4,12 @@
    [clojure.set :refer [rename-keys]]
    [logbug.catcher :as catcher]
    [madek.api.resources.media-entries.permissions :as media-entry-perms]
-   [madek.api.resources.media-entries.query :refer [query-index-resources]]
+   [madek.api.resources.media-entries.query :refer [query-index-resources build-query]]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.meta-data.index :as meta-data.index]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.resources.shared.db_helper :as dbh]))
+   [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.pagination :refer [pagination-handler is-with-pagination?]]))
 
 ;### index ####################################################################
 
@@ -108,24 +109,21 @@
     result))
 
 (defn get-index [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
-  ;(try
   (catcher/with-logging {}
-    (let [data (query-index-resources request)
-          result (build-result collection-id full-data data)]
-      (sd/response_ok result)))
-  ;(catch Exception e (sd/response_exception e)))
-  )
+    (let [is-with-pagination (is-with-pagination? request)
+          after-fnc (if is-with-pagination
+                      (fn [data] (:media_entries (build-result collection-id full-data data)))
+                      (fn [data] (build-result collection-id full-data data)))
+          result (pagination-handler request (build-query request) (if is-with-pagination :media_entries nil) after-fnc)]
+      (sd/response_ok result))))
 
 (defn get-index_related_data [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
-  ;(try
   (catcher/with-logging {}
     (let [auth-entity (-> request :authenticated-entity)
           data (query-index-resources request)
           tx (:tx request)
           result (build-result-related-data collection-id auth-entity full-data data tx)]
-      (sd/response_ok result)))
-  ;(catch Exception e (sd/response_exception e)))
-  )
+      (sd/response_ok result))))
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
 ;(debug/wrap-with-log-debug #'filter-by-permissions)

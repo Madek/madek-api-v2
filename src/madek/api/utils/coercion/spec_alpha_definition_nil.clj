@@ -12,6 +12,7 @@
 (sa/def ::clipboard_user_id (nil-or uuid?))
 (sa/def ::collection_id (nil-or uuid?))
 (sa/def ::created_at (nil-or any?))
+(sa/def ::media_entry_id (nil-or uuid?))
 (sa/def ::created_by_user_id (nil-or string?))
 (sa/def ::creator_id (nil-or uuid?))
 (sa/def ::default_context_id (nil-or string?))

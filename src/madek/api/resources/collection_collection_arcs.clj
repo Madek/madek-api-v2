@@ -4,13 +4,13 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.pagination :as pagination]
    [madek.api.resources.collection-media-entry-arcs :refer [schema_collection-collection-arc-export]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -48,14 +48,12 @@
   (-> (sql/select :*)
       (sql/from :collection_collection_arcs)
       (dbh/build-query-param query-params :child_id)
-      (dbh/build-query-param query-params :parent_id)
-      (pagination/sql-offset-and-limit query-params)
-      sql-format))
+      (dbh/build-query-param query-params :parent_id)))
 
 (defn handle_query-arcs [req]
   (let [query (arcs-query (-> req :parameters :query))
-        db-result (jdbc/execute! (:tx req) query)]
-    (sd/response_ok {:collection-collection-arcs db-result})))
+        db-result (pagination-handler req query :collection-collection-arcs)]
+    (sd/response_ok db-result)))
 
 (defn handle_create-col-col-arc [req]
   (try
@@ -149,7 +147,7 @@
 
 (sa/def :list-of/collection-collection-arcs (st/spec {:spec (sa/coll-of ::collection-collection-arc-resp-def)
                                                       :description "A list of collection-collection-arcs"}))
-(sa/def ::response-groups-body (sa/keys :req-un [:list-of/collection-collection-arcs]))
+(sa/def ::response-groups-body (sa/keys :opt-un [:list-of/collection-collection-arcs ::sp/data ::sp/pagination]))
 
 ; TODO add permission checks
 (def ring-routes

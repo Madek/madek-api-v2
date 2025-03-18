@@ -73,6 +73,19 @@ describe "Admin/User API with authentication with created user" do
       expect(response.status).to eq(200)
       expect_audit_entries_count(0, 0, 0)
     end
+
+    it "verifies users response without pagination" do
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/users")
+      expect(response.status).to eq(200)
+      expect(response.body["users"]).to be_a Array
+    end
+
+    it "verifies users response with pagination" do
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/users?page=1&size=5")
+      expect(response.status).to eq(200)
+      expect(response.body["data"]).to be_a Array
+      expect(response.body["pagination"]).to be_a Hash
+    end
   end
 
   context "when deleting a user" do

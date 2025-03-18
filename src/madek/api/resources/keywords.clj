@@ -11,6 +11,7 @@
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [convert-map d]]
+   [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -77,16 +78,18 @@
 (defn handle_usr-query-keywords [request]
   (let [rq (-> request :parameters :query)
         tx (:tx request)
-        db-result (kw/db-keywords-query rq tx)
-        result (map user-export-keyword db-result)]
-    (sd/response_ok {:keywords result})))
+        query (kw/db-keywords-query rq tx)
+        post-fnc (fn [res] (map user-export-keyword res))
+        res (pagination-handler request query :keywords post-fnc)]
+    (sd/response_ok res)))
 
 (defn handle_adm-query-keywords [request]
   (let [rq (-> request :parameters :query)
         tx (:tx request)
-        db-result (kw/db-keywords-query rq tx)
-        result (map adm-export-keyword db-result)]
-    (sd/response_ok {:keywords result})))
+        query (kw/db-keywords-query rq tx)
+        post-fnc (fn [res] (map adm-export-keyword res))
+        res (pagination-handler request query :keywords post-fnc)]
+    (sd/response_ok res)))
 
 ;### handlers write ####################################################################
 
@@ -151,7 +154,7 @@
                                   :keywords :id
                                   :keyword true)))
 
-(sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class]))
+(sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class ::sp/page ::sp/size]))
 
 (def schema_export_keyword_adm
   {:id s/Uuid
@@ -169,13 +172,22 @@
 (sa/def :usr/person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class]))
 (sa/def :usr/keywords (st/spec {:spec (sa/coll-of :usr/person)
                                 :description "A list of persons"}))
-(sa/def ::response-body (sa/keys :req-un [:usr/keywords]))
+(sa/def ::response-body (sa/keys :opt-un [:usr/keywords ::sp/pagination ::sp/data]))
 
 (sa/def :adm/person-admin (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class ::sp/creator_id ::sp/created_at ::sp/updated_at]))
 
 (sa/def :adm/keywords (st/spec {:spec (sa/coll-of :adm/person-admin)
                                 :description "A list of persons"}))
-(sa/def ::response-body-adm (sa/keys :req-un [:adm/keywords]))
+(sa/def ::response-body-adm (sa/keys :opt-un [:adm/keywords ::sp/pagination ::sp/data]))
+
+(def keyword-data-example {:description nil
+                           :external-uri nil
+                           :external-uris []
+                           :meta-key-id "madek_core:keywords"
+                           :term "30-34 years"
+                           :rdf-class "Keyword"
+                           :id "7dfc35f1-1819-409b-8bb0-b6019db1e3e8"
+                           :position 35})
 
 ;; FIXME: broken endpoint to test doc
 (def query-routes
@@ -187,25 +199,15 @@
       :handler handle_usr-query-keywords
       :coercion spec/coercion
       :parameters {:query sp/schema_pagination_opt}
-      :responses {200 {:description "Successful response, list of items."
-                       :body ::response-body}
-                  202 {:description "Successful response, list of items."
-                       :body {}
-                       :example {:message "Here are your items."
-                                 :page 1
-                                 :size 2
-                                 :items [{:id 1, :name "Item 1"}
-                                         {:id 2, :name "Item 2"}]}}
-
-                  ;; FIXME
-                  ;202 (sd/create-examples-response  "Returns the list of static_pages." any?
-                  ;      [{:message "Here are your items."
-                  ;       :page 1
-                  ;       :size 2
-                  ;       :items [{:id 1, :name "Item 1"}
-                  ;               {:id 2, :name "Item 2"}]}]
-                  ;      )
-                  }}}]
+      :responses {200 (sd/create-examples-response "Successful response, list of items." ::response-body
+                                                   [{:summary "Example 1 - without pagination"
+                                                     :value {:keywords [keyword-data-example]}}
+                                                    {:summary "Example 2 - with pagination"
+                                                     :value {:data [keyword-data-example]
+                                                             :pagination {:total_rows 14511
+                                                                          :total_pages 1452
+                                                                          :page 1
+                                                                          :size 10}}}])}}}]
 
    ["keywords/:id"
     {:get

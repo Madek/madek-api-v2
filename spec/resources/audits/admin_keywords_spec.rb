@@ -36,6 +36,21 @@ describe "Admin Keywords API with authentication" do
   before(:each) { remove_all_audits }
 
   context "when updating a keyword" do
+    it "verify GET response without pagination" do
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords")
+      expect(response.status).to eq(200)
+      expect(response.body["keywords"]).to be_a Array
+    end
+
+    it "verify GET response with pagination" do
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords?page=1&size=5")
+      expect(response.status).to eq(200)
+      expect(response.body["data"]).to be_a Array
+      expect(response.body["pagination"]).to be_a Hash
+    end
+  end
+
+  context "when updating a keyword" do
     it "audits the PUT request" do
       response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/admin/keywords/#{user_id}", body: {description: "string2", position: 2})
       expect(response.status).to eq(200)

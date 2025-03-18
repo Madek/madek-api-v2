@@ -6,7 +6,6 @@
    [clojure.string :as str :refer [blank?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.pagination :as pagination]
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -179,7 +178,7 @@
       (sql/order-by :media_entries.id)))
 
 ; TODO test query and paging
-(defn- build-query [request]
+(defn build-query [request]
   (let [query-params (-> request :parameters :query)
         filter-by (json/decode (:filter_by query-params) true)
         props-by (:media_entry filter-by)
@@ -190,9 +189,7 @@
                       (set-order query-params tx)
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params authenticated-entity)
-                      (advanced-filter/filter-by filter-by tx)
-                      (pagination/sql-offset-and-limit query-params))
-        query-res (-> query-res sql-format)]
+                      (advanced-filter/filter-by filter-by tx))]
 
     ;    (info "build-query"
     ;                  "\nquery-params:\n" query-params
@@ -201,7 +198,7 @@
     query-res))
 
 (defn query-index-resources [request]
-  (jdbc/execute! (:tx request) (build-query request)))
+  (jdbc/execute! (:tx request) (-> (build-query request) sql-format)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

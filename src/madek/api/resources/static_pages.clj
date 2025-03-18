@@ -8,6 +8,7 @@
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
+   [madek.api.utils.helper :refer [verify-full_data]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -15,8 +16,7 @@
 
 (defn handle_list-static_pages
   [req]
-  (let [full-data (true? (-> req :parameters :query :full_data))
-        qd (if (true? full-data) :static_pages.* :static_pages.id)
+  (let [qd (verify-full_data req [:static_pages.*] [:static_pages.id])
         tx (:tx req)
         db-result (dbh/query-find-all :static_pages qd tx)]
     (sd/response_ok db-result)))
@@ -139,17 +139,21 @@
            :coercion reitit.coercion.schema/coercion
            :middleware [wrap-authorize-admin!]
            :responses {200 (sd/create-examples-response "Returns the list of static_pages." (s/->Either [[schema_export_static_page] [{:id s/Uuid}]])
-                                                        [{:id "uuid"
-                                                          :name "name"
-                                                          :contents [{:lang "de" :content "content"}]
-                                                          :created_at "2020-01-01T00:00:00Z"
-                                                          :updated_at "2020-01-01T00:00:00Z"}])
+                                                        [{:summary "Example 1 (max)"
+                                                          :value {:id "uuid"
+                                                                  :name "name"
+                                                                  :contents [{:lang "de" :content "content"}]
+                                                                  :created_at "2020-01-01T00:00:00Z"
+                                                                  :updated_at "2020-01-01T00:00:00Z"}}
+                                                         {:summary "Example 2 (min)"
+                                                          :value ["550e8400-e29b-41d4-a716-446655440000"]}])
                        201 (sd/create-examples-response "Returns the list of static_pages." [schema_export_static_page]
-                                                        [{:id "uuid"
-                                                          :name "name"
-                                                          :contents [{:lang "de" :content "content"}]
-                                                          :created_at "2020-01-01T00:00:00Z"
-                                                          :updated_at "2020-01-01T00:00:00Z"}])
+                                                        [{:summary "Example 1"
+                                                          :value {:id "uuid"
+                                                                  :name "name"
+                                                                  :contents [{:lang "de" :content "content"}]
+                                                                  :created_at "2020-01-01T00:00:00Z"
+                                                                  :updated_at "2020-01-01T00:00:00Z"}}])
                        404 (sd/create-error-message-response "Not Found." "No static_pages found.")
                        422 (sd/create-error-message-response "Unprocessable Entity." "Could not list static_pages.")}}
      :parameters {:query {(s/optional-key :full_data) s/Bool}}}]

@@ -16,6 +16,7 @@
    [madek.api.utils.coercion.spec-alpha-definition-str :as sp-str]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist cast-to-hstore convert-map-if-exist
                                    replace-java-hashmaps mslurp replace-java-hashmaps v]]
+   [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
@@ -59,14 +60,16 @@
              :descriptions_2 (sd/transform_ml (:descriptions_2 meta-key)))))
 
 (defn handle_adm-query-meta-keys [req]
-  (let [db-result (mkindex/db-query-meta-keys req)
-        result (map adm-export-meta-key-list db-result)]
-    (sd/response_ok {:meta-keys result}))) ;; TODO: add headers.x-total-count?
+  (let [query (mkindex/build-query req)
+        after-fnc (fn [res] (map adm-export-meta-key-list res))
+        res (pagination-handler req query :meta-keys after-fnc)]
+    (sd/response_ok res))) ;; TODO: add headers.x-total-count?
 
 (defn handle_usr-query-meta-keys [req]
-  (let [db-result (mkindex/db-query-meta-keys req)
-        result (map user-export-meta-key-list db-result)]
-    (sd/response_ok {:meta-keys result})))
+  (let [query (mkindex/build-query req)
+        after-fnc (fn [res] (map user-export-meta-key-list res))
+        res (pagination-handler req query :meta-keys after-fnc)]
+    (sd/response_ok res))) ;; TODO: add headers.x-total-count?
 
 (defn handle_adm-get-meta-key [req]
   (let [mk (-> req :meta_key)
@@ -186,19 +189,20 @@
             ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2 ::sp/admin_comment_2]))
 
 (sa/def ::meta-query-def (sa/keys :opt-un [::sp/id ::sp/vocabulary_id ::sp/meta_datum_object_type
-                                           ::sp/is_enabled_for_collections ::sp/is_enabled_for_media_entries ::sp/scope ::sp/page ::sp/size]))
+                                           ::sp/is_enabled_for_collections ::sp/is_enabled_for_media_entries
+                                           ::sp/scope ::sp/page ::sp/size]))
 
 (sa/def ::meta-keys-id-query-def (sa/keys :req-un [::sp-str/id]))
 
 (sa/def :meta-response-adm-def/meta-keys (st/spec {:spec (sa/coll-of ::schema_export-meta-key-adm)
                                                    :description "A list of meta-keys"}))
 
-(sa/def ::meta-keys-id-response-adm-def (sa/keys :req-un [:meta-response-adm-def/meta-keys]))
+(sa/def ::meta-keys-id-response-adm-def (sa/keys :opt-un [:meta-response-adm-def/meta-keys ::sp/data ::sp/pagination]))
 
 (sa/def :meta-response-usr-def/meta-keys (st/spec {:spec (sa/coll-of ::schema_export-meta-key-usr)
                                                    :description "A list of meta-keys"}))
 
-(sa/def ::meta-keys-id-response-usr-def (sa/keys :req-un [:meta-response-usr-def/meta-keys]))
+(sa/def ::meta-keys-id-response-usr-def (sa/keys :opt-un [:meta-response-usr-def/meta-keys ::sp/data ::sp/pagination]))
 
 (defn wwrap-find-meta_key [param colname send404]
   (fn [handler]
