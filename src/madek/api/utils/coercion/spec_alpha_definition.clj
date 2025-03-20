@@ -39,6 +39,9 @@
 (sa/def ::media_resource_id (st/spec {:spec uuid?}))
 
 (sa/def ::email (st/spec {:spec string?}))
+(sa/def ::first_name (st/spec {:spec string?}))
+(sa/def ::last_name (st/spec {:spec string?}))
+(sa/def ::search_term (st/spec {:spec string?}))
 (sa/def ::name (st/spec {:spec string?}))
 (sa/def ::type (st/spec {:spec string?}))
 (sa/def ::institutional_id (st/spec {:spec string?}))
@@ -89,6 +92,14 @@
 (sa/def ::is_published (st/spec {:spec boolean?}))
 (sa/def ::keywords_alphabetical_order (st/spec {:spec boolean?}))
 (sa/def ::is_extensible_list (st/spec {:spec boolean?}))
+
+(sa/def ::related_meta_data (st/spec {:spec boolean?}))
+(sa/def ::related_previews (st/spec {:spec boolean?}))
+(sa/def ::related_files (st/spec {:spec boolean?}))
+(sa/def ::related_collections (st/spec {:spec boolean?}))
+
+
+
 
 (sa/def ::position (st/spec {:spec int?}))
 
