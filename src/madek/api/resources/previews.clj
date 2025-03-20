@@ -1,11 +1,15 @@
 (ns madek.api.resources.previews
   (:require
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
    [madek.api.resources.media-entries.media-entry :refer [get-media-entry-for-preview]]
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.previews.preview :as preview]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [logbug.catcher :as catcher]
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -19,16 +23,37 @@
        (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
        (handler (assoc request :preview preview))))))
 
+(def DEFAULT_PREVIEW_SIZE "small")
+(def DEFAULT_PREVIEW_TYPE "image")
+
+(defn get-request-query-size [req]
+  (or (-> req :parameters :query :size) DEFAULT_PREVIEW_SIZE))
+
+(defn get-request-query-type [req]
+  (or (-> req :parameters :query :media_type) DEFAULT_PREVIEW_TYPE))
+
 (defn handle_get-preview
   [req]
   (let [media-file (-> req :media-file)
         id (:id media-file)
-        size (or (-> req :parameters :query :size) "small")]
-    (if-let [preview (dbh/query-eq-find-one :previews :media_file_id id :thumbnail size (:tx req))]
-      (sd/response_ok preview)
-      (sd/response_not_found "No such preview file"))
+        qparams (-> req :parameters :query)
+        ;size (get-request-query-size req)
+        ;type (get-request-query-type req)
+        query (-> (dbh/build-query-base :previews :*) 
+                  (dbh/build-query-param qparams :thumbnail)
+                  (dbh/build-query-param qparams :media_type)
+                       ;(sql/where [:= :thumbnail size])
+                  (sql/where [:= :media_file_id id])
+                  sql-format)
+        preview-list (catcher/snatch {}
+                                     (jdbc/execute!
+                                      (:tx req) query))]
+    (if (empty? preview-list)
+        (sd/response_not_found "No such preview file")
+        (sd/response_ok preview-list))))
     ;(info "handle_get-preview" "\nid\n" id "\nmf\n" media-file "\npreviews\n" preview)
-    ))
+    
+  
 (defn add-preview-for-media-file [handler request]
   (let [media-file (-> request :media-file)
         id (:id media-file)
@@ -105,14 +130,15 @@
    ["/:media_entry_id/preview"
     {:get {:summary "Get preview for media-entry id."
            :handler handle_get-preview
-           :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
+           :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id]
                         ;            media-files.authorization/ring-wrap-authorize-metadata-and-previews
-                        ]
+                        
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}
-                        :query {(s/optional-key :size) s/Str}}
+                        :query {(s/optional-key :thumbnail) s/Str
+                                (s/optional-key :media_type) s/Str}}
            :responses {200 {:description "Returns the preview."
-                            :schema schema_export_preview}
+                            :schema [schema_export_preview]}
                        404 {:description "Not found."
                             :schema s/Any}}}}]
 
@@ -121,9 +147,9 @@
     {:get {:summary "Get preview for media-entry id."
            :handler preview/get-preview-file-data-stream
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
-                        wrap-add-preview-for-media-file
+                        wrap-add-preview-for-media-file]
                         ;             media-files.authorization/ring-wrap-authorize-metadata-and-previews
-                        ]
+                        
            :responses {200 {:description "Returns the preview."
                             :schema s/Any}
                        404 {:description "Not found."
