@@ -27,6 +27,8 @@
         (sql/where [:= :arcs.collection_id (to-uuid collection_id)])
         (sql/select
          [:arcs.created_at :arc_created_at]
+         [:arcs.cover :arc_cover]
+         [:arcs.highlight :arc_highlight]
          [:arcs.order :arc_order]
          [:arcs.position :arc_position]
          [:arcs.created_at :arc_created_at]
@@ -54,11 +56,11 @@
         creator-id (:creator_id me-query)
         where2 (if (blank? creator-id) ; or not uuid
                  where1
-                 (sql/where where1 [:= :media_entries.creator_id creator-id]))
+                 (sql/where where1 [:= :media_entries.creator_id (to-uuid creator-id)]))
         ru-id (:responsible_user_id me-query)
         where3 (if (blank? ru-id) ; or not uuid
                  where2
-                 (sql/where where2 [:= :media_entries.responsible_user_id ru-id]))
+                 (sql/where where2 [:= :media_entries.responsible_user_id (to-uuid ru-id)]))
         where4 (cond
                  (= softdelete-mode :deleted) (soft-deleted where3 "media_entries")
                  (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted where3 "media_entries"))
@@ -194,10 +196,10 @@
                       (pagination/sql-offset-and-limit query-params))
         query-res (-> query-res sql-format)]
 
-    ;    (info "build-query"
-    ;                  "\nquery-params:\n" query-params
-    ;                  "\nfilter-by json:\n" filter-by
-    ;                  "\nquery-res:\n" query-res)
+        (info "build-query"
+                      "\nquery-params:\n" query-params
+                      "\nfilter-by json:\n" filter-by
+                      "\nquery-res:\n" query-res)
     query-res))
 
 (defn query-index-resources [request]
