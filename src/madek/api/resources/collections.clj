@@ -144,6 +144,7 @@
                                                       ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                       ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
                                                       ::sp/me_edit_metadata_and_relations
+                                                      ::sp/filter_by
                                                       ::sp/page ::sp/size]))
 
 (sa/def :collection-query/query-admin-def (sa/keys :opt-un [::sp/full_data ::sp/collection_id ::sp/order ::sp/creator_id
@@ -151,6 +152,7 @@
                                                             ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                             ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
                                                             ::sp/me_edit_metadata_and_relations
+                                                            ::sp/filter_by
                                                             ::sp/page ::sp/size
                                                             ::sp-map/filter_softdelete]))
 
@@ -191,6 +193,7 @@
                     ::sp/created_at
                     ::sp-nil/deleted_at]
            :opt-un [::sp/get_metadata_and_previews
+                    ::sp-nil/filter_by
                     ::sp/layout
                     ::sp/is_master
                     ::sp/sorting
