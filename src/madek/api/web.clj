@@ -111,6 +111,8 @@
                               :login s/Str
                               :created_at s/Any
                               :email_address s/Str
+                              :first_name s/Str
+                              :last_name s/Str
                               (s/optional-key :authentication-method) s/Str}}
                   401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]])
 
