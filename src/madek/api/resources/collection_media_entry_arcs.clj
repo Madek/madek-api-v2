@@ -50,7 +50,9 @@
    (let [ins-data (assoc data
                          :collection_id col-id
                          :media_entry_id me-id
-                         :order (double (:order data)))
+                         ;:order (double (:order data))
+                         ; exception if order param is empty
+                         )
          sql (-> (sql/insert-into :collection_media_entry_arcs)
                  (sql/values [ins-data])
                  (sql/returning :*)
@@ -161,6 +163,7 @@
 (def schema_collection-media-entry-arc-create
   {(s/optional-key :highlight) s/Bool
    (s/optional-key :cover) (s/maybe s/Bool)
+   ;:id s/Uuid
    (s/optional-key :position) (s/maybe s/Int)
    (s/optional-key :order) (s/maybe s/Num)})
 
