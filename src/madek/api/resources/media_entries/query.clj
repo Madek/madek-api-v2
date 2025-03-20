@@ -196,7 +196,7 @@
                       (pagination/sql-offset-and-limit query-params))
         query-res (-> query-res sql-format)]
 
-        (info "build-query"
+        #_(info "build-query"
                       "\nquery-params:\n" query-params
                       "\nfilter-by json:\n" filter-by
                       "\nquery-res:\n" query-res)
