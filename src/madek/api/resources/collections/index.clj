@@ -1,11 +1,14 @@
 (ns madek.api.resources.collections.index
   (:require
+   [cheshire.core :as json]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
+   [madek.api.resources.collections.advanced-filter.meta-data :as advanced-filter]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.helper :refer [to-uuid]]
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]))
 
@@ -37,16 +40,18 @@
 ; TODO test query and paging
 (defn- build-query [request]
   (let [query-params (:query-params request)
+        filter-by (json/decode (:filter_by query-params) true)
         authenticated-entity (:authenticated-entity request)
         full_data (= true (:full_data query-params))
         softdelete-mode (:filter_softdelete query-params)
         sql-query (-> (base-query full_data softdelete-mode)
                       (set-order query-params)
-                      (dbh/build-query-param query-params :creator_id)
-                      (dbh/build-query-param query-params :responsible_user_id)
+                      (dbh/build-query-param query-params (to-uuid :creator_id))
+                      (dbh/build-query-param query-params (to-uuid :responsible_user_id))
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params
                                                           authenticated-entity)
+                      (advanced-filter/filter-by filter-by)
                       (pagination/sql-offset-and-limit query-params)
                       sql-format)]
     ;(logging/info "build-query"

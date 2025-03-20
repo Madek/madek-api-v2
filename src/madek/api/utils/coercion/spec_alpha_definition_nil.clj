@@ -41,6 +41,7 @@
 (sa/def ::updated_at (nil-or any?))
 (sa/def ::highlight (nil-or boolean?))
 (sa/def ::collection_id (nil-or uuid?))
+(sa/def ::filter_by (nil-or string?))
 (sa/def ::identification_info (nil-or string?))
 
 (sa/def ::iso8601-date-time
