@@ -110,6 +110,8 @@
                                 :login s/Str
                                 :created_at s/Any
                                 :email_address s/Str
+                                :first_name s/Str
+                                :last_name s/Str
                                 (s/optional-key :authentication-method) s/Str}}
                   401 {:description "Creation failed."
                        :schema s/Str
@@ -129,8 +131,9 @@
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"
                                                        :name "Authorization"
-                                                       :in "header"}}}
-              :security [{:apiAuth []}]}}
+                                                       :in "header"}
+                                             :basicAuth {:type "http" :scheme "basic"}}}
+              :security [{:apiAuth [] :basicAuth []}]}}
    ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]])
 
 (def get-router-data-all
