@@ -62,10 +62,16 @@
     ;(info "get-files4me-list: \n" auth-list)
     auth-list))
 
+(defn get-previews4entry [me-id tx]
+  (let [file-id (:id (media-files/query-media-file-by-media-entry-id me-id tx))
+        previews (dbh/query-eq-find-all :previews :media_file_id file-id tx)
+        result (map #(assoc % :media_entry_id me-id) previews)]
+    result))
+
 (defn get-preview-list [melist auth-entity tx]
   (let [auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity tx))
-                          (dbh/query-eq-find-all :previews :media_file_id
-                                                 (:id (media-files/query-media-file-by-media-entry-id (:id %) tx)) tx)) melist)]
+                          (get-previews4entry (:id %) tx)
+                          ) melist)]
     ;(info "get-preview-list" auth-list)
     auth-list))
 
@@ -73,6 +79,19 @@
   (let [user-id (:id auth-entity)
         auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity tx))
                           (meta-data.index/get-media-entry-meta-data (:id %) user-id tx)) melist)]
+    auth-list))
+
+(defn get-cols4me-list [melist auth-entity tx]
+  (let [;user-id (:id auth-entity)
+        auth-list (map #(when (true? (media-entry-perms/viewable-by-auth-entity? % auth-entity))
+                          (dbh/query-eq-find-all :collection_media_entry_arcs :media_entry_id (:id %) tx)) melist)]
+    auth-list))
+
+(defn get-md4col-list [collist auth-entity tx]
+  (let [user-id (:id auth-entity)
+        cols (flatten collist)
+        auth-list (map #(when (:collection_id %)
+                          (meta-data.index/get-collection-meta-data (:collection_id %) user-id tx)) cols)]
     auth-list))
 
 (defn build-result [collection-id full-data data]
@@ -86,24 +105,24 @@
 (defn build-result-related-data
   "Builds all the query result related data into the response:
   files, previews, meta-data for entries and a collection"
-  [collection-id auth-entity full-data data tx]
+  [collection-id auth-entity full-data related-collections related-files related-meta-data related-previews data tx]
   (let [me-list (get-me-list true data)
         result-me-list (get-me-list full-data data)
         user-id (:id auth-entity)
-        ; TODO compute only on demand
-        files (get-files4me-list me-list auth-entity tx)
-        previews (get-preview-list me-list auth-entity tx)
-        me-md (get-md4me-list me-list auth-entity tx)
-        col-md (meta-data.index/get-collection-meta-data collection-id user-id tx)
         result (merge
-                {:media_entries result-me-list
-                  ; TODO add only on demand
-                 :meta_data me-md
-                 :media_files files
-                 :previews previews}
+                {:media_entries result-me-list}
+                (when related-collections
+                  {:col_me_arcs (get-cols4me-list me-list auth-entity tx)
+                   :col_me_arc_meta_data (get-md4col-list (get-cols4me-list me-list auth-entity tx) auth-entity tx)})
+                (when related-meta-data
+                  {:meta_data (get-md4me-list me-list auth-entity tx)})
+                (when related-files
+                  {:media_files (get-files4me-list me-list auth-entity tx)})
+                (when related-previews
+                  {:previews (get-preview-list me-list auth-entity tx)})
 
                 (when collection-id
-                  {:col_meta_data col-md
+                  {:col_meta_data (meta-data.index/get-collection-meta-data collection-id user-id tx)
                    :col_arcs (get-arc-list data)}))]
     result))
 
@@ -116,13 +135,26 @@
   ;(catch Exception e (sd/response_exception e)))
   )
 
-(defn get-index_related_data [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
+(defn get-index_related_data [{{{collection-id :collection_id
+                                 full-data :full_data
+                                 related-collections :related_collections
+                                 related-files :related-files
+                                 related-meta-data :related_meta_data
+                                 related-previews :related_previews} :query} :parameters :as request}]
   ;(try
   (catcher/with-logging {}
     (let [auth-entity (-> request :authenticated-entity)
           data (query-index-resources request)
           tx (:tx request)
-          result (build-result-related-data collection-id auth-entity full-data data tx)]
+          result (build-result-related-data
+                  collection-id
+                  auth-entity
+                  full-data
+                  related-collections
+                  related-files
+                  related-meta-data
+                  related-previews
+                  data tx)]
       (sd/response_ok result)))
   ;(catch Exception e (sd/response_exception e)))
   )
