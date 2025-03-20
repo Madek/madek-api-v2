@@ -14,6 +14,15 @@
 ; the users and the people table.
 
 ;### routes ###################################################################
+(def user-routes 
+  ["/users"
+   {:swagger {:tags ["users"] :security [{"auth" []}]}}
+   ["/"
+    {:get index/user-route}]
+   ["/:id"
+    {:get get-user/route}]])
+
+;### routes ###################################################################
 
 (def admin-routes
   ["/"
