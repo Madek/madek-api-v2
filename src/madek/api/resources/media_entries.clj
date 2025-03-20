@@ -56,7 +56,9 @@
 
 (defn- get-context-keys-4-context [contextId tx]
   (map :meta_key_id
-       (dbh/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)))
+       ;(dbh/query-eq-find-all :context_keys :context_id (to-uuid contextId) tx)
+       (dbh/query-eq-find-all :context_keys :context_id contextId tx)
+       ))
 
 (defn- check-has-meta-data-for-context-key [meId mkId tx]
   (let [md (dbh/query-eq-find-one :meta_data :media_entry_id (to-uuid meId) :meta_key_id mkId tx)
@@ -73,11 +75,11 @@
         validationContexts (-> (dbh/query-find-all :app_settings :contexts_for_entry_validation tx)
                                first
                                :contexts_for_entry_validation)
-        contextKeys (first (map get-context-keys-4-context validationContexts))
+        contextKeys (first (map get-context-keys-4-context validationContexts tx))
         hasMetaData (for [cks contextKeys]
                       (check-has-meta-data-for-context-key eid cks tx))
         tf (for [elem hasMetaData] (vals elem))
-        publishable (reduce (fn [tfresult tfval] (and tfresult (first tfval))) [true] tf)]
+        publishable (reduce (fn [tfresult tfval] (and tfresult (first tfval))) true tf)]
 
     (info "handle_try-publish-media-entry"
           "\n eid: \n" eid
@@ -100,7 +102,7 @@
               "\n dresult: \n" dresult)
 
         (if (= 1 (::jdbc/update-count dresult))
-          (sd/response_ok (dbh/query-eq-find-one :media_entries :id eid tx))
+          (sd/response_ok (dissoc (dbh/query-eq-find-one :media_entries :id eid tx) :deleted_at))
           (sd/response_failed "Could not update publish on media_entry." 406)))
 
       (sd/response_failed
@@ -245,7 +247,16 @@
 
 (sa/def ::media-entries-def
   (sa/keys :opt-un
-           [::sp/collection_id ::sp/order ::sp/filter_by
+           [::sp/collection_id ::sp/order ::sp/filter_by 
+            ::sp/related_meta_data
+            ::sp/related_previews
+            ::sp/related_files
+            ::sp/related_collections
+            ;(s/optional-key :related_meta_data) s/Bool
+            ;(s/optional-key :related_previews) s/Bool
+            ;(s/optional-key :related_files) s/Bool
+            ;(s/optional-key :related_collections) s/Bool
+
             ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
             ::sp/me_edit_metadata ::sp/me_edit_permissions
             ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
