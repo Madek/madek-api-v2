@@ -190,7 +190,7 @@
 
    roles/user-routes
 
-   ;users/user-routes
+   users/user-routes
    groups/user-routes
    usage-terms/user-routes
 
