@@ -18,10 +18,16 @@
              (dbh/build-query-param-like query :meta_key_id)
              (dbh/build-query-param-like query :term)
              (dbh/build-query-param-like query :description)
-             (pagination/sql-offset-and-limit query)
-             sql-format)]
+             ;(pagination/sql-offset-and-limit query)
+             ;sql-format)
+
+             ;(sql/limit 2)
+              )
+        ]
     ; (info "db-keywords-query" dbq)
-    (jdbc/execute! tx dbq)))
+    ;(jdbc/execute! tx dbq)
+    dbq
+    ))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
