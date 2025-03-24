@@ -23,7 +23,7 @@
 
 (sa/def :roles-resp-def/roles (st/spec {:spec (sa/coll-of :roles-resp-def/role)
                                         :description "A list of roles"}))
-(sa/def ::response-roles-body (sa/keys :req-un [:roles-resp-def/roles]))
+(sa/def ::response-roles-body (sa/keys :opt-un [:roles-resp-def/roles ::sp/data ::sp/pagination]))
 
 (def schema_export-role
   {:id s/Uuid
@@ -44,7 +44,8 @@
                    :coercion spec/coercion
                    :parameters {:query sp/schema_pagination_opt}
                    :responses {200 {:description "Returns the roles."
-                                    :body ::response-roles-body}}}}]
+                                    :body  ::response-roles-body
+                                    }}}}]
 
    ["roles/:id"
     {:get {:summary "Get role by id"

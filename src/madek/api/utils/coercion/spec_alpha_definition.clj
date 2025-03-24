@@ -99,6 +99,9 @@
 (sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
                                   :description "An array of any types"}))
 
+(sa/def ::data (st/spec {:spec (sa/coll-of any?)
+                                  :description "An array of any types"}))
+
 (sa/def ::rdf_class (st/spec {:spec string?}))
 (sa/def ::scope (st/spec {:spec string?}))
 
@@ -124,6 +127,7 @@
 (sa/def ::position_2 (st/spec {:spec int?}))
 (sa/def ::col_meta_data (st/spec {:spec any?}))
 (sa/def ::labels (st/spec {:spec map?}))
+(sa/def ::pagination (st/spec {:spec map?}))
 (sa/def ::documentation_urls (st/spec {:spec list?}))
 (sa/def ::allowed_people_subtypes (st/spec {:spec any?}))
 
