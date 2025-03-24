@@ -39,7 +39,7 @@
                  qparams
                  query-params)] params))
 
-(defn- build-query [request]
+(defn build-query [request]
   (let [qparams (-> request :parameters :query)
         pagination-params (get-pagination-params request)
         tx (:tx request)
@@ -52,8 +52,9 @@
         (dbh/build-query-param qparams :is_enabled_for_collections)
         (dbh/build-query-param qparams :is_enabled_for_media_entries)
         (sql/order-by :meta_keys.id)
-        (sql-offset-and-limit pagination-params)
-        sql-format)))
+        ;(sql-offset-and-limit pagination-params)
+        ;sql-format
+        )))
 
 (defn db-query-meta-keys [request]
   (catcher/with-logging {}
