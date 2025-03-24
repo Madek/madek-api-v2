@@ -4,6 +4,8 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.utils.pagination-new :refer [ pagination-handler]]
+
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
@@ -74,19 +76,25 @@
   (let [keyword (-> request :keyword)]
     (sd/response_ok (user-export-keyword keyword))))
 
+
 (defn handle_usr-query-keywords [request]
   (let [rq (-> request :parameters :query)
         tx (:tx request)
-        db-result (kw/db-keywords-query rq tx)
-        result (map user-export-keyword db-result)]
-    (sd/response_ok {:keywords result})))
+        query (kw/db-keywords-query rq tx)
+        post-fnc (fn [res] (map user-export-keyword res))
+        res (pagination-handler request query :keywords post-fnc)]
+    (sd/response_ok res)))
 
 (defn handle_adm-query-keywords [request]
   (let [rq (-> request :parameters :query)
         tx (:tx request)
-        db-result (kw/db-keywords-query rq tx)
-        result (map adm-export-keyword db-result)]
-    (sd/response_ok {:keywords result})))
+        query (kw/db-keywords-query rq tx)
+        ;result (map adm-export-keyword db-result)
+
+    post-fnc (fn [res] (map adm-export-keyword res))
+    res (pagination-handler request query :keywords post-fnc)]
+
+    (sd/response_ok res)))
 
 ;### handlers write ####################################################################
 
@@ -151,7 +159,7 @@
                                   :keywords :id
                                   :keyword true)))
 
-(sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class]))
+(sa/def ::person-opt (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/term ::sp/description ::sp/rdf_class ::sp/page ::sp/size]))
 
 (def schema_export_keyword_adm
   {:id s/Uuid
@@ -169,13 +177,13 @@
 (sa/def :usr/person (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class]))
 (sa/def :usr/keywords (st/spec {:spec (sa/coll-of :usr/person)
                                 :description "A list of persons"}))
-(sa/def ::response-body (sa/keys :req-un [:usr/keywords]))
+(sa/def ::response-body (sa/keys :opt-un [:usr/keywords ::sp/pagination ::sp/data]))
 
 (sa/def :adm/person-admin (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/term ::sp-nil/description ::sp-nil/position ::sp/external_uris ::sp-nil/external_uri ::sp/rdf_class ::sp/creator_id ::sp/created_at ::sp/updated_at]))
 
 (sa/def :adm/keywords (st/spec {:spec (sa/coll-of :adm/person-admin)
                                 :description "A list of persons"}))
-(sa/def ::response-body-adm (sa/keys :req-un [:adm/keywords]))
+(sa/def ::response-body-adm (sa/keys :opt-un [:adm/keywords ::sp/pagination ::sp/data]))
 
 ;; FIXME: broken endpoint to test doc
 (def query-routes

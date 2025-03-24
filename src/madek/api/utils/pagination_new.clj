@@ -94,7 +94,11 @@
 (defn pagination-handler
   "To receive a paginated response, the request must contain the query parameters `page` or `size`."
   ([request base-query]
-   (pagination-handler request base-query nil nil))
+   (pagination-handler request base-query nil))
+
+  ([request base-query wrap-name-of-result]
+   (pagination-handler request base-query wrap-name-of-result nil))
+
   ([request base-query wrap-name-of-result after-fnc]
    (let [tx (:tx request)
          pagination (fetch-pagination-params-raw-or-nil request)
