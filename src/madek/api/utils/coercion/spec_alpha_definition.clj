@@ -6,11 +6,14 @@
 
 (sa/def ::page (st/spec {:spec int?
                          :description (str "Page number " (when ZERO_BASED_PAGINATION "(zero-based pagination)"))
-                         :json-schema/default DEFAULT_PAGE_SWAGGER}))
+                         ;:description (str "Page number " (when ZERO_BASED_PAGINATION "(zero-based pagination)"))
+                         ;:json-schema/default DEFAULT_PAGE_SWAGGER
+                         }))
 
 (sa/def ::size (st/spec {:spec int?
                          :description "Number of items per page"
-                         :json-schema/default DEFAULT_COUNT_SWAGGER}))
+                         ;:json-schema/default DEFAULT_COUNT_SWAGGER
+                         }))
 
 (def schema_pagination_opt
   (sa/keys

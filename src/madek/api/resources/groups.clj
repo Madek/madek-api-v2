@@ -4,8 +4,8 @@
             [clojure.spec.alpha :as sa]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [madek.api.pagination :as pagination]
             [madek.api.resources.groups.shared :as groups]
+            [madek.api.utils.pagination-new :refer [ pagination-handler]]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
@@ -82,26 +82,72 @@
 ;### index ####################################################################
 ; TODO test query and paging
 (defn build-index-query [req]
-  (let [query-params (-> req :parameters :query)]
-    (-> (if (true? (:full_data query-params))
-          (sql/select :*)
-          (sql/select :id))
-        (sql/from :groups)
-        (sql/order-by [:id :asc])
-        (dbh/build-query-param query-params :id)
-        (dbh/build-query-param query-params :institutional_id)
-        (dbh/build-query-param query-params :type)
-        (dbh/build-query-param query-params :created_by_user_id)
-        (dbh/build-query-param-like query-params :name)
-        (dbh/build-query-param-like query-params :institutional_name)
-        (dbh/build-query-param-like query-params :institution)
-        (dbh/build-query-param-like query-params :searchable)
-        (pagination/sql-offset-and-limit query-params)
-        sql-format)))
+  (let [query-params (-> req :parameters :query)
+
+
+        ;pagination (fetch-pagination-params-raw-or-nil request)
+        ;with-pagination? (not (nil? pagination))
+
+
+        base-query     (-> (if (true? (:full_data query-params))
+                             (sql/select :*)
+                             (sql/select :id))
+                           (sql/from :groups)
+                           (sql/order-by [:id :asc])
+                           (dbh/build-query-param query-params :id)
+                           (dbh/build-query-param query-params :institutional_id)
+                           (dbh/build-query-param query-params :type)
+                           (dbh/build-query-param query-params :created_by_user_id)
+                           (dbh/build-query-param-like query-params :name)
+                           (dbh/build-query-param-like query-params :institutional_name)
+                           (dbh/build-query-param-like query-params :institution)
+                           (dbh/build-query-param-like query-params :searchable)
+                           ;(pagination/sql-offset-and-limit query-params)
+                           ;sql-format
+                            )
+
+        res nil
+
+        res (pagination-handler req base-query)
+
+        p (println ">o> abc.pagination-handler" res)
+
+        ;res (if with-pagination?
+        ;      (pagination/create-paginated-response base-query (:tx req) (:size pagination) (:page pagination))
+        ;      (jdbc/query (:tx req) base-query))
+;res (response res)
+
+        res (sd/response_ok res)
+
+        ]
+
+res
+    ;(-> (if (true? (:full_data query-params))
+    ;      (sql/select :*)
+    ;      (sql/select :id))
+    ;    (sql/from :groups)
+    ;    (sql/order-by [:id :asc])
+    ;    (dbh/build-query-param query-params :id)
+    ;    (dbh/build-query-param query-params :institutional_id)
+    ;    (dbh/build-query-param query-params :type)
+    ;    (dbh/build-query-param query-params :created_by_user_id)
+    ;    (dbh/build-query-param-like query-params :name)
+    ;    (dbh/build-query-param-like query-params :institutional_name)
+    ;    (dbh/build-query-param-like query-params :institution)
+    ;    (dbh/build-query-param-like query-params :searchable)
+    ;    (pagination/sql-offset-and-limit query-params)
+    ;    sql-format
+        )
+)
 
 (defn index [req]
-  (let [result (jdbc/execute! (:tx req) (build-index-query req))]
-    (sd/response_ok {:groups result})))
+
+  (build-index-query req)
+
+  ;(let [result (jdbc/execute! (:tx req) (build-index-query req))]
+  ;  (sd/response_ok {:groups result}))
+  ;
+  )
 
 ;### routes ###################################################################
 
@@ -204,7 +250,8 @@
                      :parameters {:query ::group-query-def}
                      :coercion spec/coercion
                      :responses {200 {:description "Returns a list of group ids."
-                                      :body ::response-groups-body}}}}]
+                                      ;:body ::response-groups-body
+                                      }}}}]
 
     ["groups/:id" {:get {:summary "Get group by id"
                          :description "Get group by id. Returns 404, if no such group exists."
@@ -229,7 +276,8 @@
                     :parameters {:query ::group-query-def}
                     :coercion spec/coercion
                     :responses {200 {:description "Returns a list of group ids."
-                                     :body {:groups [(st/spec {:spec :usr/groups})]}}}} ;;ok
+                                     ;:body {:groups [(st/spec {:spec :usr/groups})]}
+                                     }}} ;;ok
 
               :post {:summary (f "Create a group" "groups::person_id-not-exists")
                      :description "Create a group."
