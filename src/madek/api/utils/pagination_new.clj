@@ -73,25 +73,14 @@
         size (:size query-params)]
     {:page page
      :size size}))
-
 (defn fetch-pagination-params-raw-or-nil [request]
   (let [query-params (query-params request)
         page (:page query-params)
-        size (:size query-params)
-
-        res (if (and (nil? page) (nil? size))
-              nil
-
-              ;{:page (or page CONST_DEFAULT_PAGE)
-              ; :size (or size CONST_DEFAULT_SIZE)}
-
-              {:page (Integer. (or page CONST_DEFAULT_PAGE))
-               :size (Integer. (or size CONST_DEFAULT_SIZE))}
-
-
-              )
-        ]
-    res))
+        size (:size query-params)]
+    (if (and (nil? page) (nil? size))
+      nil
+      {:page (Integer. (or page CONST_DEFAULT_PAGE))
+       :size (Integer. (or size CONST_DEFAULT_SIZE))})))
 
 (defn pagination-response
   ([request base-query pagination ]
@@ -102,76 +91,22 @@
          tx (:tx request)]
      (create-paginated-response base-query tx size page post-data-fnc))))
 
-;(defn pagination-handler
-;  "To receive a paginated response, the request must contain the query parameters `page` and `size`."
-;  ;[request base-query with-pagination?]
-;  ;[request base-query with-pagination? pagination]
-;  [request base-query wrap-name-of-result]
-;
-;  (let [
-;        ;{:keys [page size]} (fetch-pagination-params-raw request)
-;        tx (:tx request)
-;
-;        pagination (fetch-pagination-params-raw-or-nil request)
-;        with-pagination? (not (nil? pagination))
-;
-;        ]
-;
-;    ;(if with-pagination?
-;    ;      (pagination/create-paginated-response base-query tx (:size pagination) (:page pagination))
-;    ;      (jdbc/query (:tx req) base-query))
-;
-;    (cond
-;      (and (= with-pagination? false) (single-entity-get-request? request))
-;      (jdbc/query (:tx request) (-> base-query sql-format))
-;
-;    ;  (and (or (nil? with-pagination?) with-pagination?) (or (some? page) (some? size)))
-;    ;  (pagination-response request base-query)
-;
-;      (and with-pagination?) (pagination-response request base-query pagination)
-;
-;
-;
-;      :else (if (nil? wrap-name-of-result)
-;              (jdbc/query (:tx request) (-> base-query sql-format))
-;
-;              { (keyword wrap-name-of-result) (jdbc/query (:tx request) (-> base-query sql-format))}
-;
-;              ))
-;
-;    ))
-
 (defn pagination-handler
   "To receive a paginated response, the request must contain the query parameters `page` or `size`."
+  ([request base-query]
+   (pagination-handler request base-query nil))
+  ([request base-query wrap-name-of-result]
+   (let [tx (:tx request)
+         pagination (fetch-pagination-params-raw-or-nil request)
+         with-pagination? (some? pagination)]
+     (cond
+       (and (not with-pagination?) (single-entity-get-request? request))
+       (jdbc/query tx (sql-format base-query))
 
+       with-pagination?
+       (pagination-response request base-query pagination)
 
-
-(  [request base-query]
- (pagination-handler request base-query nil)
- )
-
-
-(  [request base-query wrap-name-of-result]
-
-  (let [tx (:tx request)
-        pagination (fetch-pagination-params-raw-or-nil request)
-        with-pagination? (not (nil? pagination))]
-
-    (cond
-      ;; Case 1: single-entity GET request (no pagination)
-      (and (not with-pagination?) (single-entity-get-request? request))
-      (jdbc/query tx (sql-format base-query))
-
-      ;; Case 2: paginated request
-      with-pagination?
-      (pagination-response request base-query pagination)
-
-      ;; Case 3: fallback to full query (wrapped optionally)
-      :else
-      (let [result (jdbc/query tx (sql-format base-query))]
-        (if (nil? wrap-name-of-result)
-          result
-          {(keyword wrap-name-of-result) result})))))
-
-  )
-
+       :else       (let [result (jdbc/query tx (sql-format base-query))]
+         (if wrap-name-of-result
+           {(keyword wrap-name-of-result) result}
+           result))))))
