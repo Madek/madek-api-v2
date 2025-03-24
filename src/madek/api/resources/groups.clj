@@ -42,7 +42,7 @@
 (defn get-group [id-or-institutional-group-id tx]
   (if-let [group (groups/find-group id-or-institutional-group-id tx)]
     {:body (dissoc group :previous_id :searchable)}
-    {:status 404 :body "No such group found"})) ; TODO: toAsk 204 No Content
+    {:status 404 :body {:message "No such group found"}})) ; TODO: toAsk 204 No Content
 
 ;### delete group ##############################################################
 
@@ -145,10 +145,10 @@
 
 (defn handle_get-group [req]
   (let [group-id (-> req :parameters :path :id)
-        tx (:tx req)
-        id (-> (convert-groupid group-id) :group-id)]
-    (info "handle_get-group" "\nid\n" id)
-    (get-group id tx)))
+        p (println ">o> abc" group-id (type group-id))
+        tx (:tx req)]
+    (info "handle_get-group" "\nid\n" group-id)
+    (get-group group-id tx)))
 
 (defn handle_delete-group [req]
   (let [id (-> req :parameters :path :id)]
