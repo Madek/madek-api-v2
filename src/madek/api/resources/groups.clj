@@ -83,83 +83,28 @@
 ; TODO test query and paging
 (defn build-index-query [req]
   (let [query-params (-> req :parameters :query)
-
-
-        ;pagination (fetch-pagination-params-raw-or-nil request)
-        ;with-pagination? (not (nil? pagination))
-
-
-        base-query     (-> (if (true? (:full_data query-params))
-                             (sql/select :*)
-                             (sql/select :id))
-                           (sql/from :groups)
-                           (sql/order-by [:id :asc])
-                           (dbh/build-query-param query-params :id)
-                           (dbh/build-query-param query-params :institutional_id)
-                           (dbh/build-query-param query-params :type)
-                           (dbh/build-query-param query-params :created_by_user_id)
-                           (dbh/build-query-param-like query-params :name)
-                           (dbh/build-query-param-like query-params :institutional_name)
-                           (dbh/build-query-param-like query-params :institution)
-                           (dbh/build-query-param-like query-params :searchable)
-                           ;(pagination/sql-offset-and-limit query-params)
-                           ;sql-format
-                            )
-
-;        res nil
-;
-;        res (pagination-handler req base-query)
-;
-;        p (println ">o> abc.pagination-handler" res)
-;
-;        ;res (if with-pagination?
-;        ;      (pagination/create-paginated-response base-query (:tx req) (:size pagination) (:page pagination))
-;        ;      (jdbc/query (:tx req) base-query))
-;;res (response res)
-;
-;        res (sd/response_ok res)
-;
-        ]
-;
-;res
-
-
-base-query
-        )
-)
-
+        base-query (-> (if (:full_data query-params)
+                         (sql/select :*)
+                         (sql/select :id))
+                       (sql/from :groups)
+                       (sql/order-by [:id :asc])
+                       (dbh/build-query-param query-params :id)
+                       (dbh/build-query-param query-params :institutional_id)
+                       (dbh/build-query-param query-params :type)
+                       (dbh/build-query-param query-params :created_by_user_id)
+                       (dbh/build-query-param-like query-params :name)
+                       (dbh/build-query-param-like query-params :institutional_name)
+                       (dbh/build-query-param-like query-params :institution)
+                       (dbh/build-query-param-like query-params :searchable))]
+    base-query))
 
 
 
 (defn index [req]
-
-  (let [query-params (-> req :parameters :query)
-
-
-        ;res nil
-        base-query (build-index-query req)
-
-  ;res (pagination-handler req base-query)
-  res (pagination-handler req base-query :groups)
-
-  p (println ">o> abc.pagination-handler" res)
-
-  ;res (if with-pagination?
-  ;      (pagination/create-paginated-response base-query (:tx req) (:size pagination) (:page pagination))
-  ;      (jdbc/query (:tx req) base-query))
-  ;res (response res)
-
-  res (sd/response_ok res)
-
-]
-
-res
-
-
-  ;(let [result (jdbc/execute! (:tx req) (build-index-query req))]
-  ;  (sd/response_ok {:groups result}))
-  ;
-  ))
+  (let [base-query (build-index-query req)
+        res (pagination-handler req base-query :groups)]
+    (println ">o> abc.pagination.handler" res)
+    (sd/response_ok res)))
 
 ;### routes ###################################################################
 
