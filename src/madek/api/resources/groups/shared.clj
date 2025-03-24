@@ -9,11 +9,12 @@
 (defn sql-merge-where-id
   ([group-id] (sql-merge-where-id {} group-id))
   ([sql-map group-id]
-   (if (instance? java.util.UUID group-id)
-     (sql/where sql-map [:or
-                         [:= :groups.id (to-uuid group-id)]
-                         [:= :groups.institutional_id (str group-id)]])
-     (sql/where sql-map [:= :groups.institutional_id (str group-id)]))))
+   (let [group-id (to-uuid group-id)]
+     (if (instance? java.util.UUID group-id)
+       (sql/where sql-map [:or
+                           [:= :groups.id group-id]
+                           [:= :groups.institutional_id (str group-id)]])
+       (sql/where sql-map [:= :groups.institutional_id (str group-id)])))))
 
 (defn jdbc-update-group-id-where-clause [id]
   (-> id sql-merge-where-id))
