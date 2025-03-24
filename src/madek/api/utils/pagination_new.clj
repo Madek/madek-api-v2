@@ -1,14 +1,16 @@
+  ; madek/api/utils/pagination_new.clj
 (ns madek.api.utils.pagination-new
   (:require
-   [clojure.java.io :as io]
-   [clojure.string :as str]
+   ;[clojure.java.io :as io]
+   ;[clojure.string :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.utils.request :refer [query-params]]
    ;[leihs.inventory.server.utils.core :refer [single-entity-get-request?]]
    [next.jdbc.sql :as jdbc]
    [ring.middleware.accept]
-   [ring.util.response :refer [bad-request response status]]))
+   ;[ring.util.response :refer [bad-request response status]]
+   ))
 
 
 (def CONST_DEFAULT_PAGE 1)
@@ -77,11 +79,17 @@
         page (:page query-params)
         size (:size query-params)
 
-        res (if (or (nil? page) (nil? size))
-                 nil
-                 {:page (or page CONST_DEFAULT_PAGE)
-                  :size (or size CONST_DEFAULT_SIZE)})
+        res (if (and (nil? page) (nil? size))
+              nil
 
+              ;{:page (or page CONST_DEFAULT_PAGE)
+              ; :size (or size CONST_DEFAULT_SIZE)}
+
+              {:page (Integer. (or page CONST_DEFAULT_PAGE))
+               :size (Integer. (or size CONST_DEFAULT_SIZE))}
+
+
+              )
         ]
     res))
 
@@ -115,11 +123,11 @@
 
     (cond
       (and (= with-pagination? false) (single-entity-get-request? request))
-    ;  ;(jdbc/query (:tx request) (-> base-query sql-format))
-    ;
+      (jdbc/query (:tx request) (-> base-query sql-format))
+
     ;  (and (or (nil? with-pagination?) with-pagination?) (or (some? page) (some? size)))
     ;  (pagination-response request base-query)
-    ;
+
       (and with-pagination?) (pagination-response request base-query pagination)
 
       :else (jdbc/query (:tx request) (-> base-query sql-format)))
