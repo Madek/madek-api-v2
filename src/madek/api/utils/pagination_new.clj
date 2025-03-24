@@ -1,4 +1,4 @@
-  ; madek/api/utils/pagination_new.clj
+; madek/api/utils/pagination_new.clj
 (ns madek.api.utils.pagination-new
   (:require
    ;[clojure.java.io :as io]
@@ -54,7 +54,7 @@
                           :size size}
 
          paginated-products (if (nil? post-data-fnc) paginated-products
-                                (post-data-fnc paginated-products))]
+                                                     (post-data-fnc paginated-products))]
      {:data paginated-products
       :pagination pagination-info})))
 
@@ -83,30 +83,37 @@
        :size (Integer. (or size CONST_DEFAULT_SIZE))})))
 
 (defn pagination-response
-  ([request base-query pagination ]
+  ([request base-query pagination]
    (pagination-response request base-query pagination nil))
 
-  ([request base-query pagination post-data-fnc]
+  ([request base-query pagination after-fnc]
    (let [{:keys [page size]} pagination
          tx (:tx request)]
-     (create-paginated-response base-query tx size page post-data-fnc))))
+     (create-paginated-response base-query tx size page after-fnc))))
 
 (defn pagination-handler
   "To receive a paginated response, the request must contain the query parameters `page` or `size`."
   ([request base-query]
-   (pagination-handler request base-query nil))
-  ([request base-query wrap-name-of-result]
+   (pagination-handler request base-query nil nil))
+  ([request base-query wrap-name-of-result after-fnc]
    (let [tx (:tx request)
          pagination (fetch-pagination-params-raw-or-nil request)
-         with-pagination? (some? pagination)]
+         with-pagination? (some? pagination)
+
+         after-fnc (if (nil? after-fnc)
+                     (fn [res] res)
+                      after-fnc
+                     )
+         ]
      (cond
        (and (not with-pagination?) (single-entity-get-request? request))
-       (jdbc/query tx (sql-format base-query))
+       (after-fnc (jdbc/query tx (sql-format base-query)))
 
        with-pagination?
-       (pagination-response request base-query pagination)
+       (pagination-response request base-query pagination after-fnc)
 
-       :else       (let [result (jdbc/query tx (sql-format base-query))]
-         (if wrap-name-of-result
-           {(keyword wrap-name-of-result) result}
-           result))))))
+       :else (let [result (jdbc/query tx (sql-format base-query))
+                   result (after-fnc result)]
+               (if wrap-name-of-result
+                 {(keyword wrap-name-of-result) result}
+                 result))))))
