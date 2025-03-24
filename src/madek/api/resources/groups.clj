@@ -106,48 +106,60 @@
                            ;sql-format
                             )
 
-        res nil
-
-        res (pagination-handler req base-query)
-
-        p (println ">o> abc.pagination-handler" res)
-
-        ;res (if with-pagination?
-        ;      (pagination/create-paginated-response base-query (:tx req) (:size pagination) (:page pagination))
-        ;      (jdbc/query (:tx req) base-query))
-;res (response res)
-
-        res (sd/response_ok res)
-
+;        res nil
+;
+;        res (pagination-handler req base-query)
+;
+;        p (println ">o> abc.pagination-handler" res)
+;
+;        ;res (if with-pagination?
+;        ;      (pagination/create-paginated-response base-query (:tx req) (:size pagination) (:page pagination))
+;        ;      (jdbc/query (:tx req) base-query))
+;;res (response res)
+;
+;        res (sd/response_ok res)
+;
         ]
+;
+;res
 
-res
-    ;(-> (if (true? (:full_data query-params))
-    ;      (sql/select :*)
-    ;      (sql/select :id))
-    ;    (sql/from :groups)
-    ;    (sql/order-by [:id :asc])
-    ;    (dbh/build-query-param query-params :id)
-    ;    (dbh/build-query-param query-params :institutional_id)
-    ;    (dbh/build-query-param query-params :type)
-    ;    (dbh/build-query-param query-params :created_by_user_id)
-    ;    (dbh/build-query-param-like query-params :name)
-    ;    (dbh/build-query-param-like query-params :institutional_name)
-    ;    (dbh/build-query-param-like query-params :institution)
-    ;    (dbh/build-query-param-like query-params :searchable)
-    ;    (pagination/sql-offset-and-limit query-params)
-    ;    sql-format
+
+base-query
         )
 )
 
+
+
+
 (defn index [req]
 
-  (build-index-query req)
+  (let [query-params (-> req :parameters :query)
+
+
+        ;res nil
+        base-query (build-index-query req)
+
+  ;res (pagination-handler req base-query)
+  res (pagination-handler req base-query :groups)
+
+  p (println ">o> abc.pagination-handler" res)
+
+  ;res (if with-pagination?
+  ;      (pagination/create-paginated-response base-query (:tx req) (:size pagination) (:page pagination))
+  ;      (jdbc/query (:tx req) base-query))
+  ;res (response res)
+
+  res (sd/response_ok res)
+
+]
+
+res
+
 
   ;(let [result (jdbc/execute! (:tx req) (build-index-query req))]
   ;  (sd/response_ok {:groups result}))
   ;
-  )
+  ))
 
 ;### routes ###################################################################
 
@@ -245,7 +257,7 @@ res
   [["/"
     {:openapi {:tags ["groups"]}}
     ["groups" {:get {:summary "Get all group ids"
-                     :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
+                     :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
                      :handler index
                      :parameters {:query ::group-query-def}
                      :coercion spec/coercion
@@ -270,7 +282,7 @@ res
   ["/"
    {:openapi {:tags ["admin/groups"] :security ADMIN_AUTH_METHODS}}
    ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
-                    :description "Get list of group ids. Paging is used as you get a limit of 100 entries."
+                    :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
                     :handler index
                     :middleware [wrap-authorize-admin!]
                     :parameters {:query ::group-query-def}
