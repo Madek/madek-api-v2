@@ -3,6 +3,8 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.utils.pagination-new :refer [ pagination-handler]]
+
    [madek.api.pagination :as pagination]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.db_helper :as dbh]
@@ -47,23 +49,40 @@
                       (filter-by-collection-id query-params)
                       (permissions/filter-by-query-params query-params
                                                           authenticated-entity)
-                      (pagination/sql-offset-and-limit query-params)
-                      sql-format)]
+                      ;(pagination/sql-offset-and-limit query-params)
+                      ;sql-format
+                      )]
     ;(logging/info "build-query"
     ;              "\nquery\n" query-params
     ;              "\nsql query:\n" sql-query)
     sql-query))
 
 (defn- query-index-resources [request]
-  (jdbc/execute! (:tx request) (build-query request)))
+
+     (let [
+           base-query (build-query request)
+  res (pagination-handler request base-query :collections)
+
+              ]
+res)
+
+
+
+;(jdbc/execute! (:tx request) (build-query request))
+)
 
 ;### index ####################################################################
 
 (defn get-index [request]
   (catcher/with-logging {}
     {:body
-     {:collections
-      (query-index-resources request)}}))
+
+     ;{:collections
+     ; (query-index-resources request)}
+
+     (query-index-resources request)
+
+     }))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

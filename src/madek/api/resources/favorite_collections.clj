@@ -179,11 +179,10 @@
     {:openapi {:tags ["admin/favorite/collections"] :security ADMIN_AUTH_METHODS}}
     ["collections"
      {:get
-      {:summary (sd/sum_adm (f "List favorite_collection users." " TODO: pagination?"))
+      {:summary (sd/sum_adm (f "List favorite_collection users."))
        :handler handle_list-favorite_collection
        :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion
-       ; TODO query params?
        :parameters {:query {;(s/optional-key :user_id) s/Uuid
                             ;(s/optional-key :collection_id) s/Uuid
                             (s/optional-key :full_data) s/Bool}}
