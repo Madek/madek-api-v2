@@ -37,7 +37,10 @@
 (def base-query
   (-> (apply sql/select user-select-keys)
       (sql/select [is-admin-sub :is_admin])
-      (sql/from :users)))
+      (sql/from :users)
+
+      ;(sql/limit 5)
+      ))
 
 ;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -49,7 +52,10 @@
     (fn [{{uid param} :path-params tx :tx :as request}]
       (let [converted (convert-userid uid)
             uid (-> converted :user-id)
-            user (find-user-by-uid uid tx)]
+            user (find-user-by-uid uid tx)
+
+            p (println ">o> user" user)
+            ]
         (if (-> converted :is_userid_valid)
           (if user
             (handler (assoc request :user user))
