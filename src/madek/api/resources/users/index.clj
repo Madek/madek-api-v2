@@ -5,6 +5,8 @@
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.pagination-new :refer [ pagination-handler]]
+
    [madek.api.resources.users.common :as common]
    [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -24,13 +26,21 @@
   "Get an index of the users. Query parameters are pending to be implemented."
   [{{params :query} :parameters tx :tx :as req}]
   (let [query (-> common/base-query
-                  (pagination/sql-offset-and-limit params)
+                  ;(pagination/sql-offset-and-limit params)
                   (handle-email-clause params)
-                  (sql-format :inline false))
-        res (->> query
-                 (jdbc/execute! tx)
-                 (assoc {} :users))
-        res (sd/transform_ml_map res)]
+                  ;(sql-format :inline false)
+
+                  )
+        ;res (->> query
+        ;         (jdbc/execute! tx)
+        ;         (assoc {} :users))
+
+        after-fnc (fn [res] (sd/transform_ml_map res))
+        res (pagination-handler req query :users after-fnc)
+
+
+    ;res (sd/transform_ml_map res)
+]
     (sd/response_ok res)))
 
 (sa/def ::users-query-def (sa/keys :opt-un [::sp/email ::sp/page ::sp/size]))
