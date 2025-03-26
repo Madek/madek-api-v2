@@ -207,10 +207,10 @@
                     ::sp-nil/position
                     ::sp-nil/order]))
 
-(sa/def :usr-collection-list/groups (st/spec {:spec (sa/coll-of :usr/collections)
+(sa/def :usr-collection-list/collections (st/spec {:spec (sa/coll-of :usr/collections)
                                               :description "A list of persons"}))
 
-(sa/def ::response-collections-body (sa/keys :req-un [:usr-collection-list/groups]))
+(sa/def ::response-collections-body (sa/keys :req-un [:usr-collection-list/collections]))
 
 (def ring-admin-routes
   ["/"
@@ -302,7 +302,7 @@
            :parameters {:path {:collection_id uuid?}
                         :body :usr/collections-update}
            :responses {200 {:description "Returns the updated collection."
-                            :body :usr-collection-list/groups}
+                            :body :usr-collection-list/collections}
                        404 {:description "Collection not found."
                             :body any?}
                        422 {:description "Could not update collection."
