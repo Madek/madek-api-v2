@@ -95,7 +95,7 @@
 (def schema_create_workflow
   {;:id is db assigned or optional
    :name s/Str
-   ;:creator_id s/Uuid
+   ;:creator_id (s/maybe s/Uuid)
    (s/optional-key :is_active) s/Bool
    ; TODO docu is json
    (s/optional-key :configuration) s/Any})

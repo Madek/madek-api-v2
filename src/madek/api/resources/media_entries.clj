@@ -351,7 +351,7 @@
 (def schema_media_entry
   {:id s/Uuid
    :creator_at s/Any
-   :creator_id s/Uuid
+   :creator_id (s/maybe s/Uuid)
    :responsible_user_id s/Uuid
    :is_published s/Bool
    :updated_at s/Any
@@ -362,7 +362,7 @@
   {:id s/Uuid
    :deleted_at s/Any
    :created_at s/Any
-   :creator_id s/Uuid
+   :creator_id (s/maybe s/Uuid)
    :responsible_user_id s/Uuid
    :responsible_delegation_id (s/maybe s/Uuid)
    :is_published s/Bool
