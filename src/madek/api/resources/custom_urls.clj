@@ -152,7 +152,7 @@
 (def schema_export_custom_url
   {:id s/Str
    :is_primary s/Bool
-   :creator_id s/Uuid
+   :creator_id (s/maybe s/Uuid)
    :updator_id s/Uuid
    :updated_at s/Any
    :created_at s/Any

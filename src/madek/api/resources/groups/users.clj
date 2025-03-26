@@ -4,6 +4,10 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
+
+   [madek.api.utils.pagination-new :refer [ pagination-handler]]
+
+
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [convert-groupid-userid]]
@@ -75,22 +79,34 @@
       (sql/join :groups [:= :groups.id :groups_users.group_id])
       (sql/order-by [:users.id :asc])
       (groups/sql-merge-where-id group-id)
-      (pagination/sql-offset-and-limit (-> request :parameters :query))
-      sql-format))
+      ;(pagination/sql-offset-and-limit (-> request :parameters :query))
+      ;sql-format
+      ))
 
 (defn group-users [group-id request]
-  (jdbc/execute! (:tx request)
-                 (group-users-query group-id request)))
+
+
+     (let [
+           base-query (group-users-query group-id request)
+
+           res (pagination-handler request base-query :users)
+
+]res)
+
+  ;(jdbc/execute! (:tx request)
+  ;               (group-users-query group-id request))
+
+  )
 
 (defn get-group-users [group-id request]
-  (sd/response_ok {:users (group-users group-id request)}))
+  (sd/response_ok (group-users group-id request)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn add-user [group-id user-id req]
   (info "add-user" group-id ":" user-id)
   (if-let [user (find-group-user group-id user-id (:tx req))]
-    (sd/response_ok {:users (group-users group-id req)})
+    (sd/response_ok (group-users group-id req))
     (let [tx (:tx req)
           group (groups/find-group group-id tx)
           user (find-user user-id (:tx req))]
@@ -101,7 +117,7 @@
                                (sql/values [{:group_id (:id group)
                                              :user_id (:id user)}])
                                sql-format))
-            (sd/response_ok {:users (group-users group-id req)}))))))
+            (sd/response_ok  (group-users group-id req)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -113,7 +129,7 @@
                                    (-> (sql/delete-from :groups_users)
                                        (sql/where [:= :group_id (:id group)] [:= :user_id (:id user)])
                                        sql-format))]
-          (sd/response_ok {:users (group-users group-id req)}))
+          (sd/response_ok (group-users group-id req)))
         (sd/response_not_found "No such group"))
       (sd/response_not_found "No such group or user."))))
 
