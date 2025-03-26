@@ -5,6 +5,8 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
+   [madek.api.utils.pagination-new :refer [ pagination-handler]]
+
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
@@ -42,10 +44,20 @@
                      (dbh/build-query-ts-after req-query :created_after "created_at")
                      (dbh/build-query-ts-after req-query :updated_after "updated_at")
 
-                     (pagination/sql-offset-and-limit req-query)
-                     sql-format)
-        db-result (jdbc/execute! (:tx req) db-query)
-        tf (map context_key_transform_ml db-result)]
+                     ;(pagination/sql-offset-and-limit req-query)
+                     ;sql-format
+                     )
+        ;db-result (jdbc/execute! (:tx req) db-query)
+        ;tf (map context_key_transform_ml db-result)
+
+
+        after-fnc (fn [res] (map context_key_transform_ml res))
+
+
+        tf (pagination-handler req db-query nil after-fnc)
+
+
+        ]
     (sd/response_ok tf)))
 
 (defn handle_usr-list-context_keys
@@ -59,9 +71,19 @@
                      (dbh/build-query-param req-query :context_id)
                      (dbh/build-query-param req-query :meta_key_id)
                      (dbh/build-query-param req-query :is_required)
-                     sql-format)
-        db-result (jdbc/execute! (:tx req) db-query)
-        tf (map context_key_transform_ml db-result)]
+                     ;sql-format
+                     )
+
+
+        ;db-result (jdbc/execute! (:tx req) db-query)
+        ;tf (map context_key_transform_ml db-result)
+
+        after-fnc (fn [res] (map context_key_transform_ml res))
+
+
+        tf (pagination-handler req db-query nil after-fnc)
+
+        ]
 
     ;(info "handle_usr-list-context_keys" "\ndb-query\n" db-query)
     (sd/response_ok tf)))
@@ -184,6 +206,18 @@
 
    :documentation_urls (s/maybe sd/schema_ml_list)})
 
+
+(def schema_export_context_key_paginated
+  {:data [schema_export_context_key]
+   :pagination {
+                :total_rows s/Int
+                :total_pages s/Int
+                :page s/Int
+                :size s/Int
+                }
+   }
+  )
+
 (sa/def :adm/context-keys (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/context_id ::sp/is_required ::sp/changed_after
                                             ::sp/created_after ::sp/updated_after
                                             ::sp/page ::sp/size]))
@@ -218,6 +252,40 @@
 (sa/def :adm/context-keys-response (st/spec {:spec (sa/coll-of :adm/context-key-response)
                                              :description "A list of context-keys"}))
 
+;; --- Basic field definitions ---
+(sa/def ::media_resource_id uuid?)
+(sa/def ::text string?)
+
+;(sa/def ::page pos-int?)
+;(sa/def ::size pos-int?)
+;(sa/def ::total_rows pos-int?)
+;(sa/def ::total_pages pos-int?)
+
+(sa/def ::page int?)
+(sa/def ::size int?)
+(sa/def ::total_rows int?)
+(sa/def ::total_pages int?)
+
+;; --- Paginated schema (new) ---
+(sa/def ::data
+  (sa/coll-of :adm/context-key-response :kind vector?))
+
+(sa/def ::pagination
+  (sa/keys :req-un [::total_rows ::total_pages ::page ::size]))
+
+(sa/def :adm/context-keys-response-paginated
+  (st/spec
+    ;{:spec (sa/keys :req-un [::data ::pagination])
+    {:spec (sa/keys :req-un {::data ::pagination})
+     :description "Paginated list of full_texts"}))
+
+;; --- Combined schema for compatibility ---
+(sa/def :adm/context-keys-response-combined
+  (st/spec
+    {:spec (sa/or :flat :adm/context-keys-response
+             :paginated :adm/context-keys-response-paginated)
+     :description "Supports both flat and paginated full_texts formats"}))
+
 ; TODO docu
 ; TODO tests
 (def admin-routes
@@ -246,7 +314,7 @@
       :parameters {:query :adm/context-keys}
       :coercion spec/coercion
       :responses {200 {:description "Returns the context_keys."
-                       :body :adm/context-keys-response}
+                       :body :adm/context-keys-response-combined}
                   406 {:description "Could not list context_keys."
                        :body any?}}}}]
    ; edit context_key
@@ -306,9 +374,12 @@
       :parameters {:query {(s/optional-key :id) s/Uuid
                            (s/optional-key :context_id) s/Str
                            (s/optional-key :meta_key_id) s/Str
+                           (s/optional-key :page) s/Int
+                           (s/optional-key :size) s/Int
                            (s/optional-key :is_required) s/Bool}}
       :responses {200 {:description "Returns the context_keys."
-                       :body [schema_export_context_key]}
+                       ;:body [schema_export_context_key]}
+                       :body (s/->Either [[schema_export_context_key] schema_export_context_key_paginated])}
                   403 (sd/create-error-message-response "Forbidden." "The token has no admin-privileges.")
                   406 {:description "Could not list context_keys."
                        :body s/Any}}}}]
