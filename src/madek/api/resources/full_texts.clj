@@ -7,6 +7,8 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.pagination-new :refer [ pagination-handler]]
+
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
@@ -29,9 +31,17 @@
                      (sql/from :full_texts)
                      (dbh/build-query-param query-params :media_resource_id)
                      (dbh/build-query-param-like query-params :text)
-                     (pagination/sql-offset-and-limit query-params)
-                     sql-format)
-        db-result (jdbc/execute! (:tx req) db-query)]
+                     ;(pagination/sql-offset-and-limit query-params)
+                     ;sql-format
+
+                     (sql/limit 10)
+
+                     )
+        db-result (pagination-handler req db-query)
+
+
+    ;db-result (jdbc/execute! (:tx req) db-query)
+]
 
     (info "handle_list-full_texts:" "\nquery:\n" db-query)
     (sd/response_ok db-result)))
@@ -115,10 +125,47 @@
 
 (sa/def :ft-query/schema-query-def (sa/keys :opt-un [::sp/full_data ::sp/media_resource_id ::sp/text ::sp/page ::sp/size]))
 
-(sa/def ::response-schema-def (sa/keys :req-un [::sp/media_resource_id] :opt-un [::sp/text]))
 
-(sa/def :usr-list/full-texts (st/spec {:spec (sa/coll-of ::response-schema-def)
-                                       :description "A list of full_texts"}))
+;; --- Basic field definitions ---
+(sa/def ::media_resource_id uuid?)
+(sa/def ::text string?)
+
+(sa/def ::page pos-int?)
+(sa/def ::size pos-int?)
+(sa/def ::total_rows pos-int?)
+(sa/def ::total_pages pos-int?)
+
+;; --- Single response item definition ---
+(sa/def ::response-schema-def
+  (sa/keys :req-un [::media_resource_id]
+    :opt-un [::text]))
+
+;; --- Flat list schema (legacy/old) ---
+(sa/def :usr-list/full-texts-flat
+  (st/spec
+    {:spec (sa/coll-of ::response-schema-def :kind vector?)
+     :description "Flat list of full_texts (legacy format)"}))
+
+;; --- Paginated schema (new) ---
+(sa/def ::data
+  (sa/coll-of ::response-schema-def :kind vector?))
+
+(sa/def ::pagination
+  (sa/keys :req-un [::total_rows ::total_pages ::page ::size]))
+
+(sa/def :usr-list/full-texts-paginated
+  (st/spec
+    {:spec (sa/keys :req-un [::data ::pagination])
+     :description "Paginated list of full_texts"}))
+
+;; --- Combined schema for compatibility ---
+(sa/def :usr-list/full-texts
+  (st/spec
+    {:spec (sa/or :flat :usr-list/full-texts-flat
+             :paginated :usr-list/full-texts-paginated)
+     :description "Supports both flat and paginated full_texts formats"}))
+
+
 
 ; TODO tests
 ; TODO howto access control or full_texts is public meta data
@@ -130,7 +177,9 @@
            :handler handle_list-full_texts
            :coercion spec/coercion
            :responses {200 {:description "Returns the full_texts."
-                            :body :usr-list/full-texts}}
+                            :body :usr-list/full-texts
+                          }
+                       }
            :parameters {:query :ft-query/schema-query-def}}}]
 
    ["full_texts/:media_resource_id"
