@@ -6,6 +6,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.authorization :as authorization]
             [madek.api.constants :refer [FILE_STORAGE_DIR]]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.resources.media-entries.index :refer [get-index
                                                              get-index_related_data]]
             [madek.api.resources.media-entries.media-entry :refer [get-media-entry]]
@@ -399,7 +400,7 @@
 
 (def ring-admin-routes
   ["/"
-   {:openapi {:tags ["admin/media-entries"]}}
+   {:openapi {:tags ["admin/media-entries"] :security ADMIN_AUTH_METHODS}}
 
    ["media-entries"
     {:get

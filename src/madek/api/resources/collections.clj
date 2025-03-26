@@ -6,6 +6,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -214,14 +215,14 @@
 
 (def ring-admin-routes
   ["/"
-   {:openapi {:tags ["admin/collection"]}}
+   {:openapi {:tags ["admin/collection"] :security ADMIN_AUTH_METHODS}}
    ["collections"
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
       :middleware [wrap-authorize-admin!]
       :handler handle_get-index
       :coercion spec/coercion
-      :parameters {:query :collection-query/query-admin-def}
+      :parameters {:query :collection-query/query-admin-def} ;;HERE
       :responses {200 {:description "Returns the list of collections."
                        :body ::response-collections-body}}}}]
 
