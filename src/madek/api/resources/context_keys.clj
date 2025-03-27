@@ -242,11 +242,6 @@
 (sa/def ::media_resource_id uuid?)
 (sa/def ::text string?)
 
-;(sa/def ::page pos-int?)
-;(sa/def ::size pos-int?)
-;(sa/def ::total_rows pos-int?)
-;(sa/def ::total_pages pos-int?)
-
 (sa/def ::page pos-int?)
 (sa/def ::size pos-int?)
 (sa/def ::total_rows int?)

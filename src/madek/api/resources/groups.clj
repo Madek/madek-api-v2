@@ -184,6 +184,12 @@
                                         :description "A list of users"}))
 
 ;; --- Paginated schema (new) ---
+
+(sa/def ::page pos-int?)
+(sa/def ::size pos-int?)
+(sa/def ::total_rows int?)
+(sa/def ::total_pages int?)
+
 (sa/def ::data
   (sa/coll-of ::group-id-resp-def :kind vector?))
 
