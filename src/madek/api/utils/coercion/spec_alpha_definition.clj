@@ -100,7 +100,7 @@
                                   :description "An array of any types"}))
 
 (sa/def ::data (st/spec {:spec (sa/coll-of any?)
-                                  :description "An array of any types"}))
+                         :description "An array of any types"}))
 
 (sa/def ::rdf_class (st/spec {:spec string?}))
 (sa/def ::scope (st/spec {:spec string?}))

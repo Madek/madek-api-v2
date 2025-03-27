@@ -8,10 +8,7 @@
    [madek.api.utils.request :refer [query-params]]
    ;[leihs.inventory.server.utils.core :refer [single-entity-get-request?]]
    [next.jdbc.sql :as jdbc]
-   [ring.middleware.accept]
-   ;[ring.util.response :refer [bad-request response status]]
-   ))
-
+   [ring.middleware.accept]))
 
 (def CONST_DEFAULT_PAGE 1)
 (def CONST_DEFAULT_SIZE 10)
@@ -21,7 +18,7 @@
         uri (:uri request)
         uuid-regex #"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"]
     (and (= method :get)
-      (boolean (re-find uuid-regex uri)))))
+         (boolean (re-find uuid-regex uri)))))
 
 (defn- fetch-total-count [base-query tx]
   (-> (sql/select [[:raw "COUNT(*)"] :total_count])
@@ -54,7 +51,7 @@
                           :size size}
 
          paginated-products (if (nil? post-data-fnc) paginated-products
-                                                     (post-data-fnc paginated-products))]
+                                (post-data-fnc paginated-products))]
      {:data paginated-products
       :pagination pagination-info})))
 
@@ -106,9 +103,8 @@
 
          after-fnc (if (nil? after-fnc)
                      (fn [res] res)
-                      after-fnc
-                     )
-         ]
+                     after-fnc)]
+
      (cond
        (and (not with-pagination?) (single-entity-get-request? request))
        (after-fnc (jdbc/query tx (sql-format base-query)))

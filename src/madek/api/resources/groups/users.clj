@@ -5,13 +5,12 @@
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
 
-   [madek.api.utils.pagination-new :refer [ pagination-handler]]
-
-
    [madek.api.resources.groups.shared :as groups]
+
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [convert-groupid-userid]]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
@@ -85,19 +84,13 @@
 
 (defn group-users [group-id request]
 
+  (let [base-query (group-users-query group-id request)
 
-     (let [
-           base-query (group-users-query group-id request)
-
-           res (pagination-handler request base-query :users)
-
-]res)
+        res (pagination-handler request base-query :users)] res)
 
   ;(jdbc/execute! (:tx request)
   ;               (group-users-query group-id request))
-
   )
-
 (defn get-group-users [group-id request]
   (sd/response_ok (group-users group-id request)))
 
@@ -117,7 +110,7 @@
                                (sql/values [{:group_id (:id group)
                                              :user_id (:id user)}])
                                sql-format))
-            (sd/response_ok  (group-users group-id req)))))))
+            (sd/response_ok (group-users group-id req)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -172,6 +165,7 @@
 (defn update-group-users [group-id data tx]
   (jdbc/with-transaction [tx tx]
     (let [current-group-users-ids (current-group-users-ids tx group-id)
+          p (println ">o> abc.data" data)
           target-group-users-ids (if (first (:users data))
                                    (target-group-users-ids tx (:users data))
                                    [])
@@ -192,7 +186,7 @@
         (jdbc/execute!
          tx
          ins-query))
-
+      ;; FIXME: bug when PUT
       (sd/response_ok {:users (jdbc/execute! tx
                                              (group-users-query group-id nil)
                                              jdbc/unqualified-snake-kebab-opts)}))))

@@ -44,8 +44,7 @@
                    :coercion spec/coercion
                    :parameters {:query sp/schema_pagination_opt}
                    :responses {200 {:description "Returns the roles."
-                                    :body  ::response-roles-body
-                                    }}}}]
+                                    :body ::response-roles-body}}}}]
 
    ["roles/:id"
     {:get {:summary "Get role by id"

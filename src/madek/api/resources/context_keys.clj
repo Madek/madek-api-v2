@@ -5,9 +5,8 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.utils.pagination-new :refer [ pagination-handler]]
-
    [madek.api.resources.shared.core :as sd]
+
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -15,6 +14,7 @@
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -50,14 +50,10 @@
         ;db-result (jdbc/execute! (:tx req) db-query)
         ;tf (map context_key_transform_ml db-result)
 
-
         after-fnc (fn [res] (map context_key_transform_ml res))
 
+        tf (pagination-handler req db-query nil after-fnc)]
 
-        tf (pagination-handler req db-query nil after-fnc)
-
-
-        ]
     (sd/response_ok tf)))
 
 (defn handle_usr-list-context_keys
@@ -73,19 +69,14 @@
                      (dbh/build-query-param req-query :is_required)
                      ;sql-format
                      )
-
-
-        ;db-result (jdbc/execute! (:tx req) db-query)
+;db-result (jdbc/execute! (:tx req) db-query)
         ;tf (map context_key_transform_ml db-result)
 
         after-fnc (fn [res] (map context_key_transform_ml res))
 
+        tf (pagination-handler req db-query nil after-fnc)]
 
-        tf (pagination-handler req db-query nil after-fnc)
-
-        ]
-
-    ;(info "handle_usr-list-context_keys" "\ndb-query\n" db-query)
+;(info "handle_usr-list-context_keys" "\ndb-query\n" db-query)
     (sd/response_ok tf)))
 
 (defn handle_adm-get-context_key
@@ -206,17 +197,12 @@
 
    :documentation_urls (s/maybe sd/schema_ml_list)})
 
-
 (def schema_export_context_key_paginated
   {:data [schema_export_context_key]
-   :pagination {
-                :total_rows s/Int
+   :pagination {:total_rows s/Int
                 :total_pages s/Int
                 :page s/Int
-                :size s/Int
-                }
-   }
-  )
+                :size s/Int}})
 
 (sa/def :adm/context-keys (sa/keys :opt-un [::sp/id ::sp/meta_key_id ::sp/context_id ::sp/is_required ::sp/changed_after
                                             ::sp/created_after ::sp/updated_after
@@ -261,8 +247,8 @@
 ;(sa/def ::total_rows pos-int?)
 ;(sa/def ::total_pages pos-int?)
 
-(sa/def ::page int?)
-(sa/def ::size int?)
+(sa/def ::page pos-int?)
+(sa/def ::size pos-int?)
 (sa/def ::total_rows int?)
 (sa/def ::total_pages int?)
 
@@ -276,15 +262,15 @@
 (sa/def :adm/context-keys-response-paginated
   (st/spec
     ;{:spec (sa/keys :req-un [::data ::pagination])
-    {:spec (sa/keys :req-un {::data ::pagination})
-     :description "Paginated list of full_texts"}))
+   {:spec (sa/keys :req-un {::data ::pagination})
+    :description "Paginated list of full_texts"}))
 
 ;; --- Combined schema for compatibility ---
 (sa/def :adm/context-keys-response-combined
   (st/spec
-    {:spec (sa/or :flat :adm/context-keys-response
-             :paginated :adm/context-keys-response-paginated)
-     :description "Supports both flat and paginated full_texts formats"}))
+   {:spec (sa/or :flat :adm/context-keys-response
+                 :paginated :adm/context-keys-response-paginated)
+    :description "Supports both flat and paginated full_texts formats"}))
 
 ; TODO docu
 ; TODO tests

@@ -19,7 +19,7 @@ describe "getting the index of group-users" do
     include_context :json_client_for_authenticated_token_admin do
       describe "getting the group_users " do
         let :group_users_result do
-          client.get("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users?page=0&size=100")
+          client.get("/api-v2/admin/groups/#{CGI.escape(@group.id)}/users?page=1&size=100")
         end
 
         it "works" do
@@ -28,7 +28,7 @@ describe "getting the index of group-users" do
 
         it "returns some data but less than created because we paginate" do
           expect(
-            group_users_result.body["users"].count
+            group_users_result.body["data"].count
           ).to be < @group_users.count
         end
       end

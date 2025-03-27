@@ -8,9 +8,8 @@
    [madek.api.resources.meta-keys.meta-key :as mk]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.pagination-new :refer [ pagination-handler]]
-
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
+
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-any :as sp-any]
@@ -18,6 +17,7 @@
    [madek.api.utils.coercion.spec-alpha-definition-str :as sp-str]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist cast-to-hstore convert-map-if-exist
                                    replace-java-hashmaps mslurp replace-java-hashmaps v]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
@@ -61,29 +61,25 @@
              :descriptions_2 (sd/transform_ml (:descriptions_2 meta-key)))))
 
 (defn handle_adm-query-meta-keys [req]
-  (let [
-        ;db-result (mkindex/db-query-meta-keys req)
+  (let [;db-result (mkindex/db-query-meta-keys req)
         query (mkindex/build-query req)
 
         after-fnc (fn [res] (map adm-export-meta-key-list res))
 
         res (pagination-handler req query :meta-keys after-fnc)
 
-
-    ;result (map adm-export-meta-key-list db-result)
+;result (map adm-export-meta-key-list db-result)
         ]
     ;(sd/response_ok {:meta-keys result}))) ;; TODO: add headers.x-total-count?
     (sd/response_ok res))) ;; TODO: add headers.x-total-count?
 
 (defn handle_usr-query-meta-keys [req]
-  (let [
-        ;db-result (mkindex/db-query-meta-keys req)
+  (let [;db-result (mkindex/db-query-meta-keys req)
         query (mkindex/build-query req)
         after-fnc (fn [res] (map user-export-meta-key-list res))
         ;result (map user-export-meta-key-list db-result)
 
-        res (pagination-handler req query :meta-keys after-fnc)
-        ]
+        res (pagination-handler req query :meta-keys after-fnc)]
     ;(sd/response_ok {:meta-keys result})))
     (sd/response_ok res))) ;; TODO: add headers.x-total-count?
 

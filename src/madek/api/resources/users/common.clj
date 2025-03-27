@@ -54,8 +54,7 @@
             uid (-> converted :user-id)
             user (find-user-by-uid uid tx)
 
-            p (println ">o> user" user)
-            ]
+            p (println ">o> user" user)]
         (if (-> converted :is_userid_valid)
           (if user
             (handler (assoc request :user user))

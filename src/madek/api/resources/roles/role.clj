@@ -4,11 +4,11 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.pagination :as pagination]
-   [madek.api.utils.pagination-new :refer [ pagination-handler]]
-
    [madek.api.resources.shared.core :as sd]
+
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [cast-to-hstore]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
 
@@ -31,7 +31,7 @@
   [request]
   (let [query-params (-> request :parameters :query)
 
-                         base-query (query-index query-params)
+        base-query (query-index query-params)
         ;dbresult (jdbc/execute! (:tx request) (query-index query-params))
 
         after-fnc (fn [res] (map transform-ml-role res))
@@ -40,14 +40,10 @@
 
         ab (first (:roles res))
 
-
         p (println ">o> abc.role" ab (type ab))
 
-
-
-
-    ;result (map transform-ml-role dbresult)
-]
+;result (map transform-ml-role dbresult)
+        ]
     (sd/response_ok res)))
 
 (defn query_role-find-one [id]

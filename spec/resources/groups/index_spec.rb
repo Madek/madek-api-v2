@@ -21,13 +21,19 @@ context "groups" do
       it "responses with 200" do
         resp1 = client.get("/api-v2/admin/groups?page=1&size=5")
         expect(resp1.status).to be == 200
-        expect(resp1.body["groups"].count).to be 5
+        expect(resp1.body["data"].count).to be 5
 
         resp2 = client.get("/api-v2/admin/groups?page=2&size=5")
         expect(resp2.status).to be == 200
-        expect(resp2.body["groups"].count).to be 5
+        expect(resp2.body["data"].count).to be 5
 
-        expect(lists_of_maps_different?(resp1.body["groups"], resp2.body["groups"])).to eq true
+        expect(lists_of_maps_different?(resp1.body["data"], resp2.body["data"])).to eq true
+      end
+
+      it "responses with 200" do
+        resp1 = client.get("/api-v2/admin/groups")
+        expect(resp1.status).to be == 200
+        expect(resp1.body["groups"].count).to be 202
       end
     end
   end
@@ -37,13 +43,19 @@ context "groups" do
       it "responses with 200" do
         resp1 = client.get("/api-v2/groups?page=1&size=5")
         expect(resp1.status).to be == 200
-        expect(resp1.body["groups"].count).to be 5
+        expect(resp1.body["data"].count).to be 5
 
         resp2 = client.get("/api-v2/groups?page=2&size=5")
         expect(resp2.status).to be == 200
-        expect(resp2.body["groups"].count).to be 5
+        expect(resp2.body["data"].count).to be 5
 
         expect(lists_of_maps_different?(resp1.body, resp2.body)).to eq true
+      end
+
+      it "responses with 200" do
+        resp1 = client.get("/api-v2/groups")
+        expect(resp1.status).to be == 200
+        expect(resp1.body["groups"].count).to be 202
       end
     end
   end
@@ -61,7 +73,7 @@ context "groups" do
 
         it "returns some data but less than created because we paginate" do
           expect(
-            groups_result.body["groups"].count
+            groups_result.body["data"].count
           ).to be < @groups.count
         end
 

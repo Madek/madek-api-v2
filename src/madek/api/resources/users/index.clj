@@ -5,13 +5,13 @@
    [honey.sql.helpers :as sql]
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.pagination-new :refer [ pagination-handler]]
-
    [madek.api.resources.users.common :as common]
+
    [madek.api.resources.users.get :as get-user]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.helper :refer [f]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]))
@@ -29,18 +29,16 @@
                   ;(pagination/sql-offset-and-limit params)
                   (handle-email-clause params)
                   ;(sql-format :inline false)
-
                   )
-        ;res (->> query
+;res (->> query
         ;         (jdbc/execute! tx)
         ;         (assoc {} :users))
 
         after-fnc (fn [res] (sd/transform_ml_map res))
         res (pagination-handler req query :users after-fnc)
 
-
-    ;res (sd/transform_ml_map res)
-]
+;res (sd/transform_ml_map res)
+        ]
     (sd/response_ok res)))
 
 (sa/def ::users-query-def (sa/keys :opt-un [::sp/email ::sp/page ::sp/size]))
