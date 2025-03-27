@@ -192,6 +192,7 @@
 (defn ?token? [text] (if SHOW_MR_INFO_DEV_MODE (apply str text " [mr/ IST / token-auth]")) text)
 (defn ?session? [text] (if SHOW_MR_INFO_DEV_MODE (apply str text " [mr / IST / session-auth]") text))
 (defn ?no-auth? [text] (if SHOW_MR_INFO_DEV_MODE (apply str text " [mr / IST / no-auth]") text))
+(defn session-req [text] (apply str text " [session required]"))
 
 (defn create-example-response
   ([schema value]

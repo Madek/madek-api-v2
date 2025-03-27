@@ -13,6 +13,8 @@
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
+
    [reitit.coercion.spec :as spec]
    [schema.core :as s]
    [spec-tools.core :as st]))
@@ -49,13 +51,22 @@
       (sql/from :collection_collection_arcs)
       (dbh/build-query-param query-params :child_id)
       (dbh/build-query-param query-params :parent_id)
-      (pagination/sql-offset-and-limit query-params)
-      sql-format))
+      ;(pagination/sql-offset-and-limit query-params)
+      ;sql-format
+
+      (sql/limit 10 )
+      ))
 
 (defn handle_query-arcs [req]
   (let [query (arcs-query (-> req :parameters :query))
-        db-result (jdbc/execute! (:tx req) query)]
-    (sd/response_ok {:collection-collection-arcs db-result})))
+
+        db-result (pagination-handler req query :collection-collection-arcs)
+
+
+        ;db-result (jdbc/execute! (:tx req) query)
+        ]
+    ;(sd/response_ok {:collection-collection-arcs db-result})))
+    (sd/response_ok  db-result)))
 
 (defn handle_create-col-col-arc [req]
   (try
@@ -149,7 +160,7 @@
 
 (sa/def :list-of/collection-collection-arcs (st/spec {:spec (sa/coll-of ::collection-collection-arc-resp-def)
                                                       :description "A list of collection-collection-arcs"}))
-(sa/def ::response-groups-body (sa/keys :req-un [:list-of/collection-collection-arcs]))
+(sa/def ::response-groups-body (sa/keys :opt-un [:list-of/collection-collection-arcs ::sp/data ::sp/pagination]))
 
 ; TODO add permission checks
 (def ring-routes
