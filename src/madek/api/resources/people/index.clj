@@ -8,6 +8,7 @@
    [madek.api.resources.people.common :as common]
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [next.jdbc :as jdbc]
@@ -46,19 +47,26 @@
       (sql/order-by [:people.last_name :asc]
                     [:people.first_name :asc]
                     [:people.id :asc])
-      (pagination/sql-offset-and-limit query-params)
+      ;(pagination/sql-offset-and-limit query-params)
       (filter-query query-params)))
 
 (defn handler
   "Get an index of the people. Query parameters are pending to be implemented."
   [{{params :query} :parameters tx :tx :as req}]
   (debug 'params params)
-  (let [query (-> (build-query params)
-                  (pagination/sql-offset-and-limit params)
-                  sql-format)
-        people (jdbc/execute! tx query)]
-    (debug 'people people)
-    {:status 200, :body {:people people}}))
+  (let [query (build-query params)
+  ;(let [query (-> (build-query params)
+  ;                (pagination/sql-offset-and-limit params)
+  ;                sql-format
+  ;                )
+  ;      people (jdbc/execute! tx query)
+
+        result (pagination-handler req query :people )
+
+        ]
+    (debug 'people result)
+    ;{:status 200, :body {:people people}}))
+    {:status 200, :body result}))
 
 (sa/def ::people-query-def (sa/keys :opt-un [::sp/institution ::sp/subtype ::sp/page ::sp/size]))
 
