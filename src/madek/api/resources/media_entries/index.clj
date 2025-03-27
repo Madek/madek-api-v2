@@ -4,7 +4,9 @@
    [clojure.set :refer [rename-keys]]
    [logbug.catcher :as catcher]
    [madek.api.resources.media-entries.permissions :as media-entry-perms]
-   [madek.api.resources.media-entries.query :refer [query-index-resources]]
+   [madek.api.resources.media-entries.query :refer [query-index-resources query-index-resources2 build-query]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
+
    [madek.api.resources.media-files :as media-files]
    [madek.api.resources.meta-data.index :as meta-data.index]
    [madek.api.resources.shared.core :as sd]
@@ -110,8 +112,18 @@
 (defn get-index [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
   ;(try
   (catcher/with-logging {}
-    (let [data (query-index-resources request)
-          result (build-result collection-id full-data data)]
+    (let [
+
+          after-fnc (if (nil? collection-id)
+
+                     (fn [data] (:media_entries (build-result collection-id full-data data)))
+                     (fn [data] (build-result collection-id full-data data))
+
+                     )
+
+          result (pagination-handler request (build-query request) :media_entries after-fnc)
+
+          ]
       (sd/response_ok result)))
   ;(catch Exception e (sd/response_exception e)))
   )
@@ -120,12 +132,46 @@
   ;(try
   (catcher/with-logging {}
     (let [auth-entity (-> request :authenticated-entity)
-          data (query-index-resources request)
+          data (query-index-resources2 request)
+
+          p (println ">o> abc.data" data)
+
           tx (:tx request)
-          result (build-result-related-data collection-id auth-entity full-data data tx)]
+          result (build-result-related-data collection-id auth-entity full-data data tx)
+
+          p (println ">o> abc.result" result)
+          ]
       (sd/response_ok result)))
   ;(catch Exception e (sd/response_exception e)))
   )
+
+
+;(defn get-index_related_data [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
+;  ;(try
+;  (catcher/with-logging {}
+;    (let [auth-entity (-> request :authenticated-entity)
+;          ;data (query-index-resources request)
+;          tx (:tx request)
+;          ;result (build-result-related-data collection-id auth-entity full-data data tx)
+;
+;          after-fnc (fn [data] (build-result-related-data collection-id auth-entity full-data data tx))
+;
+;          after-fnc (if (nil? collection-id)
+;
+;                      (fn [data] (:media_entries (build-result-related-data collection-id auth-entity full-data data tx)))
+;                      (fn [data] (build-result-related-data collection-id auth-entity full-data data tx))
+;
+;                      )
+;
+;          ;result (pagination-handler request (build-query request) nil after-fnc)
+;          result (pagination-handler request (build-query request) :media_entries after-fnc)
+;
+;
+;          ]
+;      (sd/response_ok result)))
+;  ;(catch Exception e (sd/response_exception e)))
+;  )
+
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
 ;(debug/wrap-with-log-debug #'filter-by-permissions)

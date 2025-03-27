@@ -117,3 +117,7 @@
                (if wrap-name-of-result
                  {(keyword wrap-name-of-result) result}
                  result))))))
+
+
+(defn is-with-pagination? [request]
+  (some? (fetch-pagination-params-raw request)))
