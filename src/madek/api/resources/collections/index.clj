@@ -3,11 +3,11 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.utils.pagination-new :refer [ pagination-handler]]
-
    [madek.api.pagination :as pagination]
+
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]))
 
@@ -59,17 +59,13 @@
 
 (defn- query-index-resources [request]
 
-     (let [
-           base-query (build-query request)
-  res (pagination-handler request base-query :collections)
+  (let [base-query (build-query request)
+        res (pagination-handler request base-query :collections)]
 
-              ]
-res)
-
-
+    res)
 
 ;(jdbc/execute! (:tx request) (build-query request))
-)
+  )
 
 ;### index ####################################################################
 
@@ -80,9 +76,7 @@ res)
      ;{:collections
      ; (query-index-resources request)}
 
-     (query-index-resources request)
-
-     }))
+     (query-index-resources request)}))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

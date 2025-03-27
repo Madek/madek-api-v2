@@ -4,15 +4,15 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.utils.pagination-new :refer [ pagination-handler]]
-
    [madek.api.resources.keywords.keyword :as kw]
+
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [convert-map d]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -76,7 +76,6 @@
   (let [keyword (-> request :keyword)]
     (sd/response_ok (user-export-keyword keyword))))
 
-
 (defn handle_usr-query-keywords [request]
   (let [rq (-> request :parameters :query)
         tx (:tx request)
@@ -91,8 +90,8 @@
         query (kw/db-keywords-query rq tx)
         ;result (map adm-export-keyword db-result)
 
-    post-fnc (fn [res] (map adm-export-keyword res))
-    res (pagination-handler request query :keywords post-fnc)]
+        post-fnc (fn [res] (map adm-export-keyword res))
+        res (pagination-handler request query :keywords post-fnc)]
 
     (sd/response_ok res)))
 

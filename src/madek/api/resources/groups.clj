@@ -5,7 +5,6 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.resources.groups.shared :as groups]
-            [madek.api.utils.pagination-new :refer [ pagination-handler]]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
@@ -14,6 +13,7 @@
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.helper :refer [convert-groupid f mslurp]]
+            [madek.api.utils.pagination-new :refer [pagination-handler]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -97,8 +97,6 @@
                        (dbh/build-query-param-like query-params :institution)
                        (dbh/build-query-param-like query-params :searchable))]
     base-query))
-
-
 
 (defn index [req]
   (let [base-query (build-index-query req)
@@ -185,7 +183,14 @@
 (sa/def :usr-users-list/users (st/spec {:spec (sa/coll-of ::group-id-resp-def)
                                         :description "A list of users"}))
 
-(sa/def ::response-users-body (sa/keys :req-un [:usr-users-list/users]))
+;; --- Paginated schema (new) ---
+(sa/def ::data
+  (sa/coll-of ::group-id-resp-def :kind vector?))
+
+(sa/def ::pagination
+  (sa/keys :req-un [::total_rows ::total_pages ::page ::size]))
+
+(sa/def ::response-users-body (sa/keys :opt-un [:usr-users-list/users ::data ::pagination]))
 
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
                                             ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
@@ -234,7 +239,7 @@
                     :coercion spec/coercion
                     :responses {200 {:description "Returns a list of group ids."
                                      ;:body {:groups [(st/spec {:spec :usr/groups})]}
-                                     }}} ;;ok
+}}} ;;ok
 
               :post {:summary (f "Create a group" "groups::person_id-not-exists")
                      :description "Create a group."

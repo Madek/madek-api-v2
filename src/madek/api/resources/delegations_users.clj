@@ -120,8 +120,7 @@
   {:user_id s/Uuid
    :delegation_id s/Uuid
    (s/optional-key :updated_at) s/Any
-   (s/optional-key :created_at) s/Any
-   })
+   (s/optional-key :created_at) s/Any})
 
 (def schema_delegations_list_users_export
   [{:user_id s/Uuid

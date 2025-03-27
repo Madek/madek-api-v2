@@ -6,10 +6,10 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.authorization :as authorization]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
@@ -209,7 +209,7 @@
                     ::sp-nil/order]))
 
 (sa/def :usr-collection-list/collections (st/spec {:spec (sa/coll-of :usr/collections)
-                                              :description "A list of persons"}))
+                                                   :description "A list of persons"}))
 
 (sa/def ::response-collections-body (sa/keys :req-un [:usr-collection-list/collections]))
 

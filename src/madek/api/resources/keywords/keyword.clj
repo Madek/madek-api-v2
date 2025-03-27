@@ -22,12 +22,10 @@
              ;sql-format)
 
              ;(sql/limit 2)
-              )
-        ]
+             )]
     ; (info "db-keywords-query" dbq)
     ;(jdbc/execute! tx dbq)
-    dbq
-    ))
+    dbq))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
