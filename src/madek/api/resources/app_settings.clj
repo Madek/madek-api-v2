@@ -20,6 +20,7 @@
   ; the help of the schema?
   (assoc data
          :about_pages (sd/transform_ml (:about_pages data))
+         :banner_messages (sd/transform_ml (:banner_messages data))
          :brand_texts (sd/transform_ml (:brand_texts data))
          :catalog_subtitles (sd/transform_ml (:catalog_subtitles data))
          :catalog_titles (sd/transform_ml (:catalog_titles data))
@@ -68,6 +69,7 @@
 (def schema_update-app-settings
   {(s/optional-key :about_pages) sd/schema_ml_list
    (s/optional-key :available_locales) [s/Str]
+   (s/optional-key :banner_messages) sd/schema_ml_list
    (s/optional-key :brand_logo_url) (s/maybe s/Str)
    (s/optional-key :brand_texts) sd/schema_ml_list
    (s/optional-key :catalog_context_keys) [s/Str]
@@ -109,6 +111,7 @@
 (def schema_export-app-settings
   {(s/optional-key :about_pages) (s/maybe sd/schema_ml_list)
    (s/optional-key :available_locales) [s/Str]
+   (s/optional-key :banner_messages) (s/maybe sd/schema_ml_list)
    (s/optional-key :brand_logo_url) (s/maybe s/Str)
    (s/optional-key :brand_texts) (s/maybe sd/schema_ml_list)
    (s/optional-key :catalog_context_keys) [s/Str]
