@@ -192,7 +192,10 @@
             ;                                               auth-entity-id
             ;                                               perm-name mr-type))
               )
-            boolean))))
+            boolean)
+        ; anonym user: check resource permission
+        (true? ((keyword perm-name) resource))
+        )))
 
 (defn edit-permissions-by-auth-entity? [resource auth-entity mr-type tx]
   (let [auth-entity-id (:id auth-entity)]
