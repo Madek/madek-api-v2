@@ -248,14 +248,19 @@
 (sa/def ::media-entries-def
   (sa/keys :opt-un
            [::sp/collection_id ::sp/order ::sp/filter_by 
+            ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
+            ::sp/me_edit_metadata ::sp/me_edit_permissions
+            ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
+            ::sp/full_data
+            ::sp/page ::sp/size]))
+
+(sa/def ::media-entries-query-related-def
+  (sa/keys :opt-un
+           [::sp/collection_id ::sp/order ::sp/filter_by
             ::sp/related_meta_data
             ::sp/related_previews
             ::sp/related_files
             ::sp/related_collections
-            ;(s/optional-key :related_meta_data) s/Bool
-            ;(s/optional-key :related_previews) s/Bool
-            ;(s/optional-key :related_files) s/Bool
-            ;(s/optional-key :related_collections) s/Bool
 
             ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
             ::sp/me_edit_metadata ::sp/me_edit_permissions
@@ -371,7 +376,7 @@
       :handler handle_query_media_entry-related-data
       :middleware [jqh/ring-wrap-parse-json-query-parameters]
       :coercion spec/coercion
-      :parameters {:query ::media-entries-def}
+      :parameters {:query ::media-entries-query-related-def}
       :responses {200 {:description "Returns the media-entries with all related data."
                        :schema ::media-entry-response-def}}}}]])
 
