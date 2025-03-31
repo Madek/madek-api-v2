@@ -57,10 +57,10 @@
                              :arc_updated_at :updated_at}))))
 
 (defn- get-files4me-list [melist auth-entity tx]
-  (let [auth-list (remove nil? (map #(when (true? (media-entry-perms/downloadable-by-auth-entity? % auth-entity tx))
-                                       (media-files/query-media-file-by-media-entry-id (:id %) tx)) melist))]
-    ;(info "get-files4me-list: \n" auth-list)
-    auth-list))
+  (let [authed-entries (remove nil? (map #(when (true? (media-entry-perms/downloadable-by-auth-entity? % auth-entity tx)) (:id %)) melist))
+        entries-files (map #(media-files/query-media-file-by-media-entry-id % tx) authed-entries)]
+    ;(info "get-files4me-list: \n" authed-entries " files: " entries-files)
+    entries-files))
 
 (defn get-previews4entry [me-id tx]
   (let [file-id (:id (media-files/query-media-file-by-media-entry-id me-id tx))
@@ -138,7 +138,7 @@
 (defn get-index_related_data [{{{collection-id :collection_id
                                  full-data :full_data
                                  related-collections :related_collections
-                                 related-files :related-files
+                                 related-files :related_files
                                  related-meta-data :related_meta_data
                                  related-previews :related_previews} :query} :parameters :as request}]
   ;(try
