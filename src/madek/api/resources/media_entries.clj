@@ -348,8 +348,20 @@
    {:spec (sa/coll-of ::media-entries-resp-def)
     :description "A list of media-entries"}))
 
+;(sa/def ::media-entries-resp-def
+;  (sa/keys :opt-un
+;           [::sp/responsible_user_id ::sp/get_full_size ::sp/creator_id ::sp/updated_at
+;            ::sp/edit_session_updated_at ::sp/is_published ::sp/get_metadata_and_previews ::sp/meta_data_updated_at
+;            ::sp/created_at]
+;           :req-un [::sp/id]))
+
+(sa/def :media-entry-list/col_arcs
+  (st/spec
+   {:spec (sa/coll-of :any)
+    :description "A list of col_arcs-entries"}))
+
 (sa/def ::media-entries-body-resp-def
-  (sa/keys :opt-un [:media-entry-list/media_entries ::sp/data ::sp/pagination]))
+  (sa/keys :opt-un [:media-entry-list/media_entries :media-entry-list/col_arcs ::sp/data ::sp/pagination]))
 
 (def schema_publish_failed
   {:message {:is_publishable s/Bool
@@ -393,7 +405,8 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries."
-                       :body ::media-entries-body-resp-def}
+                       ;:body ::media-entries-body-resp-def
+                       }
                   422 {:description "Unprocessable Entity."
                        :body any?}}}}]
    ["media-entries-related-data"

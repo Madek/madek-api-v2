@@ -34,7 +34,7 @@ describe "updating group-users" do
       end
 
       it "works and sets the group users to exactly those given with the request" do
-        binding.pry
+        # binding.pry
         expect(response.status).to be == 200
         expect(
           Set.new(@group.users.reload.map(&:id))

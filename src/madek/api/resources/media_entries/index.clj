@@ -10,7 +10,7 @@
    [madek.api.resources.meta-data.index :as meta-data.index]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.pagination-new :refer [pagination-handler]]))
+   [madek.api.utils.pagination-new :refer [pagination-handler is-with-pagination?]]))
 
 ;### index ####################################################################
 
@@ -112,16 +112,33 @@
 (defn get-index [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
   ;(try
   (catcher/with-logging {}
-    (let [after-fnc (if (nil? collection-id)
+    (let [
+          ;after-fnc (if (or (nil? collection-id) (is-with-pagination? request))
 
+          p (println ">o> abc.is-with-pagination?" (is-with-pagination? request))
+          is-with-pagination (is-with-pagination? request)
+          after-fnc (if  is-with-pagination
                       (fn [data] (:media_entries (build-result collection-id full-data data)))
                       (fn [data] (build-result collection-id full-data data)))
 
-          result (pagination-handler request (build-query request) :media_entries after-fnc)]
+          ;after-fnc  (fn [data] (:media_entries (build-result collection-id full-data data)))
+
+
+
+          result (pagination-handler request (build-query request) (if is-with-pagination :media_entries nil) after-fnc)]
 
       (sd/response_ok result)))
   ;(catch Exception e (sd/response_exception e)))
   )
+
+;(defn get-index [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
+  ;;(try
+  ;(catcher/with-logging {}
+  ;  (let [data (query-index-resources request)
+  ;        result (build-result collection-id full-data data)]
+  ;    (sd/response_ok result)))
+  ;;(catch Exception e (sd/response_exception e)))
+  ;)
 
 (defn get-index_related_data [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
   ;(try
