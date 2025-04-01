@@ -4,13 +4,13 @@
    [madek.api.pagination :refer [ZERO_BASED_PAGINATION DEFAULT_COUNT_SWAGGER DEFAULT_PAGE_SWAGGER]]
    [spec-tools.core :as st]))
 
-(sa/def ::page (st/spec {:spec int?
+(sa/def ::page (st/spec {:spec pos-int?
                          :description (str "Page number " (when ZERO_BASED_PAGINATION "(zero-based pagination)"))
                          ;:description (str "Page number " (when ZERO_BASED_PAGINATION "(zero-based pagination)"))
                          ;:json-schema/default DEFAULT_PAGE_SWAGGER
                          }))
 
-(sa/def ::size (st/spec {:spec int?
+(sa/def ::size (st/spec {:spec pos-int?
                          :description "Number of items per page"
                          ;:json-schema/default DEFAULT_COUNT_SWAGGER
                          }))

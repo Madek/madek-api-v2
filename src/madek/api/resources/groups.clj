@@ -302,7 +302,7 @@
                                     404 {:description "Not Found."
                                          :body s/Any}}}}] ; TODO error handling
 
-   ; groups-users/ring-routes
+   ; groups-users/ring-routes TODO
    ["groups/:group-id/users" {:get {:summary "Get group users by id"
                                     :description "Get group users by id. (zero-based paging)"
                                     :content-type "application/json"

@@ -6,7 +6,7 @@
    [madek.api.pagination :as pagination]
 
    [madek.api.resources.groups.shared :as groups]
-
+   [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [convert-groupid-userid]]
    [madek.api.utils.helper :refer [to-uuid]]
@@ -172,24 +172,59 @@
           del-users (clojure.set/difference current-group-users-ids target-group-users-ids)
           ins-users (clojure.set/difference target-group-users-ids current-group-users-ids)
           del-query (update-delete-query group-id del-users)
-          ins-query (update-insert-query group-id ins-users)]
+
+          p (println ">o> abc1" group-id)
+          p (println ">o> abc2" ins-users)
+          ins-query (update-insert-query group-id ins-users)
+
+
+          p (println ">o> abc3.res" ins-query)
+
+
+
+          data                  (->   (group-users-query group-id nil)
+                                     sql-format)
+p (println ">o> abc.data" data)
+
+          res (jdbc/execute! tx
+            ;(->   (group-users-query group-id nil)
+            ;      sql-format)
+
+            data
+
+                jdbc/unqualified-snake-kebab-opts
+
+            )
+p (println ">o> abc.res" res)
+
+
+          p (println ">o> abc.arr.del-users" del-users)
+          p (println ">o> abc.arr.ins-users" ins-users)
+          ]
       ;(info "update-group-users" "\ncurr\n" current-group-users-ids "\ntarget\n" target-group-users-ids )
       ;(info "update-group-users" "\ndel-u\n" del-users)
       ;(info "update-group-users" "\nins-u\n" ins-users)
       ;(info "update-group-users" "\ndel-q\n" del-query)
       ;(info "update-group-users" "\nins-q\n" ins-query)
       (when (first del-users)
+        (println ">o> del.before" )
         (jdbc/execute!
          tx
-         del-query))
+         del-query)
+        (println ">o> del.after" )
+        )
       (when (first ins-users)
+        (println ">o> ins.before" )
         (jdbc/execute!
          tx
-         ins-query))
+         ins-query)
+        (println ">o> ins.after" )
+        )
       ;; FIXME: bug when PUT
-      (sd/response_ok {:users (jdbc/execute! tx
-                                             (group-users-query group-id nil)
-                                             jdbc/unqualified-snake-kebab-opts)}))))
+
+        (println ">o> ins.exec.users" )
+      (sd/response_ok {:users res}))))
+                                             ;jdbc/unqualified-snake-kebab-opts)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
