@@ -118,7 +118,6 @@
                  {(keyword wrap-name-of-result) result}
                  result))))))
 
-
 (defn is-with-pagination? [request]
   (let [{:keys [page size]} (fetch-pagination-params-raw request)]
     (and (some? page) (some? size))))
