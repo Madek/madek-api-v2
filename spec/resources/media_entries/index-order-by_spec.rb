@@ -151,7 +151,6 @@ describe "ordering media entries" do
 
         describe "arcs" do
           let :arcs do
-            # binding.pry
             response.body.with_indifferent_access[:col_arcs]
           end
 

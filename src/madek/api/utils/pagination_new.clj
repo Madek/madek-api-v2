@@ -70,6 +70,8 @@
         size (:size query-params)]
     {:page page
      :size size}))
+
+;; TODO:
 (defn fetch-pagination-params-raw-or-nil [request]
   (let [query-params (query-params request)
         page (:page query-params)
@@ -88,6 +90,11 @@
          tx (:tx request)]
      (create-paginated-response base-query tx size page after-fnc))))
 
+(defn is-with-pagination? [request]
+  (let [{:keys [page size]} (fetch-pagination-params-raw request)
+        p (println ">o> abc.page/size" page size)]
+    (and (some? page) (some? size))))
+
 (defn pagination-handler
   "To receive a paginated response, the request must contain the query parameters `page` or `size`."
   ([request base-query]
@@ -99,7 +106,15 @@
   ([request base-query wrap-name-of-result after-fnc]
    (let [tx (:tx request)
          pagination (fetch-pagination-params-raw-or-nil request)
-         with-pagination? (some? pagination)
+         p (println ">o> abc.pagination" pagination)
+
+         ;with-pagination? (some? pagination)
+         with-pagination? (is-with-pagination? request)
+         p (println ">o> abc.with-pagination? !!!!" with-pagination?)
+
+         with-pagination? (cond (nil? pagination) false
+                                with-pagination? true
+                                :else false)
 
          after-fnc (if (nil? after-fnc)
                      (fn [res] res)
@@ -118,6 +133,4 @@
                  {(keyword wrap-name-of-result) result}
                  result))))))
 
-(defn is-with-pagination? [request]
-  (let [{:keys [page size]} (fetch-pagination-params-raw request)]
-    (and (some? page) (some? size))))
+

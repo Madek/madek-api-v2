@@ -112,18 +112,15 @@
 (defn get-index [{{{collection-id :collection_id full-data :full_data} :query} :parameters :as request}]
   ;(try
   (catcher/with-logging {}
-    (let [
-          ;after-fnc (if (or (nil? collection-id) (is-with-pagination? request))
+    (let [;after-fnc (if (or (nil? collection-id) (is-with-pagination? request))
 
           p (println ">o> abc.is-with-pagination?" (is-with-pagination? request))
           is-with-pagination (is-with-pagination? request)
-          after-fnc (if  is-with-pagination
+          after-fnc (if is-with-pagination
                       (fn [data] (:media_entries (build-result collection-id full-data data)))
                       (fn [data] (build-result collection-id full-data data)))
 
           ;after-fnc  (fn [data] (:media_entries (build-result collection-id full-data data)))
-
-
 
           result (pagination-handler request (build-query request) (if is-with-pagination :media_entries nil) after-fnc)]
 
