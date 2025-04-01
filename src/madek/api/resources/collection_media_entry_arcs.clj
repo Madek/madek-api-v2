@@ -6,10 +6,10 @@
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.pagination-new :refer [pagination-handler]]
-
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid sql-format-quoted]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -46,11 +46,10 @@
                 (if (nil? path-params) {} path-params))
         db-query (arcs-query params)
 
-        db-result (pagination-handler req db-query :collection-media-entry-arcs )
+        db-result (pagination-handler req db-query :collection-media-entry-arcs)
 
-
-        ;db-result (jdbc/execute! (:tx req) db-query)
-         ]
+;db-result (jdbc/execute! (:tx req) db-query)
+        ]
     ;(sd/response_ok {:collection-media-entry-arcs db-result})))
     (sd/response_ok db-result)))
 

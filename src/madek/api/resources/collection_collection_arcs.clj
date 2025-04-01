@@ -11,9 +11,9 @@
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-   [madek.api.utils.pagination-new :refer [pagination-handler]]
 
    [reitit.coercion.spec :as spec]
    [schema.core :as s]
@@ -54,19 +54,17 @@
       ;(pagination/sql-offset-and-limit query-params)
       ;sql-format
 
-      (sql/limit 10 )
-      ))
+      (sql/limit 10)))
 
 (defn handle_query-arcs [req]
   (let [query (arcs-query (-> req :parameters :query))
 
         db-result (pagination-handler req query :collection-collection-arcs)
 
-
-        ;db-result (jdbc/execute! (:tx req) query)
+;db-result (jdbc/execute! (:tx req) query)
         ]
     ;(sd/response_ok {:collection-collection-arcs db-result})))
-    (sd/response_ok  db-result)))
+    (sd/response_ok db-result)))
 
 (defn handle_create-col-col-arc [req]
   (try

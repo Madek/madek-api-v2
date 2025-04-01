@@ -6,14 +6,13 @@
    [clojure.string :as str :refer [blank?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.utils.pagination-new :refer [pagination-handler]]
-
-
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
+
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.core :refer [keyword str]]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
@@ -195,11 +194,9 @@
                       (advanced-filter/filter-by filter-by tx)
                       ;(pagination/sql-offset-and-limit query-params)
 
+                      (sql/limit 50))
 
-                      (sql/limit 50)
-
-                      )
-        ;query-res (-> query-res sql-format)
+;query-res (-> query-res sql-format)
         ]
 
     ;    (info "build-query"
@@ -208,34 +205,27 @@
     ;                  "\nquery-res:\n" query-res)
     query-res))
 
-
 (defn pr [str fnc]
   ;(println ">oo> HELPER / " str fnc)(println ">oo> HELPER / " str fnc)
   (println ">oo> " str fnc)
-  fnc
-  )
+  fnc)
 
 (defn query-index-resources [request]
 
+;(pr "result??" (pagination-handler request (build-query request) :media_entries ))
+  (pagination-handler request (build-query request) :media_entries)
 
- ;(pr "result??" (pagination-handler request (build-query request) :media_entries ))
-  (pagination-handler request (build-query request) :media_entries )
-
-
-  ;(jdbc/execute! (:tx request) (build-query request))
+;(jdbc/execute! (:tx request) (build-query request))
   )
 
 (defn query-index-resources2 [request]
 
-
- ;(pr "result??" (pagination-handler request (build-query request) :media_entries ))
+;(pr "result??" (pagination-handler request (build-query request) :media_entries ))
  ; (pagination-handler request (build-query request) :media_entries )
-
 
   (println ">o> abc1" (-> (build-query request) sql-format))
 
-  (jdbc/execute! (:tx request) (-> (build-query request) sql-format))
-  )
+  (jdbc/execute! (:tx request) (-> (build-query request) sql-format)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

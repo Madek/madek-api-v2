@@ -8,9 +8,9 @@
    [madek.api.resources.people.common :as common]
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -61,9 +61,8 @@
   ;                )
   ;      people (jdbc/execute! tx query)
 
-        result (pagination-handler req query :people )
+        result (pagination-handler req query :people)]
 
-        ]
     (debug 'people result)
     ;{:status 200, :body {:people people}}))
     {:status 200, :body result}))

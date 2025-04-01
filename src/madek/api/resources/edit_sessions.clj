@@ -11,10 +11,10 @@
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.pagination-new :refer [pagination-handler]]
-
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
+
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.pagination-new :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec :as spec]
@@ -43,11 +43,9 @@
   (let [db-query (build-query (-> req :parameters :query))
 
         ;db-result (jdbc/execute! (:tx req) db-query)
-        db-result (pagination-handler req db-query)
+        db-result (pagination-handler req db-query)]
 
-
-        ]
-    ;(info "handle_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
+;(info "handle_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_usr_list-edit-sessions
@@ -60,10 +58,8 @@
         db-result (pagination-handler req db-query)
 
         ;db-result (jdbc/execute! (:tx req) db-query)
-
-
         ]
-    ;(info "handle_usr_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
+;(info "handle_usr_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_adm_get-edit-session
@@ -158,7 +154,6 @@
 
 (sa/def :list/edit-session-both (sa/keys :opt-un [::sp/data ::sp/pagination]))
 
-
 (def schema_export_edit_session
   {:id s/Uuid
    :user_id s/Uuid
@@ -176,10 +171,8 @@
            :coercion spec/coercion
            :responses {200 {:description "Returns the edit sessions."
                             ;:body :list/session
-                            :body  (sa/or :flat :list/session :paginated :list/edit-session-both)
+                            :body (sa/or :flat :list/session :paginated :list/edit-session-both)}}
 
-
-                            }}
            :parameters {:query ::query-def}}}]
 
    ["edit_sessions/:id"
@@ -213,8 +206,7 @@
            :responses {200 {:description "Returns the edit sessions."
                             ;:body :list/session}}
                        ;:body :list/edit-session-both}}
-           :body  (sa/or :flat :list/session :paginated :list/edit-session-both)}}
-
+                            :body (sa/or :flat :list/session :paginated :list/edit-session-both)}}
 
            :parameters {:query ::query-usr-def}}}]
 

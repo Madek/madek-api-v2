@@ -13,7 +13,7 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-            [madek.api.utils.auth :refer [wrap-authorize-admin!  ]]
+            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -393,8 +393,7 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-def}
       :responses {200 {:description "Returns the media-entries."
-                       :body ::media-entries-body-resp-def
-                       }
+                       :body ::media-entries-body-resp-def}
                   422 {:description "Unprocessable Entity."
                        :body any?}}}}]
    ["media-entries-related-data"
@@ -406,9 +405,7 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-no-pagination-def}
       :responses {200 {:description "Returns the media-entries with all related data."
-                       :body ::media-entry-response2-def
-
-                       }}}}]])
+                       :body ::media-entry-response2-def}}}}]])
 
 (def ring-admin-routes
   ["/"
@@ -423,8 +420,7 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-adm-def}
       :responses {200 {:description "Returns the media-entries."
-                       :body ::media-entries-body-resp-def
-                       }
+                       :body ::media-entries-body-resp-def}
                   422 {:description "Unprocessable Entity."
                        :body any?}}}}]
 
