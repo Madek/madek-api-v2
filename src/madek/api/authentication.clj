@@ -28,8 +28,8 @@
     (let [is-swagger-resource-request? (str/includes? (request/path-info request) "/api-docs/")
           request (if is-swagger-resource-request? (remove-authorization-header request) request)
           response ((-> handler
-                        session-auth/wrap
-                        token-auth/wrap) request)]
+                        token-auth/wrap
+                        session-auth/wrap) request)]
       response)))
 
 ;### Debug ####################################################################
