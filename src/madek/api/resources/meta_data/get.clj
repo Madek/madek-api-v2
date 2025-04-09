@@ -476,6 +476,7 @@
      :first_name (s/maybe s/Str)
      :external_uris [s/Any]
      :identification_info (s/maybe s/Any)
+     :institutional_directory_infos [s/Str]
      :searchable s/Str
      :updated_at s/Any
      :id s/Uuid
@@ -523,6 +524,7 @@
    :first_name s/Str
    :external_uris [s/Str]
    :identification_info (s/maybe s/Str)
+   :institutional_directory_infos [s/Str]
    :searchable s/Str
    :updated_at s/Any
    :id s/Uuid

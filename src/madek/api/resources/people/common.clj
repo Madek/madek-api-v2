@@ -23,7 +23,8 @@
    :people.pseudonym
    :people.subtype
    :people.updated_at
-   :people.identification_info])
+   :people.identification_info
+   :people.institutional_directory_infos])
 
 (defn where-uid
   "Adds a where condition to the people people query against a unique id. The

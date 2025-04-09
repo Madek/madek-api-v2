@@ -95,6 +95,8 @@
 
 (sa/def ::external_uris (st/spec {:spec (sa/coll-of any?)
                                   :description "An array of any types"}))
+(sa/def ::institutional_directory_infos (st/spec {:spec (sa/coll-of string?)
+                                                  :description "An array of strings"}))
 
 (sa/def ::rdf_class (st/spec {:spec string?}))
 (sa/def ::scope (st/spec {:spec string?}))
