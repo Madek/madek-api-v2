@@ -98,75 +98,53 @@
              (dissoc :path :via)
              (update :in #(str/join "/" %))))
     problems))
+(require '[cheshire.core :as json]
+  '[clojure.string :as str])
+
 (defn extract-coercion-reason [data req]
-
-  ;(when (:coercion data)
-  (let [
-
-        ;data (str->map data)
-
-        ;(json/parse-string json-str true)
-
-        data (-> data
+  (let [data (-> data
                  (json/parse-string true)
                  (parse-edn-strings))
 
-        coercion? (:coercion data)
+        coercion? (:coercion data)]
+
+    (when coercion?
+      (println ">o> abc.data" (type data))
+
+      (let [reason   (or (get-in data [:errors])
+                       (beautify-problems (:problems data)))
+
+            _        (println ">o> abc???2" (beautify-problems (:problems data)))
+
+            scope    (some->> (:in data)
+                       (map str)
+                       (str/join "/"))
+
+            type (:coercion data)
+
+            _        (println ">o> abc.scope" scope)
+            _        (println ">o> abc.reason" reason)
+            _        (println ">o> abc" data)
 
 
-        res (when coercion? (let [
-
-                                ;p (println ">o> abc.data" (type data) data)
-                                p (println ">o> abc.data" (type data))
 
 
-                                ;(contains-substrings? ext-data ["schema" "errors"   "type" "coercion" "value" "in"])
-                                ;(contains-substrings? ext-data ["problems"          "in"])
+        res {:reason         "COERCION-Error"
+         :scope          scope
 
-                                reason (or
-                                         (get-in data [:errors])
-                                         (beautify-problems (:problems data))
+         :coercion-type  (:coercion data)
+         :errors         reason
+         :uri            (str (str/upper-case (name (:request-method req)))
+                              " "
+                           (:uri req))}
 
-                                         )
+            res (when (= type "schema") (assoc res :expected-schema (:schema data) ))
 
-                                p (println ">o> abc???1" reason)
-                                p (println ">o> abc???2" (beautify-problems (:problems data)))
+            ]
 
+        res
+        ))))
 
-
-
-                                scope (-> data :in (->> (str/join "/")))
-
-
-                                p (println ">o> abc.scope" scope)
-                                p (println ">o> abc.reason" reason)
-                                ;p (println ">o> abc.reason2" (get-in data ["problems"]))
-                                ;p (println ">o> abc.reason2" (get-in data ["problems"]))
-                                ;p (println ">o> abc.reason2" (-> data "problems"))
-                                ;p (println ">o> abc.reason2a" (get-in data [:problems]))
-                                ;p (println ">o> abc.reason2b" (-> data :problems))
-                                ;p (println ">o> abc.reason2" (-> data :schema :error))
-
-                                p (println ">o> abc" data)
-
-                                ]
-
-                            {:reason "COERCION-Error"
-                             :scope scope
-                             :coercion-type (:coercion data)
-                             ;:reason reason
-                             :errors (beautify-problems (:problems data))
-                             :uri (str (clojure.string/upper-case (name (:request-method req)))
-                                       " " (:uri req))
-                             }
-
-                            )
-
-                          )
-
-    ]
-    res
-    ))
 
 (defn wrap-tx [handler]
   (fn [request]
@@ -174,6 +152,7 @@
       (try
         (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)
               resp (handler (assoc request :tx tx-with-opts))
+              ;ext-data (when (and (:status resp) (>= (:status resp) 400) (:body resp) (:schema (:body resp)))
               ext-data (when (and (:status resp) (>= (:status resp) 400) (:body resp))
                          (warn "Rolling back transaction because error status " (:status resp))
                          (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
@@ -185,20 +164,26 @@
                                {scope :scope reason :reason errors :errors uri :uri} :as data (extract-coercion-reason ext-data request)
 
                                ]
-                           (when (some? errors)
-                             (println ">o> pretty-pr!!!")
-                             (warn (pretty-print-json ext-data))
-                             )
+                           ;(when (some? errors)
+                             (println ">o> pretty-pr!!! ??????"  (type ext-data))
+                             ;(warn (pretty-print-json (json/generate-string ext-data {:pretty true})))
+                             ;(warn (pretty-print-json ext-data))
+                             ;(warn (pretty-print-json  (json/parse-string (json/generate-string ext-data) true)))
+                             ;(warn (json/generate-string ext-data {:pretty true}))
+                             (warn (pretty-print-json ext-data)) ;TODO: works schema, spec
+                             ;)
 
                            ;(if (some? errors) data nil)
 
-                           ext-data
+                           ;ext-data
+
+                           data
 
                            ))
               resp (if ext-data
                      ;(assoc resp :body (response/response ext-data) )
-                     ;(assoc resp :body (json/generate-string  ext-data) ) ;spec
-                     (assoc resp :body ext-data)            ;schema
+                     (assoc resp :body (json/generate-string  ext-data) ) ;spec & schema
+                     ;(assoc resp :body ext-data)            ;schema
                      ;(assoc resp :body (pretty-print-json ext-data) )
                      resp)]
           resp)
