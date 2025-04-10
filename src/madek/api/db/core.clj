@@ -1,6 +1,9 @@
 (ns madek.api.db.core
   (:require
    [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
    [environ.core :refer [env]]
    [madek.api.db.type-conversion]
    [madek.api.utils.cli :refer [long-opt-for-key]]
@@ -35,33 +38,33 @@
 (def cli-options
   [[nil (long-opt-for-key db-name-key) "Database name, falls back to PGDATABASE | madek"
     :default (or (some-> db-name-key env)
-                 (some-> :pgdatabase env)
-                 "madek")]
+               (some-> :pgdatabase env)
+               "madek")]
    [nil (long-opt-for-key db-port-key) "Database port, falls back to PGPORT or 5415"
     :default (or (some-> db-port-key env Integer/parseInt)
-                 (some-> :pgport env Integer/parseInt)
-                 5415)
+               (some-> :pgport env Integer/parseInt)
+               5415)
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be an integer between 0 and 65536"]]
    [nil (long-opt-for-key db-host-key) "Database host, falls back to PGHOST | localhost"
     :default (or (some-> db-host-key env)
-                 (some-> :pghost env)
-                 "localhost")]
+               (some-> :pghost env)
+               "localhost")]
    [nil (long-opt-for-key db-user-key) "Database user, falls back to PGUSER | 'madek'"
     :default (or (some-> db-user-key env)
-                 (some-> :pguser env)
-                 "madek")]
+               (some-> :pguser env)
+               "madek")]
    [nil (long-opt-for-key db-password-key) "Database password, falls back to PGPASSWORD |'madek'"
     :default (or (some-> db-password-key env)
-                 (some-> :pgpassword env)
-                 "madek")]
+               (some-> :pgpassword env)
+               "madek")]
    [nil (long-opt-for-key db-min-pool-size-key)
     :default (or (some-> db-min-pool-size-key env Integer/parseInt)
-                 2)
+               2)
     :parse-fn #(Integer/parseInt %)]
    [nil (long-opt-for-key db-max-pool-size-key)
     :default (or (some-> db-max-pool-size-key env Integer/parseInt)
-                 16)
+               16)
     :parse-fn #(Integer/parseInt %)]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -76,8 +79,94 @@
 (defn fetch-data [m]
   (some-> m :reitit.core/match :template))
 
-(defn contains-substrings? [s substrings]
-  (and s (every? #(re-find (re-pattern (java.util.regex.Pattern/quote %)) s) substrings)))
+
+
+(defn parse-edn-strings [m]
+  (clojure.walk/postwalk
+    (fn [x]
+      (if (and (string? x)
+            (re-find #"^\(" x))                             ;; crude check for EDN-ish string
+        (try
+          (edn/read-string x)
+          (catch Exception _ x))
+        x))
+    m))
+
+(defn beautify-problems [problems]
+  (map (fn [problem]
+         (-> problem
+             (dissoc :path :via)
+             (update :in #(str/join "/" %))))
+    problems))
+(defn extract-coercion-reason [data req]
+
+  ;(when (:coercion data)
+  (let [
+
+        ;data (str->map data)
+
+        ;(json/parse-string json-str true)
+
+        data (-> data
+                 (json/parse-string true)
+                 (parse-edn-strings))
+
+        coercion? (:coercion data)
+
+
+        res (when coercion? (let [
+
+                                ;p (println ">o> abc.data" (type data) data)
+                                p (println ">o> abc.data" (type data))
+
+
+                                ;(contains-substrings? ext-data ["schema" "errors"   "type" "coercion" "value" "in"])
+                                ;(contains-substrings? ext-data ["problems"          "in"])
+
+                                reason (or
+                                         (get-in data [:errors])
+                                         (beautify-problems (:problems data))
+
+                                         )
+
+                                p (println ">o> abc???1" reason)
+                                p (println ">o> abc???2" (beautify-problems (:problems data)))
+
+
+
+
+                                scope (-> data :in (->> (str/join "/")))
+
+
+                                p (println ">o> abc.scope" scope)
+                                p (println ">o> abc.reason" reason)
+                                ;p (println ">o> abc.reason2" (get-in data ["problems"]))
+                                ;p (println ">o> abc.reason2" (get-in data ["problems"]))
+                                ;p (println ">o> abc.reason2" (-> data "problems"))
+                                ;p (println ">o> abc.reason2a" (get-in data [:problems]))
+                                ;p (println ">o> abc.reason2b" (-> data :problems))
+                                ;p (println ">o> abc.reason2" (-> data :schema :error))
+
+                                p (println ">o> abc" data)
+
+                                ]
+
+                            {:reason "COERCION-Error"
+                             :scope scope
+                             :coercion-type (:coercion data)
+                             ;:reason reason
+                             :errors (beautify-problems (:problems data))
+                             :uri (str (clojure.string/upper-case (name (:request-method req)))
+                                       " " (:uri req))
+                             }
+
+                            )
+
+                          )
+
+    ]
+    res
+    ))
 
 (defn wrap-tx [handler]
   (fn [request]
@@ -89,12 +178,28 @@
                          (warn "Rolling back transaction because error status " (:status resp))
                          (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
                          (.rollback tx)
-                         (let [ext-data (extract-data-from-input-stream (:body resp))]
-                           (when (contains-substrings? ext-data ["schema" "errors" "type" "coercion" "value" "in"])
-                             (warn (pretty-print-json ext-data)))
-                           ext-data))
+                         (let [
+                               p (println ">o> abc???????")
+
+                               ext-data (extract-data-from-input-stream (:body resp))
+                               {scope :scope reason :reason errors :errors uri :uri} :as data (extract-coercion-reason ext-data request)
+
+                               ]
+                           (when (some? errors)
+                             (println ">o> pretty-pr!!!")
+                             (warn (pretty-print-json ext-data))
+                             )
+
+                           ;(if (some? errors) data nil)
+
+                           ext-data
+
+                           ))
               resp (if ext-data
-                     (assoc resp :body ext-data)
+                     ;(assoc resp :body (response/response ext-data) )
+                     ;(assoc resp :body (json/generate-string  ext-data) ) ;spec
+                     (assoc resp :body ext-data)            ;schema
+                     ;(assoc resp :body (pretty-print-json ext-data) )
                      resp)]
           resp)
         (catch Throwable th
@@ -117,21 +222,21 @@
 (defn init-ds [db-options]
   (close)
   (let [ds (connection/->pool
-            HikariDataSource
-            {:dbtype "postgres"
-             :dbname (get db-options db-name-key)
-             :username (get db-options db-user-key)
-             :password (get db-options db-password-key)
-             :host (get db-options db-host-key)
-             :port (get db-options db-port-key)
-             :maximumPoolSize (get db-options db-max-pool-size-key)
-             :minimumIdle (get db-options db-min-pool-size-key)
-             :autoCommit true
-             :connectionTimeout 30000
-             :validationTimeout 5000
-             :idleTimeout (* 1 60 1000) ; 1 minute
-             :maxLifetime (* 1 60 60 1000) ; 1 hour
-             })]
+             HikariDataSource
+             {:dbtype "postgres"
+              :dbname (get db-options db-name-key)
+              :username (get db-options db-user-key)
+              :password (get db-options db-password-key)
+              :host (get db-options db-host-key)
+              :port (get db-options db-port-key)
+              :maximumPoolSize (get db-options db-max-pool-size-key)
+              :minimumIdle (get db-options db-min-pool-size-key)
+              :autoCommit true
+              :connectionTimeout 30000
+              :validationTimeout 5000
+              :idleTimeout (* 1 60 1000)                    ; 1 minute
+              :maxLifetime (* 1 60 60 1000)                 ; 1 hour
+              })]
     ;; this code initializes the pool and performs a validation check:
     (.close (jdbc/get-connection ds))
     (reset! ds* ds)

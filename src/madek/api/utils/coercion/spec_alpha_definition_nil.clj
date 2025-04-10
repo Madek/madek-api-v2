@@ -38,6 +38,7 @@
 (sa/def ::order (nil-or string?))
 (sa/def ::position (nil-or any?))
 (sa/def ::position (nil-or int?))
+(sa/def ::email (nil-or string?))
 (sa/def ::pseudonym (nil-or string?))
 (sa/def ::responsible_delegation_id (nil-or uuid?))
 (sa/def ::responsible_user_id (nil-or uuid?))

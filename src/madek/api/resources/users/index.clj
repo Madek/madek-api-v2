@@ -3,6 +3,8 @@
    [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [schema.core :as s]
+
    [madek.api.pagination :as pagination]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.common :as common]
@@ -33,14 +35,16 @@
         res (sd/transform_ml_map res)]
     (sd/response_ok res)))
 
-(sa/def ::users-query-def (sa/keys :opt-un [::sp/email ::sp/page ::sp/size]))
+(sa/def ::users-query-def (sa/keys :req-un [::sp/email] :opt-un [::sp/email ::sp/page ::sp/size]))
 
 (def route
   {:summary (sd/sum_adm (f "Get list of users ids." "no-list"))
    :description "Get list of users ids."
    :handler handler
    :middleware [wrap-authorize-admin!]
-   :parameters {:query ::users-query-def}
-   :coercion spec/coercion
+   ;:parameters {:query ::users-query-def}
+   ;:coercion spec/coercion
+   :coercion reitit.coercion.schema/coercion
    :responses {200 {:description "List of users ids."
-                    :body ::get-user/users-body-resp-def}}})
+                    :body [{:test s/Str}]}}})
+                    ;:body ::get-user/users-body-resp-def}}})
