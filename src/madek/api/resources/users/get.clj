@@ -39,7 +39,7 @@
                     ::sp-nil/notes
                     ::sp/person_id
                     ::sp/updated_at]
-           :opt-un [::sp/email ::sp/settings]))
+           :opt-un [::sp-nil/email ::sp/settings]))
 
 (sa/def :users-list/users (st/spec {:spec (sa/coll-of ::users-resp-def)
                                     :description "A list of persons"}))

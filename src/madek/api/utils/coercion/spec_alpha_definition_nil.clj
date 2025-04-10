@@ -21,6 +21,7 @@
 (sa/def ::documentation_urls (nil-or any?))
 (sa/def ::external_uri (nil-or string?))
 (sa/def ::first_name (nil-or string?))
+(sa/def ::email (nil-or string?))
 (sa/def ::highlight (nil-or boolean?))
 (sa/def ::hints (nil-or map?))
 (sa/def ::identification_info (nil-or string?))
