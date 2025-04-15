@@ -121,6 +121,7 @@
       (modify-if-exists :external_uris #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
       (modify-if-exists :sitemap #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
       (modify-if-exists :available_locales #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
+      (modify-if-exists :institutional_directory_infos #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
 
       ;; text[]
       (modify-if-exists :contexts_for_entry_extra #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))

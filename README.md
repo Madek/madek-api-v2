@@ -96,7 +96,7 @@ Use `standardrb` and  `standardrb --fix`.
 
 ### API Docs (openApi)
 
-Swagger resource documentation http://localhost:3104/api-docs/index.html
+Swagger resource documentation http://localhost:3104/api-v2/api-docs/index.html
 
 #### Authentication & accessability
 1. **Token**
@@ -118,11 +118,10 @@ Create a config/settings.local.yml with content similar like:
     database:
       url: postgresql://localhost:5415/madek?pool=3
 
-
 ### Config-parameters
-- `ZERO_BASED_PAGINATION`   
-  Pagination: used to define `zero-based` OR `one-based pagination`
 
+- `ZERO_BASED_PAGINATION`
+  Pagination: used to define `zero-based` OR `one-based pagination`
 
 ### Test Configuration
 
