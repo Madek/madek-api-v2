@@ -122,125 +122,63 @@
   (or (contains-substrings? data ["schema" "errors" "type" "coercion" "value" "in"])
     (contains-substrings? data ["problems"])))
 
-
-
 (defn extract-coercion-reason
+  ([data req]
+   (extract-coercion-reason data req true))
 
-(  [data req]
- (extract-coercion-reason data req true))
+  ([data req with-errors?]
+   (let [parsed-data   (-> data (json/parse-string true) parse-edn-strings)
+         coercion      (:coercion parsed-data)
+         is-coercion?  (some #{"spec" "schema"} [coercion])]
+     (when is-coercion?
+       (let [errors        (or (get-in parsed-data [:errors])
+                             (beautify-problems (:problems parsed-data)))
+             scope         (some->> (:in parsed-data) (map str) (str/join "/"))
+             status        (if (str/includes? scope "response") 501 400)
+             base-resp     {:reason         "Coercion-Error"
+                            :scope          scope
+                            :coercion-type  coercion
+                            :uri            (str (str/upper-case (name (:request-method req)))
+                                                 " " (:uri req))}
+             full-resp     (if with-errors?
+                             (assoc base-resp :errors errors)
+                             base-resp)]
+         {:is-coercion-error true
+          :response-status   status
+          :response-data     full-resp})))))
 
 
 
-(  [data req with-errors?]
-  (let [data (-> data
-                 (json/parse-string true)
-                 (parse-edn-strings))
-        coercion (:coercion data)
-        coercion? (some #{coercion} ["spec" "schema"])]
-
-    (when coercion?
-      (let [reason (or (get-in data [:errors])
-                     (beautify-problems (:problems data)))
-            scope (some->> (:in data) (map str) (str/join "/"))
-            response-status (if (str/includes? scope "response") 501 400)
-            response-data {:reason "Coercion-Error"
-                           :scope scope
-                           :coercion-type coercion
-                           :errors reason
-                           :uri (str (str/upper-case (name (:request-method req)))
-                                     " " (:uri req))}
-            response-data (when-not with-errors?
-                             (dissoc response-data :errors))
-            ]
-
-        {:is-coercion-error coercion?
-         :response-status response-status
-         :response-data response-data}))))
-
-  )
 
 (defn extract-coercion-reason-without-errors [data req]
   (extract-coercion-reason data req false))
 
 (defn generate-coercion-response [data req resp]
-
   (warn (pretty-print-json data))
-  (let [{:keys [response-status response-data]} (extract-coercion-reason data req false)
-
-
-        ;resp (data->input-stream response-data)
-
-        resp (assoc resp :body (data->input-stream response-data) :status response-status)
-
-
-        ]
-
-    resp
-    )
-  )
-
-;(defn wrap-tx [handler]
-;  (fn [request]
-;    (jdbc/with-transaction [tx @ds*]
-;      (try
-;        (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)
-;              resp         (handler (assoc request :tx tx-with-opts))]
-;
-;          (if (and (:status resp) (>= (:status resp) 400) (:body resp))
-;            (do
-;              (warn "Rolling back transaction because error status" (:status resp))
-;              (warn "   Details:" (str/upper-case (name (:request-method request))) (fetch-data request))
-;              (.rollback tx)
-;
-;              (let [{:keys [is-coercion-error response-status response-data]}
-;                    (extract-coercion-reason (extract-data-from-input-stream (:body resp)) request)]
-;
-;                (if is-coercion-error
-;                  (do
-;                    ;(warn (pretty-print-json response-data))
-;                    (warn (pretty-print-json (:body resp)))
-;                    (-> resp
-;                        (assoc :body (data->input-stream response-data))
-;                        (assoc :status response-status)))
-;                  resp)))
-;            resp))))))
+  (let [{:keys [response-status response-data]}
+        (extract-coercion-reason data req false)]
+    (assoc resp
+           :body   (data->input-stream response-data)
+           :status response-status)))
 
 (defn wrap-tx [handler]
   (fn [request]
     (jdbc/with-transaction [tx @ds*]
       (try
         (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)
-              resp (handler (assoc request :tx tx-with-opts))
-              resp (if (and (:status resp) (>= (:status resp) 400) (:body resp))
-                     (do
-                         (warn "Rolling back transaction because error status " (:status resp))
-                         (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
-                         (.rollback tx)
-                         (let [ext-data (extract-data-from-input-stream (:body resp))
-                               p (println ">o> ext-data" (type ext-data))
-
-                               test {:test "me"}
-                               res (if (and (has-coercion-substring? ext-data) (is-coercion-error? ext-data))
-                                     ;(warn (pretty-print-json ext-data))
-
-                                     (generate-coercion-response ext-data request resp)
-
-                                     resp
-                                     )
-
-                               ]
-                           ;ext-data
-                           ;(data->input-stream test)
-                           res
-                           ))
-                         resp
-                         )
-              ;resp (if ext-data
-              ;       (assoc resp :body ext-data)
-              ;       resp)
-              ;
-              ]
-          resp)
+              resp         (handler (assoc request :tx tx-with-opts))
+              error?       (and (:status resp) (>= (:status resp) 400) (:body resp))]
+          (if error?
+            (do
+              (warn "Rolling back transaction because error status " (:status resp))
+              (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
+              (.rollback tx)
+              (let [ext-data (extract-data-from-input-stream (:body resp))]
+                (if (and (has-coercion-substring? ext-data)
+                      (is-coercion-error? ext-data))
+                  (generate-coercion-response ext-data request resp)
+                  resp)))
+            resp))
         (catch Throwable th
           (warn "Rolling back transaction because of " (.getMessage th))
           (debug (.getMessage th))
