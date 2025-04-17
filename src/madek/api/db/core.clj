@@ -146,6 +146,13 @@
            :body (data->input-stream response-data)
            :status response-status)))
 
+(defn handle-coercion-error [request resp]
+  (let [ext-data (extract-data-from-input-stream (:body resp))]
+    (if (and (has-coercion-substring? ext-data)
+          (is-coercion-error? ext-data))
+      (generate-coercion-response ext-data request resp)
+      resp)))
+
 (defn wrap-tx [handler]
   (fn [request]
     (jdbc/with-transaction [tx @ds*]
@@ -158,11 +165,15 @@
               (warn "Rolling back transaction because error status " (:status resp))
               (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
               (.rollback tx)
-              (let [ext-data (extract-data-from-input-stream (:body resp))]
-                (if (and (has-coercion-substring? ext-data)
-                         (is-coercion-error? ext-data))
-                  (generate-coercion-response ext-data request resp)
-                  resp)))
+              ;(let [ext-data (extract-data-from-input-stream (:body resp))]
+              ;  (if (and (has-coercion-substring? ext-data)
+              ;           (is-coercion-error? ext-data))
+              ;    (generate-coercion-response ext-data request resp)
+              ;    resp))
+
+              (handle-coercion-error request resp)
+
+              )
             resp))
         (catch Throwable th
           (warn "Rolling back transaction because of " (.getMessage th))
