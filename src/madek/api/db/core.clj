@@ -1,6 +1,8 @@
 (ns madek.api.db.core
   (:require
    [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
    [environ.core :refer [env]]
    [madek.api.db.type-conversion]
    [madek.api.utils.cli :refer [long-opt-for-key]]
@@ -158,7 +160,7 @@
                         (assoc :body (data->input-stream response-data))
                         (assoc :status response-status)))
                   resp)))
-            resp))
+            resp))))))
 
 (defn wrap-tx [handler]
   (fn [request]
@@ -171,7 +173,8 @@
                          (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
                          (.rollback tx)
                          (let [ext-data (extract-data-from-input-stream (:body resp))]
-                           (when (contains-substrings? ext-data ["schema" "errors" "type" "coercion" "value" "in"])
+                           (when (or (contains-substrings? ext-data ["schema" "errors" "type" "coercion" "value" "in"])
+                             (contains-substrings? ext-data ["problems"]))
                              (warn (pretty-print-json ext-data)))
                            ext-data))
               resp (if ext-data
