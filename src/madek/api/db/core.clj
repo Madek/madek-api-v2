@@ -122,7 +122,16 @@
   (or (contains-substrings? data ["schema" "errors" "type" "coercion" "value" "in"])
     (contains-substrings? data ["problems"])))
 
-(defn extract-coercion-reason [data req]
+
+
+(defn extract-coercion-reason
+
+(  [data req]
+ (extract-coercion-reason data req true))
+
+
+
+(  [data req with-errors?]
   (let [data (-> data
                  (json/parse-string true)
                  (parse-edn-strings))
@@ -139,17 +148,24 @@
                            :coercion-type coercion
                            :errors reason
                            :uri (str (str/upper-case (name (:request-method req)))
-                                     " " (:uri req))}]
+                                     " " (:uri req))}
+            response-data (when-not with-errors?
+                             (dissoc response-data :errors))
+            ]
 
         {:is-coercion-error coercion?
          :response-status response-status
          :response-data response-data}))))
 
+  )
+
+(defn extract-coercion-reason-without-errors [data req]
+  (extract-coercion-reason data req false))
 
 (defn generate-coercion-response [data req resp]
 
   (warn (pretty-print-json data))
-  (let [{:keys [response-status response-data]} (extract-coercion-reason data req)
+  (let [{:keys [response-status response-data]} (extract-coercion-reason data req false)
 
 
         ;resp (data->input-stream response-data)
