@@ -172,11 +172,18 @@
                          (warn "Rolling back transaction because error status " (:status resp))
                          (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
                          (.rollback tx)
-                         (let [ext-data (extract-data-from-input-stream (:body resp))]
+                         (let [ext-data (extract-data-from-input-stream (:body resp))
+                               p (println ">o> ext-data" (type ext-data))
+
+                               test {:test "me"}
+                               ]
                            (when (or (contains-substrings? ext-data ["schema" "errors" "type" "coercion" "value" "in"])
                              (contains-substrings? ext-data ["problems"]))
                              (warn (pretty-print-json ext-data)))
-                           ext-data))
+
+                           ;ext-data
+                           (data->input-stream test)
+                           ))
               resp (if ext-data
                      (assoc resp :body ext-data)
                      resp)]
