@@ -84,6 +84,10 @@
   (and s (every? #(re-find (re-pattern (java.util.regex.Pattern/quote %)) s) substrings)))
 
 
+(defn has-coercion-substring? [s]
+  (boolean (re-find #"\"coercion\"\s*:\s*\"(spec|schema)\"" s)))
+
+
 
 (defn parse-edn-strings [m]
   (clojure.walk/postwalk
@@ -113,6 +117,11 @@
       (.getBytes "UTF-8")
       (ByteArrayInputStream.)))
 
+
+(defn is-coercion-error? [data]
+  (or (contains-substrings? data ["schema" "errors" "type" "coercion" "value" "in"])
+    (contains-substrings? data ["problems"])))
+
 (defn extract-coercion-reason [data req]
   (let [data         (-> data
                          (json/parse-string true)
@@ -136,31 +145,45 @@
          :response-status   response-status
          :response-data     response-data}))))
 
-(defn wrap-tx [handler]
-  (fn [request]
-    (jdbc/with-transaction [tx @ds*]
-      (try
-        (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)
-              resp         (handler (assoc request :tx tx-with-opts))]
 
-          (if (and (:status resp) (>= (:status resp) 400) (:body resp))
-            (do
-              (warn "Rolling back transaction because error status" (:status resp))
-              (warn "   Details:" (str/upper-case (name (:request-method request))) (fetch-data request))
-              (.rollback tx)
+(defn generate-coercion-response [data req]
 
-              (let [{:keys [is-coercion-error response-status response-data]}
-                    (extract-coercion-reason (extract-data-from-input-stream (:body resp)) request)]
+           (warn (pretty-print-json data))
+     (let [resp (extract-coercion-reason data req)
 
-                (if is-coercion-error
-                  (do
-                    ;(warn (pretty-print-json response-data))
-                    (warn (pretty-print-json (:body resp)))
-                    (-> resp
-                        (assoc :body (data->input-stream response-data))
-                        (assoc :status response-status)))
-                  resp)))
-            resp))))))
+
+           resp (data->input-stream(:response-data resp))
+              ]
+
+  resp
+       )
+  )
+
+;(defn wrap-tx [handler]
+;  (fn [request]
+;    (jdbc/with-transaction [tx @ds*]
+;      (try
+;        (let [tx-with-opts (jdbc/with-options tx builder-fn-options-default)
+;              resp         (handler (assoc request :tx tx-with-opts))]
+;
+;          (if (and (:status resp) (>= (:status resp) 400) (:body resp))
+;            (do
+;              (warn "Rolling back transaction because error status" (:status resp))
+;              (warn "   Details:" (str/upper-case (name (:request-method request))) (fetch-data request))
+;              (.rollback tx)
+;
+;              (let [{:keys [is-coercion-error response-status response-data]}
+;                    (extract-coercion-reason (extract-data-from-input-stream (:body resp)) request)]
+;
+;                (if is-coercion-error
+;                  (do
+;                    ;(warn (pretty-print-json response-data))
+;                    (warn (pretty-print-json (:body resp)))
+;                    (-> resp
+;                        (assoc :body (data->input-stream response-data))
+;                        (assoc :status response-status)))
+;                  resp)))
+;            resp))))))
 
 (defn wrap-tx [handler]
   (fn [request]
@@ -176,13 +199,18 @@
                                p (println ">o> ext-data" (type ext-data))
 
                                test {:test "me"}
-                               ]
-                           (when (or (contains-substrings? ext-data ["schema" "errors" "type" "coercion" "value" "in"])
-                             (contains-substrings? ext-data ["problems"]))
-                             (warn (pretty-print-json ext-data)))
+                           res (if (and (has-coercion-substring? ext-data) (is-coercion-error? ext-data))
+                             ;(warn (pretty-print-json ext-data))
 
+                             (generate-coercion-response ext-data request)
+
+                             ext-data
+                             )
+
+                               ]
                            ;ext-data
-                           (data->input-stream test)
+                           ;(data->input-stream test)
+                           res
                            ))
               resp (if ext-data
                      (assoc resp :body ext-data)
