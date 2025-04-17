@@ -77,7 +77,7 @@
   (sd/response_ok user))
 
 (def route
-  {:summary (sd/sum_adm "Get user by id. / body-schema-example [TEST]")
+  {:summary (sd/sum_adm "Get user by id. / body-schema-example")
    :description "Get a user by id. Returns 404, if no such users exists."
    :handler handler
    :middleware [wrap-authorize-admin!
@@ -85,7 +85,7 @@
    :swagger {:produces "application/json"}
    :coercion reitit.coercion.schema/coercion
    :content-type "application/json"
-   :parameters {:path {:id s/Str :ids s/Int}}
+   :parameters {:path {:id s/Str}}
    :responses {200 {:description "User found."
                     :body schema}
                404 (sd/create-error-message-response "Not Found." "No such user.")}})

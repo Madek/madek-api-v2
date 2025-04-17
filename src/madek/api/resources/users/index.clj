@@ -36,12 +36,11 @@
 (sa/def ::users-query-def (sa/keys :opt-un [::sp/email ::sp/page ::sp/size]))
 
 (def route
-  {:summary (sd/sum_adm (f "Get list of users ids. TEST " "no-list"))
+  {:summary (sd/sum_adm (f "Get list of users ids." "no-list"))
    :description "Get list of users ids."
    :handler handler
-   ;:middleware [wrap-authorize-admin!]
+   :middleware [wrap-authorize-admin!]
    :parameters {:query ::users-query-def}
    :coercion spec/coercion
    :responses {200 {:description "List of users ids."
-                    ;:body ::get-user/users-body-resp-def}}})
-                    :body int?}}})
+                    :body ::get-user/users-body-resp-def}}})
