@@ -1,8 +1,7 @@
 (ns madek.api.db.core
   (:require
-   [cheshire.core :as json]
-   [clojure.edn :as edn]
    [clojure.string :as str]
+   [madek.api.db.coercion :refer [handle-coercion-error]]
    [environ.core :refer [env]]
    [madek.api.db.type-conversion]
    [madek.api.utils.cli :refer [long-opt-for-key]]
@@ -69,89 +68,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn extract-data-from-input-stream [input-stream]
-  (when (instance? java.io.ByteArrayInputStream input-stream)
-    (slurp input-stream)))
-
-(defn pretty-print-json [json-str]
-  (json/generate-string (json/parse-string json-str true) {:pretty true}))
-
 (defn fetch-data [m]
   (some-> m :reitit.core/match :template))
-
-(defn contains-substrings? [s substrings]
-  (and s (every? #(re-find (re-pattern (java.util.regex.Pattern/quote %)) s) substrings)))
-
-(defn has-coercion-substring? [s]
-  (boolean (re-find #"\"coercion\"\s*:\s*\"(spec|schema)\"" s)))
-
-(defn parse-edn-strings [m]
-  (clojure.walk/postwalk
-   (fn [x]
-     (if (and (string? x)
-              (re-find #"^\(" x)) ;; crude check for EDN-ish string
-       (try
-         (edn/read-string x)
-         (catch Exception _ x))
-       x))
-   m))
-
-(defn beautify-problems [problems]
-  (map (fn [problem]
-         (-> problem
-             (dissoc :path :via)
-             (update :in #(str/join "/" %))))
-       problems))
-
-(defn data->input-stream [data]
-  (-> data
-      (json/generate-string)
-      (.getBytes "UTF-8")
-      (ByteArrayInputStream.)))
-
-(defn is-coercion-error? [data]
-  (or (contains-substrings? data ["schema" "errors" "type" "coercion" "value" "in"])
-      (contains-substrings? data ["problems"])))
-
-(defn extract-coercion-reason
-  ([data req]
-   (extract-coercion-reason data req true))
-
-  ([data req with-errors?]
-   (let [parsed-data (-> data (json/parse-string true) parse-edn-strings)
-         coercion (:coercion parsed-data)
-         is-coercion? (some #{"spec" "schema"} [coercion])]
-     (when is-coercion?
-       (let [errors (or (get-in parsed-data [:errors])
-                        (beautify-problems (:problems parsed-data)))
-             scope (some->> (:in parsed-data) (map str) (str/join "/"))
-             status (if (str/includes? scope "response") 501 400)
-             base-resp {:reason "Coercion-Error"
-                        :scope scope
-                        :coercion-type coercion
-                        :uri (str (str/upper-case (name (:request-method req)))
-                                  " " (:uri req))}
-             full-resp (if with-errors?
-                         (assoc base-resp :errors errors)
-                         base-resp)]
-         {:is-coercion-error true
-          :response-status status
-          :response-data full-resp})))))
-
-(defn generate-coercion-response [data req resp]
-  (warn (pretty-print-json data))
-  (let [{:keys [response-status response-data]}
-        (extract-coercion-reason data req false)]
-    (assoc resp
-           :body (data->input-stream response-data)
-           :status response-status)))
-
-(defn handle-coercion-error [request resp]
-  (let [ext-data (extract-data-from-input-stream (:body resp))]
-    (if (and (has-coercion-substring? ext-data)
-          (is-coercion-error? ext-data))
-      (generate-coercion-response ext-data request resp)
-      resp)))
 
 (defn wrap-tx [handler]
   (fn [request]
@@ -165,15 +83,7 @@
               (warn "Rolling back transaction because error status " (:status resp))
               (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
               (.rollback tx)
-              ;(let [ext-data (extract-data-from-input-stream (:body resp))]
-              ;  (if (and (has-coercion-substring? ext-data)
-              ;           (is-coercion-error? ext-data))
-              ;    (generate-coercion-response ext-data request resp)
-              ;    resp))
-
-              (handle-coercion-error request resp)
-
-              )
+              (handle-coercion-error request resp) )
             resp))
         (catch Throwable th
           (warn "Rolling back transaction because of " (.getMessage th))
