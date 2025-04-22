@@ -19,15 +19,20 @@
 
 ## Nice2Know
 1. No ROA-support anymore
-2. Swagger-Authorize
+2. Coercion-errors
+   1. The full error details will be logged to the console.
+   2. The coercion response will return a simplified version of the error, with one of the following status codes:
+      1. 422: Request error
+      2. 500: Response error
+3. Swagger-Authorize
    1. Public endpoints have no lock
    2. *Auth-endpoints* have a lock that provides
       1. **apiKey-form**
-3. Roles
+4. Roles
    1. PUBLIC....GET-ENDPOINTS
    2. USER.......PUT/DELETE/POST-ENDPOINTS (Session/Token)
    3. ADMIN.....GET/PUT/DELETE/POST-ENDPOINTS (Session/Token) 
-4. Permission-Tables
+5. Permission-Tables
    1. admins
    2. auth_systems_users
    3. collection_api_client_permission

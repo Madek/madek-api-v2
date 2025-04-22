@@ -87,7 +87,8 @@ context "admin keywords" do
         it "responds 400 with bad formatted uuid" do
           badid = Faker::Internet.slug(words: nil, glue: "-")
           response = client.get("/api-v2/admin/keywords/#{badid}")
-          expect(response.status).to be == 400
+          expect(response.status).to be == 422
+          expect(response.body["reason"]).to eq("Coercion-Error")
         end
 
         it "responds 404 with non-existing id" do

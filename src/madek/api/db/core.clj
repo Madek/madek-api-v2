@@ -1,7 +1,7 @@
 (ns madek.api.db.core
   (:require
-   [cheshire.core :as json]
    [environ.core :refer [env]]
+   [madek.api.db.coercion :refer [handle-coercion-error]]
    [madek.api.db.type-conversion]
    [madek.api.utils.cli :refer [long-opt-for-key]]
    [next.jdbc :as jdbc]
@@ -66,18 +66,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn extract-data-from-input-stream [input-stream]
-  (when (instance? java.io.ByteArrayInputStream input-stream)
-    (slurp input-stream)))
-
-(defn pretty-print-json [json-str]
-  (json/generate-string (json/parse-string json-str true) {:pretty true}))
-
 (defn fetch-data [m]
   (some-> m :reitit.core/match :template))
-
-(defn contains-substrings? [s substrings]
-  (and s (every? #(re-find (re-pattern (java.util.regex.Pattern/quote %)) s) substrings)))
 
 (defn wrap-tx [handler]
   (fn [request]
@@ -89,12 +79,9 @@
                          (warn "Rolling back transaction because error status " (:status resp))
                          (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
                          (.rollback tx)
-                         (let [ext-data (extract-data-from-input-stream (:body resp))]
-                           (when (contains-substrings? ext-data ["schema" "errors" "type" "coercion" "value" "in"])
-                             (warn (pretty-print-json ext-data)))
-                           ext-data))
+                         (handle-coercion-error request resp))
               resp (if ext-data
-                     (assoc resp :body ext-data)
+                     ext-data
                      resp)]
           resp)
         (catch Throwable th

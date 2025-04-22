@@ -19,7 +19,7 @@ Nice2Know
 --
 1. Not possible to mix schema-coercion in one endpoint
 2. You can use both schema-coercions in one file
-3. Example of error caused by mixed schema-definition (running of server works but )
+3. Example of error caused by mixed schema-definition
 ```clojure
 ;; cause
 :responses {200 {:body ::response-body-adm}
@@ -37,6 +37,11 @@ Internal Server Error /api-v2/swagger.json
 2024-06-28T05:55:51.937Z NX-41294 ERROR [madek.api.web:46] - Exception Unable to resolve spec: :clojure.spec.alpha/unknown
 2024-06-28T05:55:51.937Z NX-41294 WARN [madek.api.web:47] - Exception   THROWABLE: java.lang.Exception: Unable to resolve spec: :clojure.spec.alpha/unknown[..
 ```
+4. Coercion-errors
+   1. The full error details will be logged to the console.
+   2. The coercion response will return a simplified version of the error, with one of the following status codes:
+      1. 422: Request error
+      2. 500: Response error
 
 
 Definition by reitit.coercion.schema
