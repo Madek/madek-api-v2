@@ -8,7 +8,7 @@
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
+   [madek.api.utils.helper :refer [convert-map-if-exist]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
@@ -17,7 +17,7 @@
   "Updates and returns true if that happened and false otherwise"
   [person-id data tx]
   (-> (sql/update :people)
-      (sql/set (-> data convert-sequential-values-to-sql-arrays))
+      (sql/set (-> data convert-map-if-exist))
       (sql/where [:= :people.id (as-uuid person-id)])
       (sql-format :inline false)
       (->> (jdbc/execute-one! tx))

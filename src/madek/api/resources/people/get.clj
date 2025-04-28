@@ -26,7 +26,8 @@
                     ::sp/subtype
                     ::sp/updated_at
                     ::sp-nil/identification_info
-                    ::sp/institutional_directory_infos]))
+                    ::sp/institutional_directory_infos
+                    ::sp-nil/institutional_directory_inactive_since]))
 
 (sa/def :usr-people-list/people (st/spec {:spec (sa/coll-of :usr/people)
                                           :description "A list of persons"}))
@@ -47,7 +48,8 @@
    :subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    :updated_at s/Any
    :identification_info (s/maybe s/Str)
-   :institutional_directory_infos [s/Str]})
+   :institutional_directory_infos [s/Str]
+   :institutional_directory_inactive_since (s/maybe s/Any)})
 
 (defn handler
   [{{{id :id} :path} :parameters

@@ -2,7 +2,6 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.resources.people.common]
    [madek.api.resources.people.common :refer [find-person-by-uid]]
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
@@ -43,7 +42,8 @@
    (s/optional-key :admin_comment) (s/maybe s/Str)
    (s/optional-key :pseudonym) (s/maybe s/Str)
    (s/optional-key :identification_info) (s/maybe s/Str)
-   (s/optional-key :institutional_directory_infos) [s/Str]})
+   (s/optional-key :institutional_directory_infos) [s/Str]
+   (s/optional-key :institutional_directory_inactive_since) (s/maybe s/Any)})
 
 (def route
   {:accept "application/json"

@@ -112,6 +112,7 @@
       (modify-if-exists :default_resource_type #(if (contains? m :default_resource_type) [:cast % :public.collection_default_resource_type]))
       (modify-if-exists :sorting #(if (contains? m :sorting) [:cast % :public.collection_sorting]))
       (modify-if-exists :json #(if (contains? m :json) [:cast (json/generate-string %) :jsonb]))
+      (modify-if-exists :institutional_directory_inactive_since #(when % [:cast % ::timestamptz]))
 
       ;; uuid
       (modify-if-exists :id #(if (contains? m :id) (to-uuid % :id)))
@@ -128,10 +129,10 @@
 
       ;; jsonb / character varying
       (modify-if-exists :settings #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
-      (modify-if-exists :external_uris #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
+      (modify-if-exists :external_uris #(vector :array (or % []) :text))
       (modify-if-exists :sitemap #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
       (modify-if-exists :available_locales #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
-      (modify-if-exists :institutional_directory_infos #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
+      (modify-if-exists :institutional_directory_infos #(vector :array (or % []) :text))
 
       ;; text[]
       (modify-if-exists :contexts_for_entry_extra #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))

@@ -477,12 +477,13 @@
      :external_uris [s/Any]
      :identification_info (s/maybe s/Any)
      :institutional_directory_infos [s/Str]
+     :institutional_directory_inactive_since (s/maybe s/Any)
      :searchable s/Str
      :updated_at s/Any
      :id s/Uuid
      :last_name s/Str
      :admin_comment (s/maybe s/Str)
-     :pseudonym s/Str
+     :pseudonym (s/maybe s/Str)
      :created_at s/Any
      :subtype s/Str}]})
 
@@ -525,6 +526,7 @@
    :external_uris [s/Str]
    :identification_info (s/maybe s/Str)
    :institutional_directory_infos [s/Str]
+   :institutional_directory_inactive_since (s/maybe s/Any)
    :searchable s/Str
    :updated_at s/Any
    :id s/Uuid

@@ -24,7 +24,8 @@
    :people.subtype
    :people.updated_at
    :people.identification_info
-   :people.institutional_directory_infos])
+   :people.institutional_directory_infos
+   :people.institutional_directory_inactive_since])
 
 (defn where-uid
   "Adds a where condition to the people people query against a unique id. The

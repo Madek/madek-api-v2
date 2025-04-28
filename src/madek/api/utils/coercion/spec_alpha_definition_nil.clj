@@ -29,6 +29,7 @@
 (sa/def ::institution (nil-or string?))
 (sa/def ::institutional_id (nil-or string?))
 (sa/def ::institutional_name (nil-or string?))
+(sa/def ::institutional_directory_inactive_since (nil-or any?))
 (sa/def ::labels (nil-or string?))
 (sa/def ::labels_2 (nil-or string?))
 (sa/def ::last_name (nil-or string?))

@@ -23,6 +23,11 @@
     query
     (sql/where query [:= :people.institution institution])))
 
+(defn institutional-id-filter [query {institutional_id :institutional_id}]
+  (if (empty-or-nil? institutional_id)
+    query
+    (sql/where query [:= :people.institutional_id institutional_id])))
+
 (defn search [query {term :search-term}]
   (if (empty-or-nil? term)
     query
@@ -37,6 +42,7 @@
   (-> sql-query
       (subtype-filter query-params)
       (institution-filer query-params)
+      (institutional-id-filter query-params)
       (search query-params)))
 
 (defn build-query [query-params]
@@ -55,7 +61,7 @@
     (debug 'people result)
     {:status 200, :body result}))
 
-(sa/def ::people-query-def (sa/keys :opt-un [::sp/institution ::sp/subtype ::sp/page ::sp/size]))
+(sa/def ::people-query-def (sa/keys :opt-un [::sp/institution ::sp/institutional_id ::sp/subtype ::sp/page ::sp/size]))
 
 (def route
   {:summary (sd/sum_adm "Get list of people ids.")
