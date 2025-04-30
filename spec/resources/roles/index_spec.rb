@@ -3,13 +3,13 @@ require "shared/audit-validator"
 
 describe "roles" do
   before :each do
-    @roles = 210.times.map do |i|
+    @roles = 201.times.map do |i|
       FactoryBot.create :role, labels: {de: "Role #{i}"}
     end
   end
 
   include_context :authenticated_json_client do
-    describe "get roles without pagination" do
+    describe "get roles with pagination" do
       it "responses with 200" do
         resp1 = authenticated_json_client.get("/api-v2/roles?page=1&size=5")
         expect(resp1.status).to be == 200
@@ -56,6 +56,13 @@ describe "roles" do
           roles_result.body["data"].count
         ).to be < @roles.count
       end
+
+      # TODO json roa remove: get roles collection
+      # it 'retrieves all roles using the collection' do
+      #  set_of_created_ids = Set.new(@roles.map(&:id))
+      #  set_of_retrieved_ids = Set.new(roles_result.collection.map(&:get).map { |x| x.data['id'] })
+      #  expect(set_of_retrieved_ids.count - set_of_created_ids.count).to be_zero
+      # end
     end
   end
 end

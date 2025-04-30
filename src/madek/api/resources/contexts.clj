@@ -215,7 +215,6 @@
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion
            :middleware [authorization/wrap-authorized-user]
-
            ;:parameters {:query {(s/optional-key :full-data) s/Bool}}
            :responses {200 {:description "Returns the contexts."
                             :body [schema_export_contexts_usr]}

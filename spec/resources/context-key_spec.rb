@@ -1,10 +1,6 @@
 require "spec_helper"
 
 context "public context-key" do
-  # before :each do
-  #   @context_key = FactoryBot.create(:context_key)
-  # end
-
   before :each do
     @keywords = []
     10.times do
@@ -47,31 +43,12 @@ context "public context-key" do
   end
 
   describe "get context-key" do
-
-    # before :each do
-    #   @keywords = []
-    #   10.times do
-    #     @keywords << FactoryBot.create(:context_key)
-    #   end
-    # end
-
     it "has the proper data" do
       resp =       plain_faraday_json_client.get("/api-v2/context-keys")
       expect(resp.status).to eq(200)
       expect(resp.body.count).to eq(10)
     end
-
-    # it "has the proper data" do
-    #   resp =       plain_faraday_json_client.get("/api-v2/context-keys?page=1&size=5")
-    #   expect(resp.status).to eq(200)
-    #   expect(resp.body.count).to eq(5)
-    #
-    #   resp =       plain_faraday_json_client.get("/api-v2/context-keys?page=2&size=5")
-    #   expect(resp.status).to eq(200)
-    #   expect(resp.body.count).to eq(5)
-    # end
   end
-
 
   describe "get specific context-key" do
     let(:plain_json_response) do

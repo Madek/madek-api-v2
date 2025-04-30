@@ -43,8 +43,6 @@ describe "filtering collections" do
               get_metadata_and_previews: true)
           }
 
-
-          binding.pry
           get_collections("me_get_metadata_and_previews" => "true").body["collections"]
             .each do |c|
             collection = Collection.unscoped.find(c["id"])
@@ -113,7 +111,6 @@ describe "filtering collections" do
                 group: g
             end
 
-            binding.pry
             resp1 = client.get("/api-v2/collections?page=1&size=5")
             expect(resp1.status).to be == 200
             expect(resp1.body["data"].count).to be 5

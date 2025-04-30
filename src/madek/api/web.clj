@@ -282,7 +282,7 @@
                   "ALL" (middleware (wrap-reload app-all))
                   "ADMIN" (middleware app-admin)
                   "USER" (middleware app-user))
-        handler (middleware app-user)
+        ;handler (middleware app-user) ;; TODO: remove this
         ]
     (http-server/start handler options)))
 

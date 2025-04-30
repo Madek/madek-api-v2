@@ -75,7 +75,6 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when retrieving collection" do
     it "does not audit the GET request" do
-      binding.pry
       response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{user_id}")
       expect(response.status).to eq(200)
       expect_audit_entries_count(0, 0, 0)

@@ -219,7 +219,7 @@ context "Getting context-keys with pagination" do
       end
     end
 
-    it "responses with 200 with pagination" do
+    it "responses with 200" do
       resp1 = client.get("/api-v2/admin/context-keys?page=1&size=5")
       expect(resp1.status).to be == 200
       expect(resp1.body["data"].count).to be 5
@@ -237,12 +237,6 @@ context "Getting context-keys with pagination" do
       expect(resp.status).to be == 200
       expect(resp.body.count).to be 10
       expect(resp.body).to be_a Array
-    end
-
-    it "responses with 200 (default)" do
-      resp = client.get("/api-v2/admin/context-keys")
-      expect(resp.status).to be == 200
-      expect(resp.body.count).to be 10
     end
   end
 end
