@@ -36,8 +36,6 @@
 ; extended debug logging; this will increase LOGGING OUTPUT IMMENSELY and might
 ; have other undesired effects; make sure this is never enabled in production
 
-(defonce ^:private DEBUG false)
-
 ;### exception ################################################################
 
 (defonce last-ex* (atom nil))
@@ -46,7 +44,7 @@
   ; server-error should be an unexpected exception
   ; log message as error and log trace as warning
   (error "Exception" (ex-message exception))
-  (warn "Exception" (thrown/stringify exception))
+  (warn "Exception" exception)
   {:status 500
    :body {:msg (ex-message exception)}})
 
@@ -54,7 +52,7 @@
   ; status error response can be due to missing authorization etc
   ; log message as warn and trance as debug
   (warn "Exception" (ex-message exception))
-  (debug "Exception" (thrown/stringify exception))
+  (debug "Exception" exception)
   {:status status
    :body {:msg (ex-message exception)}})
 
@@ -76,6 +74,15 @@
         (reset! last-ex* ex)
         (error "CAUGHT UNEXPECTED EXCEPTION" (ex-message ex))
         (server-error-response ex)))))
+
+(defn wrap-debug [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Exception ex
+        (error (ex-message ex))
+        (debug ex)
+        (throw ex)))))
 
 ;### wrap CORS ###############################################################
 
@@ -169,6 +176,7 @@
    muuntaja/format-negotiate-middleware
    muuntaja/format-response-middleware
    wrap-catch-exception
+   wrap-debug
    muuntaja/format-request-middleware
    authentication/wrap
    authentication/wrap-log
@@ -176,31 +184,6 @@
    rrc/coerce-request-middleware
    rrc/coerce-response-middleware
    multipart/multipart-middleware])
-
-(when DEBUG
-  (def ^:dynamic debug-last-ex nil)
-  (defn wrap-debug [handler]
-    (fn [request]
-      (let [wrap-debug-level (or (:wrap-debug-level request) 0)]
-        (try
-          (debug "RING-LOGGING-WRAPPER"
-                 {:wrap-debug-level wrap-debug-level
-                  :request request})
-          (let [response (handler
-                          (assoc request :wrap-debug-level (inc wrap-debug-level)))]
-            (debug "RING-LOGGING-WRAPPER"
-                   {:wrap-debug-level wrap-debug-level
-                    :response response})
-            response)
-          (catch Exception ex
-            (def ^:dynamic debug-last-ex ex)
-            (error "RING-LOGGING-WRAPPER CAUGHT EXCEPTION "
-                   {:wrap-debug-level wrap-debug-level} (ex-message ex))
-            (error "RING-LOGGING-WRAPPER CAUGHT EXCEPTION " (thrown/stringify ex))
-            (throw ex))))))
-  (let [mws middlewares]
-    (def ^:dynamic middlewares
-      (into [] (interpose wrap-debug mws)))))
 
 ; TODO, QUESTION: the following will add the whole middleware stack to the data
 ; object in the request; is this in anyway usefull? e.g. debugging ??? if not
