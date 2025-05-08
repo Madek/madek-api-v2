@@ -1,6 +1,7 @@
 require "spec_helper"
 require "shared/audit-validator"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
+require "shared/clients"
 require "cgi"
 require "timecop"
 
@@ -110,7 +111,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
       expect(response.status).to eq(401)
     end
 
-    it "returns 401 for unauthorized POST and PUT requests" do
+    it "returns 401 for unauthorized POST and PUT requests with invalid csrf" do
       body = {
         name: "test-updated",
         is_active: false,
@@ -121,19 +122,46 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
         req.body = body.to_json
         req.headers["Content-Type"] = "application/json"
       end
-      expect(response.status).to eq(401)
+      expect(response.status).to eq(403)
+      expect(response.body["msg"]).to eq("The anti-csrf-token cookie value is not set.")
 
       response = plain_faraday_json_client.put("/api-v2/workflows/#{workflow.id}") do |req|
         req.body = body.to_json
         req.headers["Content-Type"] = "application/json"
       end
-
-      expect(response.status).to eq(401)
+      expect(response.status).to eq(403)
+      expect(response.body["msg"]).to eq("The anti-csrf-token cookie value is not set.")
     end
 
-    it "returns 401 for unauthorized DELETE request" do
+    context "when handling unauthorized requests with valid csrf" do
+      include_context :valid_session_with_csrf
+
+      it "returns 401 for unauthorized POST and PUT requests" do
+        body = {
+          name: "test-updated",
+          is_active: false,
+          configuration: {karl: "heinz"}
+        }
+
+        response = client.post("/api-v2/workflows") do |req|
+          req.body = body.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+        expect(response.status).to eq(200)
+
+        response = client.put("/api-v2/workflows/#{workflow.id}") do |req|
+          req.body = body.to_json
+          req.headers["Content-Type"] = "application/json"
+        end
+
+        expect(response.status).to eq(200)
+      end
+    end
+
+    it "returns 403 for unauthorized DELETE request" do
       response = plain_faraday_json_client.delete("/api-v2/workflows/#{workflow.id}")
-      expect(response.status).to eq(401)
+      expect(response.status).to eq(403)
+      expect(response.body["msg"]).to eq("The anti-csrf-token cookie value is not set.")
     end
   end
 end

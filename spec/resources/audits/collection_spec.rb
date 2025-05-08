@@ -50,7 +50,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
   include_context :setup_owner_user_for_token_access
   include_context :setup_post_data
 
-  let!(:user_id) do
+  let!(:collection_id) do
     response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collection", body: post_data)
     expect(response.status).to eq(200)
     expect_audit_entries_count(1, 1, 1)
@@ -67,7 +67,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "audits the PUT request" do
-      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collection/#{user_id}", body: put_data)
+      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collection/#{collection_id}", body: put_data)
       expect(response.status).to eq(200)
       expect_audit_entries_count(1, 1, 1)
     end
@@ -75,7 +75,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when retrieving collection" do
     it "does not audit the GET request" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{user_id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection_id}")
       expect(response.status).to eq(200)
       expect_audit_entries_count(0, 0, 0)
     end
@@ -83,7 +83,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when deleting collection" do
     it "audits the DELETE request" do
-      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collection/#{user_id}")
+      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collection/#{collection_id}")
       expect(response.status).to eq(200)
       expect_audit_entries_count(1, 1, 1)
     end
@@ -91,8 +91,8 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when handling unauthorized requests" do
     it "audits the PUT request with unauthorized access" do
-      response = plain_faraday_json_client.put("/api-v2/collection/#{user_id}") do |req|
-        req.body = put_data.to_json
+      response = plain_faraday_json_client_csrf.put("/api-v2/collection/#{collection_id}") do |req|
+        req.body = put_data
         req.headers["Content-Type"] = "application/json"
       end
       expect(response.status).to eq(401)
@@ -100,20 +100,20 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "does not audit the GET request with unauthorized access" do
-      response = plain_faraday_json_client.get("/api-v2/collection/#{user_id}")
+      response = plain_faraday_json_client_csrf.get("/api-v2/collection/#{collection_id}")
       expect(response.status).to eq(200)
       expect_audit_entries_count(0, 0, 0)
     end
 
     it "audits the DELETE request with unauthorized access" do
-      response = plain_faraday_json_client.delete("/api-v2/collection/#{user_id}")
+      response = plain_faraday_json_client_csrf.delete("/api-v2/collection/#{collection_id}")
       expect(response.status).to eq(401)
       expect_audit_entries_count(1, 0, 1)
     end
 
     it "audits the POST request with unauthorized access" do
-      response = plain_faraday_json_client.post("/api-v2/collection") do |req|
-        req.body = post_data.to_json
+      response = plain_faraday_json_client_csrf.post("/api-v2/collection") do |req|
+        req.body = post_data
         req.headers["Content-Type"] = "application/json"
       end
       expect(response.status).to eq(401)
@@ -128,12 +128,21 @@ describe "Blocks modification of collection without authentication (POST)" do
 
   context "when attempting to create a collection without authentication" do
     it "audits the POST request but does not create the collection" do
-      response = plain_faraday_json_client.post("/api-v2/collection") do |req|
-        req.body = post_data.to_json
+      response = plain_faraday_json_client_csrf.post("/api-v2/collection") do |req|
+        req.body = post_data
         req.headers["Content-Type"] = "application/json"
       end
       expect(response.status).to eq(401)
       expect_audit_entries_count(1, 0, 1)
+    end
+  end
+
+  context "when attempting to create a collection without authentication" do
+    it "audits the POST request but does not create the collection" do
+      response = plain_faraday_json_client_csrf.post("/api-v2/collection") do |req|
+        req.body = post_data
+      end
+      expect(response.status).to eq(401)
     end
   end
 end

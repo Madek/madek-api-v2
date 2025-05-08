@@ -3,7 +3,7 @@
    [clojure.java.io :as io]
    [environ.core :refer [env]]
    [logbug.debug :as debug]
-   [logbug.thrown :as thrown]
+   [madek.api.anti-csrf.csrf-handler :as csrf]
    [madek.api.authentication :as authentication]
    [madek.api.db.core :as db]
    [madek.api.http.server :as http-server]
@@ -11,6 +11,7 @@
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.sign-in.core :as sign-in]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.cli :refer [long-opt-for-key]]
    [madek.api.utils.ring-audits :as ring-audits]
@@ -26,6 +27,7 @@
    [reitit.ring.spec :as rs]
    [reitit.swagger :as swagger]
    [reitit.swagger-ui :as swagger-ui]
+   [ring.middleware.cookies :refer [wrap-cookies]]
    [ring.middleware.cors :as cors-middleware]
    [ring.middleware.defaults :as ring-defaults]
    [ring.middleware.json]
@@ -107,23 +109,112 @@
 ;### routes ###################################################################
 
 (def auth-info-route
-  ["/api-v2"
-   {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
-   ["/auth-info"
-    {:get
-     {:summary (sd/?no-auth? "Authentication help and info.")
-      :handler auth-info/auth-info
-      :middleware [authentication/wrap]
-      :coercion reitit.coercion.schema/coercion
-      :responses {200 {:description "Authentication info."
-                       :body {:type s/Str
-                              (s/optional-key :id) s/Uuid
-                              (s/optional-key :login) s/Str
-                              (s/optional-key :created_at) s/Any
-                              (s/optional-key :email_address) s/Str
-                              (s/optional-key :authentication-method) s/Str
-                              (s/optional-key :session-expires-at) s/Any}}
-                  401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]])
+
+  [""
+
+   {:middleware [authentication/wrap]}
+
+   [["/sign-in"
+     {:swagger {:tags ["Login"] :security []}
+      :no-doc true
+
+      :post {:accept "application/json"
+             :description "Authenticate user by login (set cookie with token)\n- Expects 'user' and 'password'"
+             :coercion reitit.coercion.schema/coercion
+             :handler sign-in/post-sign-in
+             :responses {200 {:description "Login successful"}}}
+
+      :get {:summary "HTML | Get sign-in page"
+            :accept "text/html"
+            :swagger {:consumes ["text/html"]
+                      :produces ["text/html" "application/json"]}
+            :handler sign-in/get-sign-in}}]]
+
+   ["/api-v2"
+    {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
+
+    ["/sign-out"
+     {:swagger {:tags ["Logout"] :security []}
+      :no-doc false
+      :post {:accept "application/json"
+             :swagger {:produces ["text/html" "application/json"]}
+             :handler sign-in/logout-handler}}]
+
+    ["/auth-info"
+     {:get
+      {:summary (sd/?no-auth? "Authentication help and info.")
+       :handler auth-info/auth-info
+       :middleware [authentication/wrap]
+       :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Authentication info."
+                        :body {:type s/Str
+                               (s/optional-key :id) s/Uuid
+                               (s/optional-key :login) s/Str
+                               (s/optional-key :created_at) s/Any
+                               (s/optional-key :email_address) s/Str
+                               (s/optional-key :authentication-method) s/Str
+                               (s/optional-key :session-expires-at) s/Any}}
+                   401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]
+
+    ["/test-csrf"
+     {:no-doc false
+      :get {:accept "application/json"
+            :description "Access allowed without x-csrf-token"
+            :coercion reitit.coercion.schema/coercion
+            :responses {204 {:content
+                             {"application/json"
+                              {}}}
+
+                        403 {:content
+                             {"application/json"
+                              {:schema {:msg s/Str}
+
+                               :examples sign-in/csrf-error-examples}}}}
+            :handler (fn [_] {:status 204})}
+
+      :post {:accept "application/json"
+             :description "Access denied without x-csrf-token"
+             :coercion reitit.coercion.schema/coercion
+             :handler (fn [_] {:status 204})
+             :responses sign-in/csrf-generic-responses}
+
+      :put {:accept "application/json"
+            :description "Access denied without x-csrf-token"
+            :coercion reitit.coercion.schema/coercion
+            :responses sign-in/csrf-generic-responses
+            :handler (fn [_] {:status 204})}
+
+      :patch {:accept "application/json"
+              :description "Access denied without x-csrf-token"
+              :coercion reitit.coercion.schema/coercion
+              :responses sign-in/csrf-generic-responses
+              :handler (fn [_] {:status 204})}
+
+      :delete {:accept "application/json"
+               :description "Access denied without x-csrf-token"
+               :coercion reitit.coercion.schema/coercion
+               :responses sign-in/csrf-generic-responses
+               :handler (fn [_] {:status 204})}}]
+
+    ["/csrf-token"
+     {:no-doc false
+      :get {:summary "Retrieve X-CSRF-Token for request header"
+            :accept "application/json"
+            :swagger {:consumes ["application/json" "text/html"] :produces ["application/json"]}
+            :coercion reitit.coercion.schema/coercion
+            :responses {200
+                        {:content
+                         {"application/json"
+                          {:schema {:authFlow {:returnTo s/Str}
+                                    :flashMessages [s/Any]
+                                    :csrfToken {:name s/Str :value s/Str}}
+
+                           :examples
+                           [{:summary "Extracted JSON-Data"
+                             :value {:authFlow {:returnTo "/api-v2/api-docs/"}
+                                     :flashMessages []
+                                     :csrfToken {:name "csrf-token" :value "b766847d-93f4-4c2c-96c0-3410dce6f3d6"}}}]}}}}
+            :handler sign-in/get-sign-in}}]]])
 
 (def swagger-routes
   ["/api-v2"
@@ -139,8 +230,9 @@
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"
                                                        :name "Authorization"
-                                                       :in "header"}}}
-              :security [{:apiAuth []}]}}
+                                                       :in "header"}
+                                             :csrfToken {:type "apiKey" :name "x-csrf-token" :in "header"}}}
+              :security [{:apiAuth []} {:csrfToken []}]}}
    ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]])
 
 (def get-router-data-all
@@ -175,6 +267,7 @@
   [swagger/swagger-feature
    ring-wrap-cors
    db/wrap-tx
+   wrap-cookies
    ring-audits/wrap
    rmp/parameters-middleware
    muuntaja/format-negotiate-middleware
@@ -183,6 +276,7 @@
    wrap-debug
    muuntaja/format-request-middleware
    authentication/wrap
+   csrf/wrap-csrf
    authentication/wrap-log
    rrc/coerce-exceptions-middleware
    rrc/coerce-request-middleware

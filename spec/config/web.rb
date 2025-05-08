@@ -25,6 +25,19 @@ def plain_faraday_json_client
   end
 end
 
+def plain_faraday_json_client_csrf
+  @plain_faraday_json_client ||= Faraday.new(
+    url: api_base_url,
+    headers: {"accept" => "application/json", "Cookie" => "madek-anti-csrf-token=valid_csrf_token;",
+              "x-csrf-token" => "valid_csrf_token"}
+  ) do |conn|
+    yield(conn) if block_given?
+    conn.request :json
+    conn.response :json, content_type: /\bjson$/
+    conn.adapter Faraday.default_adapter
+  end
+end
+
 def wtoken_header_plain_faraday_json_client(token)
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
@@ -70,10 +83,17 @@ def token_header_plain_faraday_json_client(method, url, token, body: nil, header
   end
 end
 
-def session_auth_plain_faraday_json_client(cookie_string)
+def session_auth_plain_faraday_json_client(cookie_string, custom_headers = {})
+  default_headers = {
+    accept: "application/json",
+    Cookie: cookie_string
+  }
+
+  merged_headers = default_headers.merge(custom_headers)
+
   @plain_faraday_json_client ||= Faraday.new(
     url: api_base_url,
-    headers: {accept: "application/json", Cookie: cookie_string}
+    headers: merged_headers
   ) do |conn|
     yield(conn) if block_given?
     conn.response :json, content_type: /\bjson$/
