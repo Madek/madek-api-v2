@@ -1,9 +1,8 @@
 require "spec_helper"
-# require 'madek_open_session'
 require "cgi"
 require "timecop"
 
-shared_examples :responds_with_success do
+shared_examples :responds_with_unauthorized do
   it "responds with success 200" do
     expect(response.status).to be == 200
   end

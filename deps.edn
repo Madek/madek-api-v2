@@ -17,6 +17,12 @@
         com.mchange/c3p0 {:mvn/version "0.10.1"}
         com.taoensso/timbre {:mvn/version "6.5.0"}
         com.zaxxer/HikariCP {:mvn/version "5.1.0"}
+        pandect/pandect {:mvn/version "1.0.2"
+                          :exclusions [org.bouncycastle/bcprov-jdk15on]}
+        org.bouncycastle/bcprov-jdk15on {:mvn/version "1.70"}
+        org.clj-commons/byte-streams {:mvn/version "0.3.4"}
+        digest/digest {:mvn/version "1.4.10"}
+        hickory/hickory {:mvn/version "0.7.1"}
         compojure/compojure {:mvn/version "1.7.1"}
         drtom/clj-uuid {:mvn/version "0.1.7"}
         ring-middleware-accept {:mvn/version "2.0.0"}

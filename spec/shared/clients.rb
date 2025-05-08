@@ -4,6 +4,78 @@ shared_context :json_client_for_authenticated_entity do
   end
 end
 
+shared_context :valid_session_base do |as_admin = false|
+  let(:user) do
+    user = FactoryBot.create(:user, password: "TOPSECRET")
+    FactoryBot.create :admin, user: user if as_admin
+    user
+  end
+
+  let(:user_session) do
+    UserSession.create!(
+      user: user,
+      auth_system: AuthSystem.first.presence,
+      token_hash: "hashimotio",
+      created_at: Time.now
+    )
+  end
+end
+
+shared_context :valid_session_without_csrf do
+  include_context :valid_session_base
+
+  let(:session_cookie) do
+    CGI::Cookie.new(
+      "name" => Madek::Constants::MADEK_SESSION_COOKIE_NAME,
+      "value" => user_session.token
+    ).to_s
+  end
+
+  let!(:client) do
+    session_auth_plain_faraday_json_client(session_cookie)
+  end
+end
+
+shared_context :valid_session_with_csrf do
+  include_context :valid_session_base
+
+  let(:csrf_token) { "ab63c8ab-a224-441d-9251-8068f6245252" }
+
+  let(:session_cookie) do
+    session_name = Madek::Constants::MADEK_SESSION_COOKIE_NAME
+    csrf_name = "madek-anti-csrf-token"
+
+    "#{session_name}=#{user_session.token}; #{csrf_name}=#{csrf_token}"
+  end
+
+  let!(:client) do
+    session_auth_plain_faraday_json_client(
+      session_cookie,
+      {"x-csrf-token" => csrf_token}
+    )
+  end
+end
+
+shared_context :valid_admin_session_with_csrf do
+  include_context :valid_session_base, true
+
+  let(:csrf_token) { "ab63c8ab-a224-441d-9251-8068f6245252" }
+
+  let(:session_cookie) do
+    session_name = Madek::Constants::MADEK_SESSION_COOKIE_NAME
+    csrf_name = "madek-anti-csrf-token"
+
+    "#{session_name}=#{user_session.token}; #{csrf_name}=#{csrf_token}"
+  end
+
+  let!(:client) do
+    session_auth_plain_faraday_json_client(
+      session_cookie,
+      {"x-csrf-token" => csrf_token}
+    )
+  end
+end
+
 shared_context :json_client_for_public_user do |ctx|
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"

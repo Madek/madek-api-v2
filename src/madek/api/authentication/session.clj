@@ -2,68 +2,21 @@
   (:require
    [buddy.core.codecs :refer [bytes->b64 bytes->str]]
    [buddy.core.hash :as hash]
-   [clj-time.core :as time]
-   [clj-time.format :as time-format]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [logbug.catcher :as catcher]
-   [madek.api.legacy.session.encryptor :refer [decrypt]]
-   [madek.api.legacy.session.signature :refer [valid?]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.config :refer [get-config
-                                   parse-config-duration-to-seconds]]
+   [madek.api.utils.config :refer [get-config]]
    [next.jdbc :as jdbc]
-   [taoensso.timbre :refer [debug info]]))
-
-(defn- get-session-secret []
-  (-> (get-config) :madek_master_secret))
-
-(defn- get-user [user-id tx]
-  (when-let [user (jdbc/execute-one! tx (-> (sql/select :*)
-                                            (sql/from :users)
-                                            (sql/where [:= :id user-id])
-                                            sql-format))]
-    (assoc user :type "User")))
+   [pandect.core]
+   [taoensso.timbre :refer [debug]]))
 
 (defn- get-madek-session-cookie-name []
   (or (-> (get-config) :madek_session_cookie_name keyword)
-      (throw (IllegalStateException.
-              "The  madek_session_cookie_name is not configured."))))
+      :madek-session))
 
-(defn- session-signature-valid? [user session-object]
-  (valid? (-> session-object :signature)
-          (get-session-secret)
-          (-> user :password_digest)))
-
-(defn- decrypt-cookie [cookie-value]
-  (catcher/snatch {}
-                  (decrypt (get-session-secret) cookie-value)))
-
-(defn- get-validity-duration-secs []
-  (or (catcher/snatch {}
-                      ((memoize #(parse-config-duration-to-seconds
-                                  :madek_session_validity_duration))))
-      3))
-
-(defn session-expiration-time [session-object validity-duration-secs]
-  (if-let [issued-at (-> session-object :issued_at time-format/parse)]
-    (let [valid-for-secs (->> [validity-duration-secs
-                               (:max_duration_secs session-object)]
-                              (filter identity)
-                              (#(if (empty? %) [0] %))
-                              (apply min))]
-      (time/plus issued-at (time/seconds valid-for-secs)))
-    (time/now)))
-
-(defn- session-not-expired? [session-object]
-  (when-let [issued-at (-> session-object :issued_at time-format/parse)]
-    (time/before? (time/now)
-                  (session-expiration-time session-object
-                                           (get-validity-duration-secs)))))
-
-(defn- token-hash [token]
+(defn token-hash [token]
   (-> token hash/sha256 bytes->b64 bytes->str))
 
 (def expiration-sql-expr
@@ -101,14 +54,11 @@
       (#(jdbc/execute! tx %))))
 
 (defn- session-enbabled? []
-  (-> (get-config) :madek_api_session_enabled boolean))
+  (or (-> (get-config) :madek_api_session_enabled boolean) true))
 
 (defn- get-cookie-value [request]
   (-> request keywordize-keys :cookies
       (get (get-madek-session-cookie-name)) :value))
-
-(defn in-seconds [from to]
-  (time/in-seconds (time/interval from to)))
 
 (defn- handle [request handler]
   (debug 'handle request)
@@ -116,32 +66,22 @@
     (let [token-hash (token-hash cookie-value)
           tx (:tx request)]
       (if-let [user-session (first (user-session token-hash tx))]
-        (let [user-id (:users/user_id user-session)
+        (let [user-id (:user_id user-session)
               expires-at (:session_expires_at user-session)
               user (assoc (dbh/query-eq-find-one :users :id user-id tx) :type "User")]
-          #_(info "handle session: "
-                  "\nfound user session:\n " user-session
-                  "\n user-id:  " user-id
-                  "\n expires-at: " expires-at
-                  "\n user: " user)
           (handler (assoc request
                           :authenticated-entity user
                           :is_admin (sd/is-admin user-id tx)
                           :authentication-method "Session"
-                          :session-expires-at expires-at
-                            ;:session-expiration-seconds (in-seconds (time/now) expires-at)
-                          )))
+                          :session-expires-at expires-at)))
         {:status 401 :body {:message "The session is invalid or expired!"}}))
-
-;   {:status 401 :body {:message "The session is invalid!"}}
-
-      ;)
-
     (handler request)))
 
 (defn wrap [handler]
   (fn [request]
-    (handle request handler)))
+    (if (some #(= (:uri request) %) ["/api-v2/api-docs/openapi.json" "/sign-in"])
+      (handler request)
+      (handle request handler))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

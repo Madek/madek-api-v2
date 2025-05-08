@@ -44,6 +44,15 @@ Requirements:
     MacPorts or Homebrew
 *  ⚠️ WARNING: local tests can fail caused by wrong order of results (see terms_for_sorting_shared_context.rb)
 
+### Simple login (dev)
+- Use http://localhost:3104/sign-in
+- DB: Password login has to be activated: users.password_sign_in_enabled=true
+
+### CSRF
+- Use http://localhost:3104/api-v2/api-docs/index.html#/api%2Fauth-info/get_api_v2_csrf_token to fetch CSRF
+- Use http://localhost:3104/api-v2/api-docs/index.html#/api%2Fauth-info/get_api_v2_test_csrf to test them
+  - Only data-manipulation requests require a CSRF token
+  - `madek-anti-csrf-token` (Cookie) & `x-csrf-token` (Request-Header) have to be identical
 
 ### Starting up the Server
 

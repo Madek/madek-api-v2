@@ -1,58 +1,49 @@
 require "spec_helper"
 require "cgi"
 require "timecop"
-
-shared_examples :responds_with_success do
-  # TODO setup valid user session
-  # it 'responds with success 200' do
-  #  expect(response.status).to be == 200
-  # end
-
-  it "responds with success 401" do
-    expect(response.status).to be == 401
-  end
-end
+require Pathname(File.expand_path("../..", __FILE__)).join("shared/clients")
 
 shared_examples :responds_with_not_authorized do
-  it "responds with 401 not authorized" do
+  it "responds with Unauthorized 401" do
     expect(response.status).to be == 401
   end
 end
 
-shared_context :valid_session_object do |to_include|
-  context "valid session object" do
-    # TODO setup valid user session
-    # this does not work
-    let :user_session do
-      UserSession.create!(
-        user: user,
-        auth_system: AuthSystem.first.presence,
-        token_hash: "hashimotio",
-        created_at: Time.now
-      )
-    end
-
-    let :session_cookie do
-      # TODO use UserSesssion hash
-      CGI::Cookie.new("name" => Madek::Constants::MADEK_SESSION_COOKIE_NAME,
-        # TODO encode
-        "value" => user_session.token_hash)
-    end
-
-    let :client do
-      session_auth_plain_faraday_json_client(session_cookie.to_s)
-    end
-
-    include_examples to_include
+shared_examples :responds_with_authorized do
+  it "responds with Authorized 200" do
+    expect(response.status).to be == 200
   end
 end
+
+# shared_context :valid_session_without_csrf do |to_include|
+#   context "valid session object" do
+#     let :user_session do
+#       UserSession.create!(
+#         user: user,
+#         auth_system: AuthSystem.first.presence,
+#         token_hash: "hashimotio",
+#         created_at: Time.now
+#       )
+#     end
+#
+#     let :session_cookie do
+#       CGI::Cookie.new("name" => Madek::Constants::MADEK_SESSION_COOKIE_NAME,
+#         "value" => user_session.token)
+#     end
+#
+#     let :client do
+#       session_auth_plain_faraday_json_client(session_cookie.to_s)
+#     end
+#
+#     include_examples to_include
+#   end
+# end
 
 describe "Session/Cookie Authentication" do
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
 
-  # TODO this down not work
   let :user_session do
     UserSession.create!(
       user: user,
@@ -67,25 +58,55 @@ describe "Session/Cookie Authentication" do
   end
 
   context "Session authentication is enabled" do
-    include_examples :valid_session_object, :responds_with_success
+    include_examples :valid_session_without_csrf, :responds_with_authorized
 
     context "expired session object" do
-      # TODO use user_session
       let :session_cookie do
-        Timecop.freeze(Time.now - 7.days) do
+        Timecop.freeze(Time.now) do
           CGI::Cookie.new("name" => Madek::Constants::MADEK_SESSION_COOKIE_NAME,
-            # TODO encode
-            "value" => user_session.token_hash)
+            "value" => user_session.token)
         end
       end
 
       let :client do
+        puts "session cookie: #{session_cookie}"
         session_auth_plain_faraday_json_client(session_cookie.to_s)
       end
 
-      include_examples :responds_with_not_authorized
       it "the body indicates that the session has expired" do
+        expect(response.status).to eq 401
         expect(response.body.with_indifferent_access["message"]).to match(/The session is invalid or expired!/)
+      end
+    end
+  end
+
+  context "Session authentication is enabled" do
+    include_examples :valid_session_without_csrf, :responds_with_authorized
+
+    context "expired session object" do
+      let :user_session do
+        UserSession.create!(
+          user: user,
+          auth_system: AuthSystem.first.presence,
+          token_hash: "hashimotio",
+          created_at: Time.now
+        )
+      end
+
+      let :session_cookie do
+        Timecop.freeze(Time.now) do
+          CGI::Cookie.new("name" => Madek::Constants::MADEK_SESSION_COOKIE_NAME,
+            "value" => user_session.token)
+        end
+      end
+
+      let :client do
+        puts "session cookie: #{session_cookie}"
+        session_auth_plain_faraday_json_client(session_cookie.to_s)
+      end
+
+      it "the body indicates that the session has expired" do
+        expect(response.status).to eq 200
       end
     end
   end
@@ -110,6 +131,6 @@ describe "Session/Cookie Authentication" do
       File.write("config/settings.local.yml", @original_config_local.to_yaml)
     end
 
-    include_examples :valid_session_object, :responds_with_not_authorized
+    include_examples :valid_session_without_csrf, :responds_with_not_authorized
   end
 end
