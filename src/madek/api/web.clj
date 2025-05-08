@@ -22,6 +22,7 @@
    [reitit.ring.middleware.multipart :as multipart]
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [reitit.ring.middleware.parameters :as rmp]
+   [ring.middleware.cookies :refer [wrap-cookies]]
    [reitit.ring.spec :as rs]
    [reitit.swagger :as swagger]
    [reitit.swagger-ui :as swagger-ui]
@@ -171,6 +172,7 @@
   [swagger/swagger-feature
    ring-wrap-cors
    db/wrap-tx
+   wrap-cookies
    ring-audits/wrap
    rmp/parameters-middleware
    muuntaja/format-negotiate-middleware
