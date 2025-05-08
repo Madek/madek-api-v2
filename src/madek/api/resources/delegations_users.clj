@@ -19,7 +19,7 @@
   [req]
   (let [delegation_id (-> req :parameters :query :delegation_id)
         user_id (-> req :parameters :query :user_id)
-        col-sel (if (true? (-> req :parameters :query :full-data))
+        col-sel (if (true? (-> req :parameters :query :full_data))
                   (sql/select :*)
                   (sql/select :user_id))
         base-query (-> col-sel (sql/from :delegations_users))
@@ -201,7 +201,7 @@
                         :body schema_delegations_list_users_export}}
        :parameters {:query {(s/optional-key :user_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid
-                            (s/optional-key :full-data) s/Bool}}}}]
+                            (s/optional-key :full_data) s/Bool}}}}]
     ["users/:delegation_id/:user_id"
      {:post
       {:summary (sd/sum_adm "Create delegations_user for user and delegation.")
