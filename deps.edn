@@ -25,6 +25,7 @@
         honeysql/honeysql {:mvn/version "1.0.461"}
         http-kit/http-kit {:mvn/version "2.8.0"}
         inflections/inflections {:mvn/version "0.14.2"}
+        io.github.tonsky/clj-reload {:mvn/version "0.9.6"}
         javax.servlet/servlet-api {:mvn/version "2.5"}
         logbug/logbug {:mvn/version "5.0.0"}
         me.raynes/fs {:mvn/version "1.4.6"}

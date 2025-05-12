@@ -1,6 +1,7 @@
 (ns madek.api.main
   (:gen-class)
   (:require
+   [clj-reload.core]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.cli :as cli]
    [logbug.catcher :as catcher]
