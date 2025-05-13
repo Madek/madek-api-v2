@@ -10,6 +10,14 @@
 
 (def LOAD-SWAGGER-DESCRIPTION-FROM-FILE true)
 
+
+;(defmacro gen-from-order-by-multiple
+;  "Generates a threaded call to `(sql/from ...)` then `(sql/order-by ...)`"
+;  [th table & attrs]
+;  `(-> ~th
+;       (sql/from  ~table)
+;       (sql/order-by ~@attrs)))
+
 ; [madek.api.utils.helper :refer [gen-from-order-by]]
 (defn gen-from-order-by
   "Dispatches on `table` with explicit clauses."
@@ -28,14 +36,46 @@
     ;; default:
      (-> th (sql/from table) (sql/order-by :id))))
 
-  ([th table & order-params]
+  ;([th table & third-attr]
+  ;
+  ;
+  ; (let [third-attr (vec third-attr)
+  ;
+  ;       ]
+  ;   ;; …same as above…
+  ;
+  ;
+  ; (println ">o> abc.order-params" third-attr)
+  ;
+  ;   (println ">o> abc.seq?" (seq third-attr))
+  ;
+  ;   )
+  ;
+  ;
+  ; ;>o> abc.order-params [[:users.id :asc] :groups_users.group_id :groups.name]
+  ; ;>o> abc.seq? ([:users.id :asc] :groups_users.group_id :groups.name)
+  ;
+  ;
+  ;
+  ; (-> th
+  ;     (sql/from table)
+  ;
+  ;     (cond-> (seq third-attr)
+  ;       (apply sql/order-by third-attr))
+  ;
+  ;
+  ;     ))
 
-   (-> th
-       (sql/from table)
-       ;(sql/order-by default-col)
-       ;; now tack on any extras:
-       (cond-> (seq order-params)
-         (apply sql/order-by order-params)))))
+
+  )
+
+
+(defmacro gen-from-order-by-multiple
+  "Generates a threaded call to `(sql/from ...)` then `(sql/order-by ...)`"
+  [th table & attrs]
+  `(-> ~th
+       (sql/from  ~table)
+       (sql/order-by ~@attrs)))
 
 (defn strip-prefixes
   "Strips namespace prefixes from all keyword keys in a map."
