@@ -31,7 +31,7 @@
       (sql/where [:= :auth_systems.enabled true])
       (sql/where [:= :users.password_sign_in_enabled true])
       (sql/where authentication-systems-users-sql-expr)
-      (sql/order-by [:auth_systems.priority :desc] :auth_systems.id)))
+      (sql/order-by [:auth_systems.priority :desc] [:auth_systems.id :asc])))
 
 (defn merge-identify-user [sqlmap unique-id]
   (sql/where sqlmap

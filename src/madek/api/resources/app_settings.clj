@@ -34,6 +34,7 @@
 (defn db-get-app-settings [tx]
   (-> (sql/select :*)
       (sql/from :app_settings)
+      (sql/order-by [:section_meta_key_id :asc] [:id :asc])
       sql-format
       ((partial jdbc/execute-one! tx))))
 

@@ -23,6 +23,7 @@
   (-> (sql-merge-where-id id)
       (sql/select :*)
       (sql/from :groups)
+      (sql/order-by [:name :asc] [:id :asc])
       sql-format))
 
 (defn find-group [id tx]
