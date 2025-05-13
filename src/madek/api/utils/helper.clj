@@ -149,6 +149,7 @@
       (modify-if-exists :json #(if (contains? m :json) [:cast (json/generate-string %) :jsonb]))
       (modify-if-exists :configuration #(if (contains? m :configuration) [:cast (json/generate-string %) :jsonb]))
       (modify-if-exists :institutional_directory_inactive_since #(when % [:cast % ::timestamptz]))
+      (modify-if-exists :active_until #(when % [:cast % ::timestamptz]))
 
       ;; uuid
       (modify-if-exists :id #(if (contains? m :id) (to-uuid % :id)))

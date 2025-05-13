@@ -2,6 +2,7 @@
 
 (def user-select-keys
   [:users.accepted_usage_terms_id
+   :users.active_until
    :users.created_at
    :users.email
    :users.first_name

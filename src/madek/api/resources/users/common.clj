@@ -37,7 +37,8 @@
 (def base-query
   (-> (apply sql/select user-select-keys)
       (sql/select [is-admin-sub :is_admin])
-      (sql/from :users)))
+      (sql/from :users)
+      (sql/order-by [:last_name :asc] [:first_name :asc] [:id :asc])))
 
 ;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

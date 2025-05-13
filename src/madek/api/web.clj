@@ -2,6 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [environ.core :refer [env]]
+   [logbug.debug :as debug]
    [logbug.thrown :as thrown]
    [madek.api.authentication :as authentication]
    [madek.api.db.core :as db]
@@ -35,6 +36,8 @@
 ; changing DEBUG to true will wrap each middleware defined in this file with
 ; extended debug logging; this will increase LOGGING OUTPUT IMMENSELY and might
 ; have other undesired effects; make sure this is never enabled in production
+
+(defonce ^:private DEBUG true)
 
 ;### exception ################################################################
 
@@ -269,4 +272,4 @@
     (http-server/start handler options)))
 
 ;### Debug ####################################################################
-;(debug/debug-ns *ns*)
+(debug/debug-ns *ns*)
