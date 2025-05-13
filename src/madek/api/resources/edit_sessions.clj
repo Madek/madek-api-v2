@@ -28,6 +28,7 @@
         col-sel (if (empty? selected-columns) (sql/select :id) (apply sql/select selected-columns))]
     (-> col-sel
         (sql/from :edit_sessions)
+        (sql/order-by [:user_id :asc] [:id :asc])
         (dbh/build-query-param query-params :id)
         (dbh/build-query-param query-params :user_id)
         (dbh/build-query-param query-params :collection_id)

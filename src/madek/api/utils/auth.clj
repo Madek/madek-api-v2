@@ -21,6 +21,7 @@
       (when (->> (-> (sql/select [true :is_admin])
                      (sql/from :admins)
                      (sql/where [:= :admins.user_id (-> request :authenticated-entity :id)])
+                     (sql/order-by [:admins.user_id :asc])
                      sql-format)
                  (jdbc/execute! (:tx request))
                  first :is_admin)

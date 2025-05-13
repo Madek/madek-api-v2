@@ -21,6 +21,7 @@
 (defn get-people-index [meta-datum tx]
   (let [query (-> (sql/select :people.*)
                   (sql/from :people)
+                  (sql/order-by [:people.institutional_id :asc] [:people.id :asc])
                   (sql/join :meta_data_people [:= :meta_data_people.person_id :people.id])
                   (sql/where [:= :meta_data_people.meta_datum_id (:id meta-datum)])
                   sql-format)]

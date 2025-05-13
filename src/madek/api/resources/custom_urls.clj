@@ -19,6 +19,7 @@
                   (apply sql/select fields))]
     (-> col-sel
         (sql/from :custom_urls)
+        (sql/order-by [:id :asc])
         (dbh/build-query-param-like query-params :id)
         (dbh/build-query-param query-params :collection_id)
         (dbh/build-query-param query-params :media_entry_id)

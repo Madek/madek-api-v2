@@ -54,6 +54,7 @@
   (if-let [meta-data-id (-> (jdbc/execute! tx
                                            (-> (sql/select :id)
                                                (sql/from :meta_data)
+                                               (sql/order-by [:media_entry_id :asc])
                                                (sql/where [:and [:= :media_entry_id media-entry-id] [:= :meta_key_id meta-key-id]])
                                                sql-format))
                             first :id)]
@@ -66,6 +67,7 @@
   (if-let [media-file-id (-> (jdbc/execute! tx
                                             (-> (sql/select :id)
                                                 (sql/from :media_files)
+                                                (sql/order-by [:media_entry_id :asc] [:id :asc])
                                                 (sql/where [:= :media_entry_id media-entry-id])
                                                 sql-format))
                              first :id)]

@@ -35,7 +35,7 @@
         (dbh/build-query-param qparams :meta_datum_object_type)
         (dbh/build-query-param qparams :is_enabled_for_collections)
         (dbh/build-query-param qparams :is_enabled_for_media_entries)
-        (sql/order-by :meta_keys.id))))
+        (sql/order-by [:meta_keys.id :asc]))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

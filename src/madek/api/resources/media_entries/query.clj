@@ -175,7 +175,7 @@
                      :else (default-order query))]
         (info "set-order" "\norder\n" order)
         result)
-      (sql/order-by :media_entries.id)))
+      (sql/order-by [:media_entries.id :asc])))
 
 ; TODO test query and paging
 (defn build-query [request]

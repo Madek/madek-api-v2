@@ -15,6 +15,7 @@
      (jdbc/execute-one! (:tx request)
                         (-> (sql/select :*)
                             (sql/from :meta_data)
+                            (sql/order-by [:meta_key_id :asc] [:id :asc])
                             (sql/where [:= :id (to-uuid id)])
                             sql-format))
 

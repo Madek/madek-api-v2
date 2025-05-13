@@ -11,6 +11,7 @@
 (defn db-get-preview [id tx]
   (let [query (-> (sql/select :*)
                   (sql/from :previews)
+                  (sql/order-by [:id :asc])
                   (sql/where [:= :previews.id id])
                   sql-format)]
     (jdbc/execute-one! tx query)))
