@@ -6,7 +6,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by]]
+   [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by gen-from-order-by-multiple]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [schema.core :as s]
@@ -47,11 +47,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+
+(defn pr [str fnc]
+  ;(println ">oo> HELPER / " str fnc)(println ">oo> HELPER / " str fnc)
+  (println ">oo> " str fnc)
+  fnc
+  )
+
 (defn group-user-query [group-id user-id]
-  (-> ;(users/sql-select)
+  (pr ">2" (-> ;(users/sql-select)
    (sql/select {} :users.id :users.institutional_id :users.email :users.person_id)
 
-   (gen-from-order-by [:users [:users.id :asc] :groups_users.group_id :groups.name])
+   (gen-from-order-by-multiple :users [:users.id :asc] :groups_users.group_id :groups.name )
 
    ;(sql/from :users)
    (sql/join :groups_users [:= :users.id :groups_users.user_id])
@@ -60,6 +69,8 @@
    (groups/sql-merge-where-id group-id)
    ;(sql/order-by [:users.id :asc] :groups_users.group_id :groups.name)
    sql-format))
+
+  )
 
 (defn find-group-user [group-id user-id tx]
   (->> (group-user-query group-id user-id)
