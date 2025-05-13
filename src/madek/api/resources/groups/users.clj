@@ -3,12 +3,12 @@
    [clj-uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [honey.sql.helpers :as sql]
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
-   [honey.sql.helpers :as sql]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
 
