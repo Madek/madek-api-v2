@@ -4,6 +4,7 @@
             [clojure.spec.alpha :as sa]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
+            [logbug.debug :as debug]
             [madek.api.resources.groups.shared :as groups]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
@@ -20,7 +21,7 @@
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
             [spec-tools.core :as st]
-            [taoensso.timbre :refer [error info]]))
+            [taoensso.timbre :refer [debug error info]]))
 
 ;### create group #############################################################
 
@@ -83,19 +84,17 @@
 ; TODO test query and paging
 (defn build-index-query [req]
   (let [query-params (-> req :parameters :query)
-        base-query (-> (if (:full_data query-params)
-                         (sql/select :*)
-                         (sql/select :id))
+        base-query (-> (sql/select :*)
                        (sql/from :groups)
                        (sql/order-by [:id :asc])
-                       (dbh/build-query-param query-params :id)
-                       (dbh/build-query-param query-params :institutional_id)
-                       (dbh/build-query-param query-params :type)
                        (dbh/build-query-param query-params :created_by_user_id)
-                       (dbh/build-query-param-like query-params :name)
-                       (dbh/build-query-param-like query-params :institutional_name)
-                       (dbh/build-query-param-like query-params :institution)
-                       (dbh/build-query-param-like query-params :searchable))]
+                       (dbh/build-query-param query-params :id)
+                       (dbh/build-query-param query-params :institution)
+                       (dbh/build-query-param query-params :institutional_id)
+                       (dbh/build-query-param query-params :institutional_name)
+                       (dbh/build-query-param query-params :name)
+                       (dbh/build-query-param query-params :type))]
+    (debug "groups base-query" base-query)
     base-query))
 
 (defn index [req]
@@ -196,14 +195,14 @@
 
 (def user-routes
   [["/"
-    {:openapi {:tags ["groups"]}}
-    ["groups" {:get {:summary "Get all group ids"
-                     :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
-                     :handler index
-                     :parameters {:query ::group-query-def}
-                     :coercion spec/coercion
-                     :responses {200 {:description "Returns a list of group ids."
-                                      :body ::response-groups-body}}}}]
+    {:openapi {:tags ["groups/"]}}
+    ["groups/" {:get {:summary "Index of groups"
+                      :description "Index of groups "
+                      :handler index
+                      :parameters {:query ::group-query-def}
+                      :coercion spec/coercion
+                      :responses {200 {:description "Return as list of groups."
+                                       :body ::response-groups-body}}}}]
 
     ["groups/:id" {:get {:summary "Get group by id"
                          :description "Get group by id. Returns 404, if no such group exists."
@@ -220,30 +219,30 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["admin/groups"] :security ADMIN_AUTH_METHODS}}
-   ["groups" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
-                    :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
-                    :handler index
-                    :middleware [wrap-authorize-admin!]
-                    :parameters {:query ::group-query-def}
-                    :coercion spec/coercion
-                    :responses {200 {:description "Returns a list of group ids."
-                                     :body ::response-groups-body}}}
-
-              :post {:summary (f "Create a group" "groups::person_id-not-exists")
-                     :description "Create a group."
-                     :handler handle_create-group
+   {:openapi {:tags ["admin/groups/"] :security ADMIN_AUTH_METHODS}}
+   ["groups/" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
+                     :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
+                     :handler index
                      :middleware [wrap-authorize-admin!]
-                     :swagger {:produces "application/json" :consumes "application/json"}
-                     :content-type "application/json"
-                     :accept "application/json"
-                     :coercion reitit.coercion.schema/coercion
-                     :parameters {:body schema_import-group}
-                     :responses {201 {:description "Created." :body schema_export-group}
-                                 404 (sd/create-error-message-response "Not Found." "User entry not found")
-                                 409 (sd/create-error-message-response "Conflict." "Entry already exists")
-                                 500 {:description "Internal Server Error."
-                                      :body s/Any}}}}]
+                     :parameters {:query ::group-query-def}
+                     :coercion spec/coercion
+                     :responses {200 {:description "Returns a list of group ids."
+                                      :body ::response-groups-body}}}
+
+               :post {:summary (f "Create a group" "groups::person_id-not-exists")
+                      :description "Create a group."
+                      :handler handle_create-group
+                      :middleware [wrap-authorize-admin!]
+                      :swagger {:produces "application/json" :consumes "application/json"}
+                      :content-type "application/json"
+                      :accept "application/json"
+                      :coercion reitit.coercion.schema/coercion
+                      :parameters {:body schema_import-group}
+                      :responses {201 {:description "Created." :body schema_export-group}
+                                  404 (sd/create-error-message-response "Not Found." "User entry not found")
+                                  409 (sd/create-error-message-response "Conflict." "Entry already exists")
+                                  500 {:description "Internal Server Error."
+                                       :body s/Any}}}}]
 
    ["groups/:id" {:get {:summary "Get group by id OR institutional-id"
                         :description "CAUTION: Get group by id OR institutional-id. Returns 404, if no such group exists."
@@ -269,50 +268,50 @@
                            :responses {204 {:description "No Content. The resource was deleted successfully."}
                                        403 {:description "Forbidden."
                                             :body s/Any}}}
-                  :put {:summary "Get group by id"
-                        :swagger {:produces "application/json"}
-                        :content-type "application/json"
-                        :accept "application/json"
-                        :handler handle_update-group
-                        ;:description "Get group by id. Returns 404, if no such group exists."
-                        :description (mslurp (io/resource "md/admin-groups-put.md"))
-                        :middleware [wrap-authorize-admin!]
-                        :coercion reitit.coercion.schema/coercion
-                        :parameters {:path {:id s/Uuid}
-                                     :body schema_update-group}
-                        :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                         :body schema_export-group}
-                                    404 {:description "Not Found."
-                                         :body s/Any}}}}] ; TODO error handling
+                  :patch {:summary "Get group by id"
+                          :swagger {:produces "application/json"}
+                          :content-type "application/json"
+                          :accept "application/json"
+                          :handler handle_update-group
+                          ;:description "Get group by id. Returns 404, if no such group exists."
+                          :description (mslurp (io/resource "md/admin-groups-put.md"))
+                          :middleware [wrap-authorize-admin!]
+                          :coercion reitit.coercion.schema/coercion
+                          :parameters {:path {:id s/Uuid}
+                                       :body schema_update-group}
+                          :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                           :body schema_export-group}
+                                      404 {:description "Not Found."
+                                           :body s/Any}}}}] ; TODO error handling
 
    ; groups-users/ring-routes
-   ["groups/:group-id/users" {:get {:summary "Get group users by id"
-                                    :description "Get group users by id. (zero-based paging)"
-                                    :content-type "application/json"
-                                    :handler group-users/handle_get-group-users
-                                    :coercion spec/coercion
-                                    :middleware [wrap-authorize-admin!]
-                                    :parameters {:query sp/schema_pagination_opt
-                                                 :path {:group-id uuid?}}
-                                    :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                     :body ::response-users-body}}}
+   ["groups/:group-id/users/" {:get {:summary "Get group users by id"
+                                     :description "Get group users by id. (zero-based paging)"
+                                     :content-type "application/json"
+                                     :handler group-users/handle_get-group-users
+                                     :coercion spec/coercion
+                                     :middleware [wrap-authorize-admin!]
+                                     :parameters {:query sp/schema_pagination_opt
+                                                  :path {:group-id uuid?}}
+                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                      :body ::response-users-body}}}
 
                               ; TODO works with tests, but not with the swagger ui
                               ; TODO: broken test / duplicate key issue
-                              :put {:summary "Update group users by group-id and list of users."
-                                    :description "Update group users by group-id and list of users."
-                                    :swagger {:consumes "application/json" :produces "application/json"}
-                                    :content-type "application/json"
-                                    :accept "application/json"
-                                    :handler group-users/handle_update-group-users
-                                    :coercion reitit.coercion.schema/coercion
-                                    :parameters {:path {:group-id s/Uuid}
-                                                 :body group-users/schema_update-group-user-list}
+                               :put {:summary "Update group users by group-id and list of users."
+                                     :description "Update group users by group-id and list of users."
+                                     :swagger {:consumes "application/json" :produces "application/json"}
+                                     :content-type "application/json"
+                                     :accept "application/json"
+                                     :handler group-users/handle_update-group-users
+                                     :coercion reitit.coercion.schema/coercion
+                                     :parameters {:path {:group-id s/Uuid}
+                                                  :body group-users/schema_update-group-user-list}
 
-                                    :responses {200 {:description "OK - Returns a list of group users OR an empty list."
-                                                     :body {:users [schema_export-group-min]}} ;groups/schema_export-group}
-                                                404 {:description "Not Found."
-                                                     :body {:message s/Str}}}}}]
+                                     :responses {200 {:description "OK - Returns a list of group users OR an empty list."
+                                                      :body {:users [schema_export-group-min]}} ;groups/schema_export-group}
+                                                 404 {:description "Not Found."
+                                                      :body {:message s/Str}}}}}]
 
    ["groups/:group-id/users/:user-id" {:get {:summary "Get group user by group-id and user-id"
                                              :description "- gid = uuid / institutional_id\n
@@ -360,4 +359,4 @@
                                                             406 (sd/create-error-message-response "Could not delete group-user." "")}}}] ; TODO error handling
    ])
 ;### Debug ####################################################################
-;(debug/debug-ns *ns*)
+(debug/debug-ns *ns*)

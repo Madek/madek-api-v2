@@ -23,7 +23,7 @@ shared_context :setup_admin_user do
   let!(:new_admin_user_id) do
     remove_all_audits
     expect_audit_entries_count(0, 0, 0)
-    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/admin/users", body: post_data)
+    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/admin/users/", body: post_data)
     expect(response.status).to eq(201)
     expect_audit_entries_count(1, 1, 1)
     response.body["id"]
@@ -61,7 +61,6 @@ describe "Admin/User API with authentication with created user" do
       expect(response.status).to eq(200)
       expect(response.body["last_name"]).to eq("new_last_name")
       expect(response.body["first_name"]).to eq("new_first_name")
-
       expect_audit_entries_count(1, 1, 1)
     end
   end
@@ -75,13 +74,13 @@ describe "Admin/User API with authentication with created user" do
     end
 
     it "verifies users response without pagination" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/users")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/users/")
       expect(response.status).to eq(200)
       expect(response.body["users"]).to be_a Array
     end
 
     it "verifies users response with pagination" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/users?page=1&size=5")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/users/?page=1&size=5")
       expect(response.status).to eq(200)
       expect(response.body["data"]).to be_a Array
       expect(response.body["pagination"]).to be_a Hash
@@ -150,7 +149,7 @@ describe "Admin/User API with authentication with created user" do
     end
 
     it "audits the POST request with unauthorized access" do
-      response = plain_faraday_json_client.post("/api-v2/admin/users") do |req|
+      response = plain_faraday_json_client.post("/api-v2/admin/users/") do |req|
         req.body = post_data.to_json
         req.headers["Content-Type"] = "application/json"
       end
@@ -205,7 +204,7 @@ describe "Admin/User API without authentication" do
 
   context "when attempting to create a user without authentication" do
     it "audits the POST request but does not create the user" do
-      response = plain_faraday_json_client.post("/api-v2/admin/users") do |req|
+      response = plain_faraday_json_client.post("/api-v2/admin/users/") do |req|
         req.body = post_data.to_json
         req.headers["Content-Type"] = "application/json"
       end

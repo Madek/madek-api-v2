@@ -78,6 +78,7 @@
               ext-data (when (and (:status resp) (>= (:status resp) 400) (:body resp))
                          (warn "Rolling back transaction because error status " (:status resp))
                          (warn "   Details: " (clojure.string/upper-case (name (:request-method request))) (fetch-data request))
+                         (warn resp)
                          (.rollback tx)
                          (handle-coercion-error request resp))
               resp (if ext-data

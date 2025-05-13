@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [logbug.debug :as debug]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [convert-map-if-exist]]
@@ -11,18 +12,22 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [error]]))
+   [taoensso.timbre :refer [error info spy]]))
 
-;#### create ##################################################################
+  ;#### create ##################################################################
 
-(defn handle-create-user [{{data :body} :parameters
-                           {auth-entity-id :id} :authenticated-entity
-                           tx :tx
-                           :as req}]
+(defn handle-create-user
+  [{{data :body} :parameters
+    {auth-entity-id :id} :authenticated-entity
+    tx :tx
+    :as req}]
+  (info "handle-create-user" {:request req})
   (try
     (let [data (-> data
+                   spy
                    convert-map-if-exist
-                   (assoc :creator_id auth-entity-id))
+                   (assoc :creator_id auth-entity-id)
+                   spy)
           query (-> (sql/insert-into :users)
                     (sql/values [data])
                     (sql/returning :*)
@@ -43,7 +48,7 @@
    (s/optional-key :institution) s/Str
    (s/optional-key :institutional_id) s/Str
    (s/optional-key :last_name) s/Str
-   (s/optional-key :login) s/Str
+   (s/optional-key :login) (s/maybe s/Str)
    (s/optional-key :password_sign_in_enabled) s/Bool
    (s/optional-key :notes) (s/maybe s/Str)
    (s/optional-key :settings) v/vector-or-hashmap-validation})
@@ -56,7 +61,7 @@
    :person_id s/Uuid
    :active_until s/Any
    :settings s/Any
-   :login s/Str
+   :login (s/maybe s/Str)
    :searchable s/Str
    :updated_at s/Any
    :updator_id (s/maybe s/Uuid)
@@ -91,4 +96,4 @@
              :produces "application/json"}})
 
 ;### Debug ####################################################################
-;(debug/debug-ns *ns*)
+(debug/debug-ns *ns*)
