@@ -9,7 +9,7 @@
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
-            [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.helper :refer [to-uuid gen-from-order-by]]
             [madek.api.utils.pagination :refer [pagination-handler]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -26,7 +26,8 @@
                      (sql/select :*)
                      (sql/select :media_resource_id))
         db-query (-> base-query
-                     (sql/from :full_texts)
+                     (gen-from-order-by :full_texts)
+                     ;(sql/order-by :text)
                      (dbh/build-query-param query-params :media_resource_id)
                      (dbh/build-query-param-like query-params :text))
         db-result (pagination-handler req db-query)]

@@ -5,10 +5,10 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [convert-groupid-userid]]
-   [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
+   [honey.sql.helpers :as sql]
    [schema.core :as s]
    [taoensso.timbre :refer [info]]))
 
@@ -50,11 +50,15 @@
 (defn group-user-query [group-id user-id]
   (-> ;(users/sql-select)
    (sql/select {} :users.id :users.institutional_id :users.email :users.person_id)
-   (sql/from :users)
+
+   (gen-from-order-by [:users [:users.id :asc] :groups_users.group_id :groups.name])
+
+   ;(sql/from :users)
    (sql/join :groups_users [:= :users.id :groups_users.user_id])
    (sql/join :groups [:= :groups.id :groups_users.group_id])
    (sql-merge-user-where-id user-id)
    (groups/sql-merge-where-id group-id)
+   ;(sql/order-by [:users.id :asc] :groups_users.group_id :groups.name)
    sql-format))
 
 (defn find-group-user [group-id user-id tx]
