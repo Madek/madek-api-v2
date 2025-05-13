@@ -2,12 +2,42 @@
   (:require [cheshire.core :as json]
             [honey.sql :refer [format] :rename {format sql-format}]
             [pghstore-clj.core :refer [to-hstore THstorable]]
-            [taoensso.timbre :refer [warn]])
+            [taoensso.timbre :refer [warn]]
+  [honey.sql.helpers :as sql]
+            )
   (:import (clojure.lang IPersistentMap)
            (java.util UUID)
            (org.postgresql.util PGobject)))
 
 (def LOAD-SWAGGER-DESCRIPTION-FROM-FILE true)
+
+; [madek.api.utils.helper :refer [gen-from-order-by]]
+(defn gen-from-order-by
+  "Dispatches on `table` with explicit clauses."
+
+  ([th table]
+  (case table
+    :admins        (-> th (sql/from table) (sql/order-by :login))
+
+    :groups_users  (-> th (sql/from table) (sql/order-by :name))
+    :users         (-> th (sql/from table) (sql/order-by :created_at))
+    :orders        (-> th (sql/from table) (sql/order-by :order_date))
+    ;; default:
+    (-> th (sql/from table) (sql/order-by :id)))
+  )
+
+  (  [th table & order-params]
+
+   (-> th
+       (sql/from table)
+       ;(sql/order-by default-col)
+       ;; now tack on any extras:
+       (cond-> (seq order-params)
+         (apply sql/order-by order-params)))))
+
+
+
+
 
 (defn strip-prefixes
   "Strips namespace prefixes from all keyword keys in a map."

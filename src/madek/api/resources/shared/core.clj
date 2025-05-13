@@ -5,7 +5,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.semver :as semver]
-            [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.helper :refer [to-uuid gen-from-order-by]]
             [next.jdbc :as jdbc]
             [schema.core :as s]
             [taoensso.timbre :refer [info]]))
@@ -168,7 +168,9 @@
               (jdbc/execute!
                tx
                (-> (sql/select :*)
-                   (sql/from :admins)
+                   (gen-from-order-by :admins)
+                   ;(sql/from :admins)
+                   ;(sql/order-by :login)
                    (sql/where [:= :user_id (to-uuid user-id)])
                    sql-format))
               empty?)
