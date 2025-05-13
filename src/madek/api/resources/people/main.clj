@@ -9,8 +9,8 @@
 
 (def user-routes
   ["/"
-   {:openapi {:tags ["people"]}}
-   ["people"
+   {:openapi {:tags ["people/"]}}
+   ["people/"
     {;:get index/route
      }]
    ["people/:id"
@@ -18,8 +18,8 @@
 
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/people"] :security ADMIN_AUTH_METHODS}}
-   ["people"
+   {:openapi {:tags ["admin/people/"] :security ADMIN_AUTH_METHODS}}
+   ["people/"
     {:get index/route
      :post create-person/route}]
    ["people/:id"

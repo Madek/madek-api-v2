@@ -2,6 +2,7 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [logbug.debug :as debug]
    [madek.api.utils.request :refer [query-params]]
    [next.jdbc.sql :as jdbc]
    [ring.middleware.accept]))
@@ -128,3 +129,5 @@
                (if wrap-name-of-result
                  {(keyword wrap-name-of-result) result}
                  result))))))
+
+(debug/debug-ns *ns*)

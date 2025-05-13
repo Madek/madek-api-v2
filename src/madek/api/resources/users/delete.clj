@@ -3,6 +3,7 @@
    [clj-uuid :as uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [logbug.debug :as debug]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.common :refer [wrap-find-user]]
    [madek.api.resources.users.get :as get-user]
@@ -42,5 +43,7 @@
    :parameters {:path {:id s/Str}}
    :responses {200 {:description "Deleted."
                     :body get-user/schema}
-               403 (sd/create-error-message-response "Forbidden." "References still exist")
+               422 (sd/create-error-message-response "Unprocessable Content" "References still exist")
                404 (sd/create-error-message-response "Not Found." "No such user.")}})
+
+(debug/debug-ns *ns*)

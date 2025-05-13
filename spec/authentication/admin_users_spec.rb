@@ -18,7 +18,7 @@ describe "Access users " do
 
     context "GET requests to admin/users" do
       it "allows access without pagination" do
-        url = "/api-v2/admin/users"
+        url = "/api-v2/admin/users/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -26,7 +26,7 @@ describe "Access users " do
       end
 
       it "allows access with pagination" do
-        url = "/api-v2/admin/users?page=1&size=5"
+        url = "/api-v2/admin/users/?page=1&size=5"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -37,7 +37,7 @@ describe "Access users " do
 
     context "GET requests to admin/users" do
       it "allows access without pagination" do
-        url = "/api-v2/admin/users"
+        url = "/api-v2/admin/users/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -45,7 +45,7 @@ describe "Access users " do
       end
 
       it "allows access with pagination" do
-        url = "/api-v2/admin/users?page=1&size=5"
+        url = "/api-v2/admin/users/?page=1&size=5"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)

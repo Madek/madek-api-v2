@@ -11,7 +11,7 @@ context "people" do
       describe "creating" do
         describe "a person" do
           it "works" do
-            expect(client.post("/api-v2/admin/people") do |req|
+            expect(client.post("/api-v2/admin/people/") do |req|
               # client.get.relation('people').post do |req|
               req.body = {last_name: "test",
                           subtype: "Person"}.to_json
@@ -22,7 +22,7 @@ context "people" do
 
         describe "an institutional person" do
           it "works" do
-            expect(client.post("/api-v2/admin/people") do |req|
+            expect(client.post("/api-v2/admin/people/") do |req|
               req.body = {first_name: nil,
                           last_name: "Bachelor",
                           pseudonym: "BA.alle",
@@ -31,14 +31,14 @@ context "people" do
               req.headers["Content-Type"] = "application/json"
             end.status).to be == 201
 
-            expect_audit_entries("POST /api-v2/admin/people", expected_audit_entries, 201)
+            expect_audit_entries("POST /api-v2/admin/people/", expected_audit_entries, 201)
           end
         end
       end
 
       describe "a via post created person" do
         let :created_person do
-          client.post("/api-v2/admin/people") do |req|
+          client.post("/api-v2/admin/people/") do |req|
             req.body = {subtype: "PeopleInstitutionalGroup",
                         institutional_id: "12345/x",
                         last_name: "test"}.to_json
@@ -52,7 +52,7 @@ context "people" do
           it "has the proper institutional_id" do
             expect(created_person.body["institutional_id"]).to be == "12345/x"
 
-            expect_audit_entries("POST /api-v2/admin/people", expected_audit_entries, 201)
+            expect_audit_entries("POST /api-v2/admin/people/", expected_audit_entries, 201)
           end
         end
       end

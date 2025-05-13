@@ -10,7 +10,8 @@
    [madek.api.utils.validation :as v]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [spec-tools.core :as st]))
+   [spec-tools.core :as st]
+   [taoensso.timbre :refer [error info spy]]))
 
 (s/defn valid-email?
   [email]
@@ -32,6 +33,7 @@
                     ::sp/institution
                     ::sp-nil/institutional_id
                     ::sp/is_admin
+                    ::sp-nil/active_until
                     ::sp/password_sign_in_enabled
                     ::sp-nil/last_name
                     ::sp-nil/last_signed_in_at
@@ -53,7 +55,9 @@
    ;:email (s/with-fn-validation valid-email? s/Str)
 
    ;(s/optional-key :email) email-validation ;; ?? TODO: invalid email?
-   (s/optional-key :email) s/Str
+   ; (s/optional-key :email) (s/maybe  s/Str)
+
+   :email (s/maybe s/Str)
 
    :first_name (s/maybe s/Str)
    :id s/Uuid
@@ -62,6 +66,7 @@
    :is_admin s/Bool
    :last_name (s/maybe s/Str)
    :last_signed_in_at (s/maybe s/Any)
+   :active_until (s/maybe s/Any)
    :login (s/maybe s/Str)
    :notes (s/maybe s/Str)
    :person_id s/Uuid

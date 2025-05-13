@@ -61,7 +61,8 @@
     (debug 'people result)
     {:status 200, :body result}))
 
-(sa/def ::people-query-def (sa/keys :opt-un [::sp/institution ::sp/institutional_id ::sp/subtype ::sp/page ::sp/size]))
+(sa/def ::people-query-def
+  (sa/keys :opt-un [::sp/institution ::sp/institutional_id ::sp/subtype ::sp/page ::sp/size]))
 
 (def route
   {:summary (sd/sum_adm "Get list of people ids.")

@@ -7,6 +7,7 @@
   (sa/or :nil nil? :value pred))
 
 (sa/def ::accepted_usage_terms_id (nil-or uuid?))
+(sa/def ::active_until (nil-or any?))
 (sa/def ::admin_comment (nil-or string?))
 (sa/def ::allowed_rdf_class (nil-or string?))
 (sa/def ::clipboard_user_id (nil-or uuid?))
