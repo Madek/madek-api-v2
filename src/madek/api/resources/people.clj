@@ -60,7 +60,8 @@
   (let [sel (if (true? full-data)
               (sql/select :*)
               (sql/select :id :subtype :first_name :last_name :searchable))]
-    (-> sel (sql/from :people))))
+    (-> sel (sql/from :people)
+        (sql/order-by [:searchable :asc] [:created_at :desc]))))
 
 (defn build-index-query
   [query-params]

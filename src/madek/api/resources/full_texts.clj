@@ -27,6 +27,7 @@
                      (sql/select :media_resource_id))
         db-query (-> base-query
                      (sql/from :full_texts)
+                     (sql/order-by [:text :asc] [:media_resource_id :asc])
                      (dbh/build-query-param query-params :media_resource_id)
                      (dbh/build-query-param-like query-params :text))
         db-result (pagination-handler req db-query)]

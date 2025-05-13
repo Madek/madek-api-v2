@@ -22,6 +22,7 @@
        (when-let [resource (jdbc/execute-one! tx
                                               (-> (sql/select :*)
                                                   (sql/from (keyword table-name))
+                                                  (sql/order-by [:created_at :desc] [:id :asc])
                                                   (sql/where [:= :id (to-uuid id)])
                                                   ->non-soft-deleted
                                                   sql-format))]

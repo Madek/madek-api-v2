@@ -9,8 +9,7 @@
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
-            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.helper :refer [f mslurp]]
@@ -84,10 +83,11 @@
 ; TODO test query and paging
 (defn build-index-query [req]
   (let [query-params (-> req :parameters :query)
-        base-query (-> (sql/select :*)
+        base-query (-> (if (:full_data query-params)
+                         (sql/select :*)
+                         (sql/select :id))
                        (sql/from :groups)
-                       (sql/order-by [:id :asc])
-                       (dbh/build-query-param query-params :created_by_user_id)
+                       (sql/order-by [:name :asc] [:id :asc])
                        (dbh/build-query-param query-params :id)
                        (dbh/build-query-param query-params :institution)
                        (dbh/build-query-param query-params :institutional_id)

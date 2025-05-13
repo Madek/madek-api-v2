@@ -4,8 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [wrap-authorize-admin! ADMIN_AUTH_METHODS]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -23,7 +22,8 @@
         col-sel (if (true? (-> req :parameters :query :full-data))
                   (sql/select :*)
                   (sql/select :group_id))
-        base-query (-> col-sel (sql/from :delegations_groups))
+        base-query (-> col-sel (sql/from :delegations_groups)
+                       (sql/order-by [:delegation_id :asc] [:group_id :asc]))
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 group_id (sql/where [:= :group_id group_id]))
