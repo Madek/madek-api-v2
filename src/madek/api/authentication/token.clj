@@ -25,6 +25,7 @@
                        [:revoked :token_revoked]
                        [:description :token_description])
            (sql/from :api_tokens)
+           (sql/order-by [:users.id :asc] [:api_tokens.id :asc])
            (sql/where [:in :api_tokens.token_hash
                        (->> secrets
                             (filter identity)

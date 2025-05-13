@@ -42,7 +42,8 @@
 
 (def base-query
   (-> (apply sql/select people-select-keys)
-      (sql/from :people)))
+      (sql/from :people)
+      (sql/order-by [:institutional_id :asc] [:id :asc])))
 
 (defn person-query [uid]
   (-> base-query

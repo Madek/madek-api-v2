@@ -16,6 +16,7 @@
   [id tx]
   (let [query (-> (sql/select :key_map, :io_interface_id)
                   (sql/from :io_mappings)
+                  (sql/order-by [:meta_key_id :asc] [:io_interface_id :asc])
                   (sql/where [:= :io_mappings.meta_key_id id])
                   (sql-format))]
     (jdbc/execute! tx query)))
@@ -37,8 +38,9 @@
 
 (defn build-meta-key-query [id]
   (-> (sql/select :*)
-      (sql/from :meta-keys)
-      (sql/where [:= :meta-keys.id id])
+      (sql/from :meta_keys)
+      (sql/order-by [:vocabulary_id :asc] [:id :asc])
+      (sql/where [:= :meta_keys.id id])
       (sql-format)))
 
 ;(defn get-meta-key [request]

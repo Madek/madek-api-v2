@@ -14,7 +14,6 @@
     (let [query (-> sqlmap
                     (sql/where [:= :media_type "image"]
                                [:= :thumbnail "large"])
-                    (sql/order-by [:previews.filename :asc] [:previews.created_at :desc])
                     sql-format)]
       (let [previews (jdbc/execute! tx query)]
         (:id (get-first-or-30-percent previews))))
@@ -29,7 +28,7 @@
                    (sql/join [:media_files :media_files] [:= :previews.media_file_id :media_files.id])
                    (sql/join [:media_entries :media_entries] [:= :media_entries.id :media_files.media_entry_id])
                    (sql/where [:= :previews.media_file_id (:id media-file)])
-                   (sql/order-by [:previews.created_at :desc]))]
+                   (sql/order-by [:previews.id :asc] [:media_files.id :asc]))]
     (let [detected-id (detect-ui-preview-id sqlmap (:media_type media-file) tx)]
       (add-preview-pointer-to
        (jdbc/execute! tx (-> sqlmap sql-format))

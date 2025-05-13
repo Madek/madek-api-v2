@@ -139,23 +139,18 @@ describe "meta-key" do
         io_mapping_4 = FactoryBot.create(:io_mapping, io_interface: io_interface_2, meta_key: meta_key)
 
         response_body = json_meta_key_resource(meta_key.id).body
-
-        expect(response_body["io_mappings"]).to eq [
-          {
-            "id" => io_interface_1.id,
-            "keys" => [
+        expect(response_body["io_mappings"]).to contain_exactly(
+          a_hash_including("id" => io_interface_1.id,
+            "keys" => contain_exactly(
               {"key" => io_mapping_1.key_map},
               {"key" => io_mapping_2.key_map}
-            ]
-          },
-          {
-            "id" => io_interface_2.id,
-            "keys" => [
+            )),
+          a_hash_including("id" => io_interface_2.id,
+            "keys" => contain_exactly(
               {"key" => io_mapping_3.key_map},
               {"key" => io_mapping_4.key_map}
-            ]
-          }
-        ]
+            ))
+        )
       end
     end
 

@@ -25,13 +25,14 @@
                    (apply sql/select fields))]
     (-> toselect
         (sql/from :collections)
+        (sql/order-by [:id :asc])
         (cond-> (= softdelete-mode :deleted) (soft-deleted "collections"))
         (cond-> (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted "collections")))))
 
 (defn- set-order [query query-params]
   (if (some #{"desc"} [(-> query-params :order)])
-    (-> query (sql/order-by [:collections.created_at :desc]))
-    (-> query (sql/order-by [:collections.created_at :asc]))))
+    (-> query (sql/order-by [:collections.id :desc]))
+    (-> query (sql/order-by [:collections.id :asc]))))
 
 ; TODO test query and paging
 (defn- build-query [request]
