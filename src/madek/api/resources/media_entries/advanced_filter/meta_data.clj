@@ -135,7 +135,12 @@
                  (map #(let [resource_table (get-in match-columns [% :table])]
                          [:exists
                           (-> (sql/select true)
-                              (sql/from (keyword resource_table))
+                              ;(sql/from (keyword resource_table))
+
+
+                              (gen-from-order-by (keyword resource_table))
+
+
                               (sql/join (keyword %)
                                         [:=
                                          (keyword (str % "." (get-in match-columns [% :resource]) "_id"))
