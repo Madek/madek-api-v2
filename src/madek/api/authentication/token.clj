@@ -29,7 +29,6 @@
 
            (gen-from-order-by :api_tokens)
 
-
            (sql/where [:in :api_tokens.token_hash
                        (->> secrets
                             (filter identity)

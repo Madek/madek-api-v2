@@ -6,10 +6,10 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.collection-media-entry-arcs :refer [schema_collection-collection-arc-export]]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.helper :refer [to-uuid]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
@@ -40,7 +40,6 @@
       ;(sql/from :collection_collection_arcs)
       (gen-from-order-by :collection_collection_arcs)
 
-
       (sql/where [:= :parent_id (-> req :parameters :path :parent_id)])
       (sql/where [:= :child_id (-> req :parameters :path :child_id)])
       sql-format))
@@ -57,7 +56,6 @@
 
       ;(sql/from :collection_collection_arcs)
       (gen-from-order-by :collection_collection_arcs)
-
 
       (dbh/build-query-param query-params :child_id)
       (dbh/build-query-param query-params :parent_id)))

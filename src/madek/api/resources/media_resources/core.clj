@@ -1,8 +1,8 @@
 (ns madek.api.resources.media-resources.core
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [honey.sql.helpers :as sql]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]))
 
 (defn user-table
@@ -30,7 +30,6 @@
                               ;(sql/from (keyword mr-table))
                               (gen-from-order-by (keyword mr-table))
 
-
                               (sql/where [:= :id mr-id]) (sql-format))))))
 
 (defn build-user-permissions-query
@@ -40,9 +39,7 @@
       ;(sql/from (user-table mr-type))
       (gen-from-order-by (user-table mr-type))
 
-
-
-      ;[madek.api.utils.helper :refer [gen-from-order-by]]
+;[madek.api.utils.helper :refer [gen-from-order-by]]
 
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :user_id user-id]
@@ -67,7 +64,6 @@
       ;(sql/from (user-table mr-type))
       (gen-from-order-by (user-table mr-type))
 
-
       (sql/where [:= (resource-key mr-type) media-resource-id])
       (sql-format)))
 
@@ -76,7 +72,6 @@
 
       ;(sql/from :groups)
       (gen-from-order-by :groups)
-
 
       (sql/join :groups_users [:= :groups.id :groups_users.group_id])
       (sql/where [:= :groups_users.user_id user-id])
@@ -92,7 +87,6 @@
 
       ;(sql/from (group-table mr-type))
       (gen-from-order-by (group-table mr-type))
-
 
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:in :group_id group-ids]

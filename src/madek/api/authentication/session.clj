@@ -4,11 +4,12 @@
    [buddy.core.hash :as hash]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.config :refer [get-config]]
+   [madek.api.utils.config :refer [get-config
+                                   parse-config-duration-to-seconds]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]
    [pandect.core]
    [taoensso.timbre :refer [debug]]))

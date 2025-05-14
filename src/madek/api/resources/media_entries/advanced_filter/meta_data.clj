@@ -137,9 +137,7 @@
                           (-> (sql/select true)
                               ;(sql/from (keyword resource_table))
 
-
                               (gen-from-order-by (keyword resource_table))
-
 
                               (sql/join (keyword %)
                                         [:=

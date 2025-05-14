@@ -4,10 +4,10 @@
    [honey.sql.helpers :as sql]
    [madek.api.constants :as constants]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.vocabularies.permissions :as permissions]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]))
 
 ; TODO error if user-id is undefined (public)

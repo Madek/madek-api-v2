@@ -5,8 +5,8 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -26,9 +26,8 @@
                   (sql/select :group_id))
         base-query (-> col-sel
                        ;(sql/from :delegations_groups)
-                       (gen-from-order-by :delegations_groups)
+                       (gen-from-order-by :delegations_groups))
 
-                       )
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 group_id (sql/where [:= :group_id group_id]))

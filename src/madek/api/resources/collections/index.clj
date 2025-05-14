@@ -27,7 +27,6 @@
         ;(sql/from :collections)
         (gen-from-order-by :collections)
 
-
         (cond-> (= softdelete-mode :deleted) (soft-deleted "collections"))
         (cond-> (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted "collections")))))
 

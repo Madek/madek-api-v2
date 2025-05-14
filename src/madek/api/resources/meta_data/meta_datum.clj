@@ -5,8 +5,8 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.keywords.index :as keywords]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [to-uuid]]
    [madek.api.utils.helper :refer [gen-from-order-by]]
+   [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
    [ring.util.response :as ring-response]
    [taoensso.timbre :refer [info]]))
@@ -54,7 +54,6 @@
 
                   ;(sql/from :meta_data_roles)
                   (gen-from-order-by :meta_data_roles)
-
 
                   (sql/where [:= :meta_data_roles.id (to-uuid id)])
                   sql-format)]

@@ -10,7 +10,6 @@
 
 (def LOAD-SWAGGER-DESCRIPTION-FROM-FILE true)
 
-
 ;(defmacro gen-from-order-by-multiple
 ;  "Generates a threaded call to `(sql/from ...)` then `(sql/order-by ...)`"
 ;  [th table & attrs]
@@ -30,7 +29,7 @@
      :admins (-> th (sql/from table) (sql/order-by :user_id))
      :full_texts (-> th (sql/from table) (sql/order-by :text))
 
-     :groups_users (-> th (sql/from table) (sql/order-by :name))
+     :groups_users (-> th (sql/from table) (sql/order-by :group_id))
      :groups (-> th (sql/from table) (sql/order-by [:id :asc]))
      ;:users (-> th (sql/from table) (sql/order-by :login))
      :users (-> th (sql/from table) (sql/order-by [:users.id :asc]))
@@ -53,20 +52,20 @@
 
      :collections (-> th (sql/from table) (sql/order-by :id))
      :vocabularies (-> th (sql/from table) (sql/order-by :id))
-     :keywords (-> th (sql/from table) (sql/order-by        :term))
-     :media_entries (-> th (sql/from table) (sql/order-by        :id))
-     :roles (-> th (sql/from table) (sql/order-by        :id))
-     :people (-> th (sql/from table) (sql/order-by        :searchable))
+     :keywords (-> th (sql/from table) (sql/order-by :term))
+     :media_entries (-> th (sql/from table) (sql/order-by :id))
+     :roles (-> th (sql/from table) (sql/order-by :id))
+     :people (-> th (sql/from table) (sql/order-by :searchable))
 
-     :vocabulary_user_permissions (-> th (sql/from table) (sql/order-by        :vocabulary_id))
-     :vocabulary_group_permissions (-> th (sql/from table) (sql/order-by        :vocabulary_id))
-     :meta_data_roles (-> th (sql/from table) (sql/order-by        :person_id))
-     :custom_urls (-> th (sql/from table) (sql/order-by        :id))
+     :vocabulary_user_permissions (-> th (sql/from table) (sql/order-by :vocabulary_id))
+     :vocabulary_group_permissions (-> th (sql/from table) (sql/order-by :vocabulary_id))
+     :meta_data_roles (-> th (sql/from table) (sql/order-by :person_id))
+     :custom_urls (-> th (sql/from table) (sql/order-by :id))
      ;:previews (-> th (sql/from table) (sql/order-by        :media_file_id))
-     :previews (-> th (sql/from table) (sql/order-by        [:created_at :desc]))
+     :previews (-> th (sql/from table) (sql/order-by [:created_at :desc]))
 
-     :meta_keys (-> th (sql/from table) (sql/order-by        :id))
-     :io_mappings (-> th (sql/from table) (sql/order-by        :id))
+     :meta_keys (-> th (sql/from table) (sql/order-by :id))
+     :io_mappings (-> th (sql/from table) (sql/order-by :id))
 
      ;; default:
      (-> th (sql/from table) (sql/order-by :id))))
@@ -100,16 +99,12 @@
   ;
   ;
   ;     ))
-
-
   )
-
-
 (defmacro gen-from-order-by-multiple
   "Generates a threaded call to `(sql/from ...)` then `(sql/order-by ...)`"
   [th table & attrs]
   `(-> ~th
-       (sql/from  ~table)
+       (sql/from ~table)
        (sql/order-by ~@attrs)))
 
 (defn strip-prefixes

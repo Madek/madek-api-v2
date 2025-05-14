@@ -2,8 +2,8 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.authorization :refer [authorized?]]
-            [madek.api.utils.helper :refer [to-uuid]]
             [madek.api.utils.helper :refer [gen-from-order-by]]
+            [madek.api.utils.helper :refer [to-uuid]]
             [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error warn]]))
