@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.media-resources.core :as c]
    [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
 
@@ -15,7 +16,12 @@
 
   ([mr-id mr-table tx]
    (-> (jdbc/execute-one! tx
-                          (-> (sql/select :*) (sql/from (keyword mr-table)) (sql/where [:= :id mr-id]) (sql-format))))))
+                          (-> (sql/select :*)
+
+                              ;(sql/from (keyword mr-table))
+                              (gen-from-order-by (keyword mr-table))
+
+                              (sql/where [:= :id mr-id]) (sql-format))))))
 
 ; TODO try catch logwrite
 (defn update-resource-permissions

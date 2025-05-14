@@ -36,7 +36,11 @@
 (defn build-user-permissions-query
   [media-resource-id user-id perm-name mr-type]
   (-> (sql/select :*)
-      (sql/from (user-table mr-type))
+
+      ;(sql/from (user-table mr-type))
+      (gen-from-order-by (user-table mr-type))
+
+
 
       ;[madek.api.utils.helper :refer [gen-from-order-by]]
 
@@ -48,7 +52,10 @@
 (defn build-user-permission-get-query
   [media-resource-id mr-type user-id]
   (-> (sql/select :*)
-      (sql/from (user-table mr-type))
+
+      ;(sql/from (user-table mr-type))
+      (gen-from-order-by (user-table mr-type))
+
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :user_id user-id])
       (sql-format)))
@@ -56,13 +63,21 @@
 (defn build-user-permission-list-query
   [media-resource-id mr-type]
   (-> (sql/select :*)
-      (sql/from (user-table mr-type))
+
+      ;(sql/from (user-table mr-type))
+      (gen-from-order-by (user-table mr-type))
+
+
       (sql/where [:= (resource-key mr-type) media-resource-id])
       (sql-format)))
 
 (defn build-user-groups-query [user-id]
   (-> (sql/select :groups.*)
-      (sql/from :groups)
+
+      ;(sql/from :groups)
+      (gen-from-order-by :groups)
+
+
       (sql/join :groups_users [:= :groups.id :groups_users.group_id])
       (sql/where [:= :groups_users.user_id user-id])
       (sql-format)))
@@ -74,7 +89,11 @@
 (defn build-group-permissions-query
   [media-resource-id group-ids perm-name mr-type]
   (-> (sql/select :*)
-      (sql/from (group-table mr-type))
+
+      ;(sql/from (group-table mr-type))
+      (gen-from-order-by (group-table mr-type))
+
+
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:in :group_id group-ids]
                  [:= perm-name true])
@@ -83,7 +102,10 @@
 (defn build-group-permission-get-query
   [media-resource-id mr-type group-id]
   (-> (sql/select :*)
-      (sql/from (group-table mr-type))
+
+      ;(sql/from (group-table mr-type))
+      (gen-from-order-by (group-table mr-type))
+
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :group_id group-id])
       (sql-format)))
@@ -91,7 +113,10 @@
 (defn build-group-permission-list-query
   [media-resource-id mr-type]
   (-> (sql/select :*)
-      (sql/from (group-table mr-type))
+
+      ;(sql/from (group-table mr-type))
+      (gen-from-order-by (group-table mr-type))
+
       (sql/where [:= (resource-key mr-type) media-resource-id])
       (sql-format)))
 
@@ -99,7 +124,10 @@
 
 (defn delegation-ids [user_id tx]
   (let [query {:union [(-> (sql/select :delegation_id)
-                           (sql/from :delegations_groups)
+
+                           ;(sql/from :delegations_groups)
+                           (gen-from-order-by :delegations_groups)
+
                            (sql/where [:in :delegations_groups.group_id (->
                                                                          (sql/select :group_id)
                                                                          (sql/from :groups_users)
