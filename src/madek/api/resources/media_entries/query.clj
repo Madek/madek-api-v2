@@ -65,7 +65,7 @@
 
 ; TODO updated/created after
 ;        from (sql/from where4 :media_entries)
-        from (-> (gen-from-order-by :media_entries) where4)
+        from (-> where4 (gen-from-order-by :media_entries) )
 
 
         ]
