@@ -3,6 +3,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.authorization :refer [authorized?]]
             [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.helper :refer [gen-from-order-by]]
             [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [error warn]]))
@@ -21,7 +22,10 @@
        ;(info "get-media-resource" "\nid\n" id)
        (when-let [resource (jdbc/execute-one! tx
                                               (-> (sql/select :*)
-                                                  (sql/from (keyword table-name))
+
+                                                  ;(sql/from (keyword table-name))
+                                                  (gen-from-order-by (keyword table-name))
+
                                                   (sql/where [:= :id (to-uuid id)])
                                                   ->non-soft-deleted
                                                   sql-format))]

@@ -6,6 +6,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.collection-media-entry-arcs :refer [schema_collection-collection-arc-export]]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]

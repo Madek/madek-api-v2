@@ -11,6 +11,7 @@
    [madek.api.resources.confidential-links :as confidential-links]
    [madek.api.resources.context-keys :as context_keys]
    [madek.api.resources.contexts :as contexts]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.custom-urls :as custom-urls]
    [madek.api.resources.delegations :as delegations]
    [madek.api.resources.delegations-groups :as delegations_groups]

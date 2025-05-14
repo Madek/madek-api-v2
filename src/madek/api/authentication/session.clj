@@ -4,6 +4,7 @@
    [buddy.core.hash :as hash]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]

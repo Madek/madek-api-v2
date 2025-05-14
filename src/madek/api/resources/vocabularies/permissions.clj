@@ -4,6 +4,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [to-uuid]]
@@ -19,7 +20,10 @@
   (if (nil? user-id)
     '()
     (let [query (-> (sql/select-distinct :group_id)
-                    (sql/from :groups_users)
+
+                    ;(sql/from :groups_users)
+                    (gen-from-order-by :groups_users)
+
                     (sql/where [:= :groups_users.user_id (to-uuid user-id)])
                     sql-format)]
       (map :group_id (execute-query query tx)))))

@@ -7,6 +7,7 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]

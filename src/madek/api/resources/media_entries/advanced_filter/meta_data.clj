@@ -2,6 +2,7 @@
   (:require
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.meta-key :as meta-key]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -124,7 +125,10 @@
      (cons :or
            (into [[:exists
                    (-> (sql/select true)
-                       (sql/from :meta_data)
+
+                       ;(sql/from :meta_data)
+                       (gen-from-order-by :meta_data)
+
                        (sql/where [:= :meta_data.media_entry_id :media_entries.id]
                                   (sql-raw-text-search "meta_data.string"
                                                        search-string)))]]

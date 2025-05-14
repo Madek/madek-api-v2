@@ -3,6 +3,7 @@
    [clojure.string :as str]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [madek.api.utils.pagination :refer [pagination-handler]]
@@ -20,7 +21,9 @@
 (defn- base-query
   ([user-id query-params tx]
    (-> (sql/select :*)
-       (sql/from :vocabularies)
+       ;(sql/from :vocabularies)
+       (gen-from-order-by :vocabularies)
+
        (sql/where (where-clause user-id tx))))
   ([user-id query-params request tx]
    (let [is_admin_endpoint (str/includes? (-> request :uri) "/admin/")
@@ -28,7 +31,9 @@
                   (sql/select :*)
                   (sql/select :id :admin_comment :position :labels :descriptions))]
      (-> select
-         (sql/from :vocabularies)
+         ;(sql/from :vocabularies)
+         (gen-from-order-by :vocabularies)
+
          (sql/where (where-clause user-id tx))))))
 
 (defn transform_ml [vocab]

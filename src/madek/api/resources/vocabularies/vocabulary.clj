@@ -4,6 +4,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
 
@@ -36,7 +37,10 @@
 
 (defn build-vocabulary-query [id user-id tx]
   (-> (sql/select :*)
-      (sql/from :vocabularies)
+
+      ;(sql/from :vocabularies)
+      (gen-from-order-by :vocabularies)
+
       (sql/where (where-clause id user-id tx))
       (sql-format)))
 

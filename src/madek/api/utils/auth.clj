@@ -3,6 +3,7 @@
    [clj-uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]))
 
 (def ADMIN_AUTH_METHODS [{"apiAuth" []} {"csrfToken" []}])

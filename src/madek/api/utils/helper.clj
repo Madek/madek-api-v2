@@ -46,7 +46,19 @@
 
      :delegations_groups (-> th (sql/from table) (sql/order-by :delegation_id))
      :delegations_users (-> th (sql/from table) (sql/order-by :delegation_id))
-    ;; default:
+
+     :context_keys (-> th (sql/from table) (sql/order-by :context_id))
+     :contexts (-> th (sql/from table) (sql/order-by :id))
+
+     :collections (-> th (sql/from table) (sql/order-by :id))
+     :vocabularies (-> th (sql/from table) (sql/order-by :id))
+     :keywords (-> th (sql/from table) (sql/order-by        :term))
+     :media_entries (-> th (sql/from table) (sql/order-by        :id))
+     :roles (-> th (sql/from table) (sql/order-by        :id))
+     :people (-> th (sql/from table) (sql/order-by        :searchable))
+
+
+     ;; default:
      (-> th (sql/from table) (sql/order-by :id))))
 
   ;([th table & third-attr]
