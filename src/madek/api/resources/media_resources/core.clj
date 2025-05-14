@@ -1,6 +1,7 @@
 (ns madek.api.resources.media-resources.core
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [honey.sql.helpers :as sql]
    [next.jdbc :as jdbc]))
 
@@ -24,12 +25,21 @@
 
   ([mr-id mr-table tx]
    (-> (jdbc/execute-one! tx
-                          (-> (sql/select :*) (sql/from (keyword mr-table)) (sql/where [:= :id mr-id]) (sql-format))))))
+                          (-> (sql/select :*)
+
+                              ;(sql/from (keyword mr-table))
+                              (gen-from-order-by (keyword mr-table))
+
+
+                              (sql/where [:= :id mr-id]) (sql-format))))))
 
 (defn build-user-permissions-query
   [media-resource-id user-id perm-name mr-type]
   (-> (sql/select :*)
       (sql/from (user-table mr-type))
+
+      ;[madek.api.utils.helper :refer [gen-from-order-by]]
+
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :user_id user-id]
                  [:= perm-name true])

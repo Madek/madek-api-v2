@@ -2,6 +2,9 @@
   (:require
    [clj-uuid :as uuid :refer [as-uuid]]
    [honey.sql :refer [format] :rename {format sql-format}]
+
+   [madek.api.utils.helper :refer [gen-from-order-by]]
+
    [honey.sql.helpers :as sql]
    [madek.api.utils.json :as json]
    [next.jdbc :as jdbc]))
@@ -45,7 +48,7 @@
       ;(sql/from :people
         (gen-from-order-by :people)
 
-        )))
+        ))
 
 (defn person-query [uid]
   (-> base-query

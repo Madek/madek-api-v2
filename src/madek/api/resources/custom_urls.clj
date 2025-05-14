@@ -3,6 +3,9 @@
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
             [madek.api.resources.shared.core :as sd]
+
+            [madek.api.utils.helper :refer [gen-from-order-by]]
+
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [next.jdbc :as jdbc]

@@ -3,6 +3,8 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.vocabularies.permissions :as permissions]
+   [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by gen-from-order-by-multiple]]
+
    [taoensso.timbre :refer [info]]))
 
 (defn- where-clause
