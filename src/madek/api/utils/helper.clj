@@ -37,6 +37,7 @@
      :orders (-> th (sql/from table) (sql/order-by :order_date))
 
      :user_sessions (-> th (sql/from table) (sql/order-by :id))
+     :edit_sessions (-> th (sql/from table) (sql/order-by :id))
      :api_tokens (-> th (sql/from table) (sql/order-by :id))
      :app_settings (-> th (sql/from table) (sql/order-by :section_meta_key_id))
      :meta_data (-> th (sql/from table) (sql/order-by :media_entry_id))
@@ -57,6 +58,16 @@
      :roles (-> th (sql/from table) (sql/order-by        :id))
      :people (-> th (sql/from table) (sql/order-by        :searchable))
 
+     :vocabulary_user_permissions (-> th (sql/from table) (sql/order-by        :vocabulary_id))
+     :vocabulary_group_permissions (-> th (sql/from table) (sql/order-by        :vocabulary_id))
+     :meta_data_roles (-> th (sql/from table) (sql/order-by        :person_id))
+     :custom_urls (-> th (sql/from table) (sql/order-by        :id))
+     ;:previews (-> th (sql/from table) (sql/order-by        :media_file_id))
+     :previews (-> th (sql/from table) (sql/order-by        [:created_at :desc]))
+
+     :meta_data_roles (-> th (sql/from table) (sql/order-by        :person_id))
+     :meta_keys (-> th (sql/from table) (sql/order-by        :id))
+     :io_mappings (-> th (sql/from table) (sql/order-by        :id))
 
      ;; default:
      (-> th (sql/from table) (sql/order-by :id))))

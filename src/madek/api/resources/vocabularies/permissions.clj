@@ -39,7 +39,10 @@
    (if (str/blank? (str user-id))
      nil
      (-> (sql/select :vocabulary_id)
-         (sql/from :vocabulary_user_permissions)
+
+         ;(sql/from :vocabulary_user_permissions)
+         (gen-from-order-by :vocabulary_user_permissions)
+
          (sql/where
           [:= :vocabulary_user_permissions.user_id (to-uuid user-id)]
           [:= (keyword (apply str "vocabulary_user_permissions." acc-type)) true])
@@ -59,7 +62,11 @@
      (if (empty? groups-ids-result)
        nil
        (-> (sql/select :vocabulary_id)
-           (sql/from :vocabulary_group_permissions)
+
+           ;(sql/from :vocabulary_group_permissions)
+           (gen-from-order-by :vocabulary_group_permissions)
+
+
            (sql/where
             [:in :vocabulary_group_permissions.group_id groups-ids-result]
             [:= (keyword (apply str "vocabulary_group_permissions." acc-type)) true])

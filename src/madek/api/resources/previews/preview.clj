@@ -10,7 +10,10 @@
 
 (defn db-get-preview [id tx]
   (let [query (-> (sql/select :*)
-                  (sql/from :previews)
+
+                  ;(sql/from :previews)
+                  (gen-from-order-by :previews)
+
                   (sql/where [:= :previews.id id])
                   sql-format)]
     (jdbc/execute-one! tx query)))

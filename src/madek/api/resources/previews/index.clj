@@ -25,11 +25,15 @@
 
 (defn get-index [media-file tx]
   (let [sqlmap (-> (sql/select :previews.*)
-                   (sql/from [:previews :previews])
+
+                   ;(sql/from [:previews :previews])
+                   (gen-from-order-by-multiple [:previews :previews] [:previews.created_at :desc] )
+
                    (sql/join [:media_files :media_files] [:= :previews.media_file_id :media_files.id])
                    (sql/join [:media_entries :media_entries] [:= :media_entries.id :media_files.media_entry_id])
                    (sql/where [:= :previews.media_file_id (:id media-file)])
-                   (sql/order-by [:previews.created_at :desc]))]
+                   ;(sql/order-by [:previews.created_at :desc])
+                   )]
     (let [detected-id (detect-ui-preview-id sqlmap (:media_type media-file) tx)]
       (add-preview-pointer-to
        (jdbc/execute! tx (-> sqlmap sql-format))

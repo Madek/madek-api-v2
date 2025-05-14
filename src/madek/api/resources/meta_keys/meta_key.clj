@@ -15,7 +15,11 @@
 (defn- get-io-mappings
   [id tx]
   (let [query (-> (sql/select :key_map, :io_interface_id)
-                  (sql/from :io_mappings)
+
+                  ;(sql/from :io_mappings)
+                  (gen-from-order-by :io_mappings)
+
+
                   (sql/where [:= :io_mappings.meta_key_id id])
                   (sql-format))]
     (jdbc/execute! tx query)))
@@ -37,7 +41,9 @@
 
 (defn build-meta-key-query [id]
   (-> (sql/select :*)
-      (sql/from :meta-keys)
+      ;(sql/from :meta-keys)
+      (gen-from-order-by :meta-keys)
+
       (sql/where [:= :meta-keys.id id])
       (sql-format)))
 
