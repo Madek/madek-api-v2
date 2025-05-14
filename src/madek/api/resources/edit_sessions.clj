@@ -24,7 +24,9 @@
                   (sql/select :*)
                   (sql/select :id))]
     (-> col-sel
-        (sql/from :edit_sessions)
+        ;(sql/from :edit_sessions)
+        (gen-from-order-by :edit_sessions)
+
         (dbh/build-query-param query-params :id)
         (dbh/build-query-param query-params :user_id)
         (dbh/build-query-param query-params :collection_id)

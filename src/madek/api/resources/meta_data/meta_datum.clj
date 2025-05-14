@@ -40,7 +40,10 @@
 (defn find-meta-data-roles
   [meta-datum tx]
   (let [query (-> (sql/select :meta_data_roles.*)
-                  (sql/from :meta_data_roles)
+
+                  ;(sql/from :meta_data_roles)
+                  (gen-from-order-by :meta_data_roles)
+
                   (sql/where [:= :meta_data_roles.meta_datum_id (:id meta-datum)])
                   sql-format)]
     (jdbc/execute! tx query)))
@@ -48,7 +51,11 @@
 (defn- find-meta-datum-role
   [id tx]
   (let [query (-> (sql/select :meta_data_roles.*)
-                  (sql/from :meta_data_roles)
+
+                  ;(sql/from :meta_data_roles)
+                  (gen-from-order-by :meta_data_roles)
+
+
                   (sql/where [:= :meta_data_roles.id (to-uuid id)])
                   sql-format)]
     (jdbc/execute-one! tx query)))

@@ -15,7 +15,9 @@
                   (sql/select :*)
                   (sql/select :id, :media_entry_id, :collection_id))]
     (-> col-sel
-        (sql/from :custom_urls)
+        ;(sql/from :custom_urls)
+        (gen-from-order-by :custom_urls)
+
         (dbh/build-query-param-like query-params :id)
         (dbh/build-query-param query-params :collection_id)
         (dbh/build-query-param query-params :media_entry_id)

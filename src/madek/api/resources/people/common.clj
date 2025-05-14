@@ -42,7 +42,10 @@
 
 (def base-query
   (-> (apply sql/select people-select-keys)
-      (sql/from :people)))
+      ;(sql/from :people
+        (gen-from-order-by :people)
+
+        )))
 
 (defn person-query [uid]
   (-> base-query
