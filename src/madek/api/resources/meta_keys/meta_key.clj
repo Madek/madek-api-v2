@@ -1,6 +1,7 @@
 (ns madek.api.resources.meta-keys.meta-key
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [honey.sql.helpers :as sql]
    [next.jdbc :as jdbc]))
 

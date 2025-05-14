@@ -65,7 +65,6 @@
      ;:previews (-> th (sql/from table) (sql/order-by        :media_file_id))
      :previews (-> th (sql/from table) (sql/order-by        [:created_at :desc]))
 
-     :meta_data_roles (-> th (sql/from table) (sql/order-by        :person_id))
      :meta_keys (-> th (sql/from table) (sql/order-by        :id))
      :io_mappings (-> th (sql/from table) (sql/order-by        :id))
 
