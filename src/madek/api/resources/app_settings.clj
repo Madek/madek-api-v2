@@ -34,7 +34,10 @@
 
 (defn db-get-app-settings [tx]
   (-> (sql/select :*)
-      (sql/from :app_settings)
+
+      (gen-from-order-by :app_settings)
+
+      ;(sql/from :app_settings)
       sql-format
       ((partial jdbc/execute-one! tx))))
 

@@ -22,7 +22,9 @@
 
 (defn- get-user [user-id tx]
   (when-let [user (jdbc/execute-one! tx (-> (sql/select :*)
-                                            (sql/from :users)
+                                            ;(sql/from :users)
+                                            (gen-from-order-by :users)
+
                                             (sql/where [:= :id user-id])
                                             sql-format))]
     (assoc user :type "User")))
@@ -87,7 +89,9 @@
 
 (defn user-session-query [token-hash]
   (-> (apply sql/select selects)
-      (sql/from :user_sessions)
+      ;(sql/from :user_sessions)
+      (gen-from-order-by :user_sessions)
+
       (sql/join :users [:= :user_sessions.user_id :users.id])
       (sql/join :people [:= :people.id :users.person_id])
       (sql/join :auth_systems [:= :user_sessions.auth_system_id :auth_systems.id])

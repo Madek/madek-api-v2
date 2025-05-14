@@ -86,8 +86,11 @@
         base-query (-> (if (:full_data query-params)
                          (sql/select :*)
                          (sql/select :id))
-                       (sql/from :groups)
-                       (sql/order-by [:id :asc])
+
+                       (gen-from-order-by :groups)
+                       ;(sql/from :groups)
+                       ;(sql/order-by [:id :asc])
+
                        (dbh/build-query-param query-params :id)
                        (dbh/build-query-param query-params :institutional_id)
                        (dbh/build-query-param query-params :type)

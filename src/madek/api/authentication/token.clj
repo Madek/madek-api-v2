@@ -24,7 +24,11 @@
                        [:scope_write :token_scope_write]
                        [:revoked :token_revoked]
                        [:description :token_description])
-           (sql/from :api_tokens)
+           ;(sql/from :api_tokens)
+
+           (gen-from-order-by :api_tokens)
+
+
            (sql/where [:in :api_tokens.token_hash
                        (->> secrets
                             (filter identity)

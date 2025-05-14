@@ -23,7 +23,11 @@
         col-sel (if (true? (-> req :parameters :query :full-data))
                   (sql/select :*)
                   (sql/select :group_id))
-        base-query (-> col-sel (sql/from :delegations_groups))
+        base-query (-> col-sel
+                       ;(sql/from :delegations_groups)
+                       (gen-from-order-by :delegations_groups)
+
+                       )
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 group_id (sql/where [:= :group_id group_id]))
