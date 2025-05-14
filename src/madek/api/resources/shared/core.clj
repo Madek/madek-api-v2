@@ -59,7 +59,7 @@
   {:status 404 :body {:message msg}})
 
 (defn response_exception [ex]
-  (merge (ex-data ex) {:status UNPROCESSABLE_CONTENT_422
+  (merge (ex-data ex) {:status 500
                        :body {:message (.getMessage ex)}}))
 
 (def root
