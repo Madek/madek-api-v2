@@ -2,6 +2,7 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.resources.shared.media_resource_helper :as mrh]
+            [madek.api.utils.helper :refer [gen-from-order-by]]
             [madek.api.utils.helper :refer [to-uuid]]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [info]]))
@@ -14,7 +15,10 @@
     (or
      (jdbc/execute-one! (:tx request)
                         (-> (sql/select :*)
-                            (sql/from :meta_data)
+
+                            ;(sql/from :meta_data)
+                            (gen-from-order-by :meta_data)
+
                             (sql/where [:= :id (to-uuid id)])
                             sql-format))
 

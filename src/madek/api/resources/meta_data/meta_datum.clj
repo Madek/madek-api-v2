@@ -6,6 +6,7 @@
    [madek.api.resources.keywords.index :as keywords]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]
    [ring.util.response :as ring-response]
    [taoensso.timbre :refer [info]]))
@@ -20,7 +21,10 @@
 
 (defn get-people-index [meta-datum tx]
   (let [query (-> (sql/select :people.*)
-                  (sql/from :people)
+
+                  ;(sql/from :people)
+                  (gen-from-order-by :people)
+
                   (sql/join :meta_data_people [:= :meta_data_people.person_id :people.id])
                   (sql/where [:= :meta_data_people.meta_datum_id (:id meta-datum)])
                   sql-format)]

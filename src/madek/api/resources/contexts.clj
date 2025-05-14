@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
@@ -20,7 +21,10 @@
 (defn handle_adm-list-contexts
   [req]
   (let [db-query (-> (sql/select :*)
-                     (sql/from :contexts)
+
+                     ;(sql/from :contexts)
+                     (gen-from-order-by :contexts)
+
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
         result (map context_transform_ml db-result)]
@@ -30,7 +34,10 @@
 (defn handle_usr-list-contexts
   [req]
   (let [db-query (-> (sql/select :id :labels :descriptions)
-                     (sql/from :contexts)
+
+                     ;(sql/from :contexts)
+                     (gen-from-order-by :contexts)
+
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
         result (map context_transform_ml db-result)]

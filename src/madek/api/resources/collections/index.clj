@@ -4,6 +4,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]))
 
@@ -23,7 +24,10 @@
                    (sql/select :*)
                    (sql/select :collections.id :collections.created_at :collections.deleted_at))]
     (-> toselect
-        (sql/from :collections)
+        ;(sql/from :collections)
+        (gen-from-order-by :collections)
+
+
         (cond-> (= softdelete-mode :deleted) (soft-deleted "collections"))
         (cond-> (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted "collections")))))
 

@@ -8,6 +8,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -31,7 +32,9 @@
   [req]
   (let [req-query (-> req :parameters :query)
         db-query (-> (sql/select :*)
-                     (sql/from :context_keys)
+
+                     ;(sql/from :context_keys)
+                     (gen-from-order-by :context_keys)
 
                      (dbh/build-query-param req-query :id)
                      (dbh/build-query-param req-query :context_id)
@@ -51,7 +54,11 @@
         db-query (-> (sql/select :id :context_id :meta_key_id
                                  :is_required :position :length_min :length_max
                                  :labels :hints :descriptions :documentation_urls)
-                     (sql/from :context_keys)
+
+                     ;(sql/from :context_keys)
+                     (gen-from-order-by :context_keys)
+
+
                      (dbh/build-query-param req-query :id)
                      (dbh/build-query-param req-query :context_id)
                      (dbh/build-query-param req-query :meta_key_id)

@@ -5,6 +5,7 @@
             [logbug.catcher :as catcher]
             [madek.api.db.core :refer [builder-fn-options-default]]
             [madek.api.resources.shared.core :as sd]
+            [madek.api.utils.helper :refer [gen-from-order-by]]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.utils.helper :refer [convert-map-if-exist strip-prefixes-generic to-uuid]]
             [next.jdbc :as jdbc]
@@ -56,7 +57,10 @@
    (let [mr-id (str (-> mr :id))
          mr-key (col-key-for-mr-type mr)
          db-query (-> (sql/select :*)
-                      (sql/from :meta_data)
+
+                      ;(sql/from :meta_data)
+                      (gen-from-order-by :meta_data)
+
                       (sql/where [:and
                                   [:= :meta_key_id mk-id]
                                   [:= mr-key (to-uuid mr-id mr-key)]])

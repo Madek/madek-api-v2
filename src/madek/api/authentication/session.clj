@@ -6,6 +6,7 @@
    [clj-time.format :as time-format]
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.legacy.session.encryptor :refer [decrypt]]

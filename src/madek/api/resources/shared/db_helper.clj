@@ -5,6 +5,9 @@
             [java-time.api :as jt]
             [logbug.catcher :as catcher]
             [madek.api.constants :as mc]
+
+            [madek.api.utils.helper :refer [gen-from-order-by]]
+
             [madek.api.resources.people.common :as people-common]
             [madek.api.resources.users.columns :as users-columns]
             [madek.api.utils.helper :refer [to-uuid]]
@@ -17,7 +20,9 @@
 ; TODO sql injection protection
 (defn build-query-base [table-key col-keys]
   (-> (apply sql/select col-keys)
-      (sql/from table-key)))
+      ;(sql/from table-key)
+      (gen-from-order-by table-key)
+      ))
 
 (defn build-query-param [query query-params param]
   (let [pval (-> query-params param mc/presence)]

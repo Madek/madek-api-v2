@@ -6,6 +6,7 @@
    [clojure.string :as str :refer [blank?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -63,7 +64,11 @@
                  (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted where3 "media_entries"))
 
 ; TODO updated/created after
-        from (sql/from where4 :media_entries)]
+;        from (sql/from where4 :media_entries)
+        from (-> (gen-from-order-by :media_entries) where4)
+
+
+        ]
     ;    (info "base-query"
     ;                  "\nme-query:\n" me-query
     ;                  "\nfrom:\n" sel
@@ -121,7 +126,10 @@
 
 (defn- find-collection-default-sorting [collection-id tx]
   (let [query (-> (sql/select :sorting)
-                  (sql/from :collections)
+
+                  ;(sql/from :collections)
+                  (gen-from-order-by :collections)
+
                   (sql/where [:= :collections.id collection-id])
                   sql-format)]
     (:sorting (jdbc/execute-one! tx query))))
