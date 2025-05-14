@@ -4,9 +4,9 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.helper :refer [cast-to-hstore]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
@@ -22,8 +22,7 @@
   [query-params]
   (-> (sql/select :roles.*)
       ;(sql/from :roles)
-      (gen-from-order-by :roles)
-      ))
+      (gen-from-order-by :roles)))
 
 (defn get-index
   [request]

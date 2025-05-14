@@ -4,9 +4,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -65,7 +65,6 @@
 
            ;(sql/from :vocabulary_group_permissions)
            (gen-from-order-by :vocabulary_group_permissions)
-
 
            (sql/where
             [:in :vocabulary_group_permissions.group_id groups-ids-result]

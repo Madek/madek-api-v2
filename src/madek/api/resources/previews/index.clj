@@ -1,10 +1,10 @@
 (ns madek.api.resources.previews.index
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+   [honey.sql.helpers :as sql]
    [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by gen-from-order-by-multiple]]
 
-   [honey.sql.helpers :as sql]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]))
 
 (defn- get-first-or-30-percent [list]
@@ -30,7 +30,7 @@
   (let [sqlmap (-> (sql/select :previews.*)
 
                    ;(sql/from [:previews :previews])
-                   (gen-from-order-by-multiple [:previews :previews] [:previews.created_at :desc] )
+                   (gen-from-order-by-multiple [:previews :previews] [:previews.created_at :desc])
 
                    (sql/join [:media_files :media_files] [:= :previews.media_file_id :media_files.id])
                    (sql/join [:media_entries :media_entries] [:= :media_entries.id :media_files.media_entry_id])

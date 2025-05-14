@@ -2,8 +2,8 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.media-entries.permissions :as me-permissions]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
 

@@ -166,19 +166,18 @@
 (defn pr [str fnc]
   ;(println ">oo> HELPER / " str fnc)(println ">oo> HELPER / " str fnc)
   (println ">oo> " str fnc)
-  fnc
-  )
+  fnc)
 
 (defn is-admin [user-id tx]
   (let [none (->
               (jdbc/execute!
                tx
                (pr ">1 " (-> (sql/select :*)
-                   (gen-from-order-by :admins)
+                             (gen-from-order-by :admins)
                    ;(sql/from :admins)
                    ;(sql/order-by :login)
-                   (sql/where [:= :user_id (to-uuid user-id)])
-                   sql-format)))
+                             (sql/where [:= :user_id (to-uuid user-id)])
+                             sql-format)))
               empty?)
         result (not none)]
     ;(info "is-admin: " user-id " : " result)

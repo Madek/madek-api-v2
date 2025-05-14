@@ -1,7 +1,7 @@
 (ns madek.api.resources.media-entries.advanced-filter.permissions
   (:require
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [honey.sql.helpers :as sql]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.helper :refer [to-uuid]]))
 
 (defn- delegation-ids-subquery [user_id]
@@ -13,7 +13,6 @@
                                                       (sql/select :group_id)
                                                       ;(sql/from :groups_users)
                                                       (gen-from-order-by :groups_users)
-
 
                                                       (sql/where [:= :groups_users.user_id (to-uuid user_id)]))]))
 

@@ -6,11 +6,11 @@
    [clojure.string :as str :refer [blank?]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.media-entries.advanced-filter :as advanced-filter]
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.core :refer [keyword str]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.helper :refer [to-uuid]]
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]
@@ -65,11 +65,9 @@
 
 ; TODO updated/created after
 ;        from (sql/from where4 :media_entries)
-        from (-> where4 (gen-from-order-by :media_entries) )
+        from (-> where4 (gen-from-order-by :media_entries))]
 
-
-        ]
-    ;    (info "base-query"
+;    (info "base-query"
     ;                  "\nme-query:\n" me-query
     ;                  "\nfrom:\n" sel
     ;                  "\nwhere1:\n" where1

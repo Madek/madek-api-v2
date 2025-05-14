@@ -3,10 +3,10 @@
    [clj-uuid :as uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.columns :refer [user-select-keys]]
    [madek.api.utils.helper :refer [convert-userid]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]))
 
 ;;; schema ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

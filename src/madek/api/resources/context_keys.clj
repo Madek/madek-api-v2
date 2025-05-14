@@ -8,11 +8,11 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -57,7 +57,6 @@
 
                      ;(sql/from :context_keys)
                      (gen-from-order-by :context_keys)
-
 
                      (dbh/build-query-param req-query :id)
                      (dbh/build-query-param req-query :context_id)

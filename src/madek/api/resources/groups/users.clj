@@ -50,30 +50,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-
 (defn pr [str fnc]
   ;(println ">oo> HELPER / " str fnc)(println ">oo> HELPER / " str fnc)
   (println ">oo> " str fnc)
-  fnc
-  )
+  fnc)
 
 (defn group-user-query [group-id user-id]
   (pr ">2" (-> ;(users/sql-select)
-   (sql/select {} :users.id :users.institutional_id :users.email :users.person_id)
+            (sql/select {} :users.id :users.institutional_id :users.email :users.person_id)
 
-   (gen-from-order-by-multiple :users [:users.id :asc] :groups_users.group_id :groups.name )
+            (gen-from-order-by-multiple :users [:users.id :asc] :groups_users.group_id :groups.name)
 
    ;(sql/from :users)
-   (sql/join :groups_users [:= :users.id :groups_users.user_id])
-   (sql/join :groups [:= :groups.id :groups_users.group_id])
-   (sql-merge-user-where-id user-id)
-   (groups/sql-merge-where-id group-id)
+            (sql/join :groups_users [:= :users.id :groups_users.user_id])
+            (sql/join :groups [:= :groups.id :groups_users.group_id])
+            (sql-merge-user-where-id user-id)
+            (groups/sql-merge-where-id group-id)
    ;(sql/order-by [:users.id :asc] :groups_users.group_id :groups.name)
-   sql-format))
-
-  )
+            sql-format)))
 
 (defn find-group-user [group-id user-id tx]
   (->> (group-user-query group-id user-id)
@@ -145,7 +139,6 @@
                                   ;(sql/from :groups_users)
                                   (gen-from-order-by :groups_users)
 
-
                                   (sql/where [:= :group_id group-id])
                                   sql-format))
         res (set (map :groups_users/user_id res))] res))
@@ -155,7 +148,6 @@
 
       ;(sql/from :users)
       (gen-from-order-by :users)
-
 
       (sql/where ;[:or
        [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]

@@ -3,9 +3,9 @@
    [clojure.string :as str]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [taoensso.timbre :refer [debug]]))
 
