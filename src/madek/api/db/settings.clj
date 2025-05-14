@@ -16,7 +16,9 @@
 
 (defn settings [tx]
   (or (-> (apply sql/select selected-columns)
-          (sql/from :app_settings)
+          ;(sql/from :app_settings)
+          (gen-from-order-by :app_settings)
+
           (sql/where [:= :id 0])
           (sql-format :inline false)
           (#(jdbc/execute-one! tx %)))

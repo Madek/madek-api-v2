@@ -84,10 +84,14 @@
 ; TODO test query and paging
 (defn build-index-query [req]
   (let [query-params (-> req :parameters :query)
-        base-query (-> (sql/select :*)
-                       (sql/from :groups)
-                       (sql/order-by [:id :asc])
-                       (dbh/build-query-param query-params :created_by_user_id)
+        base-query (-> (if (:full_data query-params)
+                         (sql/select :*)
+                         (sql/select :id))
+
+                       (gen-from-order-by :groups)
+                       ;(sql/from :groups)
+                       ;(sql/order-by [:id :asc])
+
                        (dbh/build-query-param query-params :id)
                        (dbh/build-query-param query-params :institution)
                        (dbh/build-query-param query-params :institutional_id)

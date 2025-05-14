@@ -31,14 +31,18 @@
 (def is-admin-sub
   [:exists
    (-> (sql/select :true)
-       (sql/from :admins)
+       ;(sql/from :admins)
+       (gen-from-order-by :admins)
+
        (sql/where [:= :users.id :admins.user_id]))])
 
 (def base-query
   (-> (apply sql/select user-select-keys)
       (sql/select [is-admin-sub :is_admin])
-      (sql/from :users)
-      (sql/order-by [:last_name :asc] [:first_name :asc] [:id :asc])))
+
+      (gen-from-order-by :users)
+      ;(sql/from :users)
+      ))
 
 ;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

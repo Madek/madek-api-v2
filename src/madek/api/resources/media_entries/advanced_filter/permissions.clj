@@ -6,14 +6,19 @@
 (defn- delegation-ids-subquery [user_id]
   {:union
    [(-> (sql/select :delegation_id)
-        (sql/from :delegations_groups)
+        ;(sql/from :delegations_groups)
+        (gen-from-order-by :delegations_groups)
         (sql/where [:in :delegations_groups.group_id (->
                                                       (sql/select :group_id)
-                                                      (sql/from :groups_users)
+                                                      ;(sql/from :groups_users)
+                                                      (gen-from-order-by :groups_users)
+
+
                                                       (sql/where [:= :groups_users.user_id (to-uuid user_id)]))]))
 
     (-> (sql/select :delegation_id)
-        (sql/from :delegations_users)
+        ;(sql/from :delegations_users)
+        (gen-from-order-by :delegations_users)
         (sql/where [:= :delegations_users.user_id (to-uuid user_id)]))]})
 
 ;(defn- api-client-authorized-condition [perm id]

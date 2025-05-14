@@ -53,7 +53,11 @@
   (debug request)
   (if-let [meta-data-id (-> (jdbc/execute! tx
                                            (-> (sql/select :id)
-                                               (sql/from :meta_data)
+
+                                               ;(sql/from :meta_data)
+                                               (gen-from-order-by :meta_data)
+
+
                                                (sql/where [:and [:= :media_entry_id media-entry-id] [:= :meta_key_id meta-key-id]])
                                                sql-format))
                             first :id)]
@@ -65,7 +69,11 @@
   (debug request)
   (if-let [media-file-id (-> (jdbc/execute! tx
                                             (-> (sql/select :id)
-                                                (sql/from :media_files)
+
+                                                ;(sql/from :media_files)
+                                                (gen-from-order-by :media_files)
+
+
                                                 (sql/where [:= :media_entry_id media-entry-id])
                                                 sql-format))
                              first :id)]

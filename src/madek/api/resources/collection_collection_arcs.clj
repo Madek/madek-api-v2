@@ -19,7 +19,10 @@
 
 (defn arc-query [request]
   (-> (sql/select :*)
-      (sql/from :collection_collection_arcs)
+      ;(sql/from :collection_collection_arcs)
+
+      (gen-from-order-by :collection_collection_arcs)
+
       (sql/where [:= :id (-> request :parameters :path :id to-uuid)])
       sql-format))
 
@@ -32,7 +35,11 @@
 
 (defn arc-query-by-parent-and-child [req]
   (-> (sql/select :*)
-      (sql/from :collection_collection_arcs)
+
+      ;(sql/from :collection_collection_arcs)
+      (gen-from-order-by :collection_collection_arcs)
+
+
       (sql/where [:= :parent_id (-> req :parameters :path :parent_id)])
       (sql/where [:= :child_id (-> req :parameters :path :child_id)])
       sql-format))
@@ -46,7 +53,11 @@
 
 (defn arcs-query [query-params]
   (-> (sql/select :*)
-      (sql/from :collection_collection_arcs)
+
+      ;(sql/from :collection_collection_arcs)
+      (gen-from-order-by :collection_collection_arcs)
+
+
       (dbh/build-query-param query-params :child_id)
       (dbh/build-query-param query-params :parent_id)))
 

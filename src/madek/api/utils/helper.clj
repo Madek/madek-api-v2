@@ -31,8 +31,21 @@
      :full_texts (-> th (sql/from table) (sql/order-by :text))
 
      :groups_users (-> th (sql/from table) (sql/order-by :name))
-     :users (-> th (sql/from table) (sql/order-by :created_at))
+     :groups (-> th (sql/from table) (sql/order-by [:id :asc]))
+     ;:users (-> th (sql/from table) (sql/order-by :login))
+     :users (-> th (sql/from table) (sql/order-by [:users.id :asc]))
      :orders (-> th (sql/from table) (sql/order-by :order_date))
+
+     :user_sessions (-> th (sql/from table) (sql/order-by :id))
+     :api_tokens (-> th (sql/from table) (sql/order-by :id))
+     :app_settings (-> th (sql/from table) (sql/order-by :section_meta_key_id))
+     :meta_data (-> th (sql/from table) (sql/order-by :media_entry_id))
+     :media_files (-> th (sql/from table) (sql/order-by :media_entry_id))
+     :collection_collection_arcs (-> th (sql/from table) (sql/order-by :parent_id))
+     :collection_media_entry_arcs (-> th (sql/from table) (sql/order-by :media_entry_id))
+
+     :delegations_groups (-> th (sql/from table) (sql/order-by :delegation_id))
+     :delegations_users (-> th (sql/from table) (sql/order-by :delegation_id))
     ;; default:
      (-> th (sql/from table) (sql/order-by :id))))
 

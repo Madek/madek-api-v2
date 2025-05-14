@@ -14,7 +14,11 @@
 
 (defn arc-query [id]
   (-> (sql/select :*)
-      (sql/from :collection_media_entry_arcs)
+
+      ;(sql/from :collection_media_entry_arcs)
+      (gen-from-order-by :collection_media_entry_arcs)
+
+
       (sql/where [:= :id (to-uuid id)])
       sql-format))
 
@@ -29,7 +33,9 @@
 ; TODO test query and paging
 (defn arcs-query [query-params]
   (-> (sql/select :*)
-      (sql/from :collection_media_entry_arcs)
+      ;(sql/from :collection_media_entry_arcs)
+      (gen-from-order-by :collection_media_entry_arcs)
+
       (dbh/build-query-param query-params :collection_id)
       (dbh/build-query-param query-params :media_entry_id)))
 

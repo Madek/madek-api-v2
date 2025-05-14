@@ -38,7 +38,10 @@
 (defn find-user-sql [some-id]
   (-> (sql-select)
       (sql-merge-user-where-id some-id)
-      (sql/from :users)
+
+      ;(sql/from :users)
+      (gen-from-order-by :users)
+
       sql-format))
 
 (defn find-user [some-id tx]
@@ -85,10 +88,13 @@
 ;TODO test paging
 (defn group-users-query [group-id request]
   (-> (sql/select :users.id :users.institutional_id :users.email :users.person_id)
-      (sql/from :users)
+
+      ;(sql/from :users)
+      (gen-from-order-by :users)
+
       (sql/join :groups_users [:= :users.id :groups_users.user_id])
       (sql/join :groups [:= :groups.id :groups_users.group_id])
-      (sql/order-by [:users.id :asc])
+      ;(sql/order-by [:users.id :asc])
       (groups/sql-merge-where-id group-id)))
 
 (defn group-users [group-id request]
@@ -135,14 +141,22 @@
 
 (defn current-group-users-ids [tx group-id]
   (let [res (jdbc/execute! tx (-> (sql/select-distinct :user_id)
-                                  (sql/from :groups_users)
+
+                                  ;(sql/from :groups_users)
+                                  (gen-from-order-by :groups_users)
+
+
                                   (sql/where [:= :group_id group-id])
                                   sql-format))
         res (set (map :groups_users/user_id res))] res))
 
 (defn target-group-users-query [users]
   (-> (sql/select :id)
-      (sql/from :users)
+
+      ;(sql/from :users)
+      (gen-from-order-by :users)
+
+
       (sql/where ;[:or
        [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]
         ;[:in :users.institutional_id (->> users (map #(-> % :institutional_id str)) (filter identity))]

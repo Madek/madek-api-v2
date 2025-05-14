@@ -19,7 +19,9 @@
     (if (contains? request :is_admin)
       (when (-> request :is_admin) request)
       (when (->> (-> (sql/select [true :is_admin])
-                     (sql/from :admins)
+                     ;(sql/from :admins)
+                     (gen-from-order-by :admins)
+
                      (sql/where [:= :admins.user_id (-> request :authenticated-entity :id)])
                      sql-format)
                  (jdbc/execute! (:tx request))

@@ -40,7 +40,9 @@
 
 (defn user-session-query [token-hash]
   (-> (apply sql/select selects)
-      (sql/from :user_sessions)
+      ;(sql/from :user_sessions)
+      (gen-from-order-by :user_sessions)
+
       (sql/join :users [:= :user_sessions.user_id :users.id])
       (sql/join :people [:= :people.id :users.person_id])
       (sql/join :auth_systems [:= :user_sessions.auth_system_id :auth_systems.id])
