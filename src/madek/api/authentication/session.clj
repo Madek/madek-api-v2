@@ -117,20 +117,17 @@
           tx (:tx request)
 
           p (println ">o> abc.token-hash1" token-hash)
-          p (println ">o> abc.token-hash2" (user-session token-hash tx))
-          ]
+          p (println ">o> abc.token-hash2" (user-session token-hash tx))]
       (if-let [user-session (first (user-session token-hash tx))]
-        (let [
-              p (println ">o> abc.user-session " user-session)
+        (let [p (println ">o> abc.user-session " user-session)
               user-id (:user_id user-session)
               expires-at (:session_expires_at user-session)
               user (assoc (dbh/query-eq-find-one :users :id user-id tx) :type "User")
 
-p (println ">o> abc.u" user-id)
-p (println ">o> abc.e" expires-at)
-p (println ">o> abc.user" user)
+              p (println ">o> abc.u" user-id)
+              p (println ">o> abc.e" expires-at)
+              p (println ">o> abc.user" user)]
 
-              ]
           #_(info "handle session: "
                   "\nfound user session:\n " user-session
                   "\n user-id:  " user-id
@@ -154,12 +151,10 @@ p (println ">o> abc.user" user)
 (defn wrap [handler]
   (fn [request]
 
-(if (some #(= (:uri request) %) ["/api-v2/api-docs/openapi.json" "/sign-in"])
+    (if (some #(= (:uri request) %) ["/api-v2/api-docs/openapi.json" "/sign-in"])
 ;(if (some #(= (:uri request) %) ["/api-v2/api-docs/openapi.json" "/sign-in"])
       (handler request)
-      (handle request handler))
-
-    ))
+      (handle request handler))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

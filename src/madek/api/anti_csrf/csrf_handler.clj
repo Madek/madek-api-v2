@@ -2,19 +2,19 @@
 ;(ns leihs.inventory.server.utils.csrf-handler
   (:require
    [byte-streams :as bs]
+   [cheshire.core :refer [generate-string] :rename {generate-string to-json}]
    [clojure.string :as str]
    [clojure.walk :refer [keywordize-keys]]
+   [madek.api.anti-csrf.back :as anti-csrf :refer [anti-csrf-token]]
+   [madek.api.anti-csrf.constants :as constants]
+
    [madek.api.anti-csrf.constants :as constants]
    [madek.api.anti-csrf.core :refer [keyword str presence]]
-   [cheshire.core :refer [generate-string] :rename {generate-string to-json}]
-
-   [madek.api.utils.html-utils :refer [add-csrf-tags]]
    [madek.api.anti-csrf.simple_login :refer [sign-in-view]]
-   [madek.api.anti-csrf.back :as anti-csrf :refer [anti-csrf-token]]
 
    ;[madek.api.web :refer [get-sign-in]]
 
-   [madek.api.anti-csrf.constants :as constants]
+   [madek.api.utils.html-utils :refer [add-csrf-tags]]
    ;[leihs.core.anti-csrf.back :as anti-csrf]
    ;[leihs.core.constants :as constants]
    ;[leihs.core.core :refer [presence]]
@@ -92,8 +92,7 @@
 
 (defn extract-header [handler]
   (fn [request]
-    (let [
-          content-type (get-in request [:headers "content-type"])
+    (let [content-type (get-in request [:headers "content-type"])
           token (get-in request [:form-params "csrf-token"])
 
           p (println ">o> abc.token" token)
@@ -132,8 +131,7 @@
           api-request? (and uri (str/includes? uri "/api-docs/"))
 
           p (println ">o> api-request?" api-request?)
-          p (println ">o> (:uri request)" (:uri request))
-          ]
+          p (println ">o> (:uri request)" (:uri request))]
       (if api-request?
         (handler request)
         (if (some #(= % (:uri request)) ["/sign-in" "/sign-out" "/inventory/login" "/inventory/csrf-token"])
@@ -144,10 +142,10 @@
               (let [uri (:uri request)]
                 ;(if (str/includes? uri "/sign-in")
                 ;  (response/redirect "/sign-in?return-to=%2Finventory&message=CSRF-Token/Session not valid")
-                  {:status 400
-                   :headers {"Content-Type" "application/json"}
-                   :body (to-json {:message "Error updating password"
-                                   :detail (str "error: " (.getMessage e))})}
+                {:status 400
+                 :headers {"Content-Type" "application/json"}
+                 :body (to-json {:message "Error updating password"
+                                 :detail (str "error: " (.getMessage e))})}
                   ;)
                 )))
           (handler request))))))

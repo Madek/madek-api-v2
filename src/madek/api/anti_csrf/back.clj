@@ -9,11 +9,11 @@
    - Then the comparison with the cookie proves the origin of the request."
   (:refer-clojure :exclude [str keyword])
   (:require
-   [madek.api.anti-csrf.constants :as constants]
-   [madek.api.anti-csrf.core :refer [keyword str presence]]
    [logbug.catcher :as catcher]
    [logbug.debug :as debug :refer [I>]]
-   [logbug.thrown :as thrown])
+   [logbug.thrown :as thrown]
+   [madek.api.anti-csrf.constants :as constants]
+   [madek.api.anti-csrf.core :refer [keyword str presence]])
   (:import
    [java.util UUID]))
 
@@ -34,12 +34,12 @@
 
 (defn x-csrf-token! [request]
 
-  (println ">o> abc.form" (-> request :form-params ))
+  (println ">o> abc.form" (-> request :form-params))
 
   (or (-> request :headers (get (keyword constants/ANTI_CSRF_TOKEN_HEADER_NAME)) presence)
       (-> request :headers (get constants/ANTI_CSRF_TOKEN_HEADER_NAME nil))
       (-> request :form-params (get (keyword constants/ANTI_CSRF_TOKEN_FORM_PARAM_NAME)))
-      (-> request :form-params (get  constants/ANTI_CSRF_TOKEN_FORM_PARAM_NAME))
+      (-> request :form-params (get constants/ANTI_CSRF_TOKEN_FORM_PARAM_NAME))
       (throw (ex-info "The x-csrf-token has not been send!" {:status 403}))))
 
 (defn anti-csrf-token [request]
@@ -66,8 +66,7 @@
   (fn [request]
     (let [anti-csrf-token (anti-csrf-token request)
 
-          p (println ">o> abc.anti-csrf-token" anti-csrf-token)
-          ]
+          p (println ">o> abc.anti-csrf-token" anti-csrf-token)]
       (when (and (http-unsafe? request) (not (token? request)))
         (when-not (presence anti-csrf-token)
           (throw (ex-info "The anti-csrf-token cookie value is not set." {:status 403})))

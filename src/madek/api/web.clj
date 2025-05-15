@@ -1,39 +1,39 @@
 (ns madek.api.web
   (:require
+   [cider-ci.open-session.bcrypt :refer [checkpw hashpw]]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.logging :as log]
+   [clojure.walk :as walk :refer [keywordize-keys]]
+   ;[madek.api.sign_in.back :as sign-in]
+   [digest :as d]
    [environ.core :refer [env]]
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
    [logbug.thrown :as thrown]
+   [madek.api.anti-csrf.back :as anti-csrf :refer [anti-csrf-token]]
+
+   [madek.api.anti-csrf.csrf-handler :as csrf :refer [wrap-csrf]]
+   [madek.api.anti-csrf.simple_login :refer [sign-in-view]]
+
    [madek.api.authentication :as authentication]
+   [madek.api.authentication.session :refer [token-hash]]
    [madek.api.db.core :as db]
    [madek.api.http.server :as http-server]
    [madek.api.json-protocol]
    [madek.api.resources]
-   [cider-ci.open-session.bcrypt :refer [checkpw hashpw]]
-
-   [madek.api.authentication.session :refer [token-hash ]]
-   [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
-
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.core :as sd]
-   [next.jdbc :as jdbc]
-   [honey.sql :refer [format] :rename {format sql-format}]
-   [clojure.walk :as walk :refer [keywordize-keys]]
-   [honey.sql.helpers :as sql]
-   ;[madek.api.sign_in.back :as sign-in]
-   [digest :as d]
-   [madek.api.anti-csrf.csrf-handler :as csrf :refer [wrap-csrf]]
-
-   [madek.api.utils.html-utils :refer [add-csrf-tags]]
-   [madek.api.anti-csrf.simple_login :refer [sign-in-view]]
-   [madek.api.anti-csrf.back :as anti-csrf :refer [anti-csrf-token]]
 
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.cli :refer [long-opt-for-key]]
+   [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
+
+   [madek.api.utils.html-utils :refer [add-csrf-tags]]
    [madek.api.utils.ring-audits :as ring-audits]
    [muuntaja.core :as m]
+   [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
    [reitit.openapi :as openapi]
@@ -42,21 +42,21 @@
    [reitit.ring.middleware.multipart :as multipart]
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [reitit.ring.middleware.parameters :as rmp]
-   [ring.middleware.cookies :refer [wrap-cookies]]
    [reitit.ring.spec :as rs]
    [reitit.swagger :as swagger]
    [reitit.swagger-ui :as swagger-ui]
+   [ring.middleware.cookies :refer [wrap-cookies]]
    [ring.middleware.cors :as cors-middleware]
    [ring.middleware.defaults :as ring-defaults]
    [ring.middleware.json]
+   [ring.middleware.reload :refer [wrap-reload]]
    [ring.util.response :as response]
    [ring.util.response :refer [bad-request response status]]
-   [ring.middleware.reload :refer [wrap-reload]]
    [schema.core :as s]
    [taoensso.timbre :refer [debug error warn]])
-(:import (com.google.common.io BaseEncoding)
- (java.time Duration Instant)
- (java.util Base64 UUID)))
+  (:import (com.google.common.io BaseEncoding)
+           (java.time Duration Instant)
+           (java.util Base64 UUID)))
 
 ; changing DEBUG to true will wrap each middleware defined in this file with
 ; extended debug logging; this will increase LOGGING OUTPUT IMMENSELY and might
@@ -150,7 +150,6 @@
       {:status 200 :body params}
       {:status 200 :headers {"Content-Type" "text/html; charset=utf-8"} :body html})))
 
-
 (def ACTIVATE-DEV-MODE-REDIRECT true)
 
 ;(defn create-error-response [user-param request]
@@ -163,14 +162,13 @@
 ;           {:flashMessages [{:messageID "sign_in_wrong_password_flash_message"
 ;                             :level "error"}]})})
 
-
 (defn fetch-hashed-password [request login]
   (let [query (->
                (sql/select :users.id :users.login :authentication_systems_users.authentication_system_id :authentication_systems_users.data)
                (sql/from :authentication_systems_users)
                (sql/join :users [:= :users.id :authentication_systems_users.user_id])
                (sql/where [:= :users.login login]
-                 [:= :authentication_systems_users.authentication_system_id "password"])
+                          [:= :authentication_systems_users.authentication_system_id "password"])
                sql-format)
         result (jdbc/execute-one! (:tx request) query)]
     (:data result)))
@@ -196,8 +194,6 @@
     (if verfication-ok
       result
       nil)))
-
-
 
 ;(defn post-sign-in [request]
 ;  (let [
@@ -256,15 +252,13 @@
 ;      {:status (if (so/routes params) 200 409)}
 ;      (so/routes params))))
 
-
-
 (defn fetch-hashed-password [request login]
   (let [query (->
                (sql/select :users.id :users.login :auth_systems_users.auth_system_id :auth_systems_users.data)
                (sql/from :auth_systems_users)
                (sql/join :users [:= :users.id :auth_systems_users.user_id])
                (sql/where [:= :users.login login]
-                 [:= :auth_systems_users.auth_system_id "password"])
+                          [:= :auth_systems_users.auth_system_id "password"])
                sql-format)
         result (jdbc/execute-one! (:tx request) query)]
     (:data result)))
@@ -305,13 +299,13 @@
       res)
     (catch Exception e
       (throw
-        (ex-info "BasicAuth header not found."
-          {:status 403})))))
+       (ex-info "BasicAuth header not found."
+                {:status 403})))))
 
 (defn parse-cookies [cookie-header]
   (->> (str/split cookie-header #";\s*")
-    (map #(str/split % #"=" 2))
-    (into {})))
+       (map #(str/split % #"=" 2))
+       (into {})))
 
 (defn sha256-hash [token]
   (d/sha-256 token))
@@ -319,51 +313,43 @@
 (defn logout-handler [request]
   (let [user-id (-> request :authenticated-entity :id)
 
-        p (println ">o> abc.entity"  (-> request :authenticated-entity))
-        ]
+        p (println ">o> abc.entity" (-> request :authenticated-entity))]
     (try
-      (let [
-
-            ;session (:session request)
-
+      (let [;session (:session request)
 
             p (println ">o> abc.session" (:authenticated-entity request))
             ;p (println ">o> abc1" request)
             p (println ">o> abc2" (:headers request))
             p (println ">o> abc2" (type (:headers request)))
 
-            mei (into {} (:headers request) )
+            mei (into {} (:headers request))
             p (println ">o> abc.mei" mei)
-
 
             mei (keywordize-keys mei)
             p (println ">o> abc.mei" mei)
 
             ;(get-in request [:headers "cookie"  "madek-session" :session])
 
+;(get-in request [:cookies "madek-user-session" :value])
 
-            ;(get-in request [:cookies "madek-user-session" :value])
-
-            cookie-header   (get-in request [:headers "cookie"] "")
-            cookies-map     (parse-cookies cookie-header)
-            user-session    (get cookies-map "madek-user-session")
-        _ (println ">o> raw cookie header:" cookie-header)
-        _ (println ">o> parsed cookies:" cookies-map)
-        _ (println ">o> parsed cookies2:" (get-in cookies-map ["madek-session"]))
-        _ (println ">o> madek-user-session:" user-session)
-
+            cookie-header (get-in request [:headers "cookie"] "")
+            cookies-map (parse-cookies cookie-header)
+            user-session (get cookies-map "madek-user-session")
+            _ (println ">o> raw cookie header:" cookie-header)
+            _ (println ">o> parsed cookies:" cookies-map)
+            _ (println ">o> parsed cookies2:" (get-in cookies-map ["madek-session"]))
+            _ (println ">o> madek-user-session:" user-session)
 
             session-id (get-in cookies-map ["madek-session"])
 
             hashed-token (token-hash session-id)
-
 
             p (println ">o> abc.user-id" user-id)
             p (println ">o> abc.hashed-token" hashed-token)
 
             delete-query (-> (sql/delete-from :user_sessions)
                              ;(sql/where [:= :user_id user-id] [:= :token_hash hashed-token])
-                             (sql/where  [:= :token_hash hashed-token])
+                             (sql/where [:= :token_hash hashed-token])
                              sql-format)
             delete-result (jdbc/execute! (:tx request) delete-query)
 
@@ -371,11 +357,7 @@
 
             ;hashed-token (token-hash token)
 
-
-
-
-
-            ;p (println ">o> abc3" (get-in request [:headers "x-csrf-token"]))
+;p (println ">o> abc3" (get-in request [:headers "x-csrf-token"]))
             ;p (println ">o> abc4??" (get-in request [:headers   "madek-session" :value]))
             ;p (println ">o> abc4??" (type (get-in request [:headers   "madek-session"])))
             ;p (println ">o> abc5" (get-in request [:headers "Cookie"  ]))
@@ -384,7 +366,6 @@
             ;token (get-in request [:headers "x-csrf-token"])
 
             ;p (println ">o> abc.hashed-token" hashed-token)
-
             ]
         (if (> (:next.jdbc/update-count (first delete-result)) 0)
           (do
@@ -393,22 +374,19 @@
           (do
             (log/warn "No session found for user_id:" user-id)
             (response/status
-              (response/response {:status "failure" :message "No active session found"}) 404))))
+             (response/response {:status "failure" :message "No active session found"}) 404))))
       (catch Exception e
         (log/error "Error in logout-handler:" e)
         (response/status (response/response {:message (.getMessage e)}) 400)))))
 
-
 (defn authenticate-handler [request]
   (try
-    (let [
-          ;[login password] (extract-basic-auth-from-header request)
+    (let [;[login password] (extract-basic-auth-from-header request)
 
           form-data (keywordize-keys (:form-params request))
           username (:user form-data)
           password (:password form-data)
           csrf-token (:csrf-token form-data)
-
 
           user (verify-password-entry request username password)]
       (if user
@@ -423,27 +401,24 @@
               check-query (-> (sql/select :*)
                               (sql/from :user_sessions)
                               (sql/where [:= :user_id [:cast user-id :uuid]]
-                                [:= :auth_system_id auth-system-id])
+                                         [:= :auth_system_id auth-system-id])
                               sql-format)
               existing-session (jdbc/execute-one! (:tx request) check-query)
 
-
               p (println ">o> abc.user-id" (:session request))
               p (println ">o> abc.user-id" user-id)
-              p (println ">o> abc.existing-session" existing-session)
-              ]
+              p (println ">o> abc.existing-session" existing-session)]
 
           (when existing-session
             (println "Hint: session already exists for user:" user-id))
 
           (let [insert-query (-> (sql/insert-into :user_sessions)
                                  (sql/values
-                                   [{:token_hash hashed-token
-                                     :user_id user-id
-                                     :auth_system_id auth-system-id
+                                  [{:token_hash hashed-token
+                                    :user_id user-id
+                                    :auth_system_id auth-system-id
                                      ;:expires_at expires-at
-                                     :token_part token-part
-                                     }])
+                                    :token_part token-part}])
                                  sql-format)
                 insert-res (jdbc/execute! (:tx request) insert-query)])
 
@@ -474,16 +449,16 @@
              ;(response/set-cookie "madek-session" token cookie {:max-age max-age :path "/"})
              ;(response/set-cookie "madek-user-session" user {:max-age max-age :path "/"}))))
 
-        (response/set-cookie "madek-session" token cookie { :path "/"})
-             (response/set-cookie "madek-user-session" user { :path "/"}))))
+             (response/set-cookie "madek-session" token cookie {:path "/"})
+             (response/set-cookie "madek-user-session" user {:path "/"}))))
 
         (response/status
-          (response/response {:status "failure" :message "Invalid credentials"}) 403)))
+         (response/response {:status "failure" :message "Invalid credentials"}) 403)))
 
     (catch Exception e
       (println "Error in authenticate-handler:" (.getMessage e))
       (response/status
-        (response/response {:message (.getMessage e)}) 400))))
+       (response/response {:message (.getMessage e)}) 400))))
 
 (def auth-info-route
 
@@ -500,10 +475,7 @@
              ;:handler post-sign-in
              :handler authenticate-handler
 
-             :responses {200 {:description "Login successful"
-                      }
-      }
-             }
+             :responses {200 {:description "Login successful"}}}
 
       :get {:summary "HTML | Get sign-in page"
             :accept "text/html"
@@ -521,48 +493,42 @@
       ;:get {:accept "text/html"
       ;      :summary "HTML | Get sign-out page"
       ;      :handler get-sign-out}
-      }
-     ]
+      }]]
+   ["api-v2"
+    {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
+    ["/auth-info"
+     {:get
+      {:summary (sd/?no-auth? "Authentication help and info.")
+       :handler auth-info/auth-info
+       :middleware [authentication/wrap]
+       :coercion reitit.coercion.schema/coercion
+       :responses {200 {:description "Authentication info."
+                        :body {:type s/Str
+                               (s/optional-key :id) s/Uuid
+                               (s/optional-key :login) s/Str
+                               (s/optional-key :created_at) s/Any
+                               (s/optional-key :email_address) s/Str
+                               (s/optional-key :authentication-method) s/Str
+                               (s/optional-key :session-expires-at) s/Any}}
+                   401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]
 
-    ]
-  
-  ["api-v2"
-   {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
-   ["/auth-info"
-    {:get
-     {:summary (sd/?no-auth? "Authentication help and info.")
-      :handler auth-info/auth-info
-      :middleware [authentication/wrap]
-      :coercion reitit.coercion.schema/coercion
-      :responses {200 {:description "Authentication info."
-                       :body {:type s/Str
-                              (s/optional-key :id) s/Uuid
-                              (s/optional-key :login) s/Str
-                              (s/optional-key :created_at) s/Any
-                              (s/optional-key :email_address) s/Str
-                              (s/optional-key :authentication-method) s/Str
-                              (s/optional-key :session-expires-at) s/Any}}
-                  401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]
-
-   ["/test-csrf"
-    {:no-doc false
-     :get {:accept "application/json"
-           :description "Access allowed without x-csrf-token"
-           :handler (fn [_] {:status 200})}
-     :post {:accept "application/json"
-            :description "Access denied without x-csrf-token"
+    ["/test-csrf"
+     {:no-doc false
+      :get {:accept "application/json"
+            :description "Access allowed without x-csrf-token"
             :handler (fn [_] {:status 200})}
-     :put {:accept "application/json"
-           :description "Access denied without x-csrf-token"
-           :handler (fn [_] {:status 200})}
-     :patch {:accept "application/json"
+      :post {:accept "application/json"
              :description "Access denied without x-csrf-token"
              :handler (fn [_] {:status 200})}
-     :delete {:accept "application/json"
+      :put {:accept "application/json"
+            :description "Access denied without x-csrf-token"
+            :handler (fn [_] {:status 200})}
+      :patch {:accept "application/json"
               :description "Access denied without x-csrf-token"
-              :handler (fn [_] {:status 200})}}]
-
-   ]])
+              :handler (fn [_] {:status 200})}
+      :delete {:accept "application/json"
+               :description "Access denied without x-csrf-token"
+               :handler (fn [_] {:status 200})}}]]])
 
 (def swagger-routes
   ["/api-v2"
@@ -579,9 +545,8 @@
               :components {:securitySchemes {:apiAuth {:type "apiKey"
                                                        :name "Authorization"
                                                        :in "header"}
-                           :csrfToken {:type "apiKey" :name "x-csrf-token" :in "header"}
-                                             }
-                           }
+                                             :csrfToken {:type "apiKey" :name "x-csrf-token" :in "header"}}}
+
               :security [{:apiAuth []} {:csrfToken []}]}}
    ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]])
 

@@ -1,6 +1,6 @@
 (ns madek.api.anti-csrf.constants
   ;(ns leihs.core.constants
-   )
+  )
 
 (def USER_SESSION_COOKIE_NAME "madek-user-session")
 

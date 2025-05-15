@@ -11,7 +11,7 @@
      (subs (clojure.core/str x) 1)
      (clojure.core/str x)))
   ([x & yx]
-   (apply clojure.core/str  (concat [(str x)] (apply str yx)))))
+   (apply clojure.core/str (concat [(str x)] (apply str yx)))))
 
 (defn keyword
   "Like clojure.core/keyword but coerces an unknown single argument x
