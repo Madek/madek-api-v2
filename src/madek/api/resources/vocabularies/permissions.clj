@@ -21,8 +21,7 @@
     '()
     (let [query (-> (sql/select-distinct :group_id)
 
-                    ;(sql/from :groups_users)
-                    (gen-from-order-by :groups_users)
+                    (sql/from :groups_users)
 
                     (sql/where [:= :groups_users.user_id (to-uuid user-id)])
                     sql-format)]

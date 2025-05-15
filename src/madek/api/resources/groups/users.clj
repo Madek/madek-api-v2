@@ -133,12 +133,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn pr [str fnc]
+  ;(println ">oo> HELPER / " str fnc)(println ">oo> HELPER / " str fnc)
+  (println ">oo> " str fnc)
+  fnc
+  )
+
 (defn current-group-users-ids [tx group-id]
   (let [res (jdbc/execute! tx (-> (sql/select-distinct :user_id)
-
-                                  ;(sql/from :groups_users)
-                                  (gen-from-order-by :groups_users)
-
+                                  (sql/from :groups_users)
                                   (sql/where [:= :group_id group-id])
                                   sql-format))
         res (set (map :groups_users/user_id res))] res))
