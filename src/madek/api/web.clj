@@ -18,6 +18,7 @@
    [reitit.coercion.spec]
    [reitit.openapi :as openapi]
    [reitit.ring :as rr]
+   [madek.api.anti-csrf.back :as anti-csrf]
    [reitit.ring.coercion :as rrc]
    [reitit.ring.middleware.multipart :as multipart]
    [reitit.ring.middleware.muuntaja :as muuntaja]
@@ -121,7 +122,27 @@
                               (s/optional-key :email_address) s/Str
                               (s/optional-key :authentication-method) s/Str
                               (s/optional-key :session-expires-at) s/Any}}
-                  401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]])
+                  401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]
+
+   ["/test-csrf"
+    {:no-doc false
+     :get {:accept "application/json"
+           :description "Access allowed without x-csrf-token"
+           :handler (fn [_] {:status 200})}
+     :post {:accept "application/json"
+            :description "Access denied without x-csrf-token"
+            :handler (fn [_] {:status 200})}
+     :put {:accept "application/json"
+           :description "Access denied without x-csrf-token"
+           :handler (fn [_] {:status 200})}
+     :patch {:accept "application/json"
+             :description "Access denied without x-csrf-token"
+             :handler (fn [_] {:status 200})}
+     :delete {:accept "application/json"
+              :description "Access denied without x-csrf-token"
+              :handler (fn [_] {:status 200})}}]
+
+   ])
 
 (def swagger-routes
   ["/api-v2"
@@ -137,8 +158,11 @@
                      :contact {:name "N/D"}}
               :components {:securitySchemes {:apiAuth {:type "apiKey"
                                                        :name "Authorization"
-                                                       :in "header"}}}
-              :security [{:apiAuth []}]}}
+                                                       :in "header"}
+                           :csrfToken {:type "apiKey" :name "x-csrf-token" :in "header"}
+                                             }
+                           }
+              :security [{:apiAuth []} {:csrfToken []}]}}
    ["/api-docs/openapi.json" {:no-doc true :get (openapi/create-openapi-handler)}]])
 
 (def get-router-data-all
@@ -180,6 +204,9 @@
    muuntaja/format-response-middleware
    wrap-catch-exception
    wrap-debug
+
+   anti-csrf/wrap
+
    muuntaja/format-request-middleware
    authentication/wrap
    authentication/wrap-log
