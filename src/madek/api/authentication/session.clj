@@ -63,7 +63,7 @@
                   (session-expiration-time session-object
                                            (get-validity-duration-secs)))))
 
-(defn- token-hash [token]
+(defn token-hash [token]
   (-> token hash/sha256 bytes->b64 bytes->str))
 
 (def expiration-sql-expr
@@ -114,7 +114,11 @@
   (debug 'handle request)
   (if-let [cookie-value (and (session-enbabled?) (get-cookie-value request))]
     (let [token-hash (token-hash cookie-value)
-          tx (:tx request)]
+          tx (:tx request)
+
+          p (println ">o> abc.token-hash1" token-hash)
+          p (println ">o> abc.token-hash2" (user-session token-hash tx))
+          ]
       (if-let [user-session (first (user-session token-hash tx))]
         (let [user-id (:users/user_id user-session)
               expires-at (:session_expires_at user-session)
