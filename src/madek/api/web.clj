@@ -2,6 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [clojure.tools.logging :as log]
    [environ.core :refer [env]]
    [logbug.thrown :as thrown]
    [madek.api.authentication :as authentication]
@@ -11,7 +12,8 @@
    [madek.api.resources]
    [cider-ci.open-session.bcrypt :refer [checkpw hashpw]]
 
-   [madek.api.authentication.session :refer [token-hash]]
+   [madek.api.authentication.session :refer [token-hash ]]
+   [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
 
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.resources.shared.core :as sd]
@@ -306,8 +308,96 @@
         (ex-info "BasicAuth header not found."
           {:status 403})))))
 
+(defn parse-cookies [cookie-header]
+  (->> (str/split cookie-header #";\s*")
+    (map #(str/split % #"=" 2))
+    (into {})))
+
 (defn sha256-hash [token]
   (d/sha-256 token))
+
+(defn logout-handler [request]
+  (let [user-id (-> request :authenticated-entity :id)
+
+        p (println ">o> abc.entity"  (-> request :authenticated-entity))
+        ]
+    (try
+      (let [
+
+            ;session (:session request)
+
+
+            p (println ">o> abc.session" (:authenticated-entity request))
+            ;p (println ">o> abc1" request)
+            p (println ">o> abc2" (:headers request))
+            p (println ">o> abc2" (type (:headers request)))
+
+            mei (into {} (:headers request) )
+            p (println ">o> abc.mei" mei)
+
+
+            mei (keywordize-keys mei)
+            p (println ">o> abc.mei" mei)
+
+            ;(get-in request [:headers "cookie"  "madek-session" :session])
+
+
+            ;(get-in request [:cookies "madek-user-session" :value])
+
+            cookie-header   (get-in request [:headers "cookie"] "")
+            cookies-map     (parse-cookies cookie-header)
+            user-session    (get cookies-map "madek-user-session")
+        _ (println ">o> raw cookie header:" cookie-header)
+        _ (println ">o> parsed cookies:" cookies-map)
+        _ (println ">o> parsed cookies2:" (get-in cookies-map ["madek-session"]))
+        _ (println ">o> madek-user-session:" user-session)
+
+
+            session-id (get-in cookies-map ["madek-session"])
+
+            hashed-token (token-hash session-id)
+
+
+            p (println ">o> abc.user-id" user-id)
+            p (println ">o> abc.hashed-token" hashed-token)
+
+            delete-query (-> (sql/delete-from :user_sessions)
+                             ;(sql/where [:= :user_id user-id] [:= :token_hash hashed-token])
+                             (sql/where  [:= :token_hash hashed-token])
+                             sql-format)
+            delete-result (jdbc/execute! (:tx request) delete-query)
+
+            p (println ">o> abc.delete-result" delete-result)
+
+            ;hashed-token (token-hash token)
+
+
+
+
+
+            ;p (println ">o> abc3" (get-in request [:headers "x-csrf-token"]))
+            ;p (println ">o> abc4??" (get-in request [:headers   "madek-session" :value]))
+            ;p (println ">o> abc4??" (type (get-in request [:headers   "madek-session"])))
+            ;p (println ">o> abc5" (get-in request [:headers "Cookie"  ]))
+            ;p (println ">o> abc" (: request))
+
+            ;token (get-in request [:headers "x-csrf-token"])
+
+            ;p (println ">o> abc.hashed-token" hashed-token)
+
+            ]
+        (if (> (:next.jdbc/update-count (first delete-result)) 0)
+          (do
+            (log/info "Successfully removed session for user_id:" user-id)
+            (response/response {:status "success" :message "User logged out successfully"}))
+          (do
+            (log/warn "No session found for user_id:" user-id)
+            (response/status
+              (response/response {:status "failure" :message "No active session found"}) 404))))
+      (catch Exception e
+        (log/error "Error in logout-handler:" e)
+        (response/status (response/response {:message (.getMessage e)}) 400)))))
+
 
 (defn authenticate-handler [request]
   (try
@@ -369,9 +459,10 @@
           ;   (response/set-cookie "madek-session" user {:max-age max-age :path "/"}))))
 
           (let [max-age 3600
+                ;max-age "session"
                 cookie {:http-only true
                         :secure true
-                        :max-age max-age
+                        ;:max-age max-age
                         :path "/"}]
             (->
 
@@ -380,8 +471,11 @@
              ;(response/response
              ;  {:status "success" :message "User authenticated successfully"})
 
-             (response/set-cookie "madek-session" token cookie {:max-age max-age :path "/"})
-             (response/set-cookie "madek-user-session" user {:max-age max-age :path "/"}))))
+             ;(response/set-cookie "madek-session" token cookie {:max-age max-age :path "/"})
+             ;(response/set-cookie "madek-user-session" user {:max-age max-age :path "/"}))))
+
+        (response/set-cookie "madek-session" token cookie { :path "/"})
+             (response/set-cookie "madek-user-session" user { :path "/"}))))
 
         (response/status
           (response/response {:status "failure" :message "Invalid credentials"}) 403)))
@@ -418,15 +512,17 @@
             ;:middleware [(restrict-uri-middleware ["/sign-in"])]
             :handler get-sign-in}}]
 
-    ;["sign-out"
-    ; {:swagger {:tags ["Login"]}
-    ;  :no-doc false
-    ;  :post {:accept "application/json"
-    ;         :swagger {:produces ["text/html" "application/json"]}
-    ;         :handler post-sign-out}
-    ;  :get {:accept "text/html"
-    ;        :summary "HTML | Get sign-out page"
-    ;        :handler get-sign-out}}]
+    ["sign-out"
+     {:swagger {:tags ["Logout"]}
+      :no-doc false
+      :post {:accept "application/json"
+             :swagger {:produces ["text/html" "application/json"]}
+             :handler logout-handler}
+      ;:get {:accept "text/html"
+      ;      :summary "HTML | Get sign-out page"
+      ;      :handler get-sign-out}
+      }
+     ]
 
     ]
   

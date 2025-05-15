@@ -44,6 +44,8 @@ Requirements:
     MacPorts or Homebrew
 *  ⚠️ WARNING: local tests can fail caused by wrong order of results (see terms_for_sorting_shared_context.rb)
 
+### Login
+- Use http://localhost:3104/sign-in
 
 ### Starting up the Server
 
