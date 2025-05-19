@@ -2,6 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [honey.sql :refer [format] :rename {format sql-format}]
+   [logbug.debug :as debug]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
@@ -11,18 +12,24 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [error]]))
+   [taoensso.timbre :refer [error info spy]]
+   ))
 
-;#### create ##################################################################
+  ;#### create ##################################################################
 
-(defn handle-create-user [{{data :body} :parameters
+(defn handle-create-user
+  [{{data :body} :parameters
                            {auth-entity-id :id} :authenticated-entity
                            tx :tx
                            :as req}]
+  (info "handle-create-user" {:request req})
   (try
     (let [data (-> data
+                   spy
                    convert-map-if-exist
-                   (assoc :creator_id auth-entity-id))
+                   (assoc :creator_id auth-entity-id)
+                   spy
+                   )
           query (-> (sql/insert-into :users)
                     (sql/values [data])
                     (sql/returning :*)
@@ -91,4 +98,4 @@
              :produces "application/json"}})
 
 ;### Debug ####################################################################
-;(debug/debug-ns *ns*)
+(debug/debug-ns *ns*)
