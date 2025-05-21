@@ -50,7 +50,7 @@
    (s/optional-key :institution) s/Str
    (s/optional-key :institutional_id) s/Str
    (s/optional-key :last_name) s/Str
-   (s/optional-key :login) s/Str
+   (s/optional-key :login) (s/maybe s/Str)
    (s/optional-key :password_sign_in_enabled) s/Bool
    (s/optional-key :notes) (s/maybe s/Str)
    (s/optional-key :settings) v/vector-or-hashmap-validation})
@@ -63,7 +63,7 @@
    :person_id s/Uuid
    :active_until s/Any
    :settings s/Any
-   :login s/Str
+   :login (s/maybe s/Str)
    :searchable s/Str
    :updated_at s/Any
    :updator_id (s/maybe s/Uuid)
