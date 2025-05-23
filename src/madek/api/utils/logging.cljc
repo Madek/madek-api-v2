@@ -26,9 +26,12 @@
                   ;"madek.api.authentication" ;
                   ;"madek.api.resources.*"
                   ;"madek.api.resources.people.*"
-                  "madek.api.resources.users.*"
+                  ;"madek.api.resources.users.*"
+                  "madek.api.resources.groups"
+                  "madek.api.utils.pagination"
                   ;"madek.api.resources.users.create"
-                  "madek.api.web"} :debug]
+                  ;"madek.api.web"
+                  }:debug]
                [#{#?(:clj "com.zaxxer.hikari.*")
                   "madek.*"} :info]
                [#{"*"} :warn]]

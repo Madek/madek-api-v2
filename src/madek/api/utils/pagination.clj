@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.utils.request :refer [query-params]]
    [next.jdbc.sql :as jdbc]
+   [logbug.debug :as debug]
    [ring.middleware.accept]))
 
 (defn or-condition [c1 c2]
@@ -128,3 +129,6 @@
                (if wrap-name-of-result
                  {(keyword wrap-name-of-result) result}
                  result))))))
+
+
+(debug/debug-ns *ns*)
