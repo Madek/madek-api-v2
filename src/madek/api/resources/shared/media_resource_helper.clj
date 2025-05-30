@@ -23,8 +23,8 @@
        (when-let [resource (jdbc/execute-one! tx
                                               (-> (sql/select :*)
 
-                                                  ;(sql/from (keyword table-name))
-                                                  (gen-from-order-by (keyword table-name))
+                                                  (sql/from (keyword table-name))
+                                                  ;(gen-from-order-by (keyword table-name))
 
                                                   (sql/where [:= :id (to-uuid id)])
                                                   ->non-soft-deleted
