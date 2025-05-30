@@ -2,7 +2,7 @@
   (:require [cheshire.core :as json]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [pghstore-clj.core :refer [to-hstore THstorable]]
+            [pghstore-clj.core :refer [THstorable to-hstore]]
             [taoensso.timbre :refer [warn]])
   (:import (clojure.lang IPersistentMap)
            (java.util UUID)
@@ -68,37 +68,51 @@
      :io_mappings (-> th (sql/from table) (sql/order-by :id))
 
      ;; default:
-     (-> th (sql/from table) (sql/order-by :id))))
+     (-> th (sql/from table) (sql/order-by :id)))
+   )
 
-  ;([th table & third-attr]
-  ;
-  ;
-  ; (let [third-attr (vec third-attr)
-  ;
-  ;       ]
-  ;   ;; …same as above…
-  ;
-  ;
-  ; (println ">o> abc.order-params" third-attr)
-  ;
-  ;   (println ">o> abc.seq?" (seq third-attr))
-  ;
-  ;   )
-  ;
-  ;
-  ; ;>o> abc.order-params [[:users.id :asc] :groups_users.group_id :groups.name]
-  ; ;>o> abc.seq? ([:users.id :asc] :groups_users.group_id :groups.name)
-  ;
-  ;
-  ;
-  ; (-> th
-  ;     (sql/from table)
-  ;
-  ;     (cond-> (seq third-attr)
-  ;       (apply sql/order-by third-attr))
-  ;
-  ;
-  ;     ))
+  ([th table columns]
+
+
+   (let [
+         ;third-attr (vec third-attr)
+
+         ]
+
+     ;(println ">o> abc.order-params" third-attr)
+     (println ">o> abc.order-params.columns" columns)
+     (println ">o> abc.order-params.columns" (->
+                                                 (sql/select :*)
+                                                 (sql/from table)
+
+                                                 ;(cond-> (seq third-attr)
+                                                 ;  (apply sql/order-by third-attr))
+                                                 ;
+                                                 (cond-> (seq columns)
+                                                   ;(apply sql/order-by columns))
+
+                                                 (#(apply sql/order-by % columns)))
+
+
+       sql-format
+
+                                                 ))
+
+     )
+
+
+   (-> th
+       (sql/from table)
+
+       ;(cond-> (seq third-attr)
+       ;  (apply sql/order-by third-attr))
+       ;
+       (cond-> (seq columns)
+         ;(apply sql/order-by columns))
+       (#(apply sql/order-by % columns)))
+
+
+   ))
   )
 (defmacro gen-from-order-by-multiple
   "Generates a threaded call to `(sql/from ...)` then `(sql/order-by ...)`"
@@ -112,12 +126,12 @@
   [m]
   (when (map? m)
     (into {}
-          (map (fn [[k v]]
-                 [(if (keyword? k)
-                    (keyword (name k))
-                    k)
-                  v])
-               m))))
+      (map (fn [[k v]]
+             [(if (keyword? k)
+                (keyword (name k))
+                k)
+              v])
+        m))))
 
 (defn strip-prefixes-generic
   "Strips table/namespace prefixes from keyword keys.
@@ -197,7 +211,7 @@
                  value)
                (catch Exception e
                  (warn ">>> DEV-ERROR in to-uuid[value key], value=" value ", key=" key " exception=" (.getMessage e)
-                       ", continue with original value")
+                   ", continue with original value")
                  value))] res))
 
   ([value key table]
@@ -220,7 +234,7 @@
   (-> map
       (update :external_uris #(if (nil? %)
                                 [:raw "'{}'"]
-                                (convert-to-raw-set %))) ;;rename to convert-to-raw-set
+                                (convert-to-raw-set %)))    ;;rename to convert-to-raw-set
       (update :creator_id #(if (contains? map :creator_id) (to-uuid % :creator_id)))))
 
 (defn modify-if-exists [m k f]
@@ -289,10 +303,10 @@
     (let [pgobj (doto (PGobject.)
                   (.setType "hstore")
                   (.setValue
-                   (->> this
-                        (map (fn [[k v]]
-                               (str "\"" (name k) "\"=>\"" (str v) "\"")))
-                        (clojure.string/join ", "))))]
+                    (->> this
+                      (map (fn [[k v]]
+                             (str "\"" (name k) "\"=>\"" (str v) "\"")))
+                      (clojure.string/join ", "))))]
       pgobj)))
 
 ; [madek.api.utils.helper :refer [cast-to-hstore]]
@@ -307,8 +321,8 @@
                       transformed-value (to-hstore field-value)]
                   (assoc acc key transformed-value))
                 acc))
-            data
-            keys)))
+      data
+      keys)))
 
 (defn array-to-map [arr]
   (zipmap arr (range (count arr))))
@@ -329,21 +343,21 @@
 (defn replace-java-hashmaps [m]
   (reduce-kv (fn [acc k v]
                (assoc acc k (replace-java-hashmap v)))
-             {}
-             m))
+    {}
+    m))
 
 (def email-regex #"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$")
 
 ; [madek.api.utils.helper :refer [convert-groupid-userid]]
 (defn convert-groupid-userid [group-id user-id]
   (let [is_uuid (boolean (re-matches
-                          #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-                          group-id))
+                           #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+                           group-id))
         group-id (if is_uuid (to-uuid group-id) group-id)
         is_email (re-matches email-regex user-id)
         is_uuid (boolean (re-matches
-                          #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-                          user-id))
+                           #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+                           user-id))
         user-id (if is_uuid (to-uuid user-id) user-id)
         is_userid_valid (or is_email is_uuid)
         res {:group-id group-id
@@ -355,8 +369,8 @@
 (defn convert-userid [user-id]
   (let [is_email (boolean (re-matches email-regex (str user-id)))
         is_uuid (boolean (re-matches
-                          #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-                          user-id))
+                           #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+                           user-id))
         user-id (if is_uuid (to-uuid user-id) user-id)
         is_userid_valid (or is_email is_uuid)
         res {:user-id user-id
@@ -369,8 +383,8 @@
 ; [madek.api.utils.helper :refer [convert-groupid]]
 (defn convert-groupid [group-id]
   (let [is_uuid (boolean (re-matches
-                          #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-                          group-id))
+                           #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+                           group-id))
         group-id (if is_uuid (to-uuid group-id) group-id)
         res {:group-id group-id}]
     res))

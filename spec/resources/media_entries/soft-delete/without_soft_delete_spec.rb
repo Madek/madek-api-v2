@@ -150,10 +150,12 @@ describe "a bunch of media entries with different properties" do
 
           response = client.get("/api-v2/media-entry/#{me_id}/meta-data")
           expect(response.status).to be == 200
+          # binding.pry
           expect(response.body["meta_data"].count).to eq(6)
 
           ["test:people", "test:roles", "test:keywords"].each do |meta_key_id|
             response = client.get("/api-v2/media-entry/#{me_id}/meta-datum/#{meta_key_id}")
+            # binding.pry
             expect(response.status).to be == 200
             expect(response.body["meta_data"]["media_entry_id"]).to eq(me_id)
           end

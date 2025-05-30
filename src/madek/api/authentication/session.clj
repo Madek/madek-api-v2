@@ -42,8 +42,11 @@
 
 (defn user-session-query [token-hash]
   (-> (apply sql/select selects)
+
       ;(sql/from :user_sessions)
-      (gen-from-order-by :user_sessions)
+      ;(gen-from-order-by [:user_sessions]) ;; broken
+      ;(gen-from-order-by :user_sessions [[:auth_system_id :asc]]) ;; ok
+      (gen-from-order-by :user_sessions [:auth_system_id]) ;; ok
 
       (sql/join :users [:= :user_sessions.user_id :users.id])
       (sql/join :people [:= :people.id :users.person_id])

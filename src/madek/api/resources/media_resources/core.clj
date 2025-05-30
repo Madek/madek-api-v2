@@ -119,8 +119,9 @@
 (defn delegation-ids [user_id tx]
   (let [query {:union [(-> (sql/select :delegation_id)
 
-                           ;(sql/from :delegations_groups)
-                           (gen-from-order-by :delegations_groups)
+                           (sql/from :delegations_groups)
+                           ;(gen-from-order-by :delegations_groups)
+
 
                            (sql/where [:in :delegations_groups.group_id (->
                                                                          (sql/select :group_id)
@@ -130,6 +131,39 @@
                            (sql/from :delegations_users)
                            (sql/where [:= :delegations_users.user_id user_id]))]}]
     (map #(:delegation_id %) (jdbc/execute! tx (sql-format query)))))
+
+
+(defn delegation-ids [user-id tx]
+  (let [groups-branch
+        (-> (sql/select :delegation_id)
+            (sql/from   :delegations_groups)
+            (sql/where [:in :delegations_groups.group_id
+                        (-> (sql/select :group_id)
+                            (sql/from   :groups_users)
+                            (sql/where [:= :groups_users.user_id user-id]))]))
+
+        users-branch
+        (-> (sql/select :delegation_id)
+            (sql/from   :delegations_users)
+            (sql/where [:= :delegations_users.user_id user-id]))
+
+        ;; Build the UNION as a raw HoneySQL map
+        union-query
+        {:union [groups-branch users-branch]}
+
+        ;; Now wrap it in an outer SELECT to order it
+        ordered-query
+        (-> (sql/select :d.delegation_id)
+            ;; Stick your union-map straight into the FROM vector, aliased as `d`
+            (sql/from   [union-query :d])
+            (sql/order-by :d.delegation_id))]
+
+    ;; Execute and pull out just the IDs
+    (map :delegation_id
+      (jdbc/execute! tx (sql-format ordered-query)))))
+
+
+
 
 (defn query-user-permissions
   [resource user-id perm-name mr-type tx]
