@@ -14,9 +14,9 @@ describe "filtering collections" do
 
       @deleted_child_ids = []
 
-      puts "Found #{parent_collection.collections.count} child collections."
+      # puts "Found #{parent_collection.collections.count} child collections."
       parent_collection.collections.each do |child_collection|
-        puts "Soft deleting collection ID: #{child_collection.id}"
+        # puts "Soft deleting collection ID: #{child_collection.id}"
         @deleted_child_ids << child_collection.id
 
         child_collection.soft_delete
