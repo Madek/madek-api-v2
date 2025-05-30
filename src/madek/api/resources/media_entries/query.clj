@@ -65,9 +65,11 @@
                  (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted where3 "media_entries"))
 
 ; TODO updated/created after
-;; avoid group-by
 
+        ;; TODO: avoid group-by, will be done afterwards
         from (sql/from where4 :media_entries)]
+      ;from (gen-from-order-by :media_entries [:media_entries.created_at])]
+
     ;    (info "base-query"
     ;                  "\nme-query:\n" me-query
     ;                  "\nfrom:\n" sel

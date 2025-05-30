@@ -2,6 +2,8 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
+
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -15,7 +17,10 @@
 (defn get-media-entry-for-preview [request]
   (let [preview-id (or (-> request :params :preview_id) (-> request :parameters :path :preview_id))
         query (-> (sql/select :media_entries.*)
-                  (sql/from :media_entries)
+
+                  ;(sql/from :media_entries)
+                  (gen-from-order-by :media_entries [:media_entries.created_at])
+
                   (sql/join :media_files [:= :media_entries.id :media_files.media_entry_id])
                   (sql/join :previews [:= :media_files.id :previews.media_file_id])
                   (sql/where [:= :previews.id (to-uuid preview-id)])
