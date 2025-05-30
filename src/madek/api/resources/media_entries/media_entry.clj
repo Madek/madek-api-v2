@@ -18,7 +18,8 @@
         query (-> (sql/select :media_entries.*)
 
                   ;(sql/from :media_entries)
-                  (gen-from-order-by :media_entries)
+                  ;(gen-from-order-by :media_entries)
+                  (gen-from-order-by :media_entries [:media_entries.id])
 
                   (sql/join :media_files [:= :media_entries.id :media_files.media_entry_id])
                   (sql/join :previews [:= :media_files.id :previews.media_file_id])

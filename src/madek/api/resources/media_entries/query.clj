@@ -65,7 +65,7 @@
 
 ; TODO updated/created after
 ;        from (sql/from where4 :media_entries)
-        from (-> where4 (gen-from-order-by :media_entries))]
+        from (-> where4 (gen-from-order-by :media_entries [:media_entry_id]))]
 
 ;    (info "base-query"
     ;                  "\nme-query:\n" me-query
