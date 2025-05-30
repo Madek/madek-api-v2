@@ -2,7 +2,6 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]))
 
 (defn user-table
@@ -25,22 +24,12 @@
 
   ([mr-id mr-table tx]
    (-> (jdbc/execute-one! tx
-                          (-> (sql/select :*)
-
-                              (sql/from (keyword mr-table))
-                              ;(gen-from-order-by (keyword mr-table))
-
-                              (sql/where [:= :id mr-id]) (sql-format))))))
+                          (-> (sql/select :*) (sql/from (keyword mr-table)) (sql/where [:= :id mr-id]) (sql-format))))))
 
 (defn build-user-permissions-query
   [media-resource-id user-id perm-name mr-type]
   (-> (sql/select :*)
-
-      ;(sql/from (user-table mr-type))
-      (gen-from-order-by (user-table mr-type))
-
-;[madek.api.utils.helper :refer [gen-from-order-by]]
-
+      (sql/from (user-table mr-type))
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :user_id user-id]
                  [:= perm-name true])
@@ -49,10 +38,7 @@
 (defn build-user-permission-get-query
   [media-resource-id mr-type user-id]
   (-> (sql/select :*)
-
-      ;(sql/from (user-table mr-type))
-      (gen-from-order-by (user-table mr-type))
-
+      (sql/from (user-table mr-type))
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :user_id user-id])
       (sql-format)))
@@ -60,19 +46,13 @@
 (defn build-user-permission-list-query
   [media-resource-id mr-type]
   (-> (sql/select :*)
-
-      ;(sql/from (user-table mr-type))
-      (gen-from-order-by (user-table mr-type))
-
+      (sql/from (user-table mr-type))
       (sql/where [:= (resource-key mr-type) media-resource-id])
       (sql-format)))
 
 (defn build-user-groups-query [user-id]
   (-> (sql/select :groups.*)
-
-      ;(sql/from :groups)
-      (gen-from-order-by :groups)
-
+      (sql/from :groups)
       (sql/join :groups_users [:= :groups.id :groups_users.group_id])
       (sql/where [:= :groups_users.user_id user-id])
       (sql-format)))
@@ -84,10 +64,7 @@
 (defn build-group-permissions-query
   [media-resource-id group-ids perm-name mr-type]
   (-> (sql/select :*)
-
-      ;(sql/from (group-table mr-type))
-      (gen-from-order-by (group-table mr-type))
-
+      (sql/from (group-table mr-type))
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:in :group_id group-ids]
                  [:= perm-name true])
@@ -96,10 +73,7 @@
 (defn build-group-permission-get-query
   [media-resource-id mr-type group-id]
   (-> (sql/select :*)
-
-      ;(sql/from (group-table mr-type))
-      (gen-from-order-by (group-table mr-type))
-
+      (sql/from (group-table mr-type))
       (sql/where [:= (resource-key mr-type) media-resource-id]
                  [:= :group_id group-id])
       (sql-format)))
@@ -107,10 +81,7 @@
 (defn build-group-permission-list-query
   [media-resource-id mr-type]
   (-> (sql/select :*)
-
-      ;(sql/from (group-table mr-type))
-      (gen-from-order-by (group-table mr-type))
-
+      (sql/from (group-table mr-type))
       (sql/where [:= (resource-key mr-type) media-resource-id])
       (sql-format)))
 
@@ -118,11 +89,7 @@
 
 (defn delegation-ids [user_id tx]
   (let [query {:union [(-> (sql/select :delegation_id)
-
                            (sql/from :delegations_groups)
-                           ;(gen-from-order-by :delegations_groups)
-
-
                            (sql/where [:in :delegations_groups.group_id (->
                                                                          (sql/select :group_id)
                                                                          (sql/from :groups_users)
@@ -131,39 +98,6 @@
                            (sql/from :delegations_users)
                            (sql/where [:= :delegations_users.user_id user_id]))]}]
     (map #(:delegation_id %) (jdbc/execute! tx (sql-format query)))))
-
-
-(defn delegation-ids [user-id tx]
-  (let [groups-branch
-        (-> (sql/select :delegation_id)
-            (sql/from   :delegations_groups)
-            (sql/where [:in :delegations_groups.group_id
-                        (-> (sql/select :group_id)
-                            (sql/from   :groups_users)
-                            (sql/where [:= :groups_users.user_id user-id]))]))
-
-        users-branch
-        (-> (sql/select :delegation_id)
-            (sql/from   :delegations_users)
-            (sql/where [:= :delegations_users.user_id user-id]))
-
-        ;; Build the UNION as a raw HoneySQL map
-        union-query
-        {:union [groups-branch users-branch]}
-
-        ;; Now wrap it in an outer SELECT to order it
-        ordered-query
-        (-> (sql/select :d.delegation_id)
-            ;; Stick your union-map straight into the FROM vector, aliased as `d`
-            (sql/from   [union-query :d])
-            (sql/order-by :d.delegation_id))]
-
-    ;; Execute and pull out just the IDs
-    (map :delegation_id
-      (jdbc/execute! tx (sql-format ordered-query)))))
-
-
-
 
 (defn query-user-permissions
   [resource user-id perm-name mr-type tx]

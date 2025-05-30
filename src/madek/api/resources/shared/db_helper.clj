@@ -20,8 +20,9 @@
 ; TODO sql injection protection
 (defn build-query-base [table-key col-keys]
   (-> (apply sql/select col-keys)
-      ;(sql/from table-key)
-      (gen-from-order-by table-key)))
+
+      (sql/from table-key)))
+      ;(gen-from-order-by table-key)))
 
 (defn build-query-param [query query-params param]
   (let [pval (-> query-params param mc/presence)]

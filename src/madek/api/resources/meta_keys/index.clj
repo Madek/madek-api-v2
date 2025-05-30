@@ -21,10 +21,7 @@
 (defn- base-query
   [user-id scope tx]
   (-> (sql/select :meta_keys.*)
-
-      ;(sql/from :meta_keys)
-      (gen-from-order-by :meta_keys)
-
+      (sql/from :meta_keys)
       (sql/join :vocabularies
                 [:= :meta_keys.vocabulary_id :vocabularies.id])
       (sql/where (where-clause user-id scope tx))))

@@ -15,10 +15,7 @@
     (or
      (jdbc/execute-one! (:tx request)
                         (-> (sql/select :*)
-
-                            ;(sql/from :meta_data)
-                            (gen-from-order-by :meta_data)
-
+                            (sql/from :meta_data)
                             (sql/where [:= :id (to-uuid id)])
                             sql-format))
 

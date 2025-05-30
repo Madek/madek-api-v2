@@ -21,8 +21,7 @@
 (defn- query-index
   [query-params]
   (-> (sql/select :roles.*)
-      ;(sql/from :roles)
-      (gen-from-order-by :roles)))
+      (sql/from :roles)))
 
 (defn get-index
   [request]
@@ -34,10 +33,7 @@
 
 (defn query_role-find-one [id]
   (-> (sql/select :*)
-
-      ;(sql/from :roles)
-      (gen-from-order-by :roles)
-
+      (sql/from :roles)
       (sql/where [:= :roles.id id])
       (sql-format)))
 

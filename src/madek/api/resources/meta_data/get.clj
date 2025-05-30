@@ -9,7 +9,6 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
-            [madek.api.utils.helper :refer [gen-from-order-by]]
             [madek.api.utils.helper :refer [mslurp]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -158,10 +157,7 @@
           tx (:tx req)
           user-vocab-query (meta-data.index/md-vocab-where-clause user-id tx)
           vocab-clause (-> (sql/select :*)
-
-                           ;(sql/from :vocabularies)
-                           (gen-from-order-by :vocabularies)
-
+                           (sql/from :vocabularies)
                            (sql/where [:= :id (:vocabulary_id meta-key)])
                            (sql/where user-vocab-query)
                            (sql-format))

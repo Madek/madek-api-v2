@@ -12,7 +12,6 @@
    :is_published
    :updated_at :edit_session_updated_at :meta_data_updated_at])
 
-;; TODO: avoid order-by
 (defn get-media-entry-for-preview [request]
   (let [preview-id (or (-> request :params :preview_id) (-> request :parameters :path :preview_id))
         query (-> (sql/select :media_entries.*)

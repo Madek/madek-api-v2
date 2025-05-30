@@ -7,7 +7,6 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.vocabularies.permissions :as permissions]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]))
 
 ; TODO error if user-id is undefined (public)
@@ -32,10 +31,7 @@
                   :meta_data.json
                   :meta_data.other_media_entry_id
                   :meta_data.meta_data_updated_at)
-
-      ;(sql/from :meta_data)
-      (gen-from-order-by :meta_data)
-
+      (sql/from :meta_data)
       (sql/where [:in :meta_data.type
                   constants/SUPPORTED_META_DATA_TYPES])
       ; TODO use in other md access
