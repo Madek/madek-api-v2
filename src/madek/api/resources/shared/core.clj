@@ -161,7 +161,7 @@
               (jdbc/execute!
                tx
                (-> (sql/select :*)
-                   (sql/from :admins)
+                   (sql/from :admins)                       ;; no order-by needed
                    (sql/where [:= :user_id (to-uuid user-id)])
                    sql-format))
               empty?)
