@@ -3,7 +3,6 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.media-entries.permissions :as me-permissions]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
 
@@ -11,10 +10,7 @@
   (let [media-entry-id (get-in request [:media-file :media_entry_id])
         tx (:tx request)
         media-entry (-> (jdbc/execute-one! (:tx request) (-> (sql/select :*)
-
-                                                             ;(sql/from :media_entries)
-                                                             (gen-from-order-by :media_entries)
-
+                                                             (sql/from :media_entries)
                                                              (sql/where [:= :id media-entry-id])
                                                              sql-format)))]
     (info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
