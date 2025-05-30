@@ -39,8 +39,8 @@
   (-> (sql-select)
       (sql-merge-user-where-id some-id)
 
-      (sql/from :users)
-      ;(gen-from-order-by :users) ;; not needed
+      ;(sql/from :users)
+      (gen-from-order-by :users [:created_at]) ;; not needed
 
       sql-format))
 
@@ -83,8 +83,9 @@
 (defn group-users-query [group-id request]
   (-> (sql/select :users.id :users.institutional_id :users.email :users.person_id)
 
-      (sql/from :users)
-      ;(gen-from-order-by :users)                            ;; not needed
+      ;(sql/from :users)
+      ;(gen-from-order-by :users [:users.created_at])                            ;; not needed
+      (gen-from-order-by :users [:users.id])
 
       (sql/join :groups_users [:= :users.id :groups_users.user_id])
       (sql/join :groups [:= :groups.id :groups_users.group_id])
@@ -150,7 +151,9 @@
   (-> (sql/select :id)
 
       ;(sql/from :users)
-      (gen-from-order-by :users)
+      ;(gen-from-order-by :users)
+      (gen-from-order-by :users [:users.id])
+
 
       (sql/where ;[:or
        [:in :users.id (->> users (map #(-> % :id to-uuid)) (filter identity))]

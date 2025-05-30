@@ -24,8 +24,8 @@
   (-> (sql-merge-where-id id)
       (sql/select :*)
 
-      (sql/from :groups)                                    ;; not needed
-      ;(gen-from-order-by :groups)
+      ;(sql/from :groups)                                    ;; not needed
+      (gen-from-order-by :groups [:created_at])
 
       sql-format))
 
