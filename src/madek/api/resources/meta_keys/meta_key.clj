@@ -18,7 +18,9 @@
   (let [query (-> (sql/select :key_map, :io_interface_id)
 
                   ;(sql/from :io_mappings)
-                  (gen-from-order-by :io_mappings)
+                  ;(gen-from-order-by :io_mappings) ;; TODO: breaks test
+                  (gen-from-order-by :io_mappings [[:created_at :asc]]) ;; ok
+                  ;(gen-from-order-by :io_mappings [[:key_map :desc]]) ;; error
 
                   (sql/where [:= :io_mappings.meta_key_id id])
                   (sql-format))]
@@ -41,6 +43,7 @@
 
 (defn build-meta-key-query [id]
   (-> (sql/select :*)
+
       ;(sql/from :meta-keys)
       (gen-from-order-by :meta-keys)
 
