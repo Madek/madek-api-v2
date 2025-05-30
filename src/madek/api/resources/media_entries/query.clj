@@ -10,8 +10,9 @@
    [madek.api.resources.media-entries.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.core :refer [keyword str]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
    [madek.api.utils.helper :refer [to-uuid]]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
+
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]
    [taoensso.timbre :refer [info]]))
@@ -64,10 +65,10 @@
                  (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted where3 "media_entries"))
 
 ; TODO updated/created after
-;        from (sql/from where4 :media_entries)
-        from (-> where4 (gen-from-order-by :media_entries [:media_entry_id]))]
+;; avoid group-by
 
-;    (info "base-query"
+        from (sql/from where4 :media_entries)]
+    ;    (info "base-query"
     ;                  "\nme-query:\n" me-query
     ;                  "\nfrom:\n" sel
     ;                  "\nwhere1:\n" where1
@@ -122,12 +123,10 @@
   (let [direction (-> (str/split order #"_") (last))]
     (reduce order-reducer [query ["MetaDatum::Text" "madek_core:title" direction]])))
 
+;; avoid group-by
 (defn- find-collection-default-sorting [collection-id tx]
   (let [query (-> (sql/select :sorting)
-
-                  ;(sql/from :collections)
-                  (gen-from-order-by :collections)
-
+                  (sql/from :collections)
                   (sql/where [:= :collections.id collection-id])
                   sql-format)]
     (:sorting (jdbc/execute-one! tx query))))

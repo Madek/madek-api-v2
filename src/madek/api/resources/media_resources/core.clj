@@ -27,8 +27,8 @@
    (-> (jdbc/execute-one! tx
                           (-> (sql/select :*)
 
-                              ;(sql/from (keyword mr-table))
-                              (gen-from-order-by (keyword mr-table))
+                              (sql/from (keyword mr-table))
+                              ;(gen-from-order-by (keyword mr-table))
 
                               (sql/where [:= :id mr-id]) (sql-format))))))
 
