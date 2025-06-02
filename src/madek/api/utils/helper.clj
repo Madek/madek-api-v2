@@ -54,7 +54,10 @@
      :vocabularies (-> th (sql/from table) (sql/order-by :id))
      :keywords (-> th (sql/from table) (sql/order-by :term))
      :media_entries (-> th (sql/from table) (sql/order-by :id))
-     :roles (-> th (sql/from table) (sql/order-by :id))
+
+     ;:roles (-> th (sql/from table) (sql/order-by :id))
+     :roles (-> th (sql/from table) (sql/order-by :created_at))
+
      :people (-> th (sql/from table) (sql/order-by :searchable))
 
      :vocabulary_user_permissions (-> th (sql/from table) (sql/order-by :vocabulary_id))
