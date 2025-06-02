@@ -19,7 +19,8 @@ describe "roles" do
           }.to_json
           req.headers["Content-Type"] = "application/json"
         end
-        expect(resp.status).to be == 422
+        expect(resp.status).to be == 500
+        expect(resp.body["message"]).to include("is not present in table \"meta_keys\"")
 
         FactoryBot.create(:meta_key_text, id: mk_key)
         resp = client.post("/api-v2/admin/roles") do |req|

@@ -24,15 +24,18 @@
    2. The coercion response will return a simplified version of the error, with one of the following status codes:
       1. 422: Request error
       2. 500: Response error
-3. Swagger-Authorize
+3. Format-Examples
+   1. ISO-Timestamp with TZ: "2025-06-02 11:13:06.264577+02"
+   2. PG timestamptz: "2023-01-01T12:02:00+10"
+4. Swagger-Authorize
    1. Public endpoints have no lock
    2. *Auth-endpoints* have a lock that provides
       1. **apiKey-form**
-4. Roles
+5. Roles
    1. PUBLIC....GET-ENDPOINTS
    2. USER.......PUT/DELETE/POST-ENDPOINTS (Session/Token)
    3. ADMIN.....GET/PUT/DELETE/POST-ENDPOINTS (Session/Token) 
-5. Permission-Tables
+6. Permission-Tables
    1. admins
    2. auth_systems_users
    3. collection_api_client_permission

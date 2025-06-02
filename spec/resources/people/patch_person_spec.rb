@@ -169,15 +169,28 @@ context "people" do
           expect(@person.reload.institutional_directory_infos).to be == []
         end
 
-        it "updates institutional_directory_inactive_since" do
+        it "updates institutional_directory_inactive_since with isoTS" do
           response = patch_request(institutional_directory_inactive_since: "2023-01-01T12:02:00+10")
           expect(response.status).to eq(200)
           expected_time = Time.zone.parse("2023-01-01T12:02:00+10")
           expect(@person.reload.institutional_directory_inactive_since).to eq(expected_time)
         end
 
+        it "updates institutional_directory_inactive_since with timestamptz" do
+          response = patch_request(institutional_directory_inactive_since: "2023-01-01 11:13:06.264577+02")
+          expect(response.status).to eq(200)
+          expected_time = Time.zone.parse("2023-01-01 11:13:06.264577+02")
+          expect(@person.reload.institutional_directory_inactive_since).to eq(expected_time)
+        end
+
+        it "updates institutional_directory_inactive_since with timestamptz" do
+          response = patch_request(institutional_directory_inactive_since: nil)
+          expect(response.status).to eq(200)
+          expect(@person.reload.institutional_directory_inactive_since).to eq(nil)
+        end
+
         it "updates institutional_directory_inactive_since to nil" do
-          old_time = Time.zone.parse("2023-01-01T12:02:00+10")
+          old_time = Time.zone.parse("2023-01-01 11:13:06.264577+02")
           @person.update(institutional_directory_inactive_since: old_time)
           expect(@person.reload.institutional_directory_inactive_since).to eq(old_time)
 

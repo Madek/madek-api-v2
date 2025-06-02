@@ -46,9 +46,7 @@
    :content-type "application/json"
    :accept "application/json"
    :parameters {:path {:id s/Uuid}
-                :body (-> create/schema
-                          (dissoc :subtype)
-                          (assoc (s/optional-key :subtype) (:subtype create/schema)))}
+                :body create/people-schema-opt}
    :handler update-person-handler
    :middleware [wrap-authorize-admin!]
    :responses {200 {:description "Updated."

@@ -71,6 +71,7 @@
                       CONST_COERCION_REQUEST_ERROR_HTTP_CODE)
              base-resp {:reason "Coercion-Error"
                         :scope scope
+                        :errors errors
                         :coercion-type coercion
                         :uri (str (str/upper-case (name (:request-method req)))
                                   " " (:uri req))}

@@ -34,6 +34,20 @@ context "people" do
             expect_audit_entries("POST /api-v2/admin/people/", expected_audit_entries, 201)
           end
         end
+
+        describe "an institutional person with different Timestamp-formats" do
+          it "works" do
+            ["2023-01-01 11:13:06.264577+02", "2023-01-01T12:02:00+10", nil].each do |timestamp|
+              expect(client.post("/api-v2/admin/people/") do |req|
+                req.body = {first_name: nil,
+                            last_name: "Bachelor",
+                            institutional_directory_inactive_since: timestamp,
+                            subtype: "Person"}.to_json
+                req.headers["Content-Type"] = "application/json"
+              end.status).to be == 201
+            end
+          end
+        end
       end
 
       describe "a via post created person" do
