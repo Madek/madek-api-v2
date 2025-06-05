@@ -62,9 +62,9 @@ shared_context :random_resource_type do |_ctx|
     mkid = CGI.escape(meta_key_id)
     case media_resource
     when MediaEntry
-      "/api-v2/media-entry/#{media_resource.id}/meta-datum/#{mkid}/#{type}/#{id}/#{person_id}/#{position}"
+      "/api-v2/media-entries/#{media_resource.id}/meta-data/#{mkid}/#{type}/#{id}/#{person_id}/#{position}"
     when Collection
-      "/api-v2/collection/#{media_resource.id}/meta-datum/#{mkid}/#{type}/#{id}/#{person_id}/#{position}"
+      "/api-v2/collections/#{media_resource.id}/meta-data/#{mkid}/#{type}/#{id}/#{person_id}/#{position}"
     end
   end
 
@@ -72,9 +72,9 @@ shared_context :random_resource_type do |_ctx|
     mkid = CGI.escape(meta_key_id)
     case media_resource
     when MediaEntry
-      "/api-v2/media-entry/#{media_resource.id}/meta-datum/#{mkid}/#{type}/#{id}/#{person_id}"
+      "/api-v2/media-entries/#{media_resource.id}/meta-data/#{mkid}/#{type}/#{id}/#{person_id}"
     when Collection
-      "/api-v2/collection/#{media_resource.id}/meta-datum/#{mkid}/#{type}/#{id}/#{person_id}"
+      "/api-v2/collections/#{media_resource.id}/meta-data/#{mkid}/#{type}/#{id}/#{person_id}"
     end
   end
 
@@ -82,9 +82,9 @@ shared_context :random_resource_type do |_ctx|
     mkid = CGI.escape(meta_key_id)
     case media_resource
     when MediaEntry
-      "/api-v2/media-entry/#{media_resource.id}/meta-datum/#{mkid}/#{type}/#{id}"
+      "/api-v2/media-entries/#{media_resource.id}/meta-data/#{mkid}/#{type}/#{id}"
     when Collection
-      "/api-v2/collection/#{media_resource.id}/meta-datum/#{mkid}/#{type}/#{id}"
+      "/api-v2/collections/#{media_resource.id}/meta-data/#{mkid}/#{type}/#{id}"
     end
   end
 
@@ -92,9 +92,9 @@ shared_context :random_resource_type do |_ctx|
     mkid = CGI.escape(meta_key_id)
     case media_resource
     when MediaEntry
-      "/api-v2/media-entry/#{media_resource.id}/meta-datum/#{mkid}/#{type}"
+      "/api-v2/media-entries/#{media_resource.id}/meta-data/#{mkid}/#{type}/"
     when Collection
-      "/api-v2/collection/#{media_resource.id}/meta-datum/#{mkid}/#{type}"
+      "/api-v2/collections/#{media_resource.id}/meta-data/#{mkid}/#{type}/"
     end
   end
 
@@ -102,9 +102,9 @@ shared_context :random_resource_type do |_ctx|
     mkid = CGI.escape(meta_key_id)
     case media_resource
     when MediaEntry
-      "/api-v2/media-entry/#{media_resource.id}/meta-datum/#{mkid}"
+      "/api-v2/media-entries/#{media_resource.id}/meta-data/#{mkid}"
     when Collection
-      "/api-v2/collection/#{media_resource.id}/meta-datum/#{mkid}"
+      "/api-v2/collections/#{media_resource.id}/meta-data/#{mkid}"
     end
   end
 end

@@ -1,7 +1,7 @@
 require "spec_helper"
 require "shared/audit-validator"
 
-context "admin context-keys" do
+context "admin context-keys/" do
   before :each do
     @context_key = FactoryBot.create :context_key
     # TODO use Faker and indiv. data
@@ -31,7 +31,7 @@ context "admin context-keys" do
   end
 
   let :query_url do
-    "/api-v2/admin/context-keys"
+    "/api-v2/admin/context-keys/"
   end
 
   let :context_key_url do
@@ -220,11 +220,11 @@ context "Getting context-keys with pagination" do
     end
 
     it "responses with 200" do
-      resp1 = client.get("/api-v2/admin/context-keys?page=1&size=5")
+      resp1 = client.get("/api-v2/admin/context-keys/?page=1&size=5")
       expect(resp1.status).to be == 200
       expect(resp1.body["data"].count).to be 5
 
-      resp2 = client.get("/api-v2/admin/context-keys?page=2&size=5")
+      resp2 = client.get("/api-v2/admin/context-keys/?page=2&size=5")
       expect(resp2.status).to be == 200
       expect(resp2.body["data"].count).to be 5
       expect(resp2.body["pagination"]).to be_a Hash
@@ -233,7 +233,7 @@ context "Getting context-keys with pagination" do
     end
 
     it "responses with 200" do
-      resp = client.get("/api-v2/admin/context-keys")
+      resp = client.get("/api-v2/admin/context-keys/")
       expect(resp.status).to be == 200
       expect(resp.body.count).to be 10
       expect(resp.body).to be_a Array

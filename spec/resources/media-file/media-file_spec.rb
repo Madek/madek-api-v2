@@ -5,7 +5,7 @@ describe "MediaFile Resource" do
 
   describe "requesting a non existing media-resource" do
     let :response do
-      authenticated_json_client.get("/api-v2/media-file/#{SecureRandom.uuid}")
+      authenticated_json_client.get("/api-v2/media-files/#{SecureRandom.uuid}")
     end
 
     it "responds with 404 not found" do
@@ -49,7 +49,7 @@ describe "MediaFile Resource" do
     describe "the media-file resource" do
       describe "the response" do
         let :response do
-          authenticated_json_client.get("/api-v2/media-file/#{media_file.id}")
+          authenticated_json_client.get("/api-v2/media-files/#{media_file.id}")
         end
 
         describe "the status " do
@@ -72,7 +72,7 @@ describe "MediaFile Resource" do
       describe "the data-stream resource" do
         describe "the response" do
           let :data_stream_resource_response do
-            authenticated_json_client.get("/api-v2/media-file/#{media_file.id}/data-stream")
+            authenticated_json_client.get("/api-v2/media-files/#{media_file.id}/data-stream/")
           end
 
           it do

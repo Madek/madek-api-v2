@@ -86,7 +86,7 @@
 (def admin-routes
   ["/"
    {:openapi {:tags ["admin/vocabularies"] :security ADMIN_AUTH_METHODS}}
-   ["vocabularies"
+   ["vocabularies/"
     {:get get/admin.vocabularies
 
      :post post/admin.vocabularies}]
@@ -99,15 +99,15 @@
      :delete delete/admin.vocabularies.id}]
 
    ["vocabularies/:id/"
-    ["perms"
+    ["perms/"
      {:get get/admin.vocabularies.id.perms
 
       :put put/admin.vocabularies.id.perms}]
 
-    ["perms/users"
+    ["perms/users/"
      {:get get/admin.vocabularies.users}]
 
-    ["perms/user/:user_id"
+    ["perms/users/:user_id"
      {:get get/admin.vocabularies.users.user_id
 
       :post post/admin.vocabularies.users.user_id
@@ -116,10 +116,10 @@
 
       :delete delete/admin.vocabularies.user.user_id}]
 
-    ["perms/groups"
+    ["perms/groups/"
      {:get get/admin.vocabularies.groups}]
 
-    ["perms/group/:group_id"
+    ["perms/groups/:group_id"
      {:get get/admin.vocabularies.group.group_id
 
       :post post/admin.vocabularies.group.group_id
@@ -130,8 +130,8 @@
 
 (def user-routes
   ["/"
-   {:openapi {:tags ["vocabulary"]}}
-   ["vocabularies" {:get get/user.vocabularies}]
+   {:openapi {:tags ["vocabularies"]}}
+   ["vocabularies/" {:get get/user.vocabularies}]
 
    ["vocabularies/:id" {:get get/user.vocabularies.id}]])
 

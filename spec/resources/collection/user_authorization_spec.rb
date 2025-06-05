@@ -43,7 +43,7 @@ describe "Getting a collection resource with authentication" do
             group: group)
       end
       it "is forbidden 403" do
-        response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
+        response = client.get("/api-v2/collections/#{CGI.escape(@collection.id)}")
         expect(response.status).to be == 403
       end
     end
@@ -54,7 +54,7 @@ describe "Getting a collection resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
+        response = client.get("/api-v2/collections/#{CGI.escape(@collection.id)}")
         expect(response.status).to be == 200
       end
     end
@@ -70,7 +70,7 @@ describe "Getting a collection resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
+        response = client.get("/api-v2/collections/#{CGI.escape(@collection.id)}")
         expect(response.status).to be == 200
       end
     end
@@ -88,7 +88,7 @@ describe "Getting a collection resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
+        response = client.get("/api-v2/collections/#{CGI.escape(@collection.id)}")
         expect(response.status).to be == 200
       end
     end
@@ -102,7 +102,7 @@ describe "Getting a collection resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
+        response = client.get("/api-v2/collections/#{CGI.escape(@collection.id)}")
         expect(response.status).to be == 200
       end
     end
@@ -118,7 +118,7 @@ describe "Getting a collection resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
+        response = client.get("/api-v2/collections/#{CGI.escape(@collection.id)}")
         expect(response.status).to be == 200
       end
     end

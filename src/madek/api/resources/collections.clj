@@ -226,8 +226,8 @@
 
 (def ring-admin-routes
   ["/"
-   {:openapi {:tags ["admin/collection"] :security ADMIN_AUTH_METHODS}}
-   ["collections"
+   {:openapi {:tags ["admin/collections"] :security ADMIN_AUTH_METHODS}}
+   ["collections/"
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
       :middleware [wrap-authorize-admin!]
@@ -237,7 +237,7 @@
       :responses {200 {:description "Returns the list of collections."
                        :body ::response-collections-body}}}}]
 
-   ["collection/:collection_id"
+   ["collections/:collection_id"
     {:put {:summary (sd/sum_usr "Update collection for id.")
            :handler handle_update-collection
            :description (mslurp (io/resource "md/collections-put.md"))
@@ -260,18 +260,17 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["api/collection"]}}
-   ["collections"
+   {:openapi {:tags ["api/collections"]}}
+   ["collections/"
     {:get
      {:summary (sd/?no-auth? (sd/sum_usr "Query/List collections."))
       :handler handle_get-index
       :coercion spec/coercion
       :parameters {:query :collection-query/query-def}
       :responses {200 {:description "Returns the list of collections."
-                       :body ::response-collections-body}}}}]
+                       :body ::response-collections-body}}}
 
-   ["collection"
-    {:post
+     :post
      {:summary (sd/?no-auth? (sd/sum_usr "Create collection"))
 
       ;:description "CAUTION: Either :responsible_user_id OR :responsible_user_id has to be set - not both (db-constraint)"
@@ -288,7 +287,7 @@
                   406 {:description "Could not create collection."
                        :body s/Any}}}}]
 
-   ["collection/:collection_id"
+   ["collections/:collection_id"
     {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get collection for id."))
            :handler handle_get-collection
            :middleware [jqh/ring-wrap-add-media-resource

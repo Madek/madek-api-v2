@@ -5,8 +5,7 @@ describe "filtering media entries" do
   include_context :bunch_of_media_entries
 
   def get_media_entries_response(filter = nil)
-    # media_entries # force evaluation
-    client.get("/api-v2/media-entries", filter)
+    client.get("/api-v2/media-entries/", filter)
   end
 
   def get_media_entries(filter = nil)
@@ -43,10 +42,6 @@ describe "filtering media entries" do
   end
 
   context "by me_ permissons" do
-    # let :media_entries_relation do
-    #  client.get.relation('media-entries')
-    # end
-
     context "me_get_metadata_and_previews for a user" do
       include_context :json_client_for_authenticated_token_user do
         it "200 for public permissions" do

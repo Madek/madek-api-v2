@@ -64,8 +64,8 @@
 ;##############################################################################
 
 (def media-file-routes
-  ["/media-file"
-   {:openapi {:tags ["api/media-file"]}}
+  ["/media-files"
+   {:openapi {:tags ["api/media-files"]}}
    ["/:media_file_id"
     {:get {:summary (sd/sum_usr_pub "Get media-file for id.")
            :swagger {:produces "application/json"}
@@ -80,7 +80,7 @@
                        404 {:description "Not found."
                             :body s/Any}}}}]
 
-   ["/:media_file_id/data-stream"
+   ["/:media_file_id/data-stream/"
     {:get {:summary (sd/sum_usr_pub "Get media-file data-stream for id.")
            :handler media-file/get-media-file-data-stream
            :middleware [wrap-find-and-add-media-file
@@ -92,9 +92,9 @@
                        404 {:description "Not found."
                             :body s/Any}}}}]])
 (def media-entry-routes
-  ["/media-entry"
-   {:openapi {:tags ["api/media-entry"]}}
-   ["/:media_entry_id/media-file"
+  ["/media-entries"
+   {:openapi {:tags ["api/media-entries"]}}
+   ["/:media_entry_id/media-files/"
     {:get
      {:summary (sd/sum_usr_pub "Get media-file for media-entry id.")
       :handler media-file/get-media-file
@@ -108,7 +108,7 @@
                   404 {:description "Not found."
                        :body s/Any}}}}]
 
-   ["/:media_entry_id/media-file/data-stream"
+   ["/:media_entry_id/media-files/data-stream/"
     {:get
      {:summary (sd/sum_usr_pub "Get media-file data-stream for media-entry id.")
       :handler media-file/get-media-file-data-stream

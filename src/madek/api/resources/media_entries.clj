@@ -401,18 +401,7 @@
 (def ring-routes
   ["/"
    {:openapi {:tags ["api/media-entries"]}}
-   ["media-entries"
-    {:get
-     {:summary (sd/?sum_pub? "Query media-entries.")
-      :handler handle_query_media_entry
-      :middleware [jqh/ring-wrap-parse-json-query-parameters]
-      :coercion spec/coercion
-      :parameters {:query ::media-entries-def}
-      :responses {200 {:description "Returns the media-entries."
-                       :body ::media-entries-body-resp-def}
-                  422 {:description "Unprocessable Entity."
-                       :body any?}}}}]
-   ["media-entries-related-data"
+   ["media-entries-related-data/"
     {:get
      {:summary (sd/session-req (sd/?sum_usr? "Query media-entries with all related data."))
       :handler handle_query_media_entry-related-data
@@ -427,7 +416,7 @@
   ["/"
    {:openapi {:tags ["admin/media-entries"] :security ADMIN_AUTH_METHODS}}
 
-   ["media-entries"
+   ["media-entries/"
     {:get
      {:summary "Query media-entries."
       :handler handle_query_media_entry
@@ -441,7 +430,7 @@
                        :body any?}}}}]
 
    ["media-entries/:media_entry_id"
-    {:put {:summary "Try publish media-entry for id / HERE!!!!"
+    {:put {:summary "Try publish media-entry for id"
            :handler handle_update-media-entry
            :swagger {:produces "application/json"}
            :content-type "application/json"
@@ -458,8 +447,8 @@
 (sa/def ::copy_me_id string?)
 (sa/def ::collection_id string?)
 (def media-entry-routes
-  ["/media-entry"
-   {:openapi {:tags ["api/media-entry"]}}
+  ["/media-entries"
+   {:openapi {:tags ["api/media-entries"]}}
    ["/"
     {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready")
             :handler handle_create-media-entry
@@ -475,7 +464,18 @@
             :responses {200 {:description "Returns the created media-entry."
                              :body any?}
                         406 {:description "Could not create media-entry."
-                             :body any?}}}}]
+                             :body any?}}}
+
+     :get
+     {:summary (sd/?sum_pub? "Query media-entries.")
+      :handler handle_query_media_entry
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
+      :coercion spec/coercion
+      :parameters {:query ::media-entries-def}
+      :responses {200 {:description "Returns the media-entries."
+                       :body ::media-entries-body-resp-def}
+                  422 {:description "Unprocessable Entity."
+                       :body any?}}}}]
 
    ["/:media_entry_id"
     {:get {:summary (sd/?token? "Get media-entry for id.")
@@ -507,7 +507,7 @@
                                :body s/Any}}
               :parameters {:path {:media_entry_id s/Uuid}}}}]
 
-   ["/:media_entry_id/publish"
+   ["/:media_entry_id/publish/"
     {:put {:summary "Try publish media-entry for id."
            :handler handle_try-publish-media-entry
            :swagger {:produces "application/json"}

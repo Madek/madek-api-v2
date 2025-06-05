@@ -116,7 +116,7 @@
 (def admin-routes
   ["/"
    {:openapi {:tags ["admin/io_interfaces"] :security ADMIN_AUTH_METHODS}}
-   ["io_interfaces"
+   ["io_interfaces/"
     {:post
      {:summary (sd/sum_adm "Create io_interfaces.")
       :handler handle_create-io_interfaces

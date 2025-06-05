@@ -122,7 +122,7 @@
 
   ["/"
    {:openapi {:tags ["admin/usage-terms"] :security ADMIN_AUTH_METHODS}}
-   ["usage-terms"
+   ["usage-terms/"
     {:post {:summary (sd/sum_adm "Create usage_terms.")
             :handler handle_create-usage_terms
             ;:middleware [(wwrap-find-usage_term :id "id" false)]
@@ -184,7 +184,7 @@
 (def user-routes
   ["/"
    {:openapi {:tags ["usage-terms"] :security []}}
-   ["usage-terms"
+   ["usage-terms/"
     {:get {:summary (sd/sum_pub "List usage_terms.")
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion

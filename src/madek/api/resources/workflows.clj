@@ -122,7 +122,7 @@
 
   ["/"
    {:openapi {:tags ["workflows"]}}
-   ["workflows"
+   ["workflows/"
     {:post {:summary (sd/sum_auth "Create workflow.")
             :handler handle_create-workflow
             :middleware [authorization/wrap-authorized-user]

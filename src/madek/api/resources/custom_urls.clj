@@ -166,7 +166,7 @@
 (def query-routes
   ["/"
    {:openapi {:tags ["api/custom_urls"]}}
-   ["custom_urls"
+   ["custom_urls/"
     {:get {:summary (sd/sum_usr "Query and list custom_urls.")
            :handler handle_list-custom-urls
            :coercion reitit.coercion.schema/coercion
@@ -199,8 +199,8 @@
 ; TODO Q? custom_url without media-entry or collection ?? filter_set ?? ignore ??
 
 (def media-entry-routes
-  ["/media-entry/:media_entry_id/custom_url"
-   {:openapi {:tags ["api/media-entry"]}}
+  ["/media-entries/:media_entry_id/custom_urls/"
+   {:openapi {:tags ["api/media-entries"]}}
    {:get {:summary "Get custom_url for media entry."
           :handler handle_get-custom-urls
           :middleware [jqh/ring-wrap-add-media-resource
@@ -248,8 +248,8 @@
                               :body s/Any}}}}])
 
 (def collection-routes
-  ["/collection/:collection_id/custom_url"
-   {:openapi {:tags ["api/collection"]}}
+  ["/collections/:collection_id/custom_urls"
+   {:openapi {:tags ["api/collections"]}}
    {:get {:summary "Get custom_url for collection."
           :handler handle_get-custom-urls
           :middleware [jqh/ring-wrap-add-media-resource

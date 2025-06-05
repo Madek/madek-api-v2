@@ -63,7 +63,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when retrieving collection" do
     it "returns 200 for authorized GET request" do
-      response = plain_faraday_json_client.get("/api-v2/vocabularies")
+      response = plain_faraday_json_client.get("/api-v2/vocabularies/")
       expect(response.status).to eq(200)
       vocabulary_id = response.body["vocabularies"].first["id"]
 
@@ -73,7 +73,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "returns 200 for authorized GET request" do
-      response = plain_faraday_json_client.get("/api-v2/usage-terms")
+      response = plain_faraday_json_client.get("/api-v2/usage-terms/")
       expect(response.status).to eq(200)
       id = response.body.first["id"]
 

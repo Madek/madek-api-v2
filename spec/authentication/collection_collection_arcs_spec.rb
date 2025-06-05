@@ -18,7 +18,7 @@ describe "Access media-entries " do
 
     context "GET requests to media_entries" do
       it "allows access to public media_entries" do
-        url = "/api-v2/collection-collection-arcs"
+        url = "/api-v2/collection-collection-arcs/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -26,7 +26,7 @@ describe "Access media-entries " do
       end
 
       it "denies access to admin media_entries" do
-        url = "/api-v2/collection-collection-arcs?page=1&size=5"
+        url = "/api-v2/collection-collection-arcs/?page=1&size=5"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)

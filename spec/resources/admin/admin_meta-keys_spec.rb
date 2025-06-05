@@ -35,7 +35,7 @@ describe "Admin MetaKey Resource Access" do
 
     it "performs full CRUD on meta-key resource" do
       # CREATE
-      post_response = client.post("/api-v2/admin/meta-keys") do |req|
+      post_response = client.post("/api-v2/admin/meta-keys/") do |req|
         req.body = metakey_attrs.to_json
         req.headers["Content-Type"] = "application/json"
       end

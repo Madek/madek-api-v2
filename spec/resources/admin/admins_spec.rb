@@ -7,17 +7,17 @@ context "admin users" do
   end
 
   let :query_url do
-    "/api-v2/admin/admins"
+    "/api-v2/admin/admins/"
   end
   let :admin_url do
     "/api-v2/admin/admins/#{@admin.id}"
   end
   let :admin_user_url do
-    "/api-v2/admin/admins/#{@admin.user_id}/user"
+    "/api-v2/admin/admins/#{@admin.user_id}/users/"
   end
 
   let :user_url do
-    "/api-v2/admin/admins/#{@user.id}/user"
+    "/api-v2/admin/admins/#{@user.id}/users/"
   end
 
   context "Responds not authorized without authentication" do

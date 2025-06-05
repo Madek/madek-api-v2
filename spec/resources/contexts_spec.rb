@@ -11,7 +11,7 @@ describe "Context Resource Access" do
     let(:client) { plain_faraday_json_client }
 
     describe "Fetching all contexts" do
-      let(:plain_json_response) { client.get("/api-v2/contexts") }
+      let(:plain_json_response) { client.get("/api-v2/contexts/") }
 
       it "allows access with 200" do
         expect(plain_json_response.status).to eq(200)
@@ -35,12 +35,12 @@ describe "Context Resource Access" do
     include_context :json_client_for_authenticated_token_user
 
     it "allows access to auth-info endpoint with a valid token" do
-      response = client.get("/api-v2/auth-info")
+      response = client.get("/api-v2/auth-info/")
       expect(response.status).to eq(200)
     end
 
     it "allows access to context resources with a valid token" do
-      response = client.get("/api-v2/contexts")
+      response = client.get("/api-v2/contexts/")
       expect(response.status).to eq(200)
 
       context_id = response.body.first["id"]

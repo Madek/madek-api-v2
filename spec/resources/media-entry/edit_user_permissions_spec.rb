@@ -14,7 +14,7 @@ describe "Getting a media-entry resource with authentication" do
     end
 
     it "allows user with permission to update resource-level permissions" do
-      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{owner.id}"
+      url = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{owner.id}"
       grant_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
         get_metadata_and_previews: true,
         get_full_size: true,
@@ -23,10 +23,10 @@ describe "Getting a media-entry resource with authentication" do
       })
       expect(grant_perm.status).to eq 200
 
-      read_response = wtoken_header_plain_faraday_json_client_get(owner_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      read_response = wtoken_header_plain_faraday_json_client_get(owner_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(read_response.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/resources"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/resources/"
       payload = {
         get_metadata_and_previews: true,
         get_full_size: true,
@@ -55,7 +55,7 @@ describe "Getting a media-entry resource with authentication" do
     end
 
     it "allows user with permission to update resource-level permissions" do
-      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{owner.id}"
+      url = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{owner.id}"
       grant_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
         get_metadata_and_previews: true,
         get_full_size: true,
@@ -64,10 +64,10 @@ describe "Getting a media-entry resource with authentication" do
       })
       expect(grant_perm.status).to eq 200
 
-      read_response = wtoken_header_plain_faraday_json_client_get(owner_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      read_response = wtoken_header_plain_faraday_json_client_get(owner_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(read_response.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/resources"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/resources/"
       payload = {
         get_metadata_and_previews: true,
         get_full_size: true,

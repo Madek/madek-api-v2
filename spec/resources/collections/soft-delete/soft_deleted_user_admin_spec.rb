@@ -65,7 +65,7 @@ shared_context :test_proper_token_user do
     it "combined with other filter option" do
       @collection = create_collections_3_visible_0_deleted @entity
 
-      response = client.get("/api-v2/collections?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
+      response = client.get("/api-v2/collections/?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
       expect(response.count).to be == 3
       response.each do |me|
         collection = Collection.unscoped.find(me["id"])
@@ -76,7 +76,7 @@ shared_context :test_proper_token_user do
     it "combined with other filter option" do
       @collection = create_collections_2_visible_2_deleted @entity
 
-      response = client.get("/api-v2/collections?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
+      response = client.get("/api-v2/collections/?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
       expect(response.count).to be == 2
       response.each do |me|
         collection = Collection.unscoped.find(me["id"])
@@ -99,7 +99,7 @@ shared_context :test_proper_public_user do
     it "combined with other filter option" do
       @collection = create_collections_3_visible_0_deleted @entity
 
-      response = client.get("/api-v2/collections?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
+      response = client.get("/api-v2/collections/?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
       expect(response.count).to be == 3
       response.each do |me|
         collection = Collection.unscoped.find(me["id"])
@@ -110,7 +110,7 @@ shared_context :test_proper_public_user do
     it "combined with other filter option" do
       @collection = create_collections_2_visible_2_deleted @entity
 
-      response = client.get("/api-v2/collections?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
+      response = client.get("/api-v2/collections/?collection_id=" + @collection.id).body.with_indifferent_access["collections"]
       expect(response.count).to be == 2
       response.each do |me|
         collection = Collection.unscoped.find(me["id"])
@@ -126,7 +126,7 @@ describe "/auth-info resource" do
   context "without any authentication" do
     context "via json" do
       let :response do
-        plain_faraday_json_client.get("/api-v2/auth-info")
+        plain_faraday_json_client.get("/api-v2/auth-info/")
       end
 
       it "responds with not authorized 401" do

@@ -37,7 +37,7 @@ context "A collection resource with get_metadata_and_previews permission" do
         #    resource.relation('meta-data').get
         #  end
         let :meta_data_response do
-          plain_faraday_json_client.get("/api-v2/collection/#{CGI.escape(@collection.id)}/meta-data")
+          plain_faraday_json_client.get("/api-v2/collections/#{CGI.escape(@collection.id)}/meta-data/")
         end
 
         #  it 'is a resource' do
@@ -80,7 +80,7 @@ context "A collection resource with get_metadata_and_previews permission" do
           #    end
           # TODO query by array
           let :meta_data_response do
-            plain_faraday_json_client.get("/api-v2/collection/#{CGI.escape(@collection.id)}/meta-data")
+            plain_faraday_json_client.get("/api-v2/collections/#{CGI.escape(@collection.id)}/meta-data/")
           end
 
           let :get_meta_key_response do

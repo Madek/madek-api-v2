@@ -24,9 +24,9 @@ describe "generated runs" do
             [keyword_data.id, keyword_data2.id]
           end
 
-          let(:mdtype_url) { resource_url_typed(meta_key.id, "keyword") }
-          let(:mdkw_url) { resource_url_typed_ided(meta_key.id, "keyword", keyword_data.id) }
-          let(:mdkw2_url) { resource_url_typed_ided(meta_key.id, "keyword", keyword_data2.id) }
+          let(:mdtype_url) { resource_url_typed(meta_key.id, "keywords") }
+          let(:mdkw_url) { resource_url_typed_ided(meta_key.id, "keywords", keyword_data.id) }
+          let(:mdkw2_url) { resource_url_typed_ided(meta_key.id, "keywords", keyword_data2.id) }
 
           describe "authenticated_json_client" do
             after :each do |example|

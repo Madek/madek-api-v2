@@ -13,7 +13,7 @@ describe "roles" do
       it "responses with 200" do
         mk_key = "madek_test:title"
 
-        resp = client.post("/api-v2/admin/roles") do |req|
+        resp = client.post("/api-v2/admin/roles/") do |req|
           req.body = {
             meta_key_id: mk_key, labels: {de: "Rolle 1", en: "Role 1"}
           }.to_json
@@ -23,7 +23,7 @@ describe "roles" do
         expect(resp.body["message"]).to include("is not present in table \"meta_keys\"")
 
         FactoryBot.create(:meta_key_text, id: mk_key)
-        resp = client.post("/api-v2/admin/roles") do |req|
+        resp = client.post("/api-v2/admin/roles/") do |req|
           req.body = {
             meta_key_id: mk_key, labels: {de: "Rolle 1", en: "Role 1"}
           }.to_json
@@ -49,12 +49,12 @@ describe "roles" do
 
     describe "get roles with pagination" do
       it "responses with 200" do
-        resp1 = client.get("/api-v2/admin/roles?page=1&size=5")
+        resp1 = client.get("/api-v2/admin/roles/?page=1&size=5")
         expect(resp1.status).to be == 200
         expect(resp1.body["data"].count).to be 5
         expect(resp1.body["pagination"]).to be
 
-        resp2 = client.get("/api-v2/admin/roles?page=2&size=5")
+        resp2 = client.get("/api-v2/admin/roles/?page=2&size=5")
         expect(resp2.status).to be == 200
         expect(resp2.body["data"].count).to be 5
         expect(resp2.body["pagination"]).to be
@@ -63,13 +63,13 @@ describe "roles" do
       end
 
       it "responses with 200" do
-        resp1 = client.get("/api-v2/admin/roles")
+        resp1 = client.get("/api-v2/admin/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
       end
 
       it "responses with 200" do
-        resp1 = client.get("/api-v2/admin/roles")
+        resp1 = client.get("/api-v2/admin/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
 
@@ -82,7 +82,7 @@ describe "roles" do
 
     describe "get roles" do
       let :roles_result do
-        client.get("/api-v2/admin/roles?page=1&size=100")
+        client.get("/api-v2/admin/roles/?page=1&size=100")
       end
 
       it "responses with 200" do

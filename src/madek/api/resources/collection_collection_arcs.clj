@@ -152,8 +152,8 @@
 ; TODO add permission checks
 (def ring-routes
   ["/collection-collection-arcs"
-   {:openapi {:tags ["api/collection"]}}
-   [""
+   {:openapi {:tags ["api/collections"]}}
+   ["/"
     {:get
      {:summary (sd/?no-auth? "Query collection collection arcs.")
       :handler handle_query-arcs
@@ -177,8 +177,8 @@
       }}]])
 ; TODO rename param use middleware for permissions
 (def collection-routes
-  ["/collection/:parent_id"
-   {:openapi {:tags ["api/collection"]}}
+  ["/collections/:parent_id"
+   {:openapi {:tags ["api/collections"]}}
    ;["/collection-arcs"
    ; {:get
    ;  {:summary "List collection collection arcs."
@@ -190,7 +190,7 @@
    ;   }
    ; }
    ;]
-   ["/collection-arc/:child_id"
+   ["/collection-arcs/:child_id"
     {:post
      {:summary (sd/?no-auth? (sd/sum_todo "Create collection collection arc"))
       :handler handle_create-col-col-arc

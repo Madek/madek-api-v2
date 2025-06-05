@@ -11,12 +11,12 @@ describe "roles" do
   include_context :authenticated_json_client do
     describe "get roles with pagination" do
       it "responses with 200" do
-        resp1 = authenticated_json_client.get("/api-v2/roles?page=1&size=5")
+        resp1 = authenticated_json_client.get("/api-v2/roles/?page=1&size=5")
         expect(resp1.status).to be == 200
         expect(resp1.body["data"].count).to be 5
         expect(resp1.body["pagination"]).to be
 
-        resp2 = authenticated_json_client.get("/api-v2/roles?page=2&size=5")
+        resp2 = authenticated_json_client.get("/api-v2/roles/?page=2&size=5")
         expect(resp2.status).to be == 200
         expect(resp2.body["data"].count).to be 5
         expect(resp2.body["pagination"]).to be
@@ -25,13 +25,13 @@ describe "roles" do
       end
 
       it "responses with 200" do
-        resp1 = authenticated_json_client.get("/api-v2/roles")
+        resp1 = authenticated_json_client.get("/api-v2/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
       end
 
       it "responses with 200" do
-        resp1 = authenticated_json_client.get("/api-v2/roles")
+        resp1 = authenticated_json_client.get("/api-v2/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
 
@@ -44,7 +44,7 @@ describe "roles" do
 
     describe "get roles" do
       let :roles_result do
-        authenticated_json_client.get("/api-v2/roles?page=1&size=100")
+        authenticated_json_client.get("/api-v2/roles/?page=1&size=100")
       end
 
       it "responses with 200" do

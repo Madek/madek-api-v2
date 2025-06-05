@@ -207,7 +207,7 @@
 
 (def user-routes
   [["/"
-    {:openapi {:tags ["groups/"]}}
+    {:openapi {:tags ["groups"]}}
     ["groups/" {:get {:summary "Index of groups"
                       :description "Index of groups "
                       :handler index
@@ -231,7 +231,7 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["admin/groups/"] :security ADMIN_AUTH_METHODS}}
+   {:openapi {:tags ["admin/groups"] :security ADMIN_AUTH_METHODS}}
    ["groups/" {:get {:summary (f "Get all group ids" " / TODO: no-input-validation")
                      :description "Get list of group ids. Pagination is optional, default: page=1, size=10."
                      :handler index
