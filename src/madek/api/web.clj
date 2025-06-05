@@ -40,6 +40,7 @@
 ; have other undesired effects; make sure this is never enabled in production
 
 (defonce ^:private DEBUG true)
+(defonce CONST_ACTIVATE_STRICT_ENDPOINT_URL_404 true)
 
 ;### exception ################################################################
 
@@ -303,9 +304,10 @@
 
 (def common-routes
   (rr/routes
-   swagger-handler
-   (rr/redirect-trailing-slash-handler)
-   (rr/create-default-handler)))
+    swagger-handler
+    (when-not CONST_ACTIVATE_STRICT_ENDPOINT_URL_404
+      (rr/redirect-trailing-slash-handler))
+    (rr/create-default-handler)))
 
 (defn create-app [router-data]
   (rr/ring-handler
