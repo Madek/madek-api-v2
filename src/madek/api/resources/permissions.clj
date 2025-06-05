@@ -24,7 +24,7 @@
 
      :put put/me.resources}]
 
-   ["/resource/:perm_name/:perm_val"
+   ["/resources/:perm_name/:perm_val"
     {:put put/me.resource.perm_name.perm_val}]
 
    ["/users/"
@@ -40,7 +40,7 @@
    ["/users/:user_id/:perm_name/:perm_val"
     {:put put/me.user.user_id.perm_name.perm_val}]
 
-   ["/groups"
+   ["/groups/"
     {:get get/media-entry.media_entry_id.perms.groups}]
 
    ["/groups/:group_id"
@@ -80,7 +80,7 @@
    ["/users/:user_id/:perm_name/:perm_val"
     {:put put/col.user.user_id.perm_name.perm_val}]
 
-   ["/groups"
+   ["/groups/"
     {:get get/collection.collection_id.perms.groups}]
 
    ["/groups/:group_id"

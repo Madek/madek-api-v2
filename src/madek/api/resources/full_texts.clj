@@ -163,7 +163,7 @@
 
 (def edit-routes
   [["/full_texts"
-    {:openapi {:tags ["admin/full_text"] :security ADMIN_AUTH_METHODS}}
+    {:openapi {:tags ["admin/full_texts"] :security ADMIN_AUTH_METHODS}}
     ["/"
      {:post {:summary (sd/sum_adm "Create full_texts entry????")
              :swagger {:consumes "application/json" :produces "application/json"}

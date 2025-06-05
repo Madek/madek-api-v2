@@ -164,7 +164,7 @@
 
 (def ring-routes
   ["/collection-media-entry-arcs"
-   {:openapi {:tags ["api/collection"]}}
+   {:openapi {:tags ["api/collections"]}}
    ["/" {:get {:summary (sd/?no-auth? "Query collection media-entry arcs.")
               :handler arcs
               :swagger {:produces "application/json"}
@@ -186,7 +186,7 @@
 
 (def collection-routes
   ["/collections/:collection_id"
-   {:openapi {:tags ["api/collection"]}}
+   {:openapi {:tags ["api/collections"]}}
    ["/media-entry-arcs/"
     {:get
      {:summary (sd/?token? "Get collection media-entry arcs.")

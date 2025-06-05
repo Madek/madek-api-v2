@@ -195,8 +195,8 @@
 ; TODO Q? custom_url without media-entry or collection ?? filter_set ?? ignore ??
 
 (def media-entry-routes
-  ["/media-entries/:media_entry_id/custom_urls"
-   {:openapi {:tags ["api/media-entry"]}}
+  ["/media-entries/:media_entry_id/custom_urls/"
+   {:openapi {:tags ["api/media-entries"]}}
    {:get {:summary "Get custom_url for media entry."
           :handler handle_get-custom-urls
           :middleware [jqh/ring-wrap-add-media-resource
@@ -245,7 +245,7 @@
 
 (def collection-routes
   ["/collections/:collection_id/custom_urls"
-   {:openapi {:tags ["api/collection"]}}
+   {:openapi {:tags ["api/collections"]}}
    {:get {:summary "Get custom_url for collection."
           :handler handle_get-custom-urls
           :middleware [jqh/ring-wrap-add-media-resource

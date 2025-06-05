@@ -158,7 +158,7 @@
 
 (def admin-routes
   [["/"
-    {:openapi {:tags ["admin/app-settings/"] :security ADMIN_AUTH_METHODS}}
+    {:openapi {:tags ["admin/app-settings"] :security ADMIN_AUTH_METHODS}}
     ["app-settings/"
      {:get {:summary (sd/sum_adm "Get App Settings.")
             :handler handle_get-app-settings

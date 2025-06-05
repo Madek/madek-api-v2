@@ -160,8 +160,8 @@
 ; TODO check can edit permissions
 (def user-me-routes
   ["/media-entries/:media_entry_id"
-   {:openapi {:tags ["api/media-entry"]}}
-   ["/conf-links"
+   {:openapi {:tags ["api/media-entries"]}}
+   ["/conf-links/"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link
             :middleware [jqh/ring-wrap-add-media-resource
@@ -230,7 +230,7 @@
 (def user-col-routes
   ["/collections/:collection_id"
    {:openapi {:tags ["api/collections/conf-links"]}}
-   ["/conf-links"
+   ["/conf-links/"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link
             :middleware [jqh/ring-wrap-add-media-resource

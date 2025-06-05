@@ -124,7 +124,7 @@
 ; TODO tests
 ; user self edit favorites
 (def favorite-routes
-  ["/favorite/media-entries/"
+  ["/favorites/media-entries/"
    {:openapi {:tags ["api/favorite"]}}
    {:get
     {:summary (sd/sum_usr "List users favorites media_entries ids.")
@@ -136,8 +136,8 @@
                       :body {:media_entry_ids [s/Uuid]}}}}}])
 
 (def media-entry-routes
-  ["/media-entry/:media_entry_id/favorite"
-   {:openapi {:tags ["api/media-entry"]}}
+  ["/media-entry/:media_entry_id/favorites/"
+   {:openapi {:tags ["api/media-entries"]}}
    {:post {:summary (sd/sum_usr "Create favorite_media_entry for authed user and media-entry.")
            :handler handle_create-favorite_media_entry
 
@@ -185,8 +185,8 @@
                               :body s/Any}}}}])
 
 (def admin-routes
-  [["/favorite/"
-    {:openapi {:tags ["admin/favorite/media-entries"] :security ADMIN_AUTH_METHODS}}
+  [["/favorites/"
+    {:openapi {:tags ["admin/favorites/media-entries"] :security ADMIN_AUTH_METHODS}}
     ["media-entries/"
      {:get
       {:summary (sd/sum_adm "Query favorite_media_entries.")
@@ -196,7 +196,7 @@
                         :body [schema_favorite_media_entries_export]}}
        :coercion reitit.coercion.schema/coercion}}]
 
-    ["media-entries/favorite/media_entries/:media_entry_id/:user_id"
+    ["media-entries/:media_entry_id/:user_id"
      {:post
       {:summary (sd/sum_adm "Create favorite_media-entry for user and media-entry.")
        :handler handle_create-favorite_media_entry

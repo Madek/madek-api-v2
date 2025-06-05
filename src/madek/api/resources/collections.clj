@@ -215,7 +215,7 @@
 
 (def ring-admin-routes
   ["/"
-   {:openapi {:tags ["admin/collection"] :security ADMIN_AUTH_METHODS}}
+   {:openapi {:tags ["admin/collections"] :security ADMIN_AUTH_METHODS}}
    ["collections/"
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
@@ -249,7 +249,7 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["api/collection"]}}
+   {:openapi {:tags ["api/collections"]}}
    ["collections/"
     {:get
      {:summary (sd/?no-auth? (sd/sum_usr "Query/List collections."))
