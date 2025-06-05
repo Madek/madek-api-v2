@@ -6,7 +6,7 @@ describe "a bunch of collections with different properties" do
 
   describe "JSON `client` for public-`user`" do
     it "query responds with 200" do
-      expect(plain_faraday_json_client.get("/api-v2/collections").status).to be == 200
+      expect(plain_faraday_json_client.get("/api-v2/collections/").status).to be == 200
     end
   end
 
@@ -15,7 +15,7 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/collections")
+          client.get("/api-v2/collections/")
         end
 
         it do
@@ -30,7 +30,7 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/collections")
+          client.get("/api-v2/collections/")
         end
 
         it do
@@ -45,18 +45,18 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/collections")
+          client.get("/api-v2/collections/")
         end
 
         it do
           expect(resource.status).to be == 200
-          expect(resource.body["collections"]).to be_a Array
+          expect(resource.body["collections/"]).to be_a Array
         end
       end
 
       describe "the collections resource" do
         let :resource do
-          client.get("/api-v2/collections?page=1&size=5")
+          client.get("/api-v2/collections/?page=1&size=5")
         end
 
         it do
@@ -74,7 +74,7 @@ describe "a bunch of collections with different properties" do
 
   describe "JSON `client` for public-`user`" do
     it "query responds with 403" do
-      expect(plain_faraday_json_client.get("/api-v2/admin/collections").status).to be == 403
+      expect(plain_faraday_json_client.get("/api-v2/admin/collections/").status).to be == 403
     end
   end
 
@@ -83,7 +83,7 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/admin/collections")
+          client.get("/api-v2/admin/collections/")
         end
 
         it do
@@ -98,7 +98,7 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/admin/collections")
+          client.get("/api-v2/admin/collections/")
         end
 
         it do
@@ -113,18 +113,18 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/admin/collections")
+          client.get("/api-v2/admin/collections/")
         end
 
         it do
           expect(resource.status).to be == 200
-          expect(resource.body["collections"]).to be_a Array
+          expect(resource.body["collections/"]).to be_a Array
         end
       end
 
       describe "the collections resource" do
         let :resource do
-          client.get("/api-v2/admin/collections?page=1&size=5")
+          client.get("/api-v2/admin/collections/?page=1&size=5")
         end
 
         it do
@@ -141,7 +141,7 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/admin/collections")
+          client.get("/api-v2/admin/collections/")
         end
 
         it do
@@ -156,7 +156,7 @@ describe "a bunch of collections with different properties" do
       describe "the collections resource" do
         let :resource do
           # collections # force evaluation
-          client.get("/api-v2/admin/collections")
+          client.get("/api-v2/admin/collections/")
         end
 
         it do

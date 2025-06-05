@@ -6,7 +6,7 @@ describe "filtering collections" do
   include_context :bunch_of_collections
 
   def get_collections(filter = nil)
-    client.get("/api-v2/collections", filter)
+    client.get("/api-v2/collections/", filter)
   end
 
   context "permission params checks" do
@@ -111,17 +111,17 @@ describe "filtering collections" do
                 group: g
             end
 
-            resp1 = client.get("/api-v2/collections?page=1&size=5")
+            resp1 = client.get("/api-v2/collections/?page=1&size=5")
             expect(resp1.status).to be == 200
             expect(resp1.body["data"].count).to be 5
 
-            resp2 = client.get("/api-v2/collections?page=2&size=5")
+            resp2 = client.get("/api-v2/collections/?page=2&size=5")
             expect(resp2.status).to be == 200
             expect(resp2.body["data"].count).to be 5
 
             expect(lists_of_maps_different?(resp1.body["data"], resp2.body["data"])).to eq true
 
-            resp = client.get("/api-v2/collections")
+            resp = client.get("/api-v2/collections/")
             expect(resp.status).to be == 200
             expect(resp.body["collections"].count).to be 10
           end

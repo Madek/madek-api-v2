@@ -22,7 +22,7 @@ describe "a bunch of media entries with different properties" do
           entries_to_delete = response.body["media_entries"][0..4]
           entries_to_delete = entries_to_delete.map { |entry| entry["id"] }
           entries_to_delete.each do |me_id|
-            response = client.delete("/api-v2/media-entry/#{me_id}")
+            response = client.delete("/api-v2/media-entries/#{me_id}")
             expect(response.status).to be == 200
           end
 
@@ -30,7 +30,7 @@ describe "a bunch of media entries with different properties" do
           expect(response.status).to be == 200
 
           entries_to_delete.each do |me_id|
-            response = client.get("/api-v2/media-entry/#{me_id}/media-file")
+            response = client.get("/api-v2/media-entries/#{me_id}/media-files")
             expect(response.status).to be == 404
             expect(response.body["message"]).to eq("No media-file for media_entry_id")
           end
@@ -43,19 +43,19 @@ describe "a bunch of media entries with different properties" do
 
           soft_deleted_me_id = MediaEntry.unscoped.all.first.id
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/meta-data")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/meta-data/")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/preview")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/previews/")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/preview/data-stream")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/preview/data-stream/")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/media-file")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/media-files/")
           expect(response.status).to be == 404
         end
 
@@ -66,10 +66,10 @@ describe "a bunch of media entries with different properties" do
 
           soft_deleted_me_id = MediaEntry.unscoped.all.first.id
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/conf-links")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/conf-links/")
           expect(response.status).to be == 404
         end
 
@@ -80,13 +80,13 @@ describe "a bunch of media entries with different properties" do
 
           soft_deleted_me_id = MediaEntry.unscoped.all.first.id
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/media-file")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/media-files/")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/media-file/data-stream")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/media-files/data-stream/")
           expect(response.status).to be == 404
         end
 
@@ -97,24 +97,24 @@ describe "a bunch of media entries with different properties" do
 
           soft_deleted_me_id = MediaEntry.unscoped.all.first.id
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/meta-data")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/meta-data/")
           expect(response.status).to be == 404
 
           ["test:people", "test:roles", "test:keywords"].each do |meta_key_id|
-            response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/meta-datum/#{meta_key_id}")
+            response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/meta-datum/#{meta_key_id}")
             expect(response.status).to be == 404
           end
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/meta-datum/test:keywords/keyword")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/meta-datum/test:keywords/keyword")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/meta-datum/test:people/people")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/meta-datum/test:people/people")
           expect(response.status).to be == 404
 
-          response = client.get("/api-v2/media-entry/#{soft_deleted_me_id}/meta-datum/test:roles/role")
+          response = client.get("/api-v2/media-entries/#{soft_deleted_me_id}/meta-datum/test:roles/role")
           expect(response.status).to be == 404
         end
       end

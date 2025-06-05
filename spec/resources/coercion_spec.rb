@@ -10,7 +10,7 @@ context "Testing coercion-erros by keywords" do
   end
 
   it "responses with 422 caused by coercion/spec-error" do
-    resp = plain_faraday_json_client.get("/api-v2/keywords?page=abc")
+    resp = plain_faraday_json_client.get("/api-v2/keywords/?page=abc")
     expect(resp.status).to be == 422
     expect(resp.body).to eq({"coercion-type" => "spec",
                              "errors" => [{"in" => "page", "pred" => "clojure.core/pos-int?", "val" => "abc"}],

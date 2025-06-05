@@ -43,7 +43,7 @@ describe "Admin Keywords API with authentication" do
     end
 
     it "verify GET response with pagination" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords?page=1&size=5")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords/?page=1&size=5")
       expect(response.status).to eq(200)
       expect(response.body["data"]).to be_a Array
       expect(response.body["pagination"]).to be_a Hash

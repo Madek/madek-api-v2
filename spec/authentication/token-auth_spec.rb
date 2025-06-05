@@ -138,7 +138,7 @@ describe "API-Token Authentication" do
   describe "Access to public /api-endpoints by API-Token" do
     include_context :json_client_for_authenticated_token_user do
       let :response do
-        client.get("/api-v2/vocabularies?page=1&count=100")
+        client.get("/api-v2/vocabularies/?page=1&count=100")
       end
 
       context "using an authorized token " do
@@ -172,7 +172,7 @@ describe "API-Token Authentication" do
   describe "Access forbidden for /admin-endpoints by API-Token" do
     include_context :json_client_for_authenticated_token_user do
       let :response do
-        client.get("/api-v2/admin/vocabularies?page=1&count=100")
+        client.get("/api-v2/admin/vocabularies/?page=1&count=100")
       end
 
       context "using an authorized token " do

@@ -61,7 +61,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when retrieving collection" do
     it "returns 401 for unauthorized GET request" do
-      response = plain_faraday_json_client.get("/api-v2/workflows")
+      response = plain_faraday_json_client.get("/api-v2/workflows/")
       expect(response.status).to eq(401)
     end
 
@@ -79,7 +79,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
         is_active: true,
         configuration: {foo: "bar"}
       }
-      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/workflows", body: body)
+      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/workflows/", body: body)
       expect(response.status).to eq(200)
       id = response.body["id"]
 
@@ -101,7 +101,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when handling unauthorized requests" do
     it "returns 401 for unauthorized GET request" do
-      response = plain_faraday_json_client.get("/api-v2/workflows")
+      response = plain_faraday_json_client.get("/api-v2/workflows/")
       expect(response.status).to eq(401)
       expect_audit_entries_count(0, 0, 0)
     end
@@ -118,7 +118,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
         configuration: {karl: "heinz"}
       }
 
-      response = plain_faraday_json_client.post("/api-v2/workflows") do |req|
+      response = plain_faraday_json_client.post("/api-v2/workflows/") do |req|
         req.body = body.to_json
         req.headers["Content-Type"] = "application/json"
       end

@@ -26,7 +26,7 @@ describe "Access full_texts " do
       end
 
       it "allows access to full_texts with pagination" do
-        url = "/api-v2/full_texts?page=1&size=5"
+        url = "/api-v2/full_texts/?page=1&size=5"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)

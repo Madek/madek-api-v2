@@ -36,11 +36,11 @@ context "Getting keywords by pagination" do
   end
 
   it "responses with 200" do
-    resp1 = plain_faraday_json_client.get("/api-v2/keywords?page=1&size=5")
+    resp1 = plain_faraday_json_client.get("/api-v2/keywords/?page=1&size=5")
     expect(resp1.status).to be == 200
     expect(resp1.body["data"].count).to be 5
 
-    resp2 = plain_faraday_json_client.get("/api-v2/keywords?page=2&size=5")
+    resp2 = plain_faraday_json_client.get("/api-v2/keywords/?page=2&size=5")
     expect(resp2.status).to be == 200
     expect(resp2.body["data"].count).to be 5
     expect(resp2.body["pagination"].count).to be

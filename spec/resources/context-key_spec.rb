@@ -26,7 +26,7 @@ context "public context-key" do
 
   describe "query context-key" do
     let :plain_json_response do
-      plain_faraday_json_client.get("/api-v2/context-keys?page=1&size=5")
+      plain_faraday_json_client.get("/api-v2/context-keys/?page=1&size=5")
     end
 
     it "responds with 200" do
