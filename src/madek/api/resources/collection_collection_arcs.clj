@@ -153,7 +153,7 @@
 (def ring-routes
   ["/collection-collection-arcs"
    {:openapi {:tags ["api/collection"]}}
-   [""
+   ["/"
     {:get
      {:summary (sd/?no-auth? "Query collection collection arcs.")
       :handler handle_query-arcs
@@ -177,7 +177,7 @@
       }}]])
 ; TODO rename param use middleware for permissions
 (def collection-routes
-  ["/collection/:parent_id"
+  ["/collections/:parent_id"
    {:openapi {:tags ["api/collection"]}}
    ;["/collection-arcs"
    ; {:get
@@ -190,7 +190,7 @@
    ;   }
    ; }
    ;]
-   ["/collection-arc/:child_id"
+   ["/collection-arcs/:child_id"
     {:post
      {:summary (sd/?no-auth? (sd/sum_todo "Create collection collection arc"))
       :handler handle_create-col-col-arc

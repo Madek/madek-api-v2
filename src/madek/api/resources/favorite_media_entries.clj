@@ -124,7 +124,7 @@
 ; TODO tests
 ; user self edit favorites
 (def favorite-routes
-  ["/favorite/media-entries"
+  ["/favorite/media-entries/"
    {:openapi {:tags ["api/favorite"]}}
    {:get
     {:summary (sd/sum_usr "List users favorites media_entries ids.")
@@ -187,7 +187,7 @@
 (def admin-routes
   [["/favorite/"
     {:openapi {:tags ["admin/favorite/media-entries"] :security ADMIN_AUTH_METHODS}}
-    ["media-entries"
+    ["media-entries/"
      {:get
       {:summary (sd/sum_adm "Query favorite_media_entries.")
        :handler handle_list-favorite_media_entries

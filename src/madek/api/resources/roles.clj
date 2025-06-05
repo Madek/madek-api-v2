@@ -38,7 +38,7 @@
 (def user-routes
   ["/"
    {:openapi {:tags ["roles"]}}
-   ["roles" {:get {:summary "Get list of roles."
+   ["roles/" {:get {:summary "Get list of roles."
                    :description "Get list of roles."
                    :handler role/get-index
                    :coercion spec/coercion
@@ -64,7 +64,7 @@
 (def admin-routes
   ["/"
    {:openapi {:tags ["admin/roles"] :security ADMIN_AUTH_METHODS}}
-   ["roles"
+   ["roles/"
     {:get {:summary (sd/sum_adm "Get list of roles.")
            :description "Get list of roles."
            :handler role/get-index

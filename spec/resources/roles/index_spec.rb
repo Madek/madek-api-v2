@@ -25,13 +25,13 @@ describe "roles" do
       end
 
       it "responses with 200" do
-        resp1 = authenticated_json_client.get("/api-v2/roles")
+        resp1 = authenticated_json_client.get("/api-v2/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
       end
 
       it "responses with 200" do
-        resp1 = authenticated_json_client.get("/api-v2/roles")
+        resp1 = authenticated_json_client.get("/api-v2/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
 

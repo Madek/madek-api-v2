@@ -32,7 +32,7 @@ describe "filtering collections" do
 
   context "by me_ permissons" do
     let :media_entries_relation do
-      client.get("media-entries")
+      client.get("media-entries/")
     end
 
     context "me_get_metadata_and_previews for a user" do

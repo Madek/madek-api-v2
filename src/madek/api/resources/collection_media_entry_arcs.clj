@@ -165,7 +165,7 @@
 (def ring-routes
   ["/collection-media-entry-arcs"
    {:openapi {:tags ["api/collection"]}}
-   ["" {:get {:summary (sd/?no-auth? "Query collection media-entry arcs.")
+   ["/" {:get {:summary (sd/?no-auth? "Query collection media-entry arcs.")
               :handler arcs
               :swagger {:produces "application/json"}
               :coercion reitit.coercion.schema/coercion
@@ -185,9 +185,9 @@
                                    :body s/Any}}}}]])
 
 (def collection-routes
-  ["/collection/:collection_id"
+  ["/collections/:collection_id"
    {:openapi {:tags ["api/collection"]}}
-   ["/media-entry-arcs"
+   ["/media-entry-arcs/"
     {:get
      {:summary (sd/?token? "Get collection media-entry arcs.")
       :handler arcs
@@ -199,7 +199,7 @@
       :responses {200 {:description "Returns the collection media-entry arcs."
                        :body {:collection-media-entry-arcs [schema_collection-media-entry-arc-export]}}}}}]
 
-   ["/media-entry-arc/:media_entry_id"
+   ["/media-entry-arcs/:media_entry_id"
     {:post
      {:summary (sd/?token? (sd/sum_usr "Create collection media-entry arc"))
       :handler handle_create-col-me-arc

@@ -15,7 +15,7 @@ describe "a bunch of media entries with different properties" do
         end
 
         it "delete media_entries" do
-          response = client.get("/api-v2/media-entries")
+          response = client.get("/api-v2/media-entries/")
           expect(response.status).to be == 200
           expect(response.body["media_entries"].count).to eq(0)
 
@@ -26,7 +26,7 @@ describe "a bunch of media entries with different properties" do
             expect(response.status).to be == 200
           end
 
-          response = client.get("/api-v2/media-entries")
+          response = client.get("/api-v2/media-entries/")
           expect(response.status).to be == 200
 
           entries_to_delete.each do |me_id|
@@ -37,7 +37,7 @@ describe "a bunch of media entries with different properties" do
         end
 
         it "checks preview" do
-          response = client.get("/api-v2/media-entries")
+          response = client.get("/api-v2/media-entries/")
           expect(response.status).to be == 200
           expect(response.body["media_entries"].count).to eq(0)
 
@@ -60,7 +60,7 @@ describe "a bunch of media entries with different properties" do
         end
 
         it "checks conf-links" do
-          response = client.get("/api-v2/media-entries")
+          response = client.get("/api-v2/media-entries/")
           expect(response.status).to be == 200
           expect(response.body["media_entries"].count).to eq(0)
 
@@ -74,7 +74,7 @@ describe "a bunch of media entries with different properties" do
         end
 
         it "checks media-file" do
-          response = client.get("/api-v2/media-entries")
+          response = client.get("/api-v2/media-entries/")
           expect(response.status).to be == 200
           expect(response.body["media_entries"].count).to eq(0)
 
@@ -91,7 +91,7 @@ describe "a bunch of media entries with different properties" do
         end
 
         it "checks media-entries" do
-          response = client.get("/api-v2/media-entries")
+          response = client.get("/api-v2/media-entries/")
           expect(response.status).to be == 200
           expect(response.body["media_entries"].count).to eq(0)
 

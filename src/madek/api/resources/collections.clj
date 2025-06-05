@@ -216,7 +216,7 @@
 (def ring-admin-routes
   ["/"
    {:openapi {:tags ["admin/collection"] :security ADMIN_AUTH_METHODS}}
-   ["collections"
+   ["collections/"
     {:get
      {:summary (sd/sum_usr "Query/List collections.")
       :middleware [wrap-authorize-admin!]
@@ -226,7 +226,7 @@
       :responses {200 {:description "Returns the list of collections."
                        :body ::response-collections-body}}}}]
 
-   ["collection/:collection_id"
+   ["collections/:collection_id"
     {:put {:summary (sd/sum_usr "Update collection for id.")
            :handler handle_update-collection
            :description (mslurp (io/resource "md/collections-put.md"))
@@ -250,7 +250,7 @@
 (def ring-routes
   ["/"
    {:openapi {:tags ["api/collection"]}}
-   ["collections"
+   ["collections/"
     {:get
      {:summary (sd/?no-auth? (sd/sum_usr "Query/List collections."))
       :handler handle_get-index
@@ -258,8 +258,7 @@
       :parameters {:query :collection-query/query-def}
       :responses {200 {:description "Returns the list of collections."
                        :body ::response-collections-body}}}}
-    ;]
-   ;["collection"
+
     {:post
      {:summary (sd/?no-auth? (sd/sum_usr "Create collection"))
 

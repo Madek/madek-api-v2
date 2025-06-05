@@ -18,7 +18,7 @@ describe "Access full_texts " do
 
     context "GET requests to full_texts" do
       it "allows access to full_texts without pagination" do
-        url = "/api-v2/full_texts"
+        url = "/api-v2/full_texts/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -45,8 +45,8 @@ context "Workflow: create, update, delete full_texts" do
     me.id
   }
 
-  let(:base_url) { "/api-v2/admin/full_texts" }
-  let(:base_url2) { "/api-v2/full_texts" }
+  let(:base_url) { "/api-v2/admin/full_texts/" }
+  let(:base_url2) { "/api-v2/full_texts/" }
   let(:base_url3) { "/api-v2/media-entry/#{full_text_id}/full_text/" }
 
   let(:full_text_payload) do

@@ -149,13 +149,13 @@
    :expires_at (s/maybe s/Any)})
 
 (def public-routes
-  ["/confidential-link/:token/access"])
+  ["/confidential-links/:token/access"])
 
 (def public-me-routes
-  ["/media-entry/:media_entry_id/acess/:token"])
+  ["/media-entries/:media_entry_id/access/:token"])
 
 (def public-col-routes
-  ["/collection/:collection_id/acess/:token"])
+  ["/collections/:collection_id/access/:token"])
 
 ; TODO check can edit permissions
 (def user-me-routes
@@ -228,8 +228,8 @@
 
 ; TODO check can edit permissions
 (def user-col-routes
-  ["/collection/:collection_id"
-   {:openapi {:tags ["api/collection/conf-links"]}}
+  ["/collections/:collection_id"
+   {:openapi {:tags ["api/collections/conf-links"]}}
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link

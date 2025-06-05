@@ -54,8 +54,8 @@
     {:put put/me.group.group_id.perm_name.permval}]])
 
 (def collection-routes
-  ["/collection/:collection_id/perms"
-   {:openapi {:tags ["collection/perms"]}}
+  ["/collections/:collection_id/perms"
+   {:openapi {:tags ["collections/perms"]}}
    ["/"
     {:get get/collection.collection_id.perms}]
 

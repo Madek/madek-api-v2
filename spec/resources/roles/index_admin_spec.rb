@@ -13,7 +13,7 @@ describe "roles" do
       it "responses with 200" do
         mk_key = "madek_test:title"
 
-        resp = client.post("/api-v2/admin/roles") do |req|
+        resp = client.post("/api-v2/admin/roles/") do |req|
           req.body = {
             meta_key_id: mk_key, labels: {de: "Rolle 1", en: "Role 1"}
           }.to_json
@@ -23,7 +23,7 @@ describe "roles" do
         expect(resp.body["message"]).to include("is not present in table \"meta_keys\"")
 
         FactoryBot.create(:meta_key_text, id: mk_key)
-        resp = client.post("/api-v2/admin/roles") do |req|
+        resp = client.post("/api-v2/admin/roles/") do |req|
           req.body = {
             meta_key_id: mk_key, labels: {de: "Rolle 1", en: "Role 1"}
           }.to_json
@@ -63,13 +63,13 @@ describe "roles" do
       end
 
       it "responses with 200" do
-        resp1 = client.get("/api-v2/admin/roles")
+        resp1 = client.get("/api-v2/admin/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
       end
 
       it "responses with 200" do
-        resp1 = client.get("/api-v2/admin/roles")
+        resp1 = client.get("/api-v2/admin/roles/")
         expect(resp1.status).to be == 200
         expect(resp1.body["roles"].count).to be 201
 

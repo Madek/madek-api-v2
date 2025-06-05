@@ -385,7 +385,7 @@
 (def ring-routes
   ["/"
    {:openapi {:tags ["api/media-entries"]}}
-   ["media-entries"
+   ["media-entries/"
     {:get
      {:summary (sd/?sum_pub? "Query media-entries.")
       :handler handle_query_media_entry
@@ -396,7 +396,7 @@
                        :body ::media-entries-body-resp-def}
                   422 {:description "Unprocessable Entity."
                        :body any?}}}}]
-   ["media-entries-related-data"
+   ["media-entries-related-data/"
     {:get
      {:summary (sd/session-req (sd/?sum_usr? "Query media-entries with all related data."))
       :handler handle_query_media_entry-related-data
@@ -411,7 +411,7 @@
   ["/"
    {:openapi {:tags ["admin/media-entries"] :security ADMIN_AUTH_METHODS}}
 
-   ["media-entries"
+   ["media-entries/"
     {:get
      {:summary "Query media-entries."
       :handler handle_query_media_entry

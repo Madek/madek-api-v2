@@ -138,7 +138,7 @@
 (def query-routes
   ["/"
    {:openapi {:tags ["full_texts"]}}
-   ["full_texts"
+   ["full_texts/"
     {:get {:summary (sd/sum_usr "Query or list full_texts.")
            :handler handle_list-full_texts
            :coercion spec/coercion
@@ -164,7 +164,7 @@
 (def edit-routes
   [["/full_texts"
     {:openapi {:tags ["admin/full_text"] :security ADMIN_AUTH_METHODS}}
-    [""
+    ["/"
      {:post {:summary (sd/sum_adm "Create full_texts entry????")
              :swagger {:consumes "application/json" :produces "application/json"}
              :handler handle_create-full_texts
@@ -210,8 +210,8 @@
 
 ; TODO full_texts: test wrap auth for collection
 (def collection-routes
-  [["/collection/:collection_id/full_text"
-    {:openapi {:tags ["collection/full_text"]}}
+  [["/collections/:collection_id/full_texts"
+    {:openapi {:tags ["collections/full_texts"]}}
     ["/"
      {:get {:summary (sd/sum_usr_pub "Get full_text.")
             :handler handle_get-full_text
@@ -265,8 +265,8 @@
 
 ; TODO full_texts: test wrap auth for media entry
 (def entry-routes
-  [["/media-entry/:media_entry_id/full_text"
-    {:openapi {:tags ["media-entry/full_text"]}}
+  [["/media-entries/:media_entry_id/full_texts"
+    {:openapi {:tags ["media-entry/full_texts"]}}
     ["/"
      {:get {:summary (sd/sum_usr_pub "Get full_text.")
             :handler handle_get-full_text

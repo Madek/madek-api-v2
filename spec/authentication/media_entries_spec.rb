@@ -18,7 +18,7 @@ describe "Access media-entries " do
 
     context "GET requests to media_entries" do
       it "allows access to public media_entries" do
-        url = "/api-v2/media-entries"
+        url = "/api-v2/media-entries/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -51,7 +51,7 @@ describe "Access media-entries " do
 
     context "GET requests to media_entries" do
       it "allows access to admin media_entries" do
-        url = "/api-v2/admin/media-entries"
+        url = "/api-v2/admin/media-entries/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)

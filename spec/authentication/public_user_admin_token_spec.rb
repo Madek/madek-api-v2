@@ -18,7 +18,7 @@ end
 
 describe "1) Test status-code as public-user" do
   it "post responds with 403" do
-    user_url = "/api-v2/admin/full_texts"
+    user_url = "/api-v2/admin/full_texts/"
     response = plain_faraday_json_client.post(user_url) do |req|
       req.body = {
         text: "string",
@@ -59,16 +59,16 @@ describe "1) Test status-code as public-user" do
       "/api-v2/admin/delegation/groups" => 403,
       "/api-v2/admin/edit_sessions/"" => 403,
       "/api-v2/admin/favorite/collections" => 403,
-      "/api-v2/admin/favorite/media-entries" => 403,
+      "/api-v2/admin/favorite/media-entries/" => 403,
       "/api-v2/admin/groups/" => 403,
-      "/api-v2/admin/io_interfaces" => 403,
+      "/api-v2/admin/io_interfaces/" => 403,
       "/api-v2/admin/keywords/" => 403,
       "/api-v2/admin/meta-keys/" => 403,
       "/api-v2/admin/people/" => 403,
       "/api-v2/admin/roles?page=1&size=1" => 403,
       "/api-v2/admin/usage-terms/" => 403,
       "/api-v2/admin/users/" => 403,
-      "/api-v2/admin/static-pages" => 403,
+      "/api-v2/admin/static-pages/" => 403,
       "/api-v2/admin/vocabularies/" => 403
 
     }.each do |url, code|
@@ -85,7 +85,7 @@ end
 shared_context :test_proper_public_user do
   describe "2) Test status-code as madek-user " do
     it "against POST endpoints " do
-      user_url = "/api-v2/admin/full_texts"
+      user_url = "/api-v2/admin/full_texts/"
       response = plain_faraday_json_client.post(user_url) do |req|
         req.body = {
           text: "string",
@@ -126,16 +126,16 @@ shared_context :test_proper_public_user do
         "/api-v2/admin/delegation/groups" => 403,
         "/api-v2/admin/edit_sessions/"" => 403,
         "/api-v2/admin/favorite/collections" => 403,
-        "/api-v2/admin/favorite/media-entries" => 403,
+        "/api-v2/admin/favorite/media-entries/" => 403,
         "/api-v2/admin/groups/" => 403,
-        "/api-v2/admin/io_interfaces" => 403,
+        "/api-v2/admin/io_interfaces/" => 403,
         "/api-v2/admin/keywords/" => 403,
         "/api-v2/admin/meta-keys/" => 403,
         "/api-v2/admin/people/" => 403,
         "/api-v2/admin/roles?page=1&size=1" => 403,
         "/api-v2/admin/usage-terms/" => 403,
         "/api-v2/admin/users/" => 403,
-        "/api-v2/admin/static-pages" => 403,
+        "/api-v2/admin/static-pages/" => 403,
         "/api-v2/admin/vocabularies/" => 403
 
       }.each do |url, code|
@@ -172,7 +172,7 @@ context "3) resource with admin auth" do
   describe "Test status-code as public-user " do
     include_context :json_client_for_authenticated_token_admin do
       it "against POST endpoints " do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = plain_faraday_json_client.post(user_url) do |req|
           req.body = {
             text: "string",
@@ -184,7 +184,7 @@ context "3) resource with admin auth" do
       end
 
       it "against POST endpoints as admin-user" do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = wtoken_header_plain_faraday_json_client_post(token.token, user_url, body: {
           text: "string",
           media_resource_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -222,16 +222,16 @@ context "3) resource with admin auth" do
           "/api-v2/admin/delegation/groups" => 200,
           "/api-v2/admin/edit_sessions/"" => 200,
           "/api-v2/admin/favorite/collections" => 200,
-          "/api-v2/admin/favorite/media-entries" => 200,
+          "/api-v2/admin/favorite/media-entries/" => 200,
           "/api-v2/admin/groups/" => 200,
-          "/api-v2/admin/io_interfaces" => 200,
+          "/api-v2/admin/io_interfaces/" => 200,
           "/api-v2/admin/keywords/" => 200,
           "/api-v2/admin/meta-keys/" => 200,
           "/api-v2/admin/people/" => 200,
           "/api-v2/admin/roles?page=1&size=1" => 200,
           "/api-v2/admin/usage-terms/" => 200,
           "/api-v2/admin/users/" => 200,
-          "/api-v2/admin/static-pages" => 200,
+          "/api-v2/admin/static-pages/" => 200,
           "/api-v2/admin/vocabularies/" => 200
 
         }.each do |url, code|
@@ -251,7 +251,7 @@ context "4) resource with token-user auth" do
   describe "Test status-code as madek-user " do
     include_context :json_client_for_authenticated_token_user do
       it "against POST endpoints " do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = plain_faraday_json_client.post(user_url) do |req|
           req.body = {
             text: "string",
@@ -263,7 +263,7 @@ context "4) resource with token-user auth" do
       end
 
       it "against POST endpoints " do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = wtoken_header_plain_faraday_json_client_post(token.token, user_url, body: {
           text: "string",
           media_resource_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -301,16 +301,16 @@ context "4) resource with token-user auth" do
           "/api-v2/admin/delegation/groups" => 403,
           "/api-v2/admin/edit_sessions/"" => 403,
           "/api-v2/admin/favorite/collections" => 403,
-          "/api-v2/admin/favorite/media-entries" => 403,
+          "/api-v2/admin/favorite/media-entries/" => 403,
           "/api-v2/admin/groups/" => 403,
-          "/api-v2/admin/io_interfaces" => 403,
+          "/api-v2/admin/io_interfaces/" => 403,
           "/api-v2/admin/keywords/" => 403,
           "/api-v2/admin/meta-keys/" => 403,
           "/api-v2/admin/people/" => 403,
           "/api-v2/admin/roles?page=1&size=1" => 403,
           "/api-v2/admin/usage-terms/" => 403,
           "/api-v2/admin/users/" => 403,
-          "/api-v2/admin/static-pages" => 403,
+          "/api-v2/admin/static-pages/" => 403,
           "/api-v2/admin/vocabularies/" => 403
 
         }.each do |url, code|
@@ -330,7 +330,7 @@ context "5) resource with token-user auth with admin-credentials" do
   describe "Test status-code as madek-user " do
     include_context :json_client_for_authenticated_token_user do
       it "against POST endpoints " do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = wtoken_header_plain_faraday_json_client_post(token.token, user_url, body: {
           text: "string",
           media_resource_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -344,7 +344,7 @@ context "5) resource with token-user auth with admin-credentials" do
   describe "Test status-code as madek-user " do
     include_context :json_client_for_authenticated_token_admin do
       it "against POST endpoints " do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = plain_faraday_json_client.post(user_url) do |req|
           req.body = {
             text: "string",
@@ -356,7 +356,7 @@ context "5) resource with token-user auth with admin-credentials" do
       end
 
       it "against POST endpoints " do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = wtoken_header_plain_faraday_json_client_post(token.token, user_url, body: {
           text: "string",
           media_resource_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -366,7 +366,7 @@ context "5) resource with token-user auth with admin-credentials" do
       end
 
       it "against POST endpoints " do
-        user_url = "/api-v2/admin/full_texts"
+        user_url = "/api-v2/admin/full_texts/"
         response = wtoken_header_plain_faraday_json_client_post(token.token, user_url, body: {
           text: "string",
           media_resource_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -404,16 +404,16 @@ context "5) resource with token-user auth with admin-credentials" do
           "/api-v2/admin/delegation/groups" => 200,
           "/api-v2/admin/edit_sessions/"" => 200,
           "/api-v2/admin/favorite/collections" => 200,
-          "/api-v2/admin/favorite/media-entries" => 200,
+          "/api-v2/admin/favorite/media-entries/" => 200,
           "/api-v2/admin/groups/" => 200,
-          "/api-v2/admin/io_interfaces" => 200,
+          "/api-v2/admin/io_interfaces/" => 200,
           "/api-v2/admin/keywords/" => 200,
           "/api-v2/admin/meta-keys/" => 200,
           "/api-v2/admin/people/" => 200,
           "/api-v2/admin/roles?page=1&size=1" => 200,
           "/api-v2/admin/usage-terms/" => 200,
           "/api-v2/admin/users/" => 200,
-          "/api-v2/admin/static-pages" => 200,
+          "/api-v2/admin/static-pages/" => 200,
           "/api-v2/admin/vocabularies/" => 200
 
         }.each do |url, code|
