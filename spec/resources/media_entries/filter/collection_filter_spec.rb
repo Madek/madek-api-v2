@@ -1,13 +1,8 @@
 require "spec_helper"
 
 describe "filtering media entries" do
-  # let :media_entries_relation do
-  #  client.get.relation('media-entries')
-  # end
-
   def get_media_entries(filter = nil)
-    # media_entries_relation.get(filter).data['media-entries']
-    client.get("/api-v2/media-entries", filter).body["media_entries"]
+    client.get("/api-v2/media-entries/", filter).body["media_entries"]
   end
 
   context "by collection_id" do

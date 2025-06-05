@@ -34,7 +34,7 @@ context "vocabulary permission as admin" do
                         position: 20,
                         labels: @labels,
                         descriptions: @labels}
-        create_response = client.post("#{api_base_url}/admin/vocabularies") do |req|
+        create_response = client.post("#{api_base_url}/admin/vocabularies/") do |req|
           req.body = @create_data.to_json
           req.headers["Content-Type"] = "application/json"
         end
@@ -55,7 +55,7 @@ context "vocabulary permission as admin" do
                         position: 20,
                         labels: @labels,
                         descriptions: @labels}
-        create_response = client.post("#{api_base_url}/admin/vocabularies") do |req|
+        create_response = client.post("#{api_base_url}/admin/vocabularies/") do |req|
           req.body = @create_data.to_json
           req.headers["Content-Type"] = "application/json"
         end
@@ -75,7 +75,7 @@ context "vocabulary permission as admin" do
 
             # user = FactoryBot.create(:user)
             user_id = entity.id
-            create_user_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/user/#{user_id}") do |req|
+            create_user_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/users/#{user_id}") do |req|
               req.body = {
                 use: true,
                 view: true
@@ -97,7 +97,7 @@ context "vocabulary permission as admin" do
             group = FactoryBot.create :group
             group.users << entity
 
-            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/group/#{group.id}") do |req|
+            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/groups/#{group.id}") do |req|
               req.body = {
                 use: true,
                 view: true
@@ -122,7 +122,7 @@ context "vocabulary permission as admin" do
             vocabulary = FactoryBot.create(:vocabulary,
               enabled_for_public_view: false)
             user_id = entity.id
-            create_user_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/user/#{user_id}") do |req|
+            create_user_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/users/#{user_id}") do |req|
               req.body = {
                 use: true,
                 view: false
@@ -143,7 +143,7 @@ context "vocabulary permission as admin" do
             group = FactoryBot.create :group
             group.users << entity
 
-            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/group/#{group.id}") do |req|
+            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/groups/#{group.id}") do |req|
               req.body = {
                 use: true,
                 view: false
@@ -165,7 +165,7 @@ context "vocabulary permission as admin" do
 
             # user = FactoryBot.create(:user)
             user_id = entity.id
-            client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/user/#{user_id}") do |req|
+            client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/users/#{user_id}") do |req|
               req.body = {
                 use: true,
                 view: true
@@ -177,7 +177,7 @@ context "vocabulary permission as admin" do
             expect(data).to have_key "id"
             expect(data["id"]).to eq vocabulary.id
 
-            client.put("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/user/#{user_id}") do |req|
+            client.put("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/users/#{user_id}") do |req|
               req.body = {
                 use: true,
                 view: false
@@ -196,7 +196,7 @@ context "vocabulary permission as admin" do
             group = FactoryBot.create :group
             group.users << entity
 
-            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/group/#{group.id}") do |req|
+            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/groups/#{group.id}") do |req|
               req.body = {
                 use: true,
                 view: true
@@ -209,7 +209,7 @@ context "vocabulary permission as admin" do
             expect(data).to have_key "id"
             expect(data["id"]).to eq vocabulary.id
 
-            create_group_resp = client.put("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/group/#{group.id}") do |req|
+            create_group_resp = client.put("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/groups/#{group.id}") do |req|
               req.body = {
                 use: true,
                 view: false
@@ -232,7 +232,7 @@ context "vocabulary permission as admin" do
 
             # user = FactoryBot.create(:user)
             user_id = entity.id
-            client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/user/#{user_id}") do |req|
+            client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/users/#{user_id}") do |req|
               req.body = {
                 use: true,
                 view: true
@@ -244,7 +244,7 @@ context "vocabulary permission as admin" do
             expect(data).to have_key "id"
             expect(data["id"]).to eq vocabulary.id
 
-            client.delete("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/user/#{user_id}")
+            client.delete("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/users/#{user_id}")
 
             data2 = json_vocabulary_resource(vocabulary.id, true).body
             expect(data2).not_to have_key "id"
@@ -257,7 +257,7 @@ context "vocabulary permission as admin" do
             group = FactoryBot.create :group
             group.users << entity
 
-            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/group/#{group.id}") do |req|
+            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/groups/#{group.id}") do |req|
               req.body = {
                 use: true,
                 view: true
@@ -270,7 +270,7 @@ context "vocabulary permission as admin" do
             expect(data).to have_key "id"
             expect(data["id"]).to eq vocabulary.id
 
-            create_group_resp = client.delete("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/group/#{group.id}")
+            create_group_resp = client.delete("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/groups/#{group.id}")
             expect(create_group_resp).not_to be_nil
             data = json_vocabulary_resource(vocabulary.id, true).body
 
@@ -284,7 +284,7 @@ context "vocabulary permission as admin" do
             vocabulary = FactoryBot.create(:vocabulary,
               enabled_for_public_view: false)
             user_id = entity.id
-            create_user_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/user/#{user_id}") do |req|
+            create_user_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/users/#{user_id}") do |req|
               req.body = {
                 use: true,
                 view: false
@@ -304,7 +304,7 @@ context "vocabulary permission as admin" do
             group = FactoryBot.create :group
             group.users << entity
 
-            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/group/#{group.id}") do |req|
+            create_group_resp = client.post("#{api_base_url}/admin/vocabularies/#{vocabulary.id}/perms/groups/#{group.id}") do |req|
               req.body = {
                 use: true,
                 view: false

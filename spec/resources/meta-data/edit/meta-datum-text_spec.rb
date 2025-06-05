@@ -12,7 +12,7 @@ describe "generated runs" do
           let :meta_key do
             FactoryBot.create "meta_key_text"
           end
-          let(:post_url) { resource_url_typed(meta_key.id, "text") }
+          let(:post_url) { resource_url_typed(meta_key.id, "texts") }
           let(:delete_url) { resource_url(meta_key.id) }
 
           let(:create_data) { "Hello Lala" }

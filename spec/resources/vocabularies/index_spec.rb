@@ -3,7 +3,7 @@ require "spec_helper"
 describe "index" do
   include_context :json_client_for_authenticated_token_user do
     let :vocabularies_resource do
-      client.get("/api-v2/vocabularies")
+      client.get("/api-v2/vocabularies/")
     end
 
     it "should return 200 with only viewable by public vocabularies" do

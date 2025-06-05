@@ -29,7 +29,7 @@ context "A media-entry resource with get_metadata_and_previews permission" do
 
       describe "get meta-data relation" do
         let :meta_data_response do
-          plain_faraday_json_client.get("/api-v2/media-entry/#{@media_entry.id}/meta-data")
+          plain_faraday_json_client.get("/api-v2/media-entries/#{@media_entry.id}/meta-data/")
         end
 
         describe "meta_data the resource" do
@@ -59,7 +59,7 @@ context "A media-entry resource with get_metadata_and_previews permission" do
           #    .get("meta_keys" => [@meta_datum_text.meta_key_id].to_json)
           # end
           let :meta_data_response do
-            plain_faraday_json_client.get("/api-v2/media-entry/#{CGI.escape(@media_entry.id)}/meta-data")
+            plain_faraday_json_client.get("/api-v2/media-entries/#{CGI.escape(@media_entry.id)}/meta-data/")
           end
 
           let :get_meta_key_response do

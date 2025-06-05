@@ -15,12 +15,12 @@ context "users" do
 
   context "admin user" do
     include_context :json_client_for_authenticated_token_admin do
-      let(:admin_users_route) { "/api-v2/admin/users" }
+      let(:admin_users_route) { "/api-v2/admin/users/" }
 
       context "retriving a standard user" do
         let :get_user_result do
           # client.get.relation('user').get(id: @user.id)
-          client.get("#{admin_users_route}/#{CGI.escape(@user.id)}")
+          client.get("#{admin_users_route}#{CGI.escape(@user.id)}")
         end
 
         it "works" do
@@ -69,10 +69,10 @@ context "users" do
         it "can be retrieved by the email_address" do
           @users.each do |user|
             expect(
-              client.get("#{admin_users_route}/#{CGI.escape(user.email)}").status
+              client.get("#{admin_users_route}#{CGI.escape(user.email)}").status
             ).to be == 200
             expect(
-              client.get("#{admin_users_route}/#{CGI.escape(user.email)}").body["id"]
+              client.get("#{admin_users_route}#{CGI.escape(user.email)}").body["id"]
             ).to be == user["id"]
           end
         end
