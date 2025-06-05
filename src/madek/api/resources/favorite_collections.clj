@@ -135,7 +135,7 @@
 ; TODO docu
 ; TODO tests
 (def collection-routes
-  ["/collection/:collection_id/favorite"
+  ["/collections/:collection_id/favorites"
    {:openapi {:tags ["api/collection"]}}
    {:post {:summary (sd/sum_usr "Create favorite_collection for authed user and collection.")
            :handler handle_create-favorite_collection
@@ -175,7 +175,7 @@
 
 ; TODO tests
 (def admin-routes
-  [["/favorite/"
+  [["/favorites/"
     {:openapi {:tags ["admin/favorite/collections"] :security ADMIN_AUTH_METHODS}}
     ["collections"
      {:get

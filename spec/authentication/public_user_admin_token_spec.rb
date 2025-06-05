@@ -38,26 +38,26 @@ describe "1) Test status-code as public-user" do
       "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
       "/api-v2/media-entries?page=1&size=1" => 200,
       "/api-v2/roles?page=1&size=1" => 200,
-      "/api-v2/vocabularies" => 200,
+      "/api-v2/vocabularies/" => 200,
       "/api-v2/custom_urls" => 200,
       "/api-v2/full_texts?page=1&size=1" => 200,
-      "/api-v2/usage-terms" => 200,
+      "/api-v2/usage-terms/" => 200,
       "/api-v2/collections?page=1&size=1" => 200,
       "/api-v2/keywords?page=1&size=2" => 200,
       "/api-v2/groups/" => 200,
 
       "/api-v2/workflows" => 401,
       "/api-v2/auth-infos/" => 401,
-      "/api-v2/edit_sessions?page=1&size=1" => 401,
+      "/api-v2/edit_sessions/"?page=1&size=1" => 401,
 
       "/api-v2/admin/admins" => 403,
       "/api-v2/admin/app-settings/" => 403,
       "/api-v2/admin/context-keys/" => 403,
       "/api-v2/admin/contexts/" => 403,
       "/api-v2/admin/delegations" => 403,
-      "/api-v2/admin/delegation/users" => 403,
+      "/api-v2/admin/delegation/users/" => 403,
       "/api-v2/admin/delegation/groups" => 403,
-      "/api-v2/admin/edit_sessions" => 403,
+      "/api-v2/admin/edit_sessions/"" => 403,
       "/api-v2/admin/favorite/collections" => 403,
       "/api-v2/admin/favorite/media-entries" => 403,
       "/api-v2/admin/groups/" => 403,
@@ -66,10 +66,10 @@ describe "1) Test status-code as public-user" do
       "/api-v2/admin/meta-keys/" => 403,
       "/api-v2/admin/people/" => 403,
       "/api-v2/admin/roles?page=1&size=1" => 403,
-      "/api-v2/admin/usage-terms" => 403,
+      "/api-v2/admin/usage-terms/" => 403,
       "/api-v2/admin/users/" => 403,
       "/api-v2/admin/static-pages" => 403,
-      "/api-v2/admin/vocabularies" => 403
+      "/api-v2/admin/vocabularies/" => 403
 
     }.each do |url, code|
       it "accessing #{url}    results in expected status-code" do
@@ -105,26 +105,26 @@ shared_context :test_proper_public_user do
         "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
         "/api-v2/media-entries?page=1&size=1" => 200,
         "/api-v2/roles?page=1&size=1" => 200,
-        "/api-v2/vocabularies" => 200,
+        "/api-v2/vocabularies/" => 200,
         "/api-v2/custom_urls" => 200,
         "/api-v2/full_texts?page=1&size=1" => 200,
-        "/api-v2/usage-terms" => 200,
+        "/api-v2/usage-terms/" => 200,
         "/api-v2/collections?page=1&size=1" => 200,
         "/api-v2/keywords?page=1&size=2" => 200, # FIXME
         "/api-v2/groups/" => 200,
 
         "/api-v2/workflows" => 401,
         "/api-v2/auth-infos/" => 401,
-        "/api-v2/edit_sessions?page=1&size=1" => 401,
+        "/api-v2/edit_sessions/"?page=1&size=1" => 401,
 
         "/api-v2/admin/admins" => 403,
         "/api-v2/admin/app-settings/" => 403,
         "/api-v2/admin/context-keys/" => 403,
         "/api-v2/admin/contexts/" => 403,
         "/api-v2/admin/delegations" => 403,
-        "/api-v2/admin/delegation/users" => 403,
+        "/api-v2/admin/delegation/users/" => 403,
         "/api-v2/admin/delegation/groups" => 403,
-        "/api-v2/admin/edit_sessions" => 403,
+        "/api-v2/admin/edit_sessions/"" => 403,
         "/api-v2/admin/favorite/collections" => 403,
         "/api-v2/admin/favorite/media-entries" => 403,
         "/api-v2/admin/groups/" => 403,
@@ -133,10 +133,10 @@ shared_context :test_proper_public_user do
         "/api-v2/admin/meta-keys/" => 403,
         "/api-v2/admin/people/" => 403,
         "/api-v2/admin/roles?page=1&size=1" => 403,
-        "/api-v2/admin/usage-terms" => 403,
+        "/api-v2/admin/usage-terms/" => 403,
         "/api-v2/admin/users/" => 403,
         "/api-v2/admin/static-pages" => 403,
-        "/api-v2/admin/vocabularies" => 403
+        "/api-v2/admin/vocabularies/" => 403
 
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
@@ -201,26 +201,26 @@ context "3) resource with admin auth" do
           "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
           "/api-v2/media-entries?page=1&size=1" => 200,
           "/api-v2/roles?page=1&size=1" => 200,
-          "/api-v2/vocabularies" => 200,
+          "/api-v2/vocabularies/" => 200,
           "/api-v2/custom_urls" => 200,
           "/api-v2/full_texts?page=1&size=1" => 200,
-          "/api-v2/usage-terms" => 200,
+          "/api-v2/usage-terms/" => 200,
           "/api-v2/collections?page=1&size=1" => 200,
           "/api-v2/keywords?page=1&size=2" => 200,
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows" => 200,
           "/api-v2/auth-infos/" => 200,
-          "/api-v2/edit_sessions?page=1&size=1" => 200,
+          "/api-v2/edit_sessions/"?page=1&size=1" => 200,
 
           "/api-v2/admin/admins" => 200,
           "/api-v2/admin/app-settings/" => 200,
           "/api-v2/admin/context-keys/" => 200,
           "/api-v2/admin/contexts/" => 200,
           "/api-v2/admin/delegations" => 200,
-          "/api-v2/admin/delegation/users" => 200,
+          "/api-v2/admin/delegation/users/" => 200,
           "/api-v2/admin/delegation/groups" => 200,
-          "/api-v2/admin/edit_sessions" => 200,
+          "/api-v2/admin/edit_sessions/"" => 200,
           "/api-v2/admin/favorite/collections" => 200,
           "/api-v2/admin/favorite/media-entries" => 200,
           "/api-v2/admin/groups/" => 200,
@@ -229,10 +229,10 @@ context "3) resource with admin auth" do
           "/api-v2/admin/meta-keys/" => 200,
           "/api-v2/admin/people/" => 200,
           "/api-v2/admin/roles?page=1&size=1" => 200,
-          "/api-v2/admin/usage-terms" => 200,
+          "/api-v2/admin/usage-terms/" => 200,
           "/api-v2/admin/users/" => 200,
           "/api-v2/admin/static-pages" => 200,
-          "/api-v2/admin/vocabularies" => 200
+          "/api-v2/admin/vocabularies/" => 200
 
         }.each do |url, code|
           it "accessing #{url}    results in expected status-code" do
@@ -280,26 +280,26 @@ context "4) resource with token-user auth" do
           "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
           "/api-v2/media-entries?page=1&size=1" => 200,
           "/api-v2/roles?page=1&size=1" => 200,
-          "/api-v2/vocabularies" => 200,
+          "/api-v2/vocabularies/" => 200,
           "/api-v2/custom_urls" => 200,
           "/api-v2/full_texts?page=1&size=1" => 200,
-          "/api-v2/usage-terms" => 200,
+          "/api-v2/usage-terms/" => 200,
           "/api-v2/collections?page=1&size=1" => 200,
           "/api-v2/keywords?page=1&size=2" => 200,
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows" => 200,
           "/api-v2/auth-infos/" => 200,
-          "/api-v2/edit_sessions?page=1&size=1" => 200,
+          "/api-v2/edit_sessions/"?page=1&size=1" => 200,
 
           "/api-v2/admin/admins" => 403,
           "/api-v2/admin/app-settings/" => 403,
           "/api-v2/admin/context-keys/" => 403,
           "/api-v2/admin/contexts/" => 403,
           "/api-v2/admin/delegations" => 403,
-          "/api-v2/admin/delegation/users" => 403,
+          "/api-v2/admin/delegation/users/" => 403,
           "/api-v2/admin/delegation/groups" => 403,
-          "/api-v2/admin/edit_sessions" => 403,
+          "/api-v2/admin/edit_sessions/"" => 403,
           "/api-v2/admin/favorite/collections" => 403,
           "/api-v2/admin/favorite/media-entries" => 403,
           "/api-v2/admin/groups/" => 403,
@@ -308,10 +308,10 @@ context "4) resource with token-user auth" do
           "/api-v2/admin/meta-keys/" => 403,
           "/api-v2/admin/people/" => 403,
           "/api-v2/admin/roles?page=1&size=1" => 403,
-          "/api-v2/admin/usage-terms" => 403,
+          "/api-v2/admin/usage-terms/" => 403,
           "/api-v2/admin/users/" => 403,
           "/api-v2/admin/static-pages" => 403,
-          "/api-v2/admin/vocabularies" => 403
+          "/api-v2/admin/vocabularies/" => 403
 
         }.each do |url, code|
           it "accessing #{url}    results in expected status-code" do
@@ -383,26 +383,26 @@ context "5) resource with token-user auth with admin-credentials" do
           "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
           "/api-v2/media-entries?page=1&size=1" => 200,
           "/api-v2/roles?page=1&size=1" => 200,
-          "/api-v2/vocabularies" => 200,
+          "/api-v2/vocabularies/" => 200,
           "/api-v2/custom_urls" => 200,
           "/api-v2/full_texts?page=1&size=1" => 200,
-          "/api-v2/usage-terms" => 200,
+          "/api-v2/usage-terms/" => 200,
           "/api-v2/collections?page=1&size=1" => 200,
           "/api-v2/keywords?page=1&size=2" => 200,
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows" => 200,
           "/api-v2/auth-infos/" => 200,
-          "/api-v2/edit_sessions?page=1&size=1" => 200,
+          "/api-v2/edit_sessions/"?page=1&size=1" => 200,
 
           "/api-v2/admin/admins" => 200,
           "/api-v2/admin/app-settings/" => 200,
           "/api-v2/admin/context-keys/" => 200,
           "/api-v2/admin/contexts/" => 200,
           "/api-v2/admin/delegations" => 200,
-          "/api-v2/admin/delegation/users" => 200,
+          "/api-v2/admin/delegation/users/" => 200,
           "/api-v2/admin/delegation/groups" => 200,
-          "/api-v2/admin/edit_sessions" => 200,
+          "/api-v2/admin/edit_sessions/"" => 200,
           "/api-v2/admin/favorite/collections" => 200,
           "/api-v2/admin/favorite/media-entries" => 200,
           "/api-v2/admin/groups/" => 200,
@@ -411,10 +411,10 @@ context "5) resource with token-user auth with admin-credentials" do
           "/api-v2/admin/meta-keys/" => 200,
           "/api-v2/admin/people/" => 200,
           "/api-v2/admin/roles?page=1&size=1" => 200,
-          "/api-v2/admin/usage-terms" => 200,
+          "/api-v2/admin/usage-terms/" => 200,
           "/api-v2/admin/users/" => 200,
           "/api-v2/admin/static-pages" => 200,
-          "/api-v2/admin/vocabularies" => 200
+          "/api-v2/admin/vocabularies/" => 200
 
         }.each do |url, code|
           it "accessing #{url}    results in expected status-code" do

@@ -257,9 +257,9 @@
       :coercion spec/coercion
       :parameters {:query :collection-query/query-def}
       :responses {200 {:description "Returns the list of collections."
-                       :body ::response-collections-body}}}}]
-
-   ["collection"
+                       :body ::response-collections-body}}}}
+    ;]
+   ;["collection"
     {:post
      {:summary (sd/?no-auth? (sd/sum_usr "Create collection"))
 
@@ -277,7 +277,7 @@
                   406 {:description "Could not create collection."
                        :body s/Any}}}}]
 
-   ["collection/:collection_id"
+   ["collections/:collection_id"
     {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get collection for id."))
            :handler handle_get-collection
            :middleware [jqh/ring-wrap-add-media-resource

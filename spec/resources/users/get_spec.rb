@@ -15,7 +15,7 @@ context "users" do
 
   context "admin user" do
     include_context :json_client_for_authenticated_token_admin do
-      let(:admin_users_route) { "/api-v2/admin/users" }
+      let(:admin_users_route) { "/api-v2/admin/users/" }
 
       context "retriving a standard user" do
         let :get_user_result do

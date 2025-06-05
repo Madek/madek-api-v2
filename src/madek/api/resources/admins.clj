@@ -86,7 +86,7 @@
 (def ring-routes
   ["/"
    {:openapi {:tags ["admin/admins/"] :security ADMIN_AUTH_METHODS}}
-   ["admins"
+   ["admins/"
     {:get
      {:summary (sd/sum_adm "List admin users.")
       :handler handle_list-admin
@@ -124,7 +124,7 @@
                        :body s/Any}}}}]
 
    ; access via user
-   ["admins/:user_id/user"
+   ["admins/:user_id/users/"
     {:post
      {:summary (sd/sum_adm "Create admin for user with id.")
       :handler handle_create-admin

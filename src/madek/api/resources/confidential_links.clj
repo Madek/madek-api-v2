@@ -159,7 +159,7 @@
 
 ; TODO check can edit permissions
 (def user-me-routes
-  ["/media-entry/:media_entry_id"
+  ["/media-entries/:media_entry_id"
    {:openapi {:tags ["api/media-entry"]}}
    ["/conf-links"
     {:post {:summary (sd/sum_adm "Create confidential link.")
@@ -186,7 +186,7 @@
                        406 {:description "Could not list confidential links."
                             :body s/Any}}}}]
 
-   ["/conf-link/:id"
+   ["/conf-links/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
            :handler handle_get-conf-link
            :middleware [jqh/ring-wrap-add-media-resource
@@ -254,7 +254,7 @@
                        406 {:description "Could not list confidential links."
                             :body s/Any}}}}]
 
-   ["/conf-link/:id"
+   ["/conf-links/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
            :handler handle_get-conf-link
            :middleware [jqh/ring-wrap-add-media-resource

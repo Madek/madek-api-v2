@@ -23,7 +23,7 @@
     {:get get/meta-data-role.meta_data_role_id}]])
 
 (def collection-routes
-  ["/collections/"
+  ["/collections"
    {:openapi {:tags ["api/collections/"]}}
    ["/:collection_id/meta-data"
     {:get get/collection_id.meta-data}]
