@@ -31,7 +31,7 @@ context "Getting meta-key's resource without authentication" do
 
   describe "query context-keys" do
     it "responds with 200" do
-      resp = plain_faraday_json_client.get("/api-v2/meta-keys")
+      resp = plain_faraday_json_client.get("/api-v2/meta-keys/")
       expect(resp.status).to be == 200
       expect(resp.body["meta-keys"].count).to eq(@count_of_all_fields)
     end

@@ -13,7 +13,7 @@ describe "Admin Context Resource Access" do
     let(:client) { plain_faraday_json_client }
 
     describe "Fetching all contexts" do
-      let(:plain_json_response) { client.get("/api-v2/admin/contexts") }
+      let(:plain_json_response) { client.get("/api-v2/admin/contexts/") }
 
       it "returns 403 Unauthorized" do
         expect(plain_json_response.status).to eq(403)
@@ -37,7 +37,7 @@ describe "Admin Context Resource Access" do
     include_context :json_client_for_authenticated_token_admin
 
     it "allows access to context resources with a valid token" do
-      response = client.get("/api-v2/admin/contexts")
+      response = client.get("/api-v2/admin/contexts/")
       expect(response.status).to eq(200)
 
       context_id = response.body.first["id"]
@@ -71,7 +71,7 @@ describe "Admin Context Resource Access" do
 
     it "performs full CRUD on context resource" do
       # CREATE
-      post_response = client.post("/api-v2/admin/contexts") do |req|
+      post_response = client.post("/api-v2/admin/contexts/") do |req|
         req.body = context_attrs.to_json
         req.headers["Content-Type"] = "application/json"
       end

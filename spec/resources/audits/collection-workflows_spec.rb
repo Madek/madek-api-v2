@@ -52,7 +52,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
   include_context :setup_post_data
 
   let!(:user_id) do
-    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collection", body: post_data)
+    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections/", body: post_data)
     expect(response.status).to eq(200)
     response.body["id"]
   end

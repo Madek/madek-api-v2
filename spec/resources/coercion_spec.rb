@@ -15,7 +15,7 @@ context "Testing coercion-erros by keywords" do
     expect(resp.body).to eq({"coercion-type" => "spec",
                              "errors" => [{"in" => "page", "pred" => "clojure.core/pos-int?", "val" => "abc"}],
                              "reason" => "Coercion-Error",
-                             "scope" => "request/query-params", "uri" => "GET /api-v2/keywords"})
+                             "scope" => "request/query-params", "uri" => "GET /api-v2/keywords/"})
   end
 
   it "responses with 200" do

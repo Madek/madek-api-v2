@@ -49,13 +49,13 @@ context "Getting keywords by pagination" do
   end
 
   it "responses with 200" do
-    resp = plain_faraday_json_client.get("/api-v2/keywords")
+    resp = plain_faraday_json_client.get("/api-v2/keywords/")
     expect(resp.status).to be == 200
     expect(resp.body["keywords"].count).to be 10
   end
 
   it "responses with 200" do
-    resp = plain_faraday_json_client.get("/api-v2/keywords")
+    resp = plain_faraday_json_client.get("/api-v2/keywords/")
     expect(resp.status).to be == 200
     expect(resp.body["keywords"].count).to be 10
   end
