@@ -1,9 +1,13 @@
 (ns madek.api.resources.media-entries.advanced-filter.meta-data
   (:require
+   [clojure.string]
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.meta-key :as meta-key]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
+
+(defn sql-escape [s]
+  (clojure.string/replace s "'" "''"))
 
 (def ^:private match-columns {"meta_data_people" {:table "people",
                                                   :resource "person",
@@ -11,6 +15,7 @@
                               "meta_data_keywords" {:table "keywords",
                                                     :resource "keyword",
                                                     :match_column "term"}})
+
 (defn- get-meta-datum-object-type [meta-datum-spec tx]
   (or (:type meta-datum-spec)
       (:meta_datum_object_type
@@ -62,7 +67,7 @@
   ; when creating indexes
   [[:raw (str "to_tsvector('english', "
               column
-              ") @@ plainto_tsquery('english', '" search-string "')")]])
+              ") @@ plainto_tsquery('english', '" (sql-escape search-string) "')")]])
 
 (defn- sql-merge-where-with-match
   [sqlmap related-meta-data-table match]
@@ -74,7 +79,7 @@
                           "."
                           (get-in match-columns
                                   [related-meta-data-table :match_column])
-                          ") @@ plainto_tsquery('english', '" match "')")])))
+                          ") @@ plainto_tsquery('english', '" (sql-escape match) "')")])))
 
 (defn- primitive-type? [md-object-type]
   (or (= md-object-type "MetaDatum::Text")
@@ -140,11 +145,10 @@
                                         [:=
                                          (keyword (str % ".meta_datum_id"))
                                          :meta_data.id])
-                              (sql/where [:raw
-                                          (sql-raw-text-search
-                                           (str resource_table "."
-                                                (get-in match-columns [% :match_column]))
-                                           search-string)])
+                              (sql/where (sql-raw-text-search
+                                          (str resource_table "."
+                                               (get-in match-columns [% :match_column]))
+                                          search-string))
                               (sql/where [:= :meta_data.media_entry_id :media_entries.id]))])
                       (keys match-columns)))))))
 

@@ -110,21 +110,6 @@
      value
      (to-uuid value key))))
 
-; [madek.api.utils.helper :refer [urls-to-custom-format]]
-;; TODO: maybe possible with json/dump?
-(defn convert-to-raw-set [urls]
-  (let [transformed-urls urls
-        combined-str (str "'{" (clojure.string/join "," transformed-urls) "}'")]
-    [:raw combined-str]))
-
-; [madek.api.utils.helper :refer [convert-map]]
-(defn convert-map [map]
-  (-> map
-      (update :external_uris #(if (nil? %)
-                                [:raw "'{}'"]
-                                (convert-to-raw-set %))) ;;rename to convert-to-raw-set
-      (update :creator_id #(if (contains? map :creator_id) (to-uuid % :creator_id)))))
-
 (defn modify-if-exists [m k f]
   (if (contains? m k)
     (update m k f)
@@ -138,52 +123,49 @@
          value (if (nil? value) "'{}'" (json/generate-string value))]
      (assoc map key [:cast value :jsonb]))))
 
-;; Used for columns of jsonb type
-; [madek.api.utils.helper :refer [convert-map-if-exist]]
 (defn convert-map-if-exist [m]
   (-> m
-      (modify-if-exists :deleted_at #(if (contains? m :deleted_at) [:cast % ::date]))
-      (modify-if-exists :layout #(if (contains? m :layout) [:cast % :public.collection_layout]))
-      (modify-if-exists :default_resource_type #(if (contains? m :default_resource_type) [:cast % :public.collection_default_resource_type]))
-      (modify-if-exists :sorting #(if (contains? m :sorting) [:cast % :public.collection_sorting]))
-      (modify-if-exists :json #(if (contains? m :json) [:cast (json/generate-string %) :jsonb]))
-      (modify-if-exists :configuration #(if (contains? m :configuration) [:cast (json/generate-string %) :jsonb]))
+      (modify-if-exists :deleted_at #(vector :cast % ::date))
+      (modify-if-exists :layout #(vector :cast % :public.collection_layout))
+      (modify-if-exists :default_resource_type #(vector :cast % :public.collection_default_resource_type))
+      (modify-if-exists :sorting #(vector :cast % :public.collection_sorting))
+      (modify-if-exists :json #(vector :cast (json/generate-string %) :jsonb))
+      (modify-if-exists :configuration #(vector :cast (json/generate-string %) :jsonb))
       (modify-if-exists :institutional_directory_inactive_since #(when % [:cast % ::timestamptz]))
       (modify-if-exists :active_until #(when % [:cast % ::timestamptz]))
 
       ;; uuid
-      (modify-if-exists :id #(if (contains? m :id) (to-uuid % :id)))
-      (modify-if-exists :media_entry_default_license_id #(if (contains? m :id) (to-uuid %)))
-      (modify-if-exists :edit_meta_data_power_users_group_id #(if (contains? m :edit_meta_data_power_users_group_id) (to-uuid %)))
-      (modify-if-exists :creator_id #(if (contains? m :creator_id) (to-uuid %)))
-      (modify-if-exists :person_id #(if (contains? m :person_id) (to-uuid %)))
-      (modify-if-exists :user_id #(if (contains? m :user_id) (to-uuid %)))
-      (modify-if-exists :accepted_usage_terms_id #(if (contains? m :accepted_usage_terms_id) (to-uuid %)))
-
-      (modify-if-exists :created_by_id #(if (contains? m :created_by_id) (to-uuid %)))
-      (modify-if-exists :uploader_id #(if (contains? m :uploader_id) (to-uuid %)))
-      (modify-if-exists :media_entry_id #(if (contains? m :media_entry_id) (to-uuid %)))
+      (modify-if-exists :id #(to-uuid % :id))
+      (modify-if-exists :media_entry_default_license_id to-uuid)
+      (modify-if-exists :edit_meta_data_power_users_group_id to-uuid)
+      (modify-if-exists :creator_id to-uuid)
+      (modify-if-exists :person_id to-uuid)
+      (modify-if-exists :user_id to-uuid)
+      (modify-if-exists :accepted_usage_terms_id to-uuid)
+      (modify-if-exists :created_by_id to-uuid)
+      (modify-if-exists :uploader_id to-uuid)
+      (modify-if-exists :media_entry_id to-uuid)
 
       ;; jsonb / character varying
-      (modify-if-exists :settings #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
+      (modify-if-exists :settings #(vector :cast (json/generate-string (or % {})) :jsonb))
       (modify-if-exists :external_uris #(vector :array (or % []) :text))
-      (modify-if-exists :sitemap #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
-      (modify-if-exists :available_locales #(if (nil? %) [:raw "'{}'"] (convert-to-raw-set %)))
+      (modify-if-exists :sitemap #(vector :cast (json/generate-string (or % {})) :jsonb))
+      (modify-if-exists :available_locales #(vector :array (or % []) :text))
       (modify-if-exists :institutional_directory_infos #(vector :array (or % []) :text))
 
       ;; text[]
-      (modify-if-exists :contexts_for_entry_extra #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :contexts_for_list_details #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :contexts_for_entry_validation #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :contexts_for_dynamic_filters #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :contexts_for_collection_edit #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :contexts_for_collection_extra #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :contexts_for_entry_edit #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :contexts_for_context_keys #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :catalog_context_keys #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :copyright_notice_templates #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :allowed_people_subtypes #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))
-      (modify-if-exists :person_info_fields #(if (nil? %) [:raw "'[]'"] (convert-to-raw-set %)))))
+      (modify-if-exists :contexts_for_entry_extra #(vector :array (or % []) :text))
+      (modify-if-exists :contexts_for_list_details #(vector :array (or % []) :text))
+      (modify-if-exists :contexts_for_entry_validation #(vector :array (or % []) :text))
+      (modify-if-exists :contexts_for_dynamic_filters #(vector :array (or % []) :text))
+      (modify-if-exists :contexts_for_collection_edit #(vector :array (or % []) :text))
+      (modify-if-exists :contexts_for_collection_extra #(vector :array (or % []) :text))
+      (modify-if-exists :contexts_for_entry_edit #(vector :array (or % []) :text))
+      (modify-if-exists :contexts_for_context_keys #(vector :array (or % []) :text))
+      (modify-if-exists :catalog_context_keys #(vector :array (or % []) :text))
+      (modify-if-exists :copyright_notice_templates #(vector :array (or % []) :text))
+      (modify-if-exists :allowed_people_subtypes #(vector :array (or % []) :text))
+      (modify-if-exists :person_info_fields #(vector :array (or % []) :text))))
 
 (extend-protocol THstorable
   IPersistentMap

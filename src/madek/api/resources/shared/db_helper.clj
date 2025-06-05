@@ -27,7 +27,6 @@
 
 (defn try-instant-on-presence [data keyword]
   (try
-    ;(info "try-instant-on-presence " data keyword)
     (if-not (nil? (-> data keyword))
       (assoc data keyword (-> data keyword .toInstant))
       data)
@@ -35,14 +34,13 @@
       (error "Invalid instant data" (ex-message ex))
       data)))
 
-(defn try-instant [dinst]
+(defn try-convert-to-instant [date]
   (try
-    ;(info "try-instant " dinst)
-    (if-not (nil? dinst)
-      (.toInstant dinst)
+    (if-not (nil? date)
+      (.toInstant date)
       nil)
     (catch Exception ex
-      (error "Invalid instant data" dinst (ex-message ex))
+      (error "Invalid instant data" date (ex-message ex))
       nil)))
 
 (defn try-parse-date-time [dt_string]
@@ -65,28 +63,22 @@
       nil)))
 
 (defn build-query-ts-after [query query-params param col-name]
-  (let [pval (-> query-params param mc/presence)]
-    (if (nil? pval)
+  (let [date (-> query-params param)
+        instant (some-> date try-convert-to-instant)]
+    (info "build-query-ts-after: " date ":" instant)
+    (if (nil? instant)
       query
-      ;(let [parsed (try-parse-date-time pval)]
-      (let [parsed (try-instant pval)]
-        (info "build-query-created-or-updated-after: " pval ":" parsed)
-        (if (nil? parsed)
-          query
-          (-> query (sql/where [:raw (str "'" parsed "'::timestamp < " col-name)])))))))
+      (-> query (sql/where [:raw (str "'" instant "'::timestamp < " col-name)])))))
 
 (defn build-query-created-or-updated-after [query query-params param]
-  (let [pval (-> query-params param mc/presence)]
-    (if (nil? pval)
+  (let [date (-> query-params param)
+        instant (some-> date try-convert-to-instant)]
+    (info "build-query-created-or-updated-after: " date ":" instant)
+    (if (nil? date)
       query
-      ;(let [parsed (try-parse-date-time pval)]
-      (let [parsed (try-instant pval)]
-        (info "build-query-created-or-updated-after: " pval ":" parsed)
-        (if (nil? parsed)
-          query
-          (-> query (sql/where [:or
-                                [:raw (str "'" parsed "'::timestamp < created_at")]
-                                [:raw (str "'" parsed "'::timestamp < updated_at")]])))))))
+      (-> query (sql/where [:or
+                            [:raw (str "'" instant "'::timestamp < created_at")]
+                            [:raw (str "'" instant "'::timestamp < updated_at")]])))))
 
 (defn build-query-param-like
   ([query query-params param]

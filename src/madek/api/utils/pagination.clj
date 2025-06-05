@@ -26,7 +26,7 @@
          (boolean (re-find uuid-regex uri)))))
 
 (defn- fetch-total-count [base-query tx]
-  (-> (sql/select [[:raw "COUNT(*)"] :total_count])
+  (-> (sql/select [[:count :*] :total_count])
       (sql/from [[base-query] :subquery])
       sql-format
       (->> (jdbc/query tx))
