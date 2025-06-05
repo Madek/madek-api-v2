@@ -3,7 +3,7 @@
 
 (defn- non-soft-delete-raw
   ([]
-   [:raw (str "(deleted_at is null or now() < deleted_at)")])
+   [:raw "(deleted_at is null or now() < deleted_at)"])
   ([table-name]
    [:raw (str "(" table-name ".deleted_at is null or now() < " table-name ".deleted_at)")]))
 

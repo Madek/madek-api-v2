@@ -6,11 +6,10 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.keywords.keyword :as kw]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-   [madek.api.utils.helper :refer [convert-map d]]
+   [madek.api.utils.helper :refer [d modify-if-exists to-uuid]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -92,6 +91,11 @@
     (sd/response_ok res)))
 
 ;### handlers write ####################################################################
+
+(defn convert-map [map]
+  (-> map
+      (modify-if-exists :external_uris #(vector :array (or % []) :text))
+      (modify-if-exists :creator_id to-uuid)))
 
 (defn handle_create-keyword [req]
   (try
