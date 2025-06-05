@@ -197,7 +197,7 @@
 (def query-routes
   ["/"
    {:openapi {:tags ["keywords"] :security []}}
-   ["keywords"
+   ["keywords/"
     {:get
      {:summary (sd/?no-auth? (sd/sum_pub (d "Query / list keywords.")))
       :handler handle_usr-query-keywords
@@ -229,7 +229,7 @@
 (def admin-routes
   ["/"
    {:openapi {:tags ["admin/keywords"] :security ADMIN_AUTH_METHODS}}
-   ["keywords"
+   ["keywords/"
     {:get
      {:summary (sd/sum_adm "Query keywords")
       :handler handle_adm-query-keywords

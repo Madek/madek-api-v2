@@ -139,7 +139,7 @@
 
   ["/"
    {:openapi {:tags ["admin/contexts"] :security ADMIN_AUTH_METHODS}}
-   ["contexts"
+   ["contexts/"
     {:post {:summary (sd/sum_adm_todo "Create contexts.")
             :handler handle_create-contexts
             :middleware [wrap-authorize-admin!]
@@ -208,7 +208,7 @@
 
   ["/"
    {:openapi {:tags ["contexts"]}}
-   ["contexts"
+   ["contexts/"
     {:get {:summary (sd/?no-auth? (sd/sum_usr "List contexts."))
            :handler handle_usr-list-contexts
            :coercion reitit.coercion.schema/coercion

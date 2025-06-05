@@ -30,7 +30,7 @@ describe "Getting a media-entry resource with authentication" do
 
   context :check_forbidden_without_required_permission do
     it "creates, updates & delete group-permission for collection" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}")
       expect(response.status).to eq 200
 
       body = {
@@ -39,25 +39,25 @@ describe "Getting a media-entry resource with authentication" do
       }
 
       group2 = FactoryBot.create(:group)
-      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collection/#{collection.id}/perms/group/#{group2.id}", body: body)
+      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups/#{group2.id}", body: body)
       expect(response.status).to eq 200
 
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection.id}/perms/group/#{group2.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups/#{group2.id}")
       expect(response.status).to eq 200
 
-      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collection/#{collection.id}/perms/group/#{group2.id}/get_metadata_and_previews/false")
+      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups/#{group2.id}/get_metadata_and_previews/false")
       expect(response.status).to eq 200
       expect(response.body["get_metadata_and_previews"]).to eq false
 
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection.id}/perms/groups")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups/")
       expect(response.status).to eq 200
 
-      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collection/#{collection.id}/perms/group/#{group2.id}")
+      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups/#{group2.id}")
       expect(response.status).to eq 200
     end
 
     it "creates, updates & delete user-permission for collection" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}")
       expect(response.status).to eq 200
 
       body = {
@@ -67,25 +67,25 @@ describe "Getting a media-entry resource with authentication" do
       }
 
       user2 = FactoryBot.create(:user)
-      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collection/#{collection.id}/perms/user/#{user2.id}", body: body)
+      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections/#{collection.id}/perms/users/#{user2.id}", body: body)
       expect(response.status).to eq 200
 
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection.id}/perms/user/#{user2.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}/perms/users/#{user2.id}")
       expect(response.status).to eq 200
 
-      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collection/#{collection.id}/perms/user/#{user2.id}/get_metadata_and_previews/false")
+      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection.id}/perms/users/#{user2.id}/get_metadata_and_previews/false")
       expect(response.status).to eq 200
       expect(response.body["get_metadata_and_previews"]).to eq false
 
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection.id}/perms/users")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}/perms/users/")
       expect(response.status).to eq 200
 
-      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collection/#{collection.id}/perms/user/#{user2.id}")
+      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collections/#{collection.id}/perms/users/#{user2.id}")
       expect(response.status).to eq 200
     end
 
     it "get & updates resource-perms for collection" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection.id}/perms/resources")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}/perms/resources/")
       expect(response.status).to eq 200
 
       data = {
@@ -96,10 +96,10 @@ describe "Getting a media-entry resource with authentication" do
         "responsible_delegation_id" => nil
       }
 
-      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collection/#{collection.id}/perms/resources", body: data)
+      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection.id}/perms/resources/", body: data)
       expect(response.status).to eq 200
 
-      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collection/#{collection.id}/perms/resource/get_metadata_and_previews/false")
+      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection.id}/perms/resources/get_metadata_and_previews/false")
       expect(response.status).to eq 200
       expect(response.body["get_metadata_and_previews"]).to eq false
     end

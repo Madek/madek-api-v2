@@ -122,7 +122,7 @@
   ["/"
    {:openapi {:tags ["admin/static-pages"] :security ADMIN_AUTH_METHODS}}
 
-   ["static-pages"
+   ["static-pages/"
     {:post {:summary (sd/sum_adm "Create static_page.")
             :handler handle_create-static_page
             :coercion reitit.coercion.schema/coercion

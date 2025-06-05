@@ -236,7 +236,7 @@
 (def admin-routes
   ["/"
    {:openapi {:tags ["admin/context-keys"] :security ADMIN_AUTH_METHODS}}
-   ["context-keys"
+   ["context-keys/"
     {:post
      {:summary (sd/sum_adm "Post context_key by id.")
       :swagger {:security [{"auth" []}]}
@@ -311,7 +311,7 @@
 (def user-routes
   ["/"
    {:openapi {:tags ["context-keys"] :security []}}
-   ["context-keys"
+   ["context-keys/"
     {:get
      {:summary (sd/?no-auth? (sd/sum_pub "Query / List context_keys."))
       :handler handle_usr-list-context_keys

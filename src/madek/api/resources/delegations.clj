@@ -124,7 +124,7 @@
 
   ["/"
    {:openapi {:tags ["admin/delegations"] :security ADMIN_AUTH_METHODS}}
-   ["delegations"
+   ["delegations/"
     {:post {:summary (sd/sum_adm_todo "Create delegations.")
             ; TODO labels and descriptions
             :handler handle_create-delegations

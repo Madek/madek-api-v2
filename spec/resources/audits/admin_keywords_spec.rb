@@ -27,7 +27,7 @@ describe "Admin Keywords API with authentication" do
   include_context :setup_post_data
 
   let!(:user_id) do
-    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/admin/keywords", body: post_data)
+    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/admin/keywords/", body: post_data)
     expect(response.status).to eq(200)
     expect_audit_entries_count(1, 1, 1)
     response.body["id"]
@@ -37,13 +37,13 @@ describe "Admin Keywords API with authentication" do
 
   context "when updating a keyword" do
     it "verify GET response without pagination" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords/")
       expect(response.status).to eq(200)
       expect(response.body["keywords"]).to be_a Array
     end
 
     it "verify GET response with pagination" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords?page=1&size=5")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/admin/keywords/?page=1&size=5")
       expect(response.status).to eq(200)
       expect(response.body["data"]).to be_a Array
       expect(response.body["pagination"]).to be_a Hash
@@ -99,7 +99,7 @@ describe "Admin Keywords API with authentication" do
     end
 
     it "audits the POST request with unauthorized access" do
-      response = plain_faraday_json_client.post("/api-v2/admin/keywords") do |req|
+      response = plain_faraday_json_client.post("/api-v2/admin/keywords/") do |req|
         req.body = post_data.to_json
         req.headers["Content-Type"] = "application/json"
       end
@@ -115,7 +115,7 @@ describe "Admin Keywords API without authentication" do
 
   context "when attempting to create a keyword without authentication" do
     it "audits the POST request but does not create the keyword" do
-      response = plain_faraday_json_client.post("/api-v2/admin/keywords") do |req|
+      response = plain_faraday_json_client.post("/api-v2/admin/keywords/") do |req|
         req.body = post_data.to_json
         req.headers["Content-Type"] = "application/json"
       end

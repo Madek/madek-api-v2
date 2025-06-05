@@ -35,10 +35,10 @@ describe "generated runs" do
                 let :response do
                   url = ""
                   if meta_datum_json.media_entry_id == media_resource.id
-                    url = "/api-v2/media-entry/#{meta_datum_json.media_entry_id}/meta-datum/#{meta_datum_json.meta_key_id}"
+                    url = "/api-v2/media-entries/#{meta_datum_json.media_entry_id}/meta-data/#{meta_datum_json.meta_key_id}"
                   end
                   if meta_datum_json.collection_id == media_resource.id
-                    url = "/api-v2/collection/#{meta_datum_json.collection_id}/meta-datum/#{meta_datum_json.meta_key_id}"
+                    url = "/api-v2/collections/#{meta_datum_json.collection_id}/meta-data/#{meta_datum_json.meta_key_id}"
                   end
                   client.get(url)
                 end

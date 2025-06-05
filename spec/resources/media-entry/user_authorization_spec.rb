@@ -41,12 +41,12 @@ describe "Getting a media-entry resource with authentication" do
       end
 
       it "is forbidden 403" do
-        response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+        response = user_client.get("/api-v2/media-entries/#{@media_entry.id}")
         expect(response.status).to be == 403
       end
 
       it "is forbidden 403, no read access" do
-        response = user_client_no_creds.get("/api-v2/media-entry/#{@media_entry.id}")
+        response = user_client_no_creds.get("/api-v2/media-entries/#{@media_entry.id}")
         expect(response.status).to be == 403
       end
     end
@@ -57,7 +57,7 @@ describe "Getting a media-entry resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+        response = user_client.get("/api-v2/media-entries/#{@media_entry.id}")
         expect(response.status).to be == 200
       end
     end
@@ -75,7 +75,7 @@ describe "Getting a media-entry resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+        response = user_client.get("/api-v2/media-entries/#{@media_entry.id}")
         expect(response.status).to be == 200
       end
     end
@@ -94,7 +94,7 @@ describe "Getting a media-entry resource with authentication" do
     end
 
     it "is allowed 200" do
-      response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+      response = user_client.get("/api-v2/media-entries/#{@media_entry.id}")
       expect(response.status).to be == 200
     end
   end
@@ -108,7 +108,7 @@ describe "Getting a media-entry resource with authentication" do
     end
 
     it "is allowed 200" do
-      response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+      response = user_client.get("/api-v2/media-entries/#{@media_entry.id}")
       expect(response.status).to be == 200
     end
   end
@@ -124,7 +124,7 @@ describe "Getting a media-entry resource with authentication" do
     end
 
     it "is allowed 200" do
-      response = user_client.get("/api-v2/media-entry/#{@media_entry.id}")
+      response = user_client.get("/api-v2/media-entries/#{@media_entry.id}")
       expect(response.status).to be == 200
     end
   end

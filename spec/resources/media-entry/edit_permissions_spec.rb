@@ -53,14 +53,14 @@ describe "Getting a media-entry resource with authentication" do
 
   context :check_forbidden_without_required_permission do
     it "is forbidden 403" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 403
     end
   end
 
   context :check_not_allowed_if_updated_user_permission do
     before :example do
-      curl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      curl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}"
       create_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, curl, body: {
         get_metadata_and_previews: true,
         get_full_size: false,
@@ -69,22 +69,22 @@ describe "Getting a media-entry resource with authentication" do
       })
       expect(create_perm.status).to eq 200
 
-      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(readok.status).to eq 200
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/false"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}/get_metadata_and_previews/false"
       update_perm = wtoken_header_plain_faraday_json_client_put(owner_token.token, uurl)
       expect(update_perm.status).to eq 200
     end
 
     it "is not allowed 403" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 403
     end
   end
 
   context :check_not_allowed_if_deleted_user_permission do
     before :example do
-      curl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      curl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}"
       create_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, curl, body: {
         get_metadata_and_previews: true,
         get_full_size: false,
@@ -93,16 +93,16 @@ describe "Getting a media-entry resource with authentication" do
       })
       expect(create_perm.status).to eq 200
 
-      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(readok.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}"
       del_perm = wtoken_header_plain_faraday_json_client_delete(owner_token.token, uurl)
       expect(del_perm.status).to eq 200
     end
 
     it "is not allowed 403" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 403
     end
   end
@@ -112,7 +112,7 @@ describe "Getting a media-entry resource with authentication" do
 
     before :example do
       user.groups << group
-      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      url = "#{api_base_url}/media-entries/#{media_entry.id}/perms/groups/#{group.id}"
       group_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
         get_metadata_and_previews: true,
         get_full_size: false,
@@ -122,7 +122,7 @@ describe "Getting a media-entry resource with authentication" do
     end
 
     it "is allowed 200" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 200
     end
   end
@@ -132,23 +132,23 @@ describe "Getting a media-entry resource with authentication" do
 
     before :example do
       user.groups << group
-      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      url = "#{api_base_url}/media-entries/#{media_entry.id}/perms/groups/#{group.id}"
       group_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
         get_metadata_and_previews: true,
         get_full_size: false,
         edit_metadata: false
       })
       expect(group_perm.status).to eq 200
-      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(readok.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}/get_metadata_and_previews/false"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/groups/#{group.id}/get_metadata_and_previews/false"
       update_perm = token_header_plain_faraday_json_client(:put, uurl, owner_token.token)
       expect(update_perm).not_to be_nil
     end
 
     it "is not allowed 403" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 403
     end
   end
@@ -158,7 +158,7 @@ describe "Getting a media-entry resource with authentication" do
 
     before :example do
       user.groups << group
-      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      url = "#{api_base_url}/media-entries/#{media_entry.id}/perms/groups/#{group.id}"
       group_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
         get_metadata_and_previews: true,
         get_full_size: false,
@@ -166,24 +166,24 @@ describe "Getting a media-entry resource with authentication" do
       })
       expect(group_perm.status).to eq 200
 
-      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      readok = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(readok.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/group/#{group.id}"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/groups/#{group.id}"
       update_perm = wtoken_header_plain_faraday_json_client_delete(owner_token.token, uurl)
       expect(update_perm).not_to be_nil
       update_perm
     end
 
     it "is not allowed 403" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 403
     end
   end
 
   context :check_download_allowed_if_user_permission do
     before :example do
-      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      url = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}"
       user_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
         get_metadata_and_previews: true,
         get_full_size: true,
@@ -194,9 +194,9 @@ describe "Getting a media-entry resource with authentication" do
     end
 
     it "download is allowed 200" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 200
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/media-file/data-stream"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/media-files/data-stream/"
       download = wtoken_header_plain_faraday_json_client_get(user_token.token, uurl)
       expect(download.status).to eq 200
     end
@@ -204,7 +204,7 @@ describe "Getting a media-entry resource with authentication" do
 
   context :check_edit_permissions_allowed_if_user_permission do
     before :example do
-      url = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}"
+      url = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}"
       user_perm = wtoken_header_plain_faraday_json_client_post(owner_token.token, url, body: {
         get_metadata_and_previews: true,
         get_full_size: true,
@@ -219,10 +219,10 @@ describe "Getting a media-entry resource with authentication" do
 
     it "edit resource perms is allowed 200" do
       expect_audit_entries_count(0, 0, 0)
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/resource/get_metadata_and_previews/true"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/resources/get_metadata_and_previews/true"
       edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
       expect(edit.status).to eq 200
       expect_audit_entries_count(1, 1, 1)
@@ -231,10 +231,10 @@ describe "Getting a media-entry resource with authentication" do
     describe "For media_entry_user_permission " do
       it "edit user perms with new value is allowed 200" do
         expect_audit_entries_count(0, 0, 0)
-        response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+        response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
         expect(response.status).to eq 200
 
-        uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/false"
+        uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}/get_metadata_and_previews/false"
         edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
         expect(edit.status).to eq 200
         expect_audit_entries_count(1, 1, 1)
@@ -242,10 +242,10 @@ describe "Getting a media-entry resource with authentication" do
 
       it "edit user perms with same value is allowed 200" do
         expect_audit_entries_count(0, 0, 0)
-        response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entry/#{media_entry.id}")
+        response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
         expect(response.status).to eq 200
 
-        uurl = "#{api_base_url}/media-entry/#{media_entry.id}/perms/user/#{user.id}/get_metadata_and_previews/true"
+        uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/users/#{user.id}/get_metadata_and_previews/true"
         edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
         expect(edit.status).to eq 200
         expect_audit_entries_count(1, 0, 1)

@@ -7,7 +7,7 @@ context "public context-key" do
 
   describe "query context-key" do
     let(:plain_json_response) do
-      plain_faraday_json_client.get("/api-v2/context-keys")
+      plain_faraday_json_client.get("/api-v2/context-keys/")
     end
 
     it "responds with 200" do
@@ -26,7 +26,7 @@ context "public context-key" do
 
   describe "query context-key" do
     let :plain_json_response do
-      plain_faraday_json_client.get("/api-v2/context-keys?page=1&size=5")
+      plain_faraday_json_client.get("/api-v2/context-keys/?page=1&size=5")
     end
 
     it "responds with 200" do
@@ -39,7 +39,7 @@ context "public context-key" do
 
   describe "get context-key" do
     it "has the proper data" do
-      resp = plain_faraday_json_client.get("/api-v2/context-keys")
+      resp = plain_faraday_json_client.get("/api-v2/context-keys/")
       expect(resp.status).to eq(200)
       expect(resp.body.count).to eq(1)
     end
