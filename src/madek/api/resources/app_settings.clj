@@ -158,8 +158,8 @@
 
 (def admin-routes
   [["/"
-    {:openapi {:tags ["admin/app-settings"] :security ADMIN_AUTH_METHODS}}
-    ["app-settings"
+    {:openapi {:tags ["admin/app-settings/"] :security ADMIN_AUTH_METHODS}}
+    ["app-settings/"
      {:get {:summary (sd/sum_adm "Get App Settings.")
             :handler handle_get-app-settings
             :middleware [wrap-authorize-admin!]
@@ -186,7 +186,7 @@
 (def user-routes
   [["/"
     {:openapi {:tags ["app-settings"] :security []}}
-    ["app-settings"
+    ["app-settings/"
      {:get {:summary (sd/?no-auth? (sd/sum_pub "Get App Settings."))
             :handler handle_get-app-settings
             :swagger {:produces "application/json"}

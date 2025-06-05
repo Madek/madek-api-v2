@@ -31,8 +31,8 @@ describe "1) Test status-code as public-user" do
 
   context "revoking the token " do
     {
-      "/api-v2/app-settings" => 200,
-      "/api-v2/context-keys" => 200,
+      "/api-v2/app-settings/" => 200,
+      "/api-v2/context-keys/" => 200,
       "/api-v2/contexts" => 200,
       "/api-v2/meta-keys" => 200,
       "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
@@ -47,12 +47,12 @@ describe "1) Test status-code as public-user" do
       "/api-v2/groups/" => 200,
 
       "/api-v2/workflows" => 401,
-      "/api-v2/auth-info" => 401,
+      "/api-v2/auth-infos/" => 401,
       "/api-v2/edit_sessions?page=1&size=1" => 401,
 
       "/api-v2/admin/admins" => 403,
-      "/api-v2/admin/app-settings" => 403,
-      "/api-v2/admin/context-keys" => 403,
+      "/api-v2/admin/app-settings/" => 403,
+      "/api-v2/admin/context-keys/" => 403,
       "/api-v2/admin/contexts" => 403,
       "/api-v2/admin/delegations" => 403,
       "/api-v2/admin/delegation/users" => 403,
@@ -98,8 +98,8 @@ shared_context :test_proper_public_user do
 
     context "against GET endpoints " do
       {
-        "/api-v2/app-settings" => 200,
-        "/api-v2/context-keys" => 200,
+        "/api-v2/app-settings/" => 200,
+        "/api-v2/context-keys/" => 200,
         "/api-v2/contexts" => 200,
         "/api-v2/meta-keys" => 200,
         "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
@@ -114,12 +114,12 @@ shared_context :test_proper_public_user do
         "/api-v2/groups/" => 200,
 
         "/api-v2/workflows" => 401,
-        "/api-v2/auth-info" => 401,
+        "/api-v2/auth-infos/" => 401,
         "/api-v2/edit_sessions?page=1&size=1" => 401,
 
         "/api-v2/admin/admins" => 403,
-        "/api-v2/admin/app-settings" => 403,
-        "/api-v2/admin/context-keys" => 403,
+        "/api-v2/admin/app-settings/" => 403,
+        "/api-v2/admin/context-keys/" => 403,
         "/api-v2/admin/contexts" => 403,
         "/api-v2/admin/delegations" => 403,
         "/api-v2/admin/delegation/users" => 403,
@@ -152,7 +152,7 @@ describe "/auth-info resource" do
   context "without any authentication" do
     context "via json" do
       let :response do
-        plain_faraday_json_client.get("/api-v2/auth-info")
+        plain_faraday_json_client.get("/api-v2/auth-infos/")
       end
 
       it "responds with not authorized 401" do
@@ -194,8 +194,8 @@ context "3) resource with admin auth" do
 
       context "against GET endpoints " do
         {
-          "/api-v2/app-settings" => 200,
-          "/api-v2/context-keys" => 200,
+          "/api-v2/app-settings/" => 200,
+          "/api-v2/context-keys/" => 200,
           "/api-v2/contexts" => 200,
           "/api-v2/meta-keys" => 200,
           "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
@@ -210,12 +210,12 @@ context "3) resource with admin auth" do
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows" => 200,
-          "/api-v2/auth-info" => 200,
+          "/api-v2/auth-infos/" => 200,
           "/api-v2/edit_sessions?page=1&size=1" => 200,
 
           "/api-v2/admin/admins" => 200,
-          "/api-v2/admin/app-settings" => 200,
-          "/api-v2/admin/context-keys" => 200,
+          "/api-v2/admin/app-settings/" => 200,
+          "/api-v2/admin/context-keys/" => 200,
           "/api-v2/admin/contexts" => 200,
           "/api-v2/admin/delegations" => 200,
           "/api-v2/admin/delegation/users" => 200,
@@ -273,8 +273,8 @@ context "4) resource with token-user auth" do
 
       context "against GET endpoints " do
         {
-          "/api-v2/app-settings" => 200,
-          "/api-v2/context-keys" => 200,
+          "/api-v2/app-settings/" => 200,
+          "/api-v2/context-keys/" => 200,
           "/api-v2/contexts" => 200,
           "/api-v2/meta-keys" => 200,
           "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
@@ -289,12 +289,12 @@ context "4) resource with token-user auth" do
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows" => 200,
-          "/api-v2/auth-info" => 200,
+          "/api-v2/auth-infos/" => 200,
           "/api-v2/edit_sessions?page=1&size=1" => 200,
 
           "/api-v2/admin/admins" => 403,
-          "/api-v2/admin/app-settings" => 403,
-          "/api-v2/admin/context-keys" => 403,
+          "/api-v2/admin/app-settings/" => 403,
+          "/api-v2/admin/context-keys/" => 403,
           "/api-v2/admin/contexts" => 403,
           "/api-v2/admin/delegations" => 403,
           "/api-v2/admin/delegation/users" => 403,
@@ -376,8 +376,8 @@ context "5) resource with token-user auth with admin-credentials" do
 
       context "against GET endpoints " do
         {
-          "/api-v2/app-settings" => 200,
-          "/api-v2/context-keys" => 200,
+          "/api-v2/app-settings/" => 200,
+          "/api-v2/context-keys/" => 200,
           "/api-v2/contexts" => 200,
           "/api-v2/meta-keys" => 200,
           "/api-v2/media-entry/5feea8b4-fb56-4002-a119-a66608266d89" => 404,
@@ -392,12 +392,12 @@ context "5) resource with token-user auth with admin-credentials" do
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows" => 200,
-          "/api-v2/auth-info" => 200,
+          "/api-v2/auth-infos/" => 200,
           "/api-v2/edit_sessions?page=1&size=1" => 200,
 
           "/api-v2/admin/admins" => 200,
-          "/api-v2/admin/app-settings" => 200,
-          "/api-v2/admin/context-keys" => 200,
+          "/api-v2/admin/app-settings/" => 200,
+          "/api-v2/admin/context-keys/" => 200,
           "/api-v2/admin/contexts" => 200,
           "/api-v2/admin/delegations" => 200,
           "/api-v2/admin/delegation/users" => 200,

@@ -133,14 +133,14 @@
    ["/api-v2"
     {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
 
-    ["/sign-out"
+    ["/sign-out/"
      {:swagger {:tags ["Logout"] :security []}
       :no-doc false
       :post {:accept "application/json"
              :swagger {:produces ["text/html" "application/json"]}
              :handler sign-in/logout-handler}}]
 
-    ["/auth-info"
+    ["/auth-infos/"
      {:get
       {:summary (sd/?no-auth? "Authentication help and info.")
        :handler auth-info/auth-info
@@ -156,7 +156,7 @@
                                (s/optional-key :session-expires-at) s/Any}}
                    401 (sd/create-error-message-response "Creation failed." "Not authorized")}}}]
 
-    ["/test-csrf"
+    ["/test-csrf/"
      {:no-doc false
       :get {:accept "application/json"
             :description "Access allowed without x-csrf-token"
@@ -196,7 +196,7 @@
                :responses sign-in/csrf-generic-responses
                :handler (fn [_] {:status 204})}}]
 
-    ["/csrf-token"
+    ["/csrf-token/"
      {:no-doc false
       :get {:summary "Retrieve X-CSRF-Token for request header"
             :accept "application/json"
