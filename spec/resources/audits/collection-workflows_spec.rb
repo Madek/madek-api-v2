@@ -143,7 +143,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
           configuration: {karl: "heinz"}
         }
 
-        response = client.post("/api-v2/workflows") do |req|
+        response = client.post("/api-v2/workflows/") do |req|
           req.body = body.to_json
           req.headers["Content-Type"] = "application/json"
         end

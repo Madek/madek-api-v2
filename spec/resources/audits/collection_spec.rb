@@ -67,7 +67,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "audits the PUT request" do
-      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collection/#{collection_id}", body: put_data)
+      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection_id}", body: put_data)
       expect(response.status).to eq(200)
       expect_audit_entries_count(1, 1, 1)
     end
@@ -75,7 +75,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when retrieving collection" do
     it "does not audit the GET request" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collection/#{collection_id}")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection_id}")
       expect(response.status).to eq(200)
       expect_audit_entries_count(0, 0, 0)
     end
@@ -83,7 +83,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when deleting collection" do
     it "audits the DELETE request" do
-      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collection/#{collection_id}")
+      response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collections/#{collection_id}")
       expect(response.status).to eq(200)
       expect_audit_entries_count(1, 1, 1)
     end
@@ -91,7 +91,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when handling unauthorized requests" do
     it "audits the PUT request with unauthorized access" do
-      response = plain_faraday_json_client_csrf.put("/api-v2/collection/#{collection_id}") do |req|
+      response = plain_faraday_json_client_csrf.put("/api-v2/collections/#{collection_id}") do |req|
         req.body = put_data
         req.headers["Content-Type"] = "application/json"
       end
@@ -100,13 +100,13 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "does not audit the GET request with unauthorized access" do
-      response = plain_faraday_json_client_csrf.get("/api-v2/collection/#{collection_id}")
+      response = plain_faraday_json_client_csrf.get("/api-v2/collections/#{collection_id}")
       expect(response.status).to eq(200)
       expect_audit_entries_count(0, 0, 0)
     end
 
     it "audits the DELETE request with unauthorized access" do
-      response = plain_faraday_json_client_csrf.delete("/api-v2/collection/#{collection_id}")
+      response = plain_faraday_json_client_csrf.delete("/api-v2/collections/#{collection_id}")
       expect(response.status).to eq(401)
       expect_audit_entries_count(1, 0, 1)
     end
