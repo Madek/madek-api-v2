@@ -384,7 +384,7 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["api/media-entries"]}}
+   {:openapi {:tags ["api/media-entries2"]}}
 
    ;["media-entries2/"
    ; {:get
@@ -427,7 +427,7 @@
                        :body any?}}}}]
 
    ["media-entries/:media_entry_id"
-    {:put {:summary "Try publish media-entry for id / HERE!!!!"
+    {:put {:summary "Try publish media-entry for id"
            :handler handle_update-media-entry
            :swagger {:produces "application/json"}
            :content-type "application/json"
@@ -445,9 +445,9 @@
 (sa/def ::collection_id string?)
 (def media-entry-routes
   ["/media-entries"
-   {:openapi {:tags ["api/media-entries"]}}
+   {:openapi {:tags ["api/media-entriesABC"]}}                 ;; here
    ["/"
-    {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready")
+    {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready HERE")
             :handler handle_create-media-entry
             :swagger {:consumes "multipart/form-data"
                       :produces "application/json"}
@@ -461,12 +461,12 @@
             :responses {200 {:description "Returns the created media-entry."
                              :body any?}
                         406 {:description "Could not create media-entry."
-                             :body any?}}}}
+                             :body any?}}}
 
 
 
 
-     {:get
+     :get
       {:summary (sd/?sum_pub? "Query media-entries.")
        :handler handle_query_media_entry
        :middleware [jqh/ring-wrap-parse-json-query-parameters]

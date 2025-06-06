@@ -118,7 +118,7 @@
       :parameters {:path {:id s/Uuid}}
       :responses {200 {:description "Returns the deleted admin."
                        :body schema_export-admin}
-                  404 {:description "Admin not found. HERE!!"
+                  404 {:description "Admin not found."
                        :body s/Any}
                   406 {:description "Could not delete admin."
                        :body s/Any}}}}]
