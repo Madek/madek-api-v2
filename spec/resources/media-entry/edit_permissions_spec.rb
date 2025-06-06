@@ -196,7 +196,7 @@ describe "Getting a media-entry resource with authentication" do
     it "download is allowed 200" do
       response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 200
-      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/media-file/data-stream/"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/media-files/data-stream/"
       download = wtoken_header_plain_faraday_json_client_get(user_token.token, uurl)
       expect(download.status).to eq 200
     end
@@ -222,7 +222,7 @@ describe "Getting a media-entry resource with authentication" do
       response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/media-entries/#{media_entry.id}")
       expect(response.status).to eq 200
 
-      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/resource/get_metadata_and_previews/true"
+      uurl = "#{api_base_url}/media-entries/#{media_entry.id}/perms/resources/get_metadata_and_previews/true"
       edit = wtoken_header_plain_faraday_json_client_put(user_token.token, uurl)
       expect(edit.status).to eq 200
       expect_audit_entries_count(1, 1, 1)
