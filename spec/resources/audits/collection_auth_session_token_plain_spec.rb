@@ -53,14 +53,14 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
   include_context :setup_post_data
 
   let!(:collection_id) do
-    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collection", body: post_data)
+    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections/", body: post_data)
     expect(response.status).to eq(200)
     expect_audit_entries_count(1, 1, 1)
     response.body["id"]
   end
 
   context "when retrieving collection" do
-    ["/api-v2/collections", "/api-v2/admin/collections"].each do |path|
+    ["/api-v2/collections/", "/api-v2/admin/collections/"].each do |path|
       it "returns 200 for GET #{path}" do
         response = wtoken_header_plain_faraday_json_client_get(user_token.token, path)
         expect(response.status).to eq(200)
@@ -68,7 +68,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "returns 200 for authorized GET /api-v2/auth-info" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/auth-info")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/auth-infos/")
       expect(response.status).to eq(200)
     end
 
@@ -85,13 +85,13 @@ describe "Fetch collections" do
   include_context :setup_post_data
 
   let!(:collection_id) do
-    response = wtoken_header_plain_faraday_json_client_post(admin_user_token.token, "/api-v2/collection", body: post_data)
+    response = wtoken_header_plain_faraday_json_client_post(admin_user_token.token, "/api-v2/collections/", body: post_data)
     expect(response.status).to eq(200)
     response.body["id"]
   end
 
   context "with admin_user by token" do
-    ["/api-v2/collections", "/api-v2/admin/collections"].each do |path|
+    ["/api-v2/collections/", "/api-v2/admin/collections/"].each do |path|
       it "returns 200 for GET #{path}" do
         response = wtoken_header_plain_faraday_json_client_get(admin_user_token.token, path)
         expect(response.status).to eq(200)
@@ -116,7 +116,7 @@ describe "Fetch collections (session-based)" do
   include_context :setup_post_data
 
   let!(:collection_id) do
-    response = client.post("/api-v2/collection") do |req|
+    response = client.post("/api-v2/collections/") do |req|
       req.body = post_data.to_json
       req.headers["Content-Type"] = "application/json"
     end
@@ -125,13 +125,13 @@ describe "Fetch collections (session-based)" do
   end
 
   context "with admin_user by session" do
-    it "returns 200 for GET /api-v2/collections" do
-      response = client.get("/api-v2/collections")
+    it "returns 200 for GET /api-v2/collections/" do
+      response = client.get("/api-v2/collections/")
       expect(response.status).to eq(200)
     end
 
-    it "returns 403 for GET /api-v2/admin/collections" do
-      response = client.get("/api-v2/admin/collections")
+    it "returns 403 for GET /api-v2/admin/collections/" do
+      response = client.get("/api-v2/admin/collections/")
       expect(response.status).to eq(403)
       expect(response.body["msg"]).to eq("Only administrators are allowed to access this resource.")
     end
@@ -153,7 +153,7 @@ describe "Fetch collections (admin session)" do
   include_context :setup_post_data
 
   let!(:collection_id) do
-    response = client.post("/api-v2/collection") do |req|
+    response = client.post("/api-v2/collections/") do |req|
       req.body = post_data.to_json
       req.headers["Content-Type"] = "application/json"
     end
@@ -162,13 +162,13 @@ describe "Fetch collections (admin session)" do
   end
 
   context "with admin_user session" do
-    it "returns 200 for GET /api-v2/collections" do
-      response = client.get("/api-v2/collections")
+    it "returns 200 for GET /api-v2/collections/" do
+      response = client.get("/api-v2/collections/")
       expect(response.status).to eq(200)
     end
 
-    it "returns 200 for GET /api-v2/admin/collections" do
-      response = client.get("/api-v2/admin/collections")
+    it "returns 200 for GET /api-v2/admin/collections/" do
+      response = client.get("/api-v2/admin/collections/")
       expect(response.status).to eq(200)
     end
   end
