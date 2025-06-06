@@ -1,5 +1,5 @@
 require "spec_helper"
-require "#{Rails.root}/spec/resources/collections/shared.rb"
+require "#{Rails.root}/spec/resources/collection/shared.rb"
 
 describe "Getting a collection resource without authentication" do
   include_context :json_client_for_authenticated_token_admin_no_creds do
