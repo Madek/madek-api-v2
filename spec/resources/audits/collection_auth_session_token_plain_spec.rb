@@ -67,13 +67,13 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
       end
     end
 
-    it "returns 200 for authorized GET /api-v2/auth-info" do
+    it "returns 200 for authorized GET /api-v2/auth-infos/" do
       response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/auth-infos/")
       expect(response.status).to eq(200)
     end
 
-    it "returns 401 for unauthorized GET /api-v2/auth-info" do
-      response = plain_faraday_json_client.get("/api-v2/auth-info")
+    it "returns 401 for unauthorized GET /api-v2/auth-infos/" do
+      response = plain_faraday_json_client.get("/api-v2/auth-infos/")
       expect(response.status).to eq(401)
       expect(response.body["message"]).to eq("Not authorized")
     end
@@ -99,13 +99,13 @@ describe "Fetch collections" do
     end
   end
 
-  it "returns 200 for authorized GET /api-v2/auth-info" do
-    response = wtoken_header_plain_faraday_json_client_get(admin_user_token.token, "/api-v2/auth-info")
+  it "returns 200 for authorized GET /api-v2/auth-infos/" do
+    response = wtoken_header_plain_faraday_json_client_get(admin_user_token.token, "/api-v2/auth-infos/")
     expect(response.status).to eq(200)
   end
 
-  it "returns 401 for unauthorized GET /api-v2/auth-info" do
-    response = plain_faraday_json_client.get("/api-v2/auth-info")
+  it "returns 401 for unauthorized GET /api-v2/auth-infos/" do
+    response = plain_faraday_json_client.get("/api-v2/auth-infos/")
     expect(response.status).to eq(401)
     expect(response.body["message"]).to eq("Not authorized")
   end
@@ -137,13 +137,13 @@ describe "Fetch collections (session-based)" do
     end
   end
 
-  it "returns 200 for authorized GET /api-v2/auth-info" do
-    response = client.get("/api-v2/auth-info")
+  it "returns 200 for authorized GET /api-v2/auth-infos/" do
+    response = client.get("/api-v2/auth-infos/")
     expect(response.status).to eq(200)
   end
 
-  it "returns 200 for unauthorized GET /api-v2/auth-info" do
-    response = plain_faraday_json_client.get("/api-v2/auth-info")
+  it "returns 200 for unauthorized GET /api-v2/auth-infos/" do
+    response = plain_faraday_json_client.get("/api-v2/auth-infos/")
     expect(response.status).to eq(200)
   end
 end
@@ -173,20 +173,20 @@ describe "Fetch collections (admin session)" do
     end
   end
 
-  it "returns 200 for authorized GET /api-v2/auth-info" do
-    response = client.get("/api-v2/auth-info")
+  it "returns 200 for authorized GET /api-v2/auth-infos/" do
+    response = client.get("/api-v2/auth-infos/")
     expect(response.status).to eq(200)
   end
 
-  it "returns 200 for unauthorized GET /api-v2/auth-info" do
-    response = plain_faraday_json_client.get("/api-v2/auth-info")
+  it "returns 200 for unauthorized GET /api-v2/auth-infos/" do
+    response = plain_faraday_json_client.get("/api-v2/auth-infos/")
     expect(response.status).to eq(200)
   end
 end
 
 describe "No access without session" do
-  it "returns 401 for unauthorized GET /api-v2/auth-info" do
-    response = plain_faraday_json_client.get("/api-v2/auth-info")
+  it "returns 401 for unauthorized GET /api-v2/auth-infos/" do
+    response = plain_faraday_json_client.get("/api-v2/auth-infos/")
     expect(response.status).to eq(401)
     expect(response.body["message"]).to eq("Not authorized")
   end
