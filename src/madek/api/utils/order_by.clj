@@ -48,7 +48,11 @@
         ;[sql-str & params] (sql-format query-map)
         ;rows (jdbc/execute! ds (into [sql-str] params))]
         ;rows (jdbc/execute! ds (sql-format query-map))]
-        rows (jdbc/execute! ds query-map)]
+        rows (jdbc/execute-one! ds query-map)
+
+
+        p (println ">o> abc.rows" rows)
+        ]
     (mapv :table_name rows)))
 
 ;; ----------------------------------------------------------------------------

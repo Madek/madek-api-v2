@@ -56,7 +56,9 @@
 (defn order-by-test-id-works []
   (let [
         ;ds (get-ds)
-        ds (rdbms/get-ds)
+        ;ds (rdbms/get-ds)
+        ;ds (init-db)
+        ds db-spec
 
         p (println ">o> abc.ds" ds)
 
