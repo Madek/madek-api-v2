@@ -384,7 +384,7 @@
 
 (def ring-routes
   ["/"
-   {:openapi {:tags ["api/media-entries2"]}}
+   {:openapi {:tags ["api/media-entries"]}}
 
    ;["media-entries2/"
    ; {:get
@@ -445,7 +445,7 @@
 (sa/def ::collection_id string?)
 (def media-entry-routes
   ["/media-entries"
-   {:openapi {:tags ["api/media-entriesABC"]}} ;; here
+   {:openapi {:tags ["api/media-entries"]}} ;; here
    ["/"
     {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready HERE")
             :handler handle_create-media-entry

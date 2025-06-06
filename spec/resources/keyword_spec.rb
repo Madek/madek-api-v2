@@ -48,6 +48,11 @@ context "Getting keywords by pagination" do
     expect(lists_of_maps_different?(resp1.body["data"], resp2.body["data"])).to eq true
   end
 
+  it "responses with 404 without trailing /" do
+    resp = plain_faraday_json_client.get("/api-v2/keywords")
+    expect(resp.status).to be == 404
+  end
+
   it "responses with 200" do
     resp = plain_faraday_json_client.get("/api-v2/keywords/")
     expect(resp.status).to be == 200

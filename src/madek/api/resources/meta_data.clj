@@ -24,7 +24,7 @@
 
 (def collection-routes
   ["/collections"
-   {:openapi {:tags ["api/collections/"]}}
+   {:openapi {:tags ["api/collections"]}}
    ["/:collection_id/meta-data/"
     {:get get/collection_id.meta-data}]
 

@@ -60,6 +60,11 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
   before(:each) { remove_all_audits }
 
   context "when updating collection" do
+    it "returns 404 without trailing /" do
+      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections", body: post_data)
+      expect(response.status).to eq(404)
+    end
+
     it "audits the POST request" do
       response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections/", body: post_data)
       expect(response.status).to eq(200)
