@@ -287,7 +287,7 @@ describe "filtering collections" do
           expect(response.status).to be == 404
 
           # keyword
-          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:keywords/keyword")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:keywords/keywords/")
           expect(response.status).to be == 200
 
           person_id = response.body["keywords_ids"].second
