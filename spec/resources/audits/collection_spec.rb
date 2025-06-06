@@ -51,7 +51,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
   include_context :setup_post_data
 
   let!(:collection_id) do
-    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collection", body: post_data)
+    response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections/", body: post_data)
     expect(response.status).to eq(200)
     expect_audit_entries_count(1, 1, 1)
     response.body["id"]
@@ -61,7 +61,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
 
   context "when updating collection" do
     it "audits the POST request" do
-      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collection", body: post_data)
+      response = wtoken_header_plain_faraday_json_client_post(user_token.token, "/api-v2/collections/", body: post_data)
       expect(response.status).to eq(200)
       expect_audit_entries_count(1, 1, 1)
     end
@@ -112,7 +112,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "audits the POST request with unauthorized access" do
-      response = plain_faraday_json_client_csrf.post("/api-v2/collection") do |req|
+      response = plain_faraday_json_client_csrf.post("/api-v2/collections/") do |req|
         req.body = post_data
         req.headers["Content-Type"] = "application/json"
       end
@@ -128,7 +128,7 @@ describe "Blocks modification of collection without authentication (POST)" do
 
   context "when attempting to create a collection without authentication" do
     it "audits the POST request but does not create the collection" do
-      response = plain_faraday_json_client_csrf.post("/api-v2/collection") do |req|
+      response = plain_faraday_json_client_csrf.post("/api-v2/collections/") do |req|
         req.body = post_data
         req.headers["Content-Type"] = "application/json"
       end
@@ -139,7 +139,7 @@ describe "Blocks modification of collection without authentication (POST)" do
 
   context "when attempting to create a collection without authentication" do
     it "audits the POST request but does not create the collection" do
-      response = plain_faraday_json_client_csrf.post("/api-v2/collection") do |req|
+      response = plain_faraday_json_client_csrf.post("/api-v2/collections/") do |req|
         req.body = post_data
       end
       expect(response.status).to eq(401)

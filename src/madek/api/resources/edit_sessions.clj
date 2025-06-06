@@ -149,7 +149,7 @@
 (def admin-routes
   ["/"
    {:openapi {:tags ["admin/edit_sessions"] :security ADMIN_AUTH_METHODS}}
-   ["edit_sessions"
+   ["edit_sessions/"
     {:get {:summary (sd/sum_adm "List edit_sessions.")
            :handler handle_adm_list-edit-sessions
            :middleware [wrap-authorize-admin!]
@@ -181,7 +181,7 @@
 (def query-routes
   ["/"
    {:openapi {:tags ["edit_sessions"]}}
-   ["edit_sessions"
+   ["edit_sessions/"
     {:get {:summary (sd/sum_usr "List authed users edit_sessions.")
            :handler handle_usr_list-edit-sessions
            :middleware [authorization/wrap-authorized-user]
@@ -202,8 +202,8 @@
            :parameters {:path {:id s/Uuid}}}}]])
 
 (def media-entry-routes
-  ["/media-entry/:media_entry_id/edit_sessions"
-   {:openapi {:tags ["api/media-entry"]}}
+  ["/media-entries/:media_entry_id/edit_sessions/"
+   {:openapi {:tags ["api/media-entries"]}}
    {:get {:summary (sd/sum_usr_pub "Get edit_session list for media entry.")
           :handler handle_get-edit-sessions
           :middleware [jqh/ring-wrap-add-media-resource
@@ -227,8 +227,8 @@
                             :body s/Any}}}}])
 
 (def collection-routes
-  ["/collection/:collection_id/edit_sessions"
-   {:openapi {:tags ["api/collection"]}}
+  ["/collections/:collection_id/edit_sessions/"
+   {:openapi {:tags ["api/collections"]}}
    {:get {:summary (sd/sum_usr_pub "Get edit_session list for collection.")
           :handler handle_get-edit-sessions
           :middleware [jqh/ring-wrap-add-media-resource

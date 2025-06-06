@@ -9,7 +9,7 @@ describe "a bunch of media entries with different properties" do
       describe "the media_entries resource" do
         let :resource do
           media_entries # force evaluation
-          client.get("/api-v2/media-entries")
+          client.get("/api-v2/media-entries/")
         end
 
         it do
@@ -22,7 +22,7 @@ describe "a bunch of media entries with different properties" do
       include_context :json_client_for_authenticated_token_user_no_creds do
         let :resource do
           media_entries # force evaluation
-          client.get("/api-v2/media-entries")
+          client.get("/api-v2/media-entries/")
         end
 
         it do

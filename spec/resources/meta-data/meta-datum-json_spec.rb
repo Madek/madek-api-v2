@@ -56,7 +56,7 @@ describe "generated runs" do
 
               describe "the meta-datum-data-stream resource" do
                 let :response do
-                  client.get("/api-v2/meta-data/#{meta_datum_json.id}/data-stream")
+                  client.get("/api-v2/meta-data/#{meta_datum_json.id}/data-stream/")
                 end
 
                 it "status, either 200 success or 403 forbidden, " \
