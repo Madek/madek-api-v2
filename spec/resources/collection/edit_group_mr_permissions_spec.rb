@@ -49,7 +49,7 @@ describe "Getting a media-entry resource with authentication" do
       expect(response.status).to eq 200
       expect(response.body["get_metadata_and_previews"]).to eq false
 
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups/")
       expect(response.status).to eq 200
 
       response = wtoken_header_plain_faraday_json_client_delete(user_token.token, "/api-v2/collections/#{collection.id}/perms/groups/#{group2.id}")
@@ -96,7 +96,7 @@ describe "Getting a media-entry resource with authentication" do
         "responsible_delegation_id" => nil
       }
 
-      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection.id}/perms/resources", body: data)
+      response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection.id}/perms/resources/", body: data)
       expect(response.status).to eq 200
 
       response = wtoken_header_plain_faraday_json_client_put(user_token.token, "/api-v2/collections/#{collection.id}/perms/resources/get_metadata_and_previews/false")

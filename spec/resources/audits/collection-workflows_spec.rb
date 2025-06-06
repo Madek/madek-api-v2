@@ -66,7 +66,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "returns 200 for authorized GET request" do
-      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/workflows")
+      response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/workflows/")
       expect(response.status).to eq(200)
 
       response = wtoken_header_plain_faraday_json_client_get(user_token.token, "/api-v2/workflows/#{response.body.first["id"]}")
