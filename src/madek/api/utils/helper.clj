@@ -117,6 +117,8 @@
 
    ))
   )
+
+
 (defmacro gen-from-order-by-multiple
   "Generates a threaded call to `(sql/from ...)` then `(sql/order-by ...)`"
   [th table & attrs]
