@@ -47,7 +47,7 @@ context "Workflow: create, update, delete full_texts" do
 
   let(:base_url) { "/api-v2/admin/full_texts/" }
   let(:base_url2) { "/api-v2/full_texts/" }
-  let(:base_url3) { "/api-v2/media-entry/#{full_text_id}/full_text" }
+  let(:base_url3) { "/api-v2/media-entries/#{full_text_id}/full_texts/" }
 
   let(:full_text_payload) do
     {
