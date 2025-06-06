@@ -92,9 +92,9 @@ shared_context :random_resource_type do |_ctx|
     mkid = CGI.escape(meta_key_id)
     case media_resource
     when MediaEntry
-      "/api-v2/media-entries/#{media_resource.id}/meta-data/#{mkid}/#{type}"
+      "/api-v2/media-entries/#{media_resource.id}/meta-data/#{mkid}/#{type}/"
     when Collection
-      "/api-v2/collections/#{media_resource.id}/meta-data/#{mkid}/#{type}"
+      "/api-v2/collections/#{media_resource.id}/meta-data/#{mkid}/#{type}/"
     end
   end
 
