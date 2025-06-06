@@ -50,7 +50,7 @@ describe "a bunch of collections with different properties" do
 
         it do
           expect(resource.status).to be == 200
-          expect(resource.body["collections/"]).to be_a Array
+          expect(resource.body["collections"]).to be_a Array
         end
       end
 
@@ -118,7 +118,7 @@ describe "a bunch of collections with different properties" do
 
         it do
           expect(resource.status).to be == 200
-          expect(resource.body["collections/"]).to be_a Array
+          expect(resource.body["collections"]).to be_a Array
         end
       end
 
