@@ -108,7 +108,7 @@
                   404 {:description "Not found."
                        :body s/Any}}}}]
 
-   ["/:media_entry_id/media-file/data-stream/"
+   ["/:media_entry_id/media-files/data-stream/"
     {:get
      {:summary (sd/sum_usr_pub "Get media-file data-stream for media-entry id.")
       :handler media-file/get-media-file-data-stream

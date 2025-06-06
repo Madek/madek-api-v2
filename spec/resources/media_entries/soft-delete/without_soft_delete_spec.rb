@@ -129,7 +129,7 @@ describe "a bunch of media entries with different properties" do
           expect(response.status).to be == 200
           expect(response.body["id"]).to eq(me_id)
 
-          response = client.get("/api-v2/media-entries/#{me_id}/media-files")
+          response = client.get("/api-v2/media-entries/#{me_id}/media-files/")
           expect(response.status).to be == 200
           expect(response.body["media_entry_id"]).to eq(me_id)
 
@@ -161,7 +161,7 @@ describe "a bunch of media entries with different properties" do
           # json
           kw = "test:keywords2"
           FactoryBot.create(:meta_key_json, id: kw)
-          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/#{kw}/json") do |req|
+          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/#{kw}/json/") do |req|
             req.body = {
               json: "{}"
             }.to_json
@@ -198,18 +198,18 @@ describe "a bunch of media entries with different properties" do
           expect(response.status).to be == 404
 
           # keyword
-          response = client.get("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keyword")
+          response = client.get("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keywords/")
           expect(response.status).to be == 200
 
           person_id = response.body["keywords_ids"].second
 
-          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keyword/#{person_id}")
+          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keywords/#{person_id}")
           expect(response.status).to be == 406
 
-          response = client.delete("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keyword/#{person_id}")
+          response = client.delete("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keywords/#{person_id}")
           expect(response.status).to be == 200
 
-          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keyword/#{person_id}")
+          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:keywords/keywords/#{person_id}")
           expect(response.status).to be == 200
 
           # people
@@ -229,17 +229,17 @@ describe "a bunch of media entries with different properties" do
           expect(response.status).to be == 200
 
           # role
-          response = client.get("/api-v2/media-entries/#{me_id}/meta-data/test:roles/role")
+          response = client.get("/api-v2/media-entries/#{me_id}/meta-data/test:roles/roles/")
           expect(response.status).to be == 200
 
           role_id = response.body["roles"].first["id"]
           person_id = response.body["md_roles"].second["person_id"]
-          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:roles/role/#{role_id}/#{person_id}/11")
+          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:roles/roles/#{role_id}/#{person_id}/11")
           expect(response.status).to be == 200
 
           role_id = response.body["md_roles"].first["role_id"]
           person_id = response.body["md_roles"].first["person_id"]
-          response = client.delete("/api-v2/media-entries/#{me_id}/meta-data/test:roles/role/#{role_id}/#{person_id}")
+          response = client.delete("/api-v2/media-entries/#{me_id}/meta-data/test:roles/roles/#{role_id}/#{person_id}")
           expect(response.status).to be == 200
         end
       end

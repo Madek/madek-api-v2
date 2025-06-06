@@ -104,7 +104,7 @@
     ["/:meta_key_id/keywords/"
      {:get get/media_entry.meta_key_id.keyword}]
 
-    ["/:meta_key_id/keyword/:keyword_id"
+    ["/:meta_key_id/keywords/:keyword_id"
      {:post post/meta-datum.meta_key_id.keyword.keyword_id
 
       :delete delete/meta_key_id.keyword.keyword_id2}]
