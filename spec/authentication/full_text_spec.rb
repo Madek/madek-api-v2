@@ -47,7 +47,7 @@ context "Workflow: create, update, delete full_texts" do
 
   let(:base_url) { "/api-v2/admin/full_texts/" }
   let(:base_url2) { "/api-v2/full_texts/" }
-  let(:base_url3) { "/api-v2/media-entry/#{full_text_id}/full_text/" }
+  let(:base_url3) { "/api-v2/media-entry/#{full_text_id}/full_text" }
 
   let(:full_text_payload) do
     {
@@ -68,7 +68,7 @@ context "Workflow: create, update, delete full_texts" do
     expect(full_text_id).not_to be_nil
 
     # READ (GET)
-    get_response = wtoken_header_plain_faraday_json_client_get(token.token, "#{base_url2}/#{full_text_id}")
+    get_response = wtoken_header_plain_faraday_json_client_get(token.token, "#{base_url2}#{full_text_id}")
     expect(get_response.status).to eq(200)
     expect(get_response.body["text"]).to eq("Test Full Text")
 
@@ -78,7 +78,7 @@ context "Workflow: create, update, delete full_texts" do
 
     # UPDATE
     updated_payload = full_text_payload.merge(text: "Updated Title")
-    put_response = wtoken_header_plain_faraday_json_client(token.token).put("#{base_url}/#{full_text_id}") do |req|
+    put_response = wtoken_header_plain_faraday_json_client(token.token).put("#{base_url}#{full_text_id}") do |req|
       req.body = updated_payload.to_json
       req.headers["Content-Type"] = "application/json"
     end
@@ -87,11 +87,11 @@ context "Workflow: create, update, delete full_texts" do
     expect(put_response.body["text"]).to eq("Updated Title")
 
     # DELETE
-    delete_response = wtoken_header_plain_faraday_json_client(token.token).delete("#{base_url}/#{full_text_id}")
+    delete_response = wtoken_header_plain_faraday_json_client(token.token).delete("#{base_url}#{full_text_id}")
     expect(delete_response.status).to eq(200)
 
     # VERIFY DELETION
-    get_after_delete = wtoken_header_plain_faraday_json_client_get(token.token, "#{base_url2}/#{full_text_id}")
+    get_after_delete = wtoken_header_plain_faraday_json_client_get(token.token, "#{base_url2}#{full_text_id}")
     expect(get_after_delete.status).to eq(404)
 
     get_response = wtoken_header_plain_faraday_json_client_get(token.token, base_url3)

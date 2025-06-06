@@ -22,7 +22,7 @@ describe "Access media-entries " do
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
-        expect(response.body["collection-collection-arcs/"]).to be_an(Array)
+        expect(response.body["collection-collection-arcs"]).to be_an(Array)
       end
 
       it "denies access to admin media_entries" do
