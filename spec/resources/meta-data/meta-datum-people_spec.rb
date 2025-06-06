@@ -63,12 +63,12 @@ describe "generated runs" do
 
                       if response.body["media_entry_id"] == media_resource.id
                         media_entry_id = response.body["media_entry_id"]
-                        expect(client.get("/api-v2/media-entry/#{media_entry_id}").status)
+                        expect(client.get("/api-v2/media-entries/#{media_entry_id}").status)
                           .to be == 200
                       end
                       if response.body["collection_id"] == media_resource.id
                         collection_id = response.body["collection_id"]
-                        expect(client.get("/api-v2/collection/#{collection_id}").status)
+                        expect(client.get("/api-v2/collections/#{collection_id}").status)
                           .to be == 200
                       end
                     end
