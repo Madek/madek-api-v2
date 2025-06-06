@@ -259,7 +259,7 @@
       :responses {200 {:description "Returns the list of collections."
                        :body ::response-collections-body}}}
 
-    :post
+     :post
      {:summary (sd/?no-auth? (sd/sum_usr "Create collection"))
 
       ;:description "CAUTION: Either :responsible_user_id OR :responsible_user_id has to be set - not both (db-constraint)"

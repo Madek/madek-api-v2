@@ -26,7 +26,7 @@
             [spec-tools.core :as st]
             [taoensso.timbre :refer [info]]))
 
-(defn handle_query_media_entry [req]                        ;;here??
+(defn handle_query_media_entry [req] ;;here??
   (get-index req))
 
 (defn handle_query_media_entry-related-data [req]
@@ -445,7 +445,7 @@
 (sa/def ::collection_id string?)
 (def media-entry-routes
   ["/media-entries"
-   {:openapi {:tags ["api/media-entriesABC"]}}                 ;; here
+   {:openapi {:tags ["api/media-entriesABC"]}} ;; here
    ["/"
     {:post {:summary (sd/sum_todo "Create media-entry. Only for testing. Use webapp until media-encoder is ready HERE")
             :handler handle_create-media-entry
@@ -463,21 +463,16 @@
                         406 {:description "Could not create media-entry."
                              :body any?}}}
 
-
-
-
      :get
-      {:summary (sd/?sum_pub? "Query media-entries.")
-       :handler handle_query_media_entry
-       :middleware [jqh/ring-wrap-parse-json-query-parameters]
-       :coercion spec/coercion
-       :parameters {:query ::media-entries-def}
-       :responses {200 {:description "Returns the media-entries."
-                        :body ::media-entries-body-resp-def}
-                   422 {:description "Unprocessable Entity."
-                        :body any?}}}}
-
-    ]
+     {:summary (sd/?sum_pub? "Query media-entries.")
+      :handler handle_query_media_entry
+      :middleware [jqh/ring-wrap-parse-json-query-parameters]
+      :coercion spec/coercion
+      :parameters {:query ::media-entries-def}
+      :responses {200 {:description "Returns the media-entries."
+                       :body ::media-entries-body-resp-def}
+                  422 {:description "Unprocessable Entity."
+                       :body any?}}}}]
 
    ["/:media_entry_id"
     {:get {:summary (sd/?token? "Get media-entry for id.")

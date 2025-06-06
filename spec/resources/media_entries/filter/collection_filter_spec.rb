@@ -1,7 +1,6 @@
 require "spec_helper"
 
 describe "filtering media entries" do
-
   def get_media_entries(filter = nil)
     client.get("/api-v2/media-entries/", filter).body["media_entries"]
   end

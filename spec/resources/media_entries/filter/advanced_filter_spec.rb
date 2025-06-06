@@ -3,7 +3,6 @@ require Pathname(File.expand_path("datalayer/spec/models/media_entry/combined_fi
 require Pathname(File.expand_path("datalayer/spec/models/media_entry/search_in_all_meta_data_shared_context.rb"))
 
 describe "advanced filtering of media entries" do
-
   def get_media_entries(filter = nil)
     plain_faraday_json_client.get("/api-v2/media-entries/", filter).body["media_entries"]
   end

@@ -166,13 +166,13 @@
   ["/collection-media-entry-arcs"
    {:openapi {:tags ["api/collections"]}}
    ["/" {:get {:summary (sd/?no-auth? "Query collection media-entry arcs.")
-              :handler arcs
-              :swagger {:produces "application/json"}
-              :coercion reitit.coercion.schema/coercion
-              :parameters {:query {(s/optional-key :collection_id) s/Uuid
-                                   (s/optional-key :media_entry_id) s/Uuid}}
-              :responses {200 {:description "Returns the collection media-entry arcs."
-                               :body {:collection-media-entry-arcs [schema_collection-media-entry-arc-response]}}}}}]
+               :handler arcs
+               :swagger {:produces "application/json"}
+               :coercion reitit.coercion.schema/coercion
+               :parameters {:query {(s/optional-key :collection_id) s/Uuid
+                                    (s/optional-key :media_entry_id) s/Uuid}}
+               :responses {200 {:description "Returns the collection media-entry arcs."
+                                :body {:collection-media-entry-arcs [schema_collection-media-entry-arc-response]}}}}}]
 
    ["/:id" {:get {:summary (sd/?no-auth? "Get collection media-entry arc.")
                   :handler arc

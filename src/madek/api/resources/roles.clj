@@ -39,12 +39,12 @@
   ["/"
    {:openapi {:tags ["roles"]}}
    ["roles/" {:get {:summary "Get list of roles."
-                   :description "Get list of roles."
-                   :handler role/get-index
-                   :coercion spec/coercion
-                   :parameters {:query sp/schema_pagination_opt}
-                   :responses {200 {:description "Returns the roles."
-                                    :body ::response-roles-body}}}}]
+                    :description "Get list of roles."
+                    :handler role/get-index
+                    :coercion spec/coercion
+                    :parameters {:query sp/schema_pagination_opt}
+                    :responses {200 {:description "Returns the roles."
+                                     :body ::response-roles-body}}}}]
 
    ["roles/:id"
     {:get {:summary "Get role by id"
