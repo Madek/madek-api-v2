@@ -7,6 +7,9 @@
    [madek.api.db.core       :refer [get-ds]]
    [madek.api.utils.rdbms  :as rdbms]       ;; for initialize
    ;; The functions that return table‐name vectors:
+
+   [clojure.test :refer [deftest is run-all-tests]]
+
    [madek.api.utils.order-by
     :refer [ get-tables-with-id
             get-tables-with-id-and-created-at
@@ -34,7 +37,6 @@
   (rdbms/initialize db-spec)
   (get-ds))
 
-(init-db)
 
 
 ;(use-fixtures
@@ -51,7 +53,7 @@
 ;;
 ;(deftest order-by-test-id-works
 ;(defn order-by-test-id-works []
-(deftest order-by-test-id-works []
+(defn order-by-test-id-works []
   (let [
         ;ds (get-ds)
         ds (rdbms/get-ds)
@@ -147,3 +149,10 @@
 ;              (jdbc/execute! ds (into [sql-ca-str] ca-params)))
 ;          (str "Expected ORDER BY created_at to throw on “" table-name "”, but it did not."))))))
 
+(deftest dev-create-user
+  (init-db)
+
+  (order-by-test-id-works)
+  )
+
+(run-all-tests)
