@@ -7,8 +7,8 @@
    [reitit.coercion.schema]))
 
 (def media-entry-routes
-  ["/media-entry/:media_entry_id/perms"
-   {:openapi {:tags ["media-entry/perms"]}}
+  ["/media-entries/:media_entry_id/perms"
+   {:openapi {:tags ["media-entries/perms"]}}
    ["/"
     {:get get/media-entry.media_entry_id.perms}]
 
