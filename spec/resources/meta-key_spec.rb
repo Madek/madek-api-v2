@@ -37,11 +37,11 @@ context "Getting meta-key's resource without authentication" do
     end
 
     it "responds with 200" do
-      resp1 = plain_faraday_json_client.get("/api-v2/meta-keys?page=1&size=5")
+      resp1 = plain_faraday_json_client.get("/api-v2/meta-keys/?page=1&size=5")
       expect(resp1.status).to be == 200
       expect(resp1.body["data"].count).to eq(5)
 
-      resp2 = plain_faraday_json_client.get("/api-v2/meta-keys?page=2&size=5")
+      resp2 = plain_faraday_json_client.get("/api-v2/meta-keys/?page=2&size=5")
       expect(resp2.status).to be == 200
       expect(resp2.body["data"].count).to eq(5)
     end

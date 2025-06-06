@@ -12,7 +12,7 @@ describe "Meta Keys API - Index Endpoint" do
     end
 
     it "returns public meta-keys with pagination" do
-      response = client.get("/api-v2/meta-keys?page=1&size=5")
+      response = client.get("/api-v2/meta-keys/?page=1&size=5")
       expect(response.status).to eq(200)
       expect(response.body["data"]).to be_an(Array)
       expect(response.body["pagination"]).to be_a(Hash)
@@ -24,7 +24,7 @@ describe "Meta Keys API - Index Endpoint" do
     end
 
     it "denies access to admin meta-keys with pagination" do
-      response = client.get("/api-v2/admin/meta-keys?page=1&size=5")
+      response = client.get("/api-v2/admin/meta-keys/?page=1&size=5")
       expect(response.status).to eq(403)
     end
   end
@@ -40,7 +40,7 @@ describe "Meta Keys API - Index Endpoint" do
     end
 
     it "returns admin meta-keys with pagination" do
-      response = client.get("/api-v2/admin/meta-keys?page=1&size=5")
+      response = client.get("/api-v2/admin/meta-keys/?page=1&size=5")
       expect(response.status).to eq(200)
       expect(response.body["data"]).to be_an(Array)
       expect(response.body["pagination"]).to be_a(Hash)
