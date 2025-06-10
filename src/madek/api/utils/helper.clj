@@ -52,8 +52,10 @@
 
      ;:collections (-> th (sql/from table) (sql/order-by :id))
      :collections (-> th (sql/from table) (sql/order-by [:created_at :desc]))
-     ;:vocabularies (-> th (sql/from table) (sql/order-by :id))
-     :vocabularies (-> th (sql/from table) (sql/order-by :first_name :last_name))
+
+     :vocabularies (-> th (sql/from table) (sql/order-by :id))
+     ;:vocabularies (-> th (sql/from table) (sql/order-by :id :first_name :last_name))
+     
      :keywords (-> th (sql/from table) (sql/order-by :term))
      :media_entries (-> th (sql/from table) (sql/order-by :id))
 
@@ -73,7 +75,10 @@
      :io_mappings (-> th (sql/from table) (sql/order-by :id))
 
      ;; default:
-     (-> th (sql/from table) (sql/order-by :id)))
+     ;(-> th (sql/from table) (sql/order-by :id)))
+     (do
+       (println ">o> NO ORDER-BY DEFINITION FOUND FOR: " table)
+       (-> th (sql/from table) )))
    )
 
   ([th table columns]
