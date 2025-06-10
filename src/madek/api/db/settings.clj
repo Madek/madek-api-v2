@@ -4,6 +4,8 @@
    [honey.sql.helpers :as sql]
    [madek.api.db.type-conversion]
    [next.jdbc :as jdbc]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [taoensso.timbre :refer [warn]]))
 
 (def selected-columns
@@ -17,7 +19,8 @@
 (defn settings [tx]
   (or (-> (apply sql/select selected-columns)
           ;(sql/from :app_settings)
-          (gen-from-order-by :app_settings)
+          ;(gen-from-order-by :app_settings)
+          (->lookup-order-by :app_settings)
 
           (sql/where [:= :id 0])
           (sql-format :inline false)

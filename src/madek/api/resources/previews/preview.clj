@@ -4,6 +4,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.constants]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
 
    [madek.api.data-streaming :as data-streaming]
    [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by gen-from-order-by-multiple]]
@@ -14,7 +15,8 @@
   (let [query (-> (sql/select :*)
 
                   ;(sql/from :previews)
-                  (gen-from-order-by :previews)
+                  ;(gen-from-order-by :previews)
+                  (->lookup-order-by :previews)
 
                   (sql/where [:= :previews.id id])
                   sql-format)]

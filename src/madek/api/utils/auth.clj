@@ -3,7 +3,9 @@
    [clj-uuid]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]))
 
 (def ADMIN_AUTH_METHODS [{"apiAuth" []} {"csrfToken" []}])
@@ -21,7 +23,9 @@
       (when (-> request :is_admin) request)
       (when (->> (-> (sql/select [true :is_admin])
                      ;(sql/from :admins)
-                     (gen-from-order-by :admins)
+                     ;(gen-from-order-by :admins)
+
+                     (->lookup-order-by :admins)
 
                      (sql/where [:= :admins.user_id (-> request :authenticated-entity :id)])
                      sql-format)

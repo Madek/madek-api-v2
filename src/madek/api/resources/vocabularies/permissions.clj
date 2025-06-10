@@ -6,7 +6,9 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
 
@@ -40,7 +42,8 @@
      (-> (sql/select :vocabulary_id)
 
          ;(sql/from :vocabulary_user_permissions)
-         (gen-from-order-by :vocabulary_user_permissions)
+         ;(gen-from-order-by :vocabulary_user_permissions)
+         (->lookup-order-by :vocabulary_user_permissions)
 
          (sql/where
           [:= :vocabulary_user_permissions.user_id (to-uuid user-id)]
@@ -63,7 +66,8 @@
        (-> (sql/select :vocabulary_id)
 
            ;(sql/from :vocabulary_group_permissions)
-           (gen-from-order-by :vocabulary_group_permissions)
+           ;(gen-from-order-by :vocabulary_group_permissions)
+           (->lookup-order-by :vocabulary_group_permissions)
 
            (sql/where
             [:in :vocabulary_group_permissions.group_id groups-ids-result]

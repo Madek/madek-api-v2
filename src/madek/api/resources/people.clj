@@ -62,7 +62,10 @@
               (sql/select :id :subtype :first_name :last_name :searchable))]
     (-> sel
         ;(sql/from :people)
-        (gen-from-order-by :people))))
+        ;(gen-from-order-by :people)
+        (->lookup-order-by :people)
+
+        )))
 
 (defn build-index-query
   [query-params]

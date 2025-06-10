@@ -5,7 +5,9 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]))
 
 (defn transform_ml [vocab]
@@ -39,7 +41,8 @@
   (-> (sql/select :*)
 
       ;(sql/from :vocabularies)
-      (gen-from-order-by :vocabularies)
+      ;(gen-from-order-by :vocabularies)
+      (->lookup-order-by :vocabularies)
 
       (sql/where (where-clause id user-id tx))
       (sql-format)))

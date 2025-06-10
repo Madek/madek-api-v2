@@ -7,8 +7,12 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.utils.helper :refer [mslurp]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -36,7 +40,8 @@
 (defn db-get-app-settings [tx]
   (-> (sql/select :*)
 
-      (gen-from-order-by :app_settings)
+      ;(gen-from-order-by :app_settings)
+      (->lookup-order-by :app_settings)
 
       ;(sql/from :app_settings)
       sql-format

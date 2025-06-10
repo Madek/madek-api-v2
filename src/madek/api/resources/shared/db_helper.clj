@@ -9,7 +9,9 @@
             [madek.api.resources.people.common :as people-common]
 
             [madek.api.resources.users.columns :as users-columns]
-            [madek.api.utils.helper :refer [gen-from-order-by]]
+                        [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
             [madek.api.utils.helper :refer [to-uuid]]
             [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]

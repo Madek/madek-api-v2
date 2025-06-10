@@ -12,6 +12,8 @@
    [madek.api.resources.context-keys :as context_keys]
    [madek.api.resources.contexts :as contexts]
    [madek.api.resources.custom-urls :as custom-urls]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.resources.delegations :as delegations]
    [madek.api.resources.delegations-groups :as delegations_groups]
    [madek.api.resources.delegations-users :as delegations_users]
@@ -36,7 +38,9 @@
    [madek.api.resources.users.main :as users]
    [madek.api.resources.vocabularies :as vocabularies]
    [madek.api.resources.workflows :as workflows]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [taoensso.timbre :refer [debug]]))
@@ -56,7 +60,8 @@
                                            (-> (sql/select :id)
 
                                                ;(sql/from :meta_data)
-                                               (gen-from-order-by :meta_data)
+                                               ;(gen-from-order-by :meta_data)
+                                               (->lookup-order-by :meta_data)
 
                                                (sql/where [:and [:= :media_entry_id media-entry-id] [:= :meta_key_id meta-key-id]])
                                                sql-format))
@@ -71,7 +76,8 @@
                                             (-> (sql/select :id)
 
                                                 ;(sql/from :media_files)
-                                                (gen-from-order-by :media_files)
+                                                ;(gen-from-order-by :media_files)
+                                                (->lookup-order-by :media_files)
 
                                                 (sql/where [:= :media_entry_id media-entry-id])
                                                 sql-format))

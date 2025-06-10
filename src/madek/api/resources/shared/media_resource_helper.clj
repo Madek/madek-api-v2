@@ -2,7 +2,9 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.authorization :refer [authorized?]]
-            [madek.api.utils.helper :refer [gen-from-order-by]]
+                        [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
             [madek.api.utils.helper :refer [to-uuid]]
             [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
@@ -24,7 +26,8 @@
                                               (-> (sql/select :*)
 
                                                   ;(sql/from (keyword table-name))
-                                                  (gen-from-order-by (keyword table-name) [:created_at])
+                                                  ;(gen-from-order-by (keyword table-name) [:created_at])
+                                                  (->lookup-order-by (keyword table-name))
 
                                                   (sql/where [:= :id (to-uuid id)])
                                                   ->non-soft-deleted

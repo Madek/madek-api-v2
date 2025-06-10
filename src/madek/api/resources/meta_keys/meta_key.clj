@@ -2,7 +2,9 @@
   (:require
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]))
 
 ;; TODO: not in use
@@ -19,7 +21,8 @@
 
                   ;(sql/from :io_mappings)
                   ;(gen-from-order-by :io_mappings) ;; TODO: breaks test
-                  (gen-from-order-by :io_mappings [[:created_at :asc]]) ;; ok
+                  ;(gen-from-order-by :io_mappings [[:created_at :asc]]) ;; ok
+                  (->lookup-order-by :io_mappings) ;; ok
                   ;(gen-from-order-by :io_mappings [[:key_map :desc]]) ;; error
 
                   (sql/where [:= :io_mappings.meta_key_id id])
@@ -45,7 +48,8 @@
   (-> (sql/select :*)
 
       ;(sql/from :meta-keys)
-      (gen-from-order-by :meta-keys)
+      ;(gen-from-order-by :meta-keys)
+      (->lookup-order-by :meta-keys)
 
       (sql/where [:= :meta-keys.id id])
       (sql-format)))

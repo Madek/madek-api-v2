@@ -7,8 +7,12 @@
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [reitit.coercion.schema]
    [schema.core :as s]
    [taoensso.timbre :refer [error]]))
@@ -23,7 +27,8 @@
   (let [db-query (-> (sql/select :*)
 
                      ;(sql/from :contexts)
-                     (gen-from-order-by :contexts)
+                     ;(gen-from-order-by :contexts)
+                     (->lookup-order-by :contexts)
 
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
@@ -36,7 +41,8 @@
   (let [db-query (-> (sql/select :id :labels :descriptions)
 
                      ;(sql/from :contexts)
-                     (gen-from-order-by :contexts)
+                     ;(gen-from-order-by :contexts)
+                     (->lookup-order-by :contexts)
 
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)

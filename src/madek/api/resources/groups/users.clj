@@ -4,6 +4,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [honey.sql.helpers :as sql]
+   [madek.api.utils.helper :refer [gen-from-order-by]]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.resources.groups.shared :as groups]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [convert-groupid-userid to-uuid gen-from-order-by gen-from-order-by-multiple]]
@@ -40,7 +43,8 @@
       (sql-merge-user-where-id some-id)
 
       ;(sql/from :users)
-      (gen-from-order-by :users [:created_at]) ;; not needed
+      ;(gen-from-order-by :users [:created_at]) ;; not needed
+      (->lookup-order-by :users) ;; not needed
 
       sql-format))
 
@@ -85,7 +89,8 @@
 
       ;(sql/from :users)
       ;(gen-from-order-by :users [:users.created_at])                            ;; not needed
-      (gen-from-order-by :users [:users.id])
+      ;(gen-from-order-by :users [:users.id])
+      (->lookup-order-by :users [:users.id])
 
       (sql/join :groups_users [:= :users.id :groups_users.user_id])
       (sql/join :groups [:= :groups.id :groups_users.group_id])
@@ -152,7 +157,8 @@
 
       ;(sql/from :users)
       ;(gen-from-order-by :users)
-      (gen-from-order-by :users [:users.id])
+      ;(gen-from-order-by :users [:users.id])
+      (->lookup-order-by :users)
 
 
       (sql/where ;[:or

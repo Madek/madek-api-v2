@@ -3,7 +3,9 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.meta-key :as meta-key]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]))
 
 (defn get-index [meta-datum tx]
@@ -11,7 +13,8 @@
                                        (meta-key/build-meta-key-query (:meta_key_id meta-datum))))
         query-base (-> (sql/select :keywords.*)
                        ;(sql/from :keywords)
-                       (gen-from-order-by :keywords)
+                       ;(gen-from-order-by :keywords)
+                       (->lookup-order-by :keywords)
 
                        (sql/join
                         :meta_data_keywords

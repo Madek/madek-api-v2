@@ -17,7 +17,9 @@
 ;       (sql/from  ~table)
 ;       (sql/order-by ~@attrs)))
 
-; [madek.api.utils.helper :refer [gen-from-order-by]]
+;             [madek.api.utils.helper :refer [gen-from-order-by]]
+;[madek.api.utils.order-by :refer [->lookup-order-by]]
+
 (defn gen-from-order-by
   "Dispatches on `table` with explicit clauses."
 

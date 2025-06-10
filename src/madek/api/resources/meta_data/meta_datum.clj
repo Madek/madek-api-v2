@@ -5,7 +5,9 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.keywords.index :as keywords]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
 
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
@@ -24,7 +26,8 @@
   (let [query (-> (sql/select :people.*)
 
                   ;(sql/from :people)
-                  (gen-from-order-by :people)
+                  ;(gen-from-order-by :people)
+                  (->lookup-order-by :people)
 
                   (sql/join :meta_data_people [:= :meta_data_people.person_id :people.id])
                   (sql/where [:= :meta_data_people.meta_datum_id (:id meta-datum)])

@@ -5,9 +5,12 @@
             [madek.api.resources.shared.core :as sd]
 
             [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.utils.order-by :refer [->lookup-order-by]]
 
             [madek.api.resources.shared.json_query_param_helper :as jqh]
-            [madek.api.utils.helper :refer [gen-from-order-by]]
+                        [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -19,7 +22,8 @@
                   (sql/select :id, :media_entry_id, :collection_id))]
     (-> col-sel
         ;(sql/from :custom_urls)
-        (gen-from-order-by :custom_urls)
+        ;(gen-from-order-by :custom_urls)
+        (->lookup-order-by :custom_urls)
 
         (dbh/build-query-param-like query-params :id)
         (dbh/build-query-param query-params :collection_id)

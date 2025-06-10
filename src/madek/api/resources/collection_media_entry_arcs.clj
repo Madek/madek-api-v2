@@ -6,7 +6,11 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.utils.helper :refer [to-uuid sql-format-quoted]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
@@ -17,7 +21,8 @@
   (-> (sql/select :*)
 
       ;(sql/from :collection_media_entry_arcs)
-      (gen-from-order-by :collection_media_entry_arcs)
+      ;(gen-from-order-by :collection_media_entry_arcs)
+      (->lookup-order-by :collection_media_entry_arcs)
 
       (sql/where [:= :id (to-uuid id)])
       sql-format))
@@ -34,7 +39,9 @@
 (defn arcs-query [query-params]
   (-> (sql/select :*)
       ;(sql/from :collection_media_entry_arcs)
-      (gen-from-order-by :collection_media_entry_arcs)
+      ;(gen-from-order-by :collection_media_entry_arcs)
+      (->lookup-order-by :collection_media_entry_arcs)
+
 
       (dbh/build-query-param query-params :collection_id)
       (dbh/build-query-param query-params :media_entry_id)))

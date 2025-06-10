@@ -12,7 +12,11 @@
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -26,7 +30,8 @@
                   (sql/select :id))]
     (-> col-sel
         ;(sql/from :edit_sessions)
-        (gen-from-order-by :edit_sessions)
+        ;(gen-from-order-by :edit_sessions)
+        (->lookup-order-by :edit_sessions)
 
         (dbh/build-query-param query-params :id)
         (dbh/build-query-param query-params :user_id)

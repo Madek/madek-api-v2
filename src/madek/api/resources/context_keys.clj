@@ -12,7 +12,11 @@
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [cast-to-hstore to-uuid]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -34,7 +38,8 @@
         db-query (-> (sql/select :*)
 
                      ;(sql/from :context_keys)
-                     (gen-from-order-by :context_keys)
+                     ;(gen-from-order-by :context_keys)
+                     (->lookup-order-by :context_keys)
 
                      (dbh/build-query-param req-query :id)
                      (dbh/build-query-param req-query :context_id)
@@ -56,7 +61,8 @@
                                  :labels :hints :descriptions :documentation_urls)
 
                      ;(sql/from :context_keys)
-                     (gen-from-order-by :context_keys)
+                     ;(gen-from-order-by :context_keys)
+                     (->lookup-order-by :context_keys)
 
                      (dbh/build-query-param req-query :id)
                      (dbh/build-query-param req-query :context_id)

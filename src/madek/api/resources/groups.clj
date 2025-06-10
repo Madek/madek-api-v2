@@ -14,7 +14,11 @@
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
             [madek.api.utils.helper :refer [f mslurp]]
-            [madek.api.utils.helper :refer [gen-from-order-by]]
+                        [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
+            [madek.api.utils.order-by :refer [->lookup-order-by]]
+
             [madek.api.utils.pagination :refer [pagination-handler]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
@@ -89,7 +93,8 @@
                          (sql/select :*)
                          (sql/select :id))
 
-                       (gen-from-order-by :groups)
+                       ;(gen-from-order-by :groups)
+                       (->lookup-order-by :groups)
                        ;(sql/from :groups)
                        ;(sql/order-by [:id :asc])
 

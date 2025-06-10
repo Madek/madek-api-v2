@@ -9,7 +9,11 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.config :refer [get-config
                                    parse-config-duration-to-seconds]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+                           [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]
    [pandect.core]
    [taoensso.timbre :refer [debug]]))
@@ -46,7 +50,10 @@
       ;(sql/from :user_sessions)
       ;(gen-from-order-by [:user_sessions]) ;; broken
       ;(gen-from-order-by :user_sessions [[:auth_system_id :asc]]) ;; ok
-      (gen-from-order-by :user_sessions [:auth_system_id]) ;; ok
+
+      ;(gen-from-order-by :user_sessions [:auth_system_id]) ;; ok
+      (->lookup-order-by :user_sessions)
+
 
       (sql/join :users [:= :user_sessions.user_id :users.id])
       (sql/join :people [:= :people.id :users.person_id])

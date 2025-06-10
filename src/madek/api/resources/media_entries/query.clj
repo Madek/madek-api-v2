@@ -11,7 +11,9 @@
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.core :refer [keyword str]]
    [madek.api.utils.helper :refer [to-uuid]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
 
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]

@@ -5,7 +5,11 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]
    [pandect.algo.sha256 :as algo.sha256])
   (:import
@@ -27,7 +31,8 @@
                        [:description :token_description])
            ;(sql/from :api_tokens)
 
-           (gen-from-order-by :api_tokens)
+           ;(gen-from-order-by :api_tokens)
+           (->lookup-order-by :api_tokens)
 
            (sql/where [:in :api_tokens.token_hash
                        (->> secrets

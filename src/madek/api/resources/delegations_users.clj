@@ -6,9 +6,12 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
+   [madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [schema.core :as s]
    [taoensso.timbre :refer [error info]]))
 
@@ -25,7 +28,10 @@
                   (sql/select :user_id))
         base-query (-> col-sel
                        ;(sql/from :delegations_users)
-                       (gen-from-order-by :delegations_users))
+                       ;(gen-from-order-by :delegations_users)
+                       (->lookup-order-by :delegations_users)
+
+                       )
 
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])

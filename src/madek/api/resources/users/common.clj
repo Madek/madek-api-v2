@@ -6,7 +6,9 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.users.columns :refer [user-select-keys]]
    [madek.api.utils.helper :refer [convert-userid]]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [next.jdbc :as jdbc]))
 
 ;;; schema ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,7 +41,8 @@
   (-> (apply sql/select user-select-keys)
       (sql/select [is-admin-sub :is_admin])
 
-      (gen-from-order-by :users [:created_at])
+      ;(gen-from-order-by :users [:created_at])
+      (->lookup-order-by :users)
       ;(sql/from :users)
       ))
 

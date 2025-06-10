@@ -5,7 +5,9 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
-   [madek.api.utils.helper :refer [gen-from-order-by]]
+               [madek.api.utils.helper :refer [gen-from-order-by]]
+[madek.api.utils.order-by :refer [->lookup-order-by]]
+
    [madek.api.utils.pagination :refer [pagination-handler]]
    [taoensso.timbre :refer [debug]]))
 
@@ -22,7 +24,8 @@
   ([user-id query-params tx]
    (-> (sql/select :*)
        ;(sql/from :vocabularies)
-       (gen-from-order-by :vocabularies)
+       ;(gen-from-order-by :vocabularies)
+       (->lookup-order-by :vocabularies)
 
        (sql/where (where-clause user-id tx))))
   ([user-id query-params request tx]
@@ -32,7 +35,8 @@
                   (sql/select :id :admin_comment :position :labels :descriptions))]
      (-> select
          ;(sql/from :vocabularies)
-         (gen-from-order-by :vocabularies)
+         ;(gen-from-order-by :vocabularies)
+         (->lookup-order-by :vocabularies)
 
          (sql/where (where-clause user-id tx))))))
 
