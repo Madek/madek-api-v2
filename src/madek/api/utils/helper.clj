@@ -50,8 +50,10 @@
      :context_keys (-> th (sql/from table) (sql/order-by :context_id))
      :contexts (-> th (sql/from table) (sql/order-by :id))
 
-     :collections (-> th (sql/from table) (sql/order-by :id))
-     :vocabularies (-> th (sql/from table) (sql/order-by :id))
+     ;:collections (-> th (sql/from table) (sql/order-by :id))
+     :collections (-> th (sql/from table) (sql/order-by [:created_at :desc]))
+     ;:vocabularies (-> th (sql/from table) (sql/order-by :id))
+     :vocabularies (-> th (sql/from table) (sql/order-by :first_name :last_name))
      :keywords (-> th (sql/from table) (sql/order-by :term))
      :media_entries (-> th (sql/from table) (sql/order-by :id))
 
