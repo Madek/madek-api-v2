@@ -13,6 +13,11 @@
    [madek.api.utils.logging :as logging]
    [madek.api.utils.nrepl :as nrepl]
    [madek.api.utils.rdbms :as rdbms]
+   [madek.api.utils.order-by :refer [get-tables-with-id-without-created-at
+                                                     get-tables-with-id-and-created-at
+                                                     get-tables-with-created-at-only
+                                                     get-tables-with-neither
+                                     init-order-config-fnc]]
    [madek.api.web]
    [madek.api.web :as web]
    [pg-types.all]
@@ -69,6 +74,11 @@
    (db/init options)
     ;
    (nrepl/init options)
+
+
+    ;(get-tables-with-id (db/get-ds))
+    (init-order-config-fnc (db/get-ds))
+
    (madek.api.constants/initialize (get-config))
    (madek.api.web/initialize options)
    (info 'madek.api.main "... initialized")))

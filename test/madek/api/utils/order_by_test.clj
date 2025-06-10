@@ -11,7 +11,7 @@
    [clojure.test :refer [deftest is run-all-tests]]
 
    [madek.api.utils.order-by
-    :refer [ get-tables-with-id
+    :refer [ get-tables-with-id-without-created-at
             get-tables-with-id-and-created-at
             get-tables-with-created-at-only
             get-tables-with-neither ]]))
@@ -62,8 +62,17 @@
 
         p (println ">o> abc.ds" ds)
 
-        tables-with-id-only       (get-tables-with-id ds)
+        tables-with-id-only       (get-tables-with-id-without-created-at ds)
+        p (println ">o> abc1" tables-with-id-only)
+
         ;tables-with-both          (get-tables-with-id-and-created-at ds)
+        ;p (println ">o> abc2" tables-with-both)
+
+        ;get-tables-with-neither          (get-tables-with-neither ds)
+        ;p (println ">o> abc3" get-tables-with-neither)
+
+
+
         ;all-id-tables             (concat tables-with-id-only tables-with-both)
         ]
     ;(doseq [table-name all-id-tables]
