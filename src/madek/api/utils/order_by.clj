@@ -215,6 +215,30 @@
 
 (def additional-order {
                        :admins [[:user_id :desc]]
+                       :full_texts [[:text :desc]]
+                       :groups_users [[:group_id :desc]]
+                       :users [[:users.id :asc]]
+                       :orders [[:order_date :asc]]
+                       :app_settings [[:section_meta_key_id :asc]]
+                       :meta_data [[:media_entry_id :asc]]
+                       :media_files [[:media_entry_id :asc]]
+                       :collection_media_entry_arcs [[:media_entry_id :asc]]
+                       :collection_collection_arcs [[:parent_id :asc]]
+
+
+                       :delegations_groups [[:delegation_id :asc]]
+                       :delegations_users [[:delegation_id :asc]]
+                       :context_keys [[:context_id :asc]]
+                       :keywords [[:term :asc]]
+                       :people [[:searchable :asc]]
+                       :vocabulary_user_permissions [[:vocabulary_id :asc]]
+                       :vocabulary_group_permissions [[:vocabulary_id :asc]]
+                       :meta_data_roles [[:person_id :asc]]
+
+                       :delegations_workflows [[:delegation_id :asc]]
+                       :meta_data_meta_terms [[:meta_datum_id :asc]]
+                       ;:schema_migrations [[:version :asc]]
+                       :users_workflows [[:user_id :asc]]
 
                        })
 
@@ -227,8 +251,34 @@
     )
   )
 
-;; 1. Top-level atom to hold the map
 (defonce ^:private table-order-config (atom {}))
+
+(defn ->lookup-order-by [t col]
+             (let [order (get-in @table-order-config [col])
+
+
+                   p (println ">o> abc.order22??" order)
+                   ]
+
+               ;(when (or (empty? order) (nil? order))
+               ;  (throw (Exception. (str "No order found for column: " col))))
+
+               (-> t
+                   (when-not (nil? order)
+                     (#(apply sql/order-by % order))))))
+
+
+(defn ->lookup-order-by
+  "Conditionally applies an ORDER BY based on table-order-config for column `col`."
+  [query col]
+  (let [order (get-in @table-order-config [col])]
+    (if (seq order)
+      ;; apply order-by when we have a non-empty vector of ordering clauses
+      (apply sql/order-by query order)
+      ;; otherwise just return the unmodified query
+      query)))
+
+;; 1. Top-level atom to hold the map
 
 ;; 2. Init fn to populate it
 (defn init-order-config-fnc
@@ -240,9 +290,34 @@
         neither (get-tables-with-neither ds)
 
 
-        additional-order {
-                          :admins [[:user_id :desc]]
-                          }
+        ;additional-order {
+        ;                  :admins [[:user_id :desc]]
+        ;                  :full_texts [[:text :desc]]
+        ;                  :groups_users [[:group_id :desc]]
+        ;                  :users [[:users.id :asc]]
+        ;                  :orders [[:order_date :asc]]
+        ;                  :app_settings [[:section_meta_key_id :asc]]
+        ;                  :meta_data [[:media_entry_id :asc]]
+        ;                  :media_files [[:media_entry_id :asc]]
+        ;                  :collection_media_entry_arcs [[:media_entry_id :asc]]
+        ;                  :collection_collection_arcs [[:parent_id :asc]]
+        ;
+        ;
+        ;                  :delegations_groups [[:delegation_id :asc]]
+        ;                  :delegations_users [[:delegation_id :asc]]
+        ;                  :context_keys [[:context_id :asc]]
+        ;                  :keywords [[:term :asc]]
+        ;                  :people [[:searchable :asc]]
+        ;                  :vocabulary_user_permissions [[:vocabulary_id :asc]]
+        ;                  :vocabulary_group_permissions [[:vocabulary_id :asc]]
+        ;                  :meta_data_roles [[:person_id :asc]]
+        ;
+        ;                  :delegations_workflows [[:delegation_id :asc]]
+        ;                  :meta_data_meta_terms [[:meta_datum_id :asc]]
+        ;                  :schema_migrations [[:version :asc]]
+        ;                  :users_workflows [[:user_id :asc]]
+        ;
+        ;                  }
 
         ;; build sub-maps for each case
         ;m-id-only (into {} (for [t id-only] [(keyword t) [:id]]))
@@ -301,25 +376,35 @@
 
           col :admins
           _ (println ">o> abc.:admins1" (get @table-order-config col))
-
-          ;_ (println ">o> abc.:admins" (-> (sql/select :*)
-          ;                               (sql/from col)
-          ;                                 (sql/limit limit)
-          ;                                 (sql/order-by
-          ;                                (get-in @table-order-config [col]))
-          ;                                ;(get-in @table-order-config [col 0]))
-          ;    sql-format))
-
           _ (println ">o> abc.:admins2" (-> (sql/select :*)
                                             (sql/from col)
                                             (sql/limit limit)
-                                            (#(apply sql/order-by % (get-in @table-order-config [col])))
+                                            ;(#(apply sql/order-by % (get-in @table-order-config [col])))
+                                                              (->lookup-order-by col)
                                             sql-format))
 
           _ (println ">o> abc.:admins3" (jdbc/execute! ds (-> (sql/select :*)
                                                               (sql/from col)
                                                               (sql/limit limit)
-                                                              (#(apply sql/order-by % (get-in @table-order-config [col])))
+                                                              (->lookup-order-by col)
+                                                              sql-format)))
+
+          ;; ------------------------------
+
+          col :schema_migrations
+          _ (println ">o> abc.::schema_migrations1" (get @table-order-config col))
+          _ (println ">o> abc.::schema_migrations2" (-> (sql/select :*)
+                                            (sql/from col)
+                                            (sql/limit limit)
+                                            ;(#(apply sql/order-by % (get-in @table-order-config [col])))
+                                                              (->lookup-order-by col)
+                                            sql-format))
+
+          _ (println ">o> abc.::schema_migrations3" (jdbc/execute! ds (-> (sql/select :*)
+                                                              (sql/from col)
+                                                              (sql/limit limit)
+                                                              ;(#(apply sql/order-by % (get-in @table-order-config [col])))
+                                                              (->lookup-order-by col)
                                                               sql-format)))
 
 
