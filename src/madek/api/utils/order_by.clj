@@ -196,22 +196,6 @@
 
 
 
-(defn init-order-config-fnc [ds]
-  (let [p (println "\n\n>o> call-all-fnc? ds" ds)
-
-        tables-with-id-without-created-at (get-tables-with-id-without-created-at ds)
-        tables-with-id-and-created-at (get-tables-with-id-and-created-at ds)
-        tables-with-created-at-only (get-tables-with-created-at-only ds)
-        tables-with-neither (get-tables-with-neither ds)
-
-        ]
-    ;(get-tables-with-id ds)
-    ;(get-tables-with-id-and-created-at ds)
-    ;(get-tables-with-created-at-only ds)
-    ;(get-tables-with-neither ds)
-    (println ">o> \n\n")
-    p))
-
 ;; At the top of your namespace:
 (def ^:private tables-with-id-without-created-at (atom []))
 (def ^:private tables-with-id-and-created-at        (atom []))
@@ -249,7 +233,10 @@
 
         ;; build sub-maps for each case
         m-id-only      (into {} (for [t id-only]      [(keyword t) [:id]]))
-        m-both         (into {} (for [t both]         [(keyword t) [[:created_at :desc] :id]]))
+
+        ;m-both         (into {} (for [t both]         [(keyword t) [[:created_at :desc] :id]]))
+        m-both         (into {} (for [t both]         [(keyword t) [[:created_at :desc] [:id :asc]]]))
+
         m-created-only (into {} (for [t created-only] [(keyword t) [[:created_at :desc]]]))
         m-neither      (into {} (for [t neither]      [(keyword t) nil]))
 
@@ -270,76 +257,74 @@
 
        (let [
 
-                col :roles
-    _ (println ">o> abc.roles" (get @table-order-config col))
-    _ (println ">o> abc.roles" (-> (sql/select :*)
-                                   (sql/from col)
-                                   (sql/order-by
-                                    (get-in @table-order-config [col 0]))
-        sql-format))
+             limit 1
 
-             _ (println ">o> abc.roles" (jdbc/execute! ds (-> (sql/select :*)
-                                   (sql/from col)
-                                   (sql/order-by
-                                    (get-in @table-order-config [col 0]))
-        sql-format)))
+    ;            col :roles
+    ;_ (println ">o> abc.roles" (get @table-order-config col))
+    ;_ (println ">o> abc.roles" (-> (sql/select :*)
+    ;                               (sql/from col)
+    ;                               (sql/order-by
+    ;                                ;(get-in @table-order-config [col 0]))
+    ;                                (get-in @table-order-config [col]))
+    ;    sql-format))
+    ;
+    ;         _ (println ">o> abc.roles" (jdbc/execute! ds (-> (sql/select :*)
+    ;                               (sql/from col)
+    ;                               (sql/order-by
+    ;                                ;(get-in @table-order-config [col 0]))
+    ;                                (get-in @table-order-config [col]))
+    ;    sql-format)))
 
 
 
+             ;; ------------------------------
 
              col :admins
     _ (println ">o> abc.:admins" (get @table-order-config col))
-    _ (println ">o> abc.:admins" (-> (sql/select :*)
-                                   (sql/from col)
-                                     (sql/limit 10)
-                                     (sql/order-by
-                                    (get-in @table-order-config [col 0]))
-        sql-format))
+
+    ;_ (println ">o> abc.:admins" (-> (sql/select :*)
+    ;                               (sql/from col)
+    ;                                 (sql/limit limit)
+    ;                                 (sql/order-by
+    ;                                (get-in @table-order-config [col]))
+    ;                                ;(get-in @table-order-config [col 0]))
+    ;    sql-format))
 
              _ (println ">o> abc.:admins" (jdbc/execute! ds (-> (sql/select :*)
                                    (sql/from col)
-                                                                (sql/limit 10)
-                                                                (sql/order-by
-                                    (get-in @table-order-config [col 0]))
+                                                                (sql/limit limit)
+                                                                ;(sql/order-by (get-in @table-order-config [col]))
+
+
+                                                                (#(apply sql/order-by % (get-in @table-order-config [col])))
+
+                                                                ;(apply (sql/order-by (get-in @table-order-config [col])))
+
+                                    ;(get-in @table-order-config [col 0]))
         sql-format)))
 
-             col :full_texts
-    _ (println ">o> abc.::full_texts" (get @table-order-config col))
-    _ (println ">o> abc.::full_texts" (-> (sql/select :*)
-                                   (sql/from col)
-                                          (sql/limit 10)
-                                   (sql/order-by
-                                    (get-in @table-order-config [col 0]))
-        sql-format))
 
-
-
-             order (get @table-order-config col)
-             _ (println ">o> abc.::full_texts" (jdbc/execute! ds (-> (cond-> (-> (sql/select :*)
-                                                                             (sql/from col))
-                                                                   order (sql/order-by order))
-                                                                     (sql/limit 10)
-                                                                     sql-format)))
-
-
-        ;                                                             _ (println ">o> abc.::full_texts" (jdbc/execute! ds (-> (sql/select :*)
-        ;                           (sql/from col)
-        ;
-        ;                                                             (when-not (nil? (get-in @table-order-config [col 0]))
-        ;                                                             (sql/order-by
-        ;                            (get-in @table-order-config [col 0]))
-        ;                                                             )
-        ;sql-format)))
-
-
-
-
-
+    ;         ;; ------------------------------
+    ;         col :full_texts
+    ;_ (println ">o> abc.::full_texts" (get @table-order-config col))
+    ;_ (println ">o> abc.::full_texts" (-> (sql/select :*)
+    ;                               (sql/from col)
+    ;                                      (sql/limit limit)
+    ;                               (sql/order-by
+    ;                                ;(get-in @table-order-config [col 0]))
+    ;                                (get-in @table-order-config [col]))
+    ;    sql-format))
+    ;
+    ;
+    ;
+    ;         order (get @table-order-config col)
+    ;         _ (println ">o> abc.::full_texts" (jdbc/execute! ds (-> (cond-> (-> (sql/select :*)
+    ;                                                                         (sql/from col))
+    ;                                                               order (sql/order-by order))
+    ;                                                                 (sql/limit limit)
+    ;                                                                 sql-format)))
 
 
                 ])
-
-
-
 
     ))
