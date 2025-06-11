@@ -8,10 +8,11 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.coercion.spec-utils :refer [string->vec]]
+   [madek.api.utils.helper :refer [normalize-fields]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -19,10 +20,12 @@
    [schema.core :as s]
    [spec-tools.core :as st]))
 
-(defn build-query [query-params]
-  (let [col-sel (if (true? (-> query-params :full_data))
-                  (sql/select :*)
-                  (sql/select :id))]
+(defn build-query [req]
+  (let [req-query (-> req :parameters :query)
+        user-id (-> req :authenticated-entity :id)
+        query-params (assoc req-query :user_id user-id)
+        selected-columns (normalize-fields req)
+        col-sel (if (empty? selected-columns) (sql/select :id) (apply sql/select selected-columns))]
     (-> col-sel
         (sql/from :edit_sessions)
         (dbh/build-query-param query-params :id)
@@ -32,17 +35,14 @@
 
 (defn handle_adm_list-edit-sessions
   [req]
-  (let [db-query (build-query (-> req :parameters :query))
+  (let [db-query (build-query req)
         db-result (pagination-handler req db-query)]
     ;(info "handle_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_usr_list-edit-sessions
   [req]
-  (let [req-query (-> req :parameters :query)
-        user-id (-> req :authenticated-entity :id)
-        usr-query (assoc req-query :user_id user-id)
-        db-query (build-query usr-query)
+  (let [db-query (build-query req)
         db-result (pagination-handler req db-query)]
     ;(info "handle_usr_list-edit-sessions" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
@@ -128,11 +128,21 @@
           (sd/response_failed (str "No such edit_session : " id) 404))))
     (catch Exception ex (sd/parsed_response_exception ex))))
 
-(sa/def ::query-usr-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
+(sa/def :edit_essions/fields
+  (sa/and
+   (sa/conformer string->vec)
+   (sa/coll-of #{"id" "user_id" "created_at" "media_entry_id" "collection_id"}
+               :kind vector?)))
 
-(sa/def ::query-def (sa/keys :opt-un [::sp/id ::sp/full_data ::sp/user_id ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
+(sa/def ::query-usr-def (sa/keys :opt-un [::sp/id
+                                          :edit_essions/fields
+                                          ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
 
-(sa/def ::session-adm-def (sa/keys :req-un [::sp/id] :opt-un [::sp/user_id ::sp/created_at ::sp-nil/media_entry_id ::sp-nil/collection_id]))
+(sa/def ::query-def (sa/keys :opt-un [::sp/id
+                                      :edit_essions/fields
+                                      ::sp/user_id ::sp/media_entry_id ::sp/collection_id ::sp/page ::sp/size]))
+
+(sa/def ::session-adm-def (sa/keys :opt-un [::sp/id ::sp/user_id ::sp/created_at ::sp-nil/media_entry_id ::sp-nil/collection_id]))
 
 (sa/def :list/session (st/spec {:spec (sa/coll-of ::session-adm-def)
                                 :description "A list of sessions"}))

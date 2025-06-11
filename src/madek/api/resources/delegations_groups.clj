@@ -4,8 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -20,10 +19,7 @@
   [req]
   (let [delegation_id (-> req :parameters :query :delegation_id)
         group_id (-> req :parameters :query :group_id)
-        col-sel (if (true? (-> req :parameters :query :full-data))
-                  (sql/select :*)
-                  (sql/select :group_id))
-        base-query (-> col-sel (sql/from :delegations_groups))
+        base-query (-> (sql/select :*) (sql/from :delegations_groups))
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 group_id (sql/where [:= :group_id group_id]))
@@ -118,10 +114,10 @@
                                     :delegation true))))
 
 (def schema_delegations_groups_export
-  {:group_id s/Uuid
-   :delegation_id s/Uuid
-   :updated_at s/Any
-   :created_at s/Any})
+  {(s/optional-key :group_id) s/Uuid
+   (s/optional-key :delegation_id) s/Uuid
+   (s/optional-key :updated_at) s/Any
+   (s/optional-key :created_at) s/Any})
 
 ; TODO response coercion
 ; TODO docu
@@ -155,8 +151,7 @@
                    404 {:description "No delegations_groups found."
                         :body s/Any}}
        :parameters {:query {(s/optional-key :group_id) s/Uuid
-                            (s/optional-key :delegation_id) s/Uuid
-                            (s/optional-key :full-data) s/Bool}}}}]
+                            (s/optional-key :delegation_id) s/Uuid}}}}]
 
     ["groups/delegation/groups/:delegation_id/:group_id"
      {:post

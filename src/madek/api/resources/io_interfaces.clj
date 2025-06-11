@@ -5,9 +5,8 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [verify-full_data]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [normalize-fields]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -17,7 +16,8 @@
 
 (defn handle_list-io_interface
   [req]
-  (let [qd (verify-full_data req [:io_interfaces.*] [:io_interfaces.id])
+  (let [fields (normalize-fields req :io_interfaces)
+        qd (if (empty? fields) [:io_interfaces.id] fields)
         tx (:tx req)
         db-result (dbh/query-find-all :io_interfaces qd tx)]
 
@@ -100,7 +100,7 @@
    (s/optional-key :description) s/Str})
 
 (def schema_export_io_interfaces_opt
-  {:id s/Str
+  {(s/optional-key :id) s/Str
    (s/optional-key :description) (s/maybe s/Str)
    (s/optional-key :created_at) s/Any
    (s/optional-key :updated_at) s/Any})
@@ -134,7 +134,8 @@
       :handler handle_list-io_interface
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :full_data) s/Bool}}
+      :parameters {:query {(s/optional-key :fields) [(s/enum :id :description
+                                                             :created_at :updated_at)]}}
       :responses {200 {:description "Returns the io_interfaces."
                        :body [schema_export_io_interfaces_opt]}}}}]
 

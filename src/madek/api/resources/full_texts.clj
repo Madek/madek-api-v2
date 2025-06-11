@@ -6,10 +6,10 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
-            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
-            [madek.api.utils.helper :refer [to-uuid]]
+            [madek.api.utils.coercion.spec-utils :refer [string->vec]]
+            [madek.api.utils.helper :refer [to-uuid normalize-fields]]
             [madek.api.utils.pagination :refer [pagination-handler]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -21,10 +21,8 @@
 (defn handle_list-full_texts
   [req]
   (let [query-params (-> req :parameters :query)
-        full_data (:full_data query-params)
-        base-query (if (true? full_data)
-                     (sql/select :*)
-                     (sql/select :media_resource_id))
+        fields (normalize-fields req)
+        base-query (if (empty? fields) (sql/select :media_resource_id) (apply sql/select fields))
         db-query (-> base-query
                      (sql/from :full_texts)
                      (dbh/build-query-param query-params :media_resource_id)
@@ -111,11 +109,17 @@
                                     :full_texts :media_resource_id
                                     :full_text send404))))
 
-(sa/def :ft-query/schema-query-def (sa/keys :opt-un [::sp/full_data ::sp/media_resource_id ::sp/text ::sp/page ::sp/size]))
+(sa/def :full-texts/fields
+  (sa/and
+   (sa/conformer string->vec)
+   (sa/coll-of #{"text" "media_resource_id"}
+               :kind vector?)))
+
+(sa/def :ft-query/schema-query-def (sa/keys :opt-un [:full-texts/fields
+                                                     ::sp/media_resource_id ::sp/text ::sp/page ::sp/size]))
 
 (sa/def ::response-schema-def
-  (sa/keys :req-un [::sp/media_resource_id]
-           :opt-un [::sp/text]))
+  (sa/keys :opt-un [::sp/media_resource_id ::sp/text]))
 
 (sa/def :usr-list/full-texts-flat
   (st/spec

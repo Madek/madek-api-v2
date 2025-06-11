@@ -5,10 +5,8 @@
             [madek.api.authorization :as authorization]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
-            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-            [madek.api.utils.helper :refer [f]]
-            [madek.api.utils.helper :refer [verify-full_data]]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
+            [madek.api.utils.helper :refer [f normalize-fields]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -20,7 +18,8 @@
 
 (defn handle_list-favorite_collection
   [req]
-  (let [col-sel (verify-full_data req [:*] [:user_id])
+  (let [fields (normalize-fields req)
+        col-sel (if (empty? fields) [:user_id] fields)
         db-result (dbh/query-find-all :favorite_collections col-sel (:tx req))]
     (sd/response_ok db-result)))
 
@@ -113,7 +112,7 @@
                                     :collection true))))
 
 (def schema_favorite_collection_export
-  {:user_id s/Uuid
+  {(s/optional-key :user_id) s/Uuid
    (s/optional-key :collection_id) s/Uuid
    (s/optional-key :updated_at) s/Any
    (s/optional-key :created_at) s/Any})
@@ -183,10 +182,7 @@
        :handler handle_list-favorite_collection
        :middleware [wrap-authorize-admin!]
        :coercion reitit.coercion.schema/coercion
-       ; TODO query params?
-       :parameters {:query {;(s/optional-key :user_id) s/Uuid
-                            ;(s/optional-key :collection_id) s/Uuid
-                            (s/optional-key :full_data) s/Bool}}
+       :parameters {:query {(s/optional-key :fields) [(s/enum :user_id :collection_id :created_at :updated_at)]}}
        :responses {200 {:description "Returns the favorite_collections."
                         :body [schema_favorite_collection_export]}}}}]
     ; edit favorite collections for other users

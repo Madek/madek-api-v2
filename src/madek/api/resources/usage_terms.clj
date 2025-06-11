@@ -5,9 +5,8 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [verify-full_data]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [normalize-fields]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -15,7 +14,8 @@
 
 (defn handle_list-usage_term
   [req]
-  (let [qd (verify-full_data req [:usage_terms.*] [:usage_terms.id])
+  (let [fields (normalize-fields req :usage_terms)
+        qd (if (empty? fields) [:usage_terms.id] fields)
         tx (:tx req)
         db-result (dbh/query-find-all :usage_terms qd tx)]
     ;(->> db-result (map :id) set)
@@ -103,13 +103,16 @@
 
 ; TODO Inst coercion
 (def schema_export_usage_term
-  {:id s/Uuid
+  {(s/optional-key :id) s/Uuid
    (s/optional-key :title) s/Str
    (s/optional-key :version) s/Str
    (s/optional-key :intro) s/Str
    (s/optional-key :body) s/Str
    (s/optional-key :created_at) s/Any ; TODO as Inst
    (s/optional-key :updated_at) s/Any})
+
+(def usage-terms-fields (s/enum :id :title :version :intro :body
+                                :created_at :updated_at))
 
 ; TODO auth admin
 ; TODO response coercion
@@ -136,7 +139,7 @@
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
            :middleware [wrap-authorize-admin!]
-           :parameters {:query {(s/optional-key :full_data) s/Bool}}
+           :parameters {:query {(s/optional-key :fields) [usage-terms-fields]}}
            :responses {200 {:description "Returns the usage_terms."
                             :body [schema_export_usage_term]}
                        406 {:description "Could not list usage_terms."
@@ -185,7 +188,7 @@
     {:get {:summary (sd/sum_pub "List usage_terms.")
            :handler handle_list-usage_term
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full_data) s/Bool}}
+           :parameters {:query {(s/optional-key :fields) [usage-terms-fields]}}
            :responses {200 {:description "Returns the usage_terms."
                             :body [schema_export_usage_term]}}}}]
 

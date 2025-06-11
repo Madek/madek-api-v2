@@ -179,8 +179,7 @@
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-permissions]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_entry_id s/Uuid}
-                        :query {(s/optional-key :full_data) s/Bool}}
+           :parameters {:path {:media_entry_id s/Uuid}}
            :responses {200 {:description "Returns the list of confidential links."
                             :body [schema_export_conf_link]}
                        406 {:description "Could not list confidential links."

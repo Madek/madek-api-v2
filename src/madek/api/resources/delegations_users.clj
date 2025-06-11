@@ -4,8 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -19,10 +18,7 @@
   [req]
   (let [delegation_id (-> req :parameters :query :delegation_id)
         user_id (-> req :parameters :query :user_id)
-        col-sel (if (true? (-> req :parameters :query :full-data))
-                  (sql/select :*)
-                  (sql/select :user_id))
-        base-query (-> col-sel (sql/from :delegations_users))
+        base-query (-> (sql/select :*) (sql/from :delegations_users))
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 user_id (sql/where [:= :user_id user_id]))
@@ -200,8 +196,7 @@
        :responses {200 {:description "Returns the delegations_users."
                         :body schema_delegations_list_users_export}}
        :parameters {:query {(s/optional-key :user_id) s/Uuid
-                            (s/optional-key :delegation_id) s/Uuid
-                            (s/optional-key :full-data) s/Bool}}}}]
+                            (s/optional-key :delegation_id) s/Uuid}}}}]
     ["users/:delegation_id/:user_id"
      {:post
       {:summary (sd/sum_adm "Create delegations_user for user and delegation.")

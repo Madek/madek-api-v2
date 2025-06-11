@@ -16,7 +16,7 @@
    [madek.api.web]
    [madek.api.web :as web]
    [pg-types.all]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [info error]]))
 
 ;; cli ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -45,7 +45,7 @@
        flatten (clojure.string/join \newline)))
 
 (defn helpnexit [summary args options]
-  (println (main-usage summary {:args args :options options})))
+  (error (main-usage summary {:args args :options options})))
 
 ;; run ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

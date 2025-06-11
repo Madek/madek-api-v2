@@ -1,6 +1,7 @@
 (ns madek.api.utils.helper
   (:require [cheshire.core :as json]
             [honey.sql :refer [format] :rename {format sql-format}]
+            [madek.api.anti-csrf.core :refer [keyword str]]
             [pghstore-clj.core :refer [to-hstore THstorable]]
             [taoensso.timbre :refer [warn]])
   (:import (clojure.lang IPersistentMap)
@@ -21,6 +22,24 @@
                   v])
                m))))
 
+(defn normalize-fields
+  "Converts query attributes into a vector of keywords."
+  ([req]
+   (normalize-fields req nil))
+  ([req prefix]
+   (let [raw (get-in req [:parameters :query :fields])
+         attrs (cond
+                 (empty? raw) []
+                 (string? raw) [raw]
+                 :else raw)]
+     (mapv (fn [attr]
+             (let [name-str (name attr)
+                   full (if prefix
+                          (str (name prefix) "." name-str)
+                          name-str)]
+               (keyword full)))
+           attrs))))
+
 (defn strip-prefixes-generic
   "Strips table/namespace prefixes from keyword keys.
    - If given a vector of maps, returns a vector of modified maps.
@@ -34,16 +53,6 @@
     (mapv strip-prefixes input)
     :else input))
 
-;; [madek.api.utils.helper :refer [verify-full_data]]
-(defn verify-full_data
-  "Returns the correct vector of columns based on the query parameter full_data."
-  [req vec-pos vec-neg]
-  (when (or (not (vector? vec-pos)) (not (vector? vec-neg)))
-    (throw (ex-info "full_data, vec-pos or vec-neg is not a vector." {:vec-pos vec-pos :vec-neg vec-neg})))
-  (if (true? (-> req :parameters :query :full_data))
-    vec-pos
-    vec-neg))
-
 ; [madek.api.utils.helper :refer [t d]]
 (defn t [s] (str s ".. MANUALLY TESTED"))
 (defn d [s] (str s " / doc-example"))
@@ -54,15 +63,6 @@
 (defn f
   ([s] (str s " / ToFix"))
   ([s text] (str s " / ToFix: " text)))
-
-; [madek.api.utils.helper :refer [str-to-int]]
-(defn str-to-int
-  "Attempts to convert a string to an integer, returning a default value if conversion fails."
-  [value default-value]
-  (try
-    (Integer/parseInt (str value))
-    (catch NumberFormatException e
-      default-value)))
 
 ; [madek.api.utils.helper :refer [mslurp]]
 (defn mslurp [file-path]
@@ -194,12 +194,6 @@
             data
             keys)))
 
-(defn array-to-map [arr]
-  (zipmap arr (range (count arr))))
-
-(defn map-to-array [m]
-  (map first (sort-by val m)))
-
 ;; =================================================================
 ;; TODO: replace-java-hashmap
 ;; convert java.*.HashMap to ClolureMap
@@ -248,21 +242,3 @@
              :is_valid_email is_email
              :is_valid_uuid is_uuid}]
     res))
-
-;; TODO / remove this fnc, just use to-uuid: if its valid it will be casted
-; [madek.api.utils.helper :refer [convert-groupid]]
-(defn convert-groupid [group-id]
-  (let [is_uuid (boolean (re-matches
-                          #"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-                          group-id))
-        group-id (if is_uuid (to-uuid group-id) group-id)
-        res {:group-id group-id}]
-    res))
-
-(defn parse-to-int [value default-value]
-  (try
-    (let [value (if (instance? java.lang.Long value) (str value) value)
-          value (if (instance? java.lang.Integer value) (str value) value)]
-      (Integer/parseInt value))
-    (catch Exception e
-      default-value)))

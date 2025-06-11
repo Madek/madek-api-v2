@@ -4,9 +4,8 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [verify-full_data]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [normalize-fields]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -14,7 +13,8 @@
 
 (defn handle_list-delegations
   [req]
-  (let [qd (verify-full_data req [:*] [:delegations.id])
+  (let [fields (normalize-fields req)
+        qd (if (empty? fields) [:delegations.id] fields)
         db-result (dbh/query-find-all :delegations qd (:tx req))]
     ;(info "handle_list-delegation" "\nqd\n" qd "\nresult\n" db-result)
     (sd/response_ok db-result)))
@@ -98,9 +98,9 @@
    (s/optional-key :admin_comment) (s/maybe s/Str)})
 
 (def schema_get_delegations
-  {:id s/Uuid
+  {(s/optional-key :id) s/Uuid
    (s/optional-key :name) s/Str
-   (s/optional-key :description) s/Str
+   (s/optional-key :description) (s/maybe s/Str)
    (s/optional-key :admin_comment) (s/maybe s/Str)
    (s/optional-key :notifications_email) (s/maybe s/Str)
    (s/optional-key :notify_all_members) s/Bool
@@ -139,10 +139,9 @@
            :handler handle_list-delegations
            :middleware [wrap-authorize-admin!]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {(s/optional-key :full_data)
-                                ^{:description "Choose between 2 variants of the response."
-                                  :default false}
-                                s/Bool}}
+           :parameters {:query {(s/optional-key :fields) [(s/enum :id :name :description :admin_comment
+                                                                  :notifications_email :notify_all_members
+                                                                  :beta_tester_notifications)]}}
            :responses {200 {:description "Returns the list of delegations."
                             :body [schema_get_delegations]}}}}]
 

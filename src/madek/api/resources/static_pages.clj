@@ -5,10 +5,8 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [cast-to-hstore]]
-   [madek.api.utils.helper :refer [verify-full_data]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [normalize-fields cast-to-hstore]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
@@ -16,7 +14,8 @@
 
 (defn handle_list-static_pages
   [req]
-  (let [qd (verify-full_data req [:static_pages.*] [:static_pages.id])
+  (let [fields (normalize-fields req :static_pages)
+        qd (if (empty? fields) [:static_pages.id] fields)
         tx (:tx req)
         db-result (dbh/query-find-all :static_pages qd tx)]
     (sd/response_ok db-result)))
@@ -107,11 +106,11 @@
 
 ; TODO Inst coercion
 (def schema_export_static_page
-  {:id s/Uuid
-   :name s/Str
-   :contents s/Any
-   :created_at s/Any
-   :updated_at s/Any})
+  {(s/optional-key :id) s/Uuid
+   (s/optional-key :name) s/Str
+   (s/optional-key :contents) s/Any
+   (s/optional-key :created_at) s/Any
+   (s/optional-key :updated_at) s/Any})
 
 ; TODO auth admin
 ; TODO response coercion
@@ -156,7 +155,7 @@
                                                                   :updated_at "2020-01-01T00:00:00Z"}}])
                        404 (sd/create-error-message-response "Not Found." "No static_pages found.")
                        422 (sd/create-error-message-response "Unprocessable Entity." "Could not list static_pages.")}}
-     :parameters {:query {(s/optional-key :full_data) s/Bool}}}]
+     :parameters {:query {(s/optional-key :fields) [(s/enum :id :name :contents :created_at :updated_at)]}}}]
 
    ["static-pages/:id"
     {:get {:summary (sd/sum_adm "Get static_pages by id.")

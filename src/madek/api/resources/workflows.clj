@@ -6,8 +6,7 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
-            [madek.api.utils.helper :refer [to-jsonb-stm]]
-            [madek.api.utils.helper :refer [verify-full_data]]
+            [madek.api.utils.helper :refer [to-jsonb-stm normalize-fields]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
@@ -15,7 +14,8 @@
 
 (defn handle_list-workflows
   [req]
-  (let [qd (verify-full_data req [:workflows.*] [:workflows.id])
+  (let [fields (normalize-fields req :workflows)
+        qd (if (empty? fields) [:workflows.id] fields)
         tx (:tx req)
         db-result (dbh/query-find-all :workflows qd tx)]
     ;(info "handle_list-workflows" "\nqd\n" qd "\nresult\n" db-result)
@@ -106,7 +106,7 @@
 
 ; TODO Inst coercion
 (def schema_export_workflow
-  {:id s/Uuid
+  {(s/optional-key :id) s/Uuid
    (s/optional-key :name) s/Str
    (s/optional-key :is_active) s/Bool
    ; TODO docu is json
@@ -137,8 +137,8 @@
            :handler handle_list-workflows
            :middleware [authorization/wrap-authorized-user]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:query {;(s/optional-key :name) s/Str ; TODO query by name
-                                (s/optional-key :full_data) s/Bool}}
+           :parameters {:query {(s/optional-key :fields) [(s/enum :id :name :is_active :configuration
+                                                                  :creator_id :created_at :updated_at)]}}
            :responses {200 {:description "Returns the workflows."
                             :body [schema_export_workflow]}
                        406 {:description "Could not list workflows."

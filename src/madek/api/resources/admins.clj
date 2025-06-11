@@ -5,9 +5,8 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
-   [madek.api.utils.helper :refer [verify-full_data]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
+   [madek.api.utils.helper :refer [normalize-fields]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [reitit.coercion.spec]
@@ -15,7 +14,8 @@
 
 (defn handle_list-admin
   [req]
-  (let [qd (verify-full_data req [:admins.*] [:admins.id])
+  (let [fields (normalize-fields req :admins)
+        qd (if (empty? fields) [:admins.id] fields)
         db-result (dbh/query-find-all :admins qd (:tx req))]
     (sd/response_ok {:admins db-result})))
 
@@ -75,7 +75,7 @@
 ;### swagger io schema ########################################################
 
 (def schema_export-admin
-  {:id s/Uuid
+  {(s/optional-key :id) s/Uuid
    (s/optional-key :user_id) s/Uuid
    (s/optional-key :updated_at) s/Any
    (s/optional-key :created_at) s/Any})
@@ -92,7 +92,7 @@
       :handler handle_list-admin
       :middleware [wrap-authorize-admin!]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:query {(s/optional-key :full_data) s/Bool}}
+      :parameters {:query {(s/optional-key :fields) [(s/enum :id :user_id :updated_at :created_at)]}}
       :responses {200 {:description "Returns the list of admins."
                        :body {:admins [schema_export-admin]}}}}}]
    ; edit admin

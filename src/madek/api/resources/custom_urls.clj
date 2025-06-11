@@ -5,15 +5,18 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.utils.helper :refer [normalize-fields]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
             [taoensso.timbre :refer [info]]))
 
-(defn build-query [query-params]
-  (let [col-sel (if (true? (-> query-params :full_data))
-                  (sql/select :*)
-                  (sql/select :id, :media_entry_id, :collection_id))]
+(defn build-query [req]
+  (let [fields (normalize-fields req)
+        query-params (-> req :parameters :query)
+        col-sel (if (empty? fields)
+                  (sql/select :id, :media_entry_id, :collection_id)
+                  (apply sql/select fields))]
     (-> col-sel
         (sql/from :custom_urls)
         (dbh/build-query-param-like query-params :id)
@@ -23,7 +26,7 @@
 
 (defn handle_list-custom-urls
   [req]
-  (let [db-query (build-query (-> req :parameters :query))
+  (let [db-query (build-query req)
         db-result (jdbc/execute! (:tx req) db-query)]
     (info "handle_list-custom-urls" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
@@ -168,9 +171,9 @@
            :handler handle_list-custom-urls
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Returns the custom_urls."
-                            :body [{:id s/Str
-                                    :media_entry_id (s/maybe s/Uuid)
-                                    :collection_id (s/maybe s/Uuid)
+                            :body [{(s/optional-key :id) s/Str
+                                    (s/optional-key :media_entry_id) (s/maybe s/Uuid)
+                                    (s/optional-key :collection_id) (s/maybe s/Uuid)
                                     (s/optional-key :is_primary) s/Bool
                                     (s/optional-key :creator_id) s/Uuid
                                     (s/optional-key :updator_id) s/Uuid
@@ -178,7 +181,8 @@
                                     (s/optional-key :updated_at) s/Any}]}
                        404 {:description "Not found."
                             :body s/Any}}
-           :parameters {:query {(s/optional-key :full_data) s/Bool
+           :parameters {:query {(s/optional-key :fields) [(s/enum :media_entry_id :collection_id :is_primary
+                                                                  :creator_id :updator_id :created_at :updated_at)]
                                 (s/optional-key :id) s/Str
                                 (s/optional-key :media_entry_id) s/Uuid
                                 (s/optional-key :collection_id) s/Uuid}}}}]

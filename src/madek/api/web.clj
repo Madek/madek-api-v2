@@ -106,6 +106,20 @@
        :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization", "Credentials" "Cookie"])
       wrap-with-access-control-allow-credentials))
 
+;###############################################################################
+
+(defn wrap-empty-fields
+  "Handle empty values if coercion.schema: If ?fields=& produced an empty string, convert it to an empty vector so
+   Schema sees a valid [] instead of `\"\"`."
+  [handler]
+  (fn [request]
+    (let [qp (:query-params request)
+          raw-attr (get qp "fields")]
+      (handler
+       (if (and (string? raw-attr) (empty? raw-attr))
+         (assoc-in request [:query-params "fields"] [])
+         request)))))
+
 ;### routes ###################################################################
 
 (def auth-info-route
@@ -264,7 +278,8 @@
    (filterv some?)))
 
 (def ^:dynamic middlewares
-  [swagger/swagger-feature
+  [wrap-empty-fields
+   swagger/swagger-feature
    ring-wrap-cors
    db/wrap-tx
    wrap-cookies

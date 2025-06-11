@@ -9,11 +9,11 @@
    [madek.api.resources.collections.index :refer [get-index]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+   [madek.api.utils.coercion.spec-utils :refer [string->vec]]
    [madek.api.utils.helper :refer [convert-map-if-exist mslurp]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -140,14 +140,25 @@
 
                                                   ::sp-nil/deleted_at]))
 
-(sa/def :collection-query/query-def (sa/keys :opt-un [::sp/full_data ::sp/collection_id ::sp/order ::sp/creator_id
+(sa/def :collection/fields
+  (sa/and
+   (sa/conformer string->vec)
+   (sa/coll-of #{"get_metadata_and_previews" "id" "created_at" "deleted_at" "layout"
+                 "is_master" "sorting" "responsible_user_id" "creator_id" "default_context_id" "updated_at"
+                 "meta_data_updated_at" "edit_session_updated_at" "clipboard_user_id" "workflow_id" "responsible_delegation_id"
+                 "default_resource_type"}
+               :kind vector?)))
+
+(sa/def :collection-query/query-def (sa/keys :opt-un [:collection/fields
+                                                      ::sp/collection_id ::sp/order ::sp/creator_id
                                                       ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
                                                       ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                       ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
                                                       ::sp/me_edit_metadata_and_relations
                                                       ::sp/page ::sp/size]))
 
-(sa/def :collection-query/query-admin-def (sa/keys :opt-un [::sp/full_data ::sp/collection_id ::sp/order ::sp/creator_id
+(sa/def :collection-query/query-admin-def (sa/keys :opt-un [:collection/fields
+                                                            ::sp/collection_id ::sp/order ::sp/creator_id
                                                             ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
                                                             ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                             ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
@@ -188,10 +199,10 @@
                                                                                                      ::sp-nil/responsible_delegation_id ::sp/default_resource_type]))
 
 (sa/def :usr/collections
-  (sa/keys :req-un [::sp/id
+  (sa/keys :opt-un [::sp/get_metadata_and_previews
+                    ::sp/id
                     ::sp/created_at
-                    ::sp-nil/deleted_at]
-           :opt-un [::sp/get_metadata_and_previews
+                    ::sp-nil/deleted_at
                     ::sp/layout
                     ::sp/is_master
                     ::sp/sorting

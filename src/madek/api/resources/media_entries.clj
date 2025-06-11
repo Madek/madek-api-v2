@@ -12,11 +12,11 @@
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
-            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
+            [madek.api.utils.coercion.spec-utils :refer [string->vec]]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -244,13 +244,28 @@
    #(re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z" %)
    "ISO 8601 timestamp without milliseconds"))
 
+(sa/def :media-entries/fields
+  (sa/and
+   (sa/conformer string->vec)
+   (sa/coll-of #{"get_metadata_and_previews",
+                 "edit_session_updated_at",
+                 "get_full_size",
+                 "id",
+                 "updated_at",
+                 "is_published",
+                 "created_at",
+                 "meta_data_updated_at",
+                 "responsible_user_id",
+                 "creator_id"}
+               :kind vector?)))
+
 (sa/def ::media-entries-def
   (sa/keys :opt-un
            [::sp/collection_id ::sp/order ::sp/filter_by
             ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
             ::sp/me_edit_metadata ::sp/me_edit_permissions
             ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
-            ::sp/full_data
+            :media-entries/fields
             ::sp/page ::sp/size]))
 
 (sa/def ::media-entries-no-pagination-def
@@ -259,7 +274,7 @@
             ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
             ::sp/me_edit_metadata ::sp/me_edit_permissions
             ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
-            ::sp/full_data]))
+            :media-entry-def/fields]))
 
 (sa/def ::media-entries-adm-def
   (sa/keys :opt-un
@@ -267,7 +282,7 @@
             ::sp/me_get_metadata_and_previews ::sp/me_get_full_size
             ::sp/me_edit_metadata ::sp/me_edit_permissions
             ::sp/public_get_metadata_and_previews ::sp/public_get_full_size
-            ::sp/full_data
+            :media-entries/fields
             ::sp/page ::sp/size
             ::sp-map/filter_softdelete]))
 
@@ -299,13 +314,9 @@
   (merge schema_export_media_entry
          {:deleted_at (s/maybe ISO8601TimestampWithoutMS)}))
 
-(sa/def ::media-entry-response-def
-  (sa/keys :req-un [::sp/media_entries ::sp/meta_data ::sp/media_files ::sp/previews]
-           :opt-un [::sp/col_arcs ::sp/col_meta_data]))
-
 ;; -----------------------
 
-(sa/def :me1/media_entry
+(sa/def :me/media_entry
   (st/spec {:spec (sa/keys :req-un [::sp/id]
                            :opt-un [::sp/responsible_user_id
                                     ::sp/get_full_size
@@ -319,20 +330,26 @@
             :description "Represents a media entry with optional metadata"}))
 
 ;; FIXME: can be null
-(sa/def :me1/meta_data (st/spec {:spec any?}))
+(sa/def :me/meta_data (st/spec {:spec any?}))
 
 ;; FIXME: can be null
-(sa/def :me1/media_files (st/spec {:spec any?}))
+(sa/def :me/media_files (st/spec {:spec any?}))
 
 ;; FIXME: can be null
-(sa/def :me1/previews (st/spec {:spec any?}))
+(sa/def :me/previews (st/spec {:spec any?}))
 
-(sa/def :me1/media_entries
-  (st/spec {:spec (sa/coll-of :me1/media_entry)
+(sa/def :me/media_entries
+  (st/spec {:spec (sa/coll-of :me/media_entry)
             :description "An array of media entries"}))
 
-(sa/def ::media-entry-response2-def
-  (st/spec {:spec (sa/keys :req-un [:me1/media_entries :me1/meta_data :me1/media_files :me1/previews])}))
+(sa/def ::media-entry-response-def
+  (st/spec {:spec (sa/keys :opt-un [:me/media_entries :me/meta_data :me/media_files :me/previews])}))
+
+(sa/def :media-entry-def/fields
+  (sa/and
+   (sa/conformer string->vec)
+   (sa/coll-of #{"media_entries" "meta_data" "media_files" "previews"}
+               :kind vector?)))
 
 ;; -----------------------
 
@@ -340,8 +357,7 @@
   (sa/keys :opt-un
            [::sp/responsible_user_id ::sp/get_full_size ::sp/creator_id ::sp/updated_at
             ::sp/edit_session_updated_at ::sp/is_published ::sp/get_metadata_and_previews ::sp/meta_data_updated_at
-            ::sp/created_at]
-           :req-un [::sp/id]))
+            ::sp/created_at ::sp/id]))
 
 (sa/def :media-entry-list/media_entries
   (st/spec
@@ -405,7 +421,7 @@
       :coercion spec/coercion
       :parameters {:query ::media-entries-no-pagination-def}
       :responses {200 {:description "Returns the media-entries with all related data."
-                       :body ::media-entry-response2-def}}}}]])
+                       :body ::media-entry-response-def}}}}]])
 
 (def ring-admin-routes
   ["/"

@@ -4,6 +4,7 @@
    [logbug.catcher :as catcher]
    [madek.api.resources.collections.advanced-filter.permissions :as permissions]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.utils.helper :refer [normalize-fields]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]))
 
@@ -18,10 +19,10 @@
 
 ;### query ####################################################################
 
-(defn- base-query [full-data softdelete-mode]
-  (let [toselect (if (true? full-data)
-                   (sql/select :*)
-                   (sql/select :collections.id :collections.created_at :collections.deleted_at))]
+(defn- base-query [fields softdelete-mode]
+  (let [toselect (if (empty? fields)
+                   (sql/select :collections.id :collections.created_at :collections.deleted_at)
+                   (apply sql/select fields))]
     (-> toselect
         (sql/from :collections)
         (cond-> (= softdelete-mode :deleted) (soft-deleted "collections"))
@@ -36,9 +37,9 @@
 (defn- build-query [request]
   (let [query-params (:query-params request)
         authenticated-entity (:authenticated-entity request)
-        full_data (= true (:full_data query-params))
+        fields (normalize-fields request)
         softdelete-mode (:filter_softdelete query-params)
-        sql-query (-> (base-query full_data softdelete-mode)
+        sql-query (-> (base-query fields softdelete-mode)
                       (set-order query-params)
                       (dbh/build-query-param query-params :creator_id)
                       (dbh/build-query-param query-params :responsible_user_id)

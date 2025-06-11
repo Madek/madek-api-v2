@@ -1,7 +1,8 @@
 (ns madek.api.utils.html-utils
   (:require [clojure.walk :as walk]
             [hickory.core :as h]
-            [hickory.render :as render]))
+            [hickory.render :as render]
+            [taoensso.timbre :refer [error]]))
 
 (defn add-meta-tag [tree csrf-name csrf-value]
   (walk/postwalk
@@ -54,6 +55,6 @@
       raw-html)
 
     (catch Exception e
-      (println "Error in add-csrf-and-return-tags:" (.getMessage e))
+      (error "Error in add-csrf-and-return-tags:" (.getMessage e))
       (.printStackTrace e)
       html-str)))

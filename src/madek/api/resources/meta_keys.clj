@@ -8,8 +8,7 @@
    [madek.api.resources.meta-keys.meta-key :as mk]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
-   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-any :as sp-any]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -232,7 +231,7 @@
    {:openapi {:tags ["admin/meta-keys"] :security ADMIN_AUTH_METHODS}}
    ["meta-keys"
     {:get {:summary (sd/sum_adm "Get all meta-key ids")
-           :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
+           :description "Get list of meta-key ids."
            :handler handle_adm-query-meta-keys
            :middleware [wrap-authorize-admin!]
            ; FIXME: returns vocabulary.id instead of meta-keys.id ??
@@ -307,7 +306,7 @@
    {:openapi {:tags ["meta-keys"]}}
    ["meta-keys"
     {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get all meta-key ids"))
-           :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
+           :description "Get list of meta-key ids."
            :handler handle_usr-query-meta-keys
            :parameters {:query sp/schema_pagination_opt}
            :content-type "application/json"

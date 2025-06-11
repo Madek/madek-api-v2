@@ -9,11 +9,11 @@
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
-            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
-            [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-            [madek.api.utils.helper :refer [f mslurp]]
+            [madek.api.utils.coercion.spec-utils :refer [string->vec]]
+            [madek.api.utils.helper :refer [f mslurp normalize-fields]]
             [madek.api.utils.pagination :refer [pagination-handler]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
@@ -83,8 +83,11 @@
 ;### index ####################################################################
 ; TODO test query and paging
 (defn build-index-query [req]
-  (let [query-params (-> req :parameters :query)
-        base-query (-> (sql/select :*)
+  (let [fields (normalize-fields req)
+        query-params (-> req :parameters :query)
+        base-query (-> (if (empty? fields)
+                         (sql/select :*)
+                         (apply sql/select fields))
                        (sql/from :groups)
                        (sql/order-by [:id :asc])
                        (dbh/build-query-param query-params :created_by_user_id)
@@ -182,12 +185,21 @@
 
 (sa/def ::response-users-body (sa/keys :opt-un [:usr-users-list/users ::sp/data ::sp/pagination]))
 
+(sa/def :group/fields
+  (sa/and
+   (sa/conformer string->vec)
+   (sa/coll-of #{"id" "name" "type" "created_at" "updated_at" "institutional_id"
+                 "institutional_name" "institution" "created_by_user_id" "searchable"}
+               :kind vector?)))
+
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
                                             ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
-                                            ::sp/full_data ::sp/page ::sp/size]))
+                                            :group/fields
+                                            ::sp/page ::sp/size]))
 
-(sa/def :usr/groups (sa/keys :req-un [::sp/id] :opt-un [::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
-                                                        ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable]))
+(sa/def :usr/groups (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
+                                      ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable]))
+
 (sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
                                           :description "A list of persons"}))
 
