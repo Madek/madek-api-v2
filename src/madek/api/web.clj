@@ -155,7 +155,7 @@
              :swagger {:produces ["text/html" "application/json"]}
              :handler sign-in/logout-handler}}]
 
-    ["/auth-infos/"
+    ["/auth-info/"
      {:get
       {:summary (sd/?no-auth? "Authentication help and info.")
        :handler auth-info/auth-info

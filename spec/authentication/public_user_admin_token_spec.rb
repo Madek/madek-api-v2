@@ -47,7 +47,7 @@ describe "1) Test status-code as public-user" do
       "/api-v2/groups/" => 200,
 
       "/api-v2/workflows/" => 401,
-      "/api-v2/auth-infos/" => 401,
+      "/api-v2/auth-info/" => 401,
       "/api-v2/edit_sessions/?page=1&size=1" => 401,
 
       "/api-v2/admin/admins/" => 403,
@@ -114,7 +114,7 @@ shared_context :test_proper_public_user do
         "/api-v2/groups/" => 200,
 
         "/api-v2/workflows/" => 401,
-        "/api-v2/auth-infos/" => 401,
+        "/api-v2/auth-info/" => 401,
         "/api-v2/edit_sessions/?page=1&size=1" => 401,
 
         "/api-v2/admin/admins/" => 403,
@@ -152,7 +152,7 @@ describe "/auth-info resource" do
   context "without any authentication" do
     context "via json" do
       let :response do
-        plain_faraday_json_client.get("/api-v2/auth-infos/")
+        plain_faraday_json_client.get("/api-v2/auth-info/")
       end
 
       it "responds with not authorized 401" do
@@ -210,7 +210,7 @@ context "3) resource with admin auth" do
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows/" => 200,
-          "/api-v2/auth-infos/" => 200,
+          "/api-v2/auth-info/" => 200,
           "/api-v2/edit_sessions/?page=1&size=1" => 200,
 
           "/api-v2/admin/admins/" => 200,
@@ -289,7 +289,7 @@ context "4) resource with token-user auth" do
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows/" => 200,
-          "/api-v2/auth-infos/" => 200,
+          "/api-v2/auth-info/" => 200,
           "/api-v2/edit_sessions/?page=1&size=1" => 200,
 
           "/api-v2/admin/admins/" => 403,
@@ -392,7 +392,7 @@ context "5) resource with token-user auth with admin-credentials" do
           "/api-v2/groups/" => 200,
 
           "/api-v2/workflows/" => 200,
-          "/api-v2/auth-infos/" => 200,
+          "/api-v2/auth-info/" => 200,
           "/api-v2/edit_sessions/?page=1&size=1" => 200,
 
           "/api-v2/admin/admins/" => 200,
