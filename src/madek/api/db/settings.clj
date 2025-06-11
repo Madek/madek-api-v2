@@ -17,6 +17,7 @@
 (defn settings [tx]
   (or (-> (apply sql/select selected-columns)
           (sql/from :app_settings)
+          (sql/order-by [:section_meta_key_id :asc] [:id :asc])
           (sql/where [:= :id 0])
           (sql-format :inline false)
           (#(jdbc/execute-one! tx %)))
