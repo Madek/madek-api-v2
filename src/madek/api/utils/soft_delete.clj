@@ -7,8 +7,27 @@
   ([table-name]
    [:raw (str "(" table-name ".deleted_at is null or now() < " table-name ".deleted_at)")]))
 
+
+(defn- non-soft-delete-raw
+  ([] (non-soft-delete-raw nil))
+  ([table-name]
+   (let [deleted-at-col (if table-name
+                          (keyword (str table-name ".deleted_at"))
+                          :deleted_at)]
+     [:or
+      [:is-null deleted-at-col]
+      [:< [:now] deleted-at-col]])))
+
+
+
 (defn- soft-delete-raw [table-name]
   [:raw "(" table-name ".deleted_at is not null and now() >= " table-name ".deleted_at)"])
+
+(defn- soft-delete-raw [table-name]
+  [:and
+   [:is-not-null (keyword (str table-name ".deleted_at"))]
+   [:>= [:now] (keyword (str table-name ".deleted_at"))]])
+
 
 (defn non-soft-deleted
   ([table-name]
