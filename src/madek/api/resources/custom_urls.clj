@@ -11,9 +11,18 @@
             [taoensso.timbre :refer [info]]))
 
 (defn build-query [query-params]
-  (let [col-sel (if (true? (-> query-params :full_data))
-                  (sql/select :*)
-                  (sql/select :id, :media_entry_id, :collection_id))]
+  ;(let [col-sel (if (true? (-> query-params :full_data))
+
+
+  (println ">o> abc??" (-> query-params :attributes))
+
+  (let [col-sel (if (empty? (-> query-params :attributes))
+                  ;(sql/select :*)
+                  (sql/select :id, :media_entry_id, :collection_id)
+
+                  (apply sql/select
+                         (map #(keyword (name %)) (-> query-params :attributes)))
+                  )]
     (-> col-sel
         (sql/from :custom_urls)
         (dbh/build-query-param-like query-params :id)
@@ -159,6 +168,15 @@
    :media_entry_id (s/maybe s/Uuid)
    :collection_id (s/maybe s/Uuid)})
 
+
+;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at ""]))
+;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at nil]))
+;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at]))
+;(def allowed-values (s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at "Default-Values"))
+(def allowed-values (s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at))
+;(def AllowedCustomUrlAttr (apply s/enum allowed-values))
+
+
 ; TODO custom urls response coercion
 (def query-routes
   ["/"
@@ -168,9 +186,10 @@
            :handler handle_list-custom-urls
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Returns the custom_urls."
-                            :body [{:id s/Str
-                                    :media_entry_id (s/maybe s/Uuid)
-                                    :collection_id (s/maybe s/Uuid)
+                            :body [{
+                                    (s/optional-key :id) s/Str
+                                      (s/optional-key :media_entry_id) (s/maybe s/Uuid)
+                                        (s/optional-key :collection_id) (s/maybe s/Uuid)
                                     (s/optional-key :is_primary) s/Bool
                                     (s/optional-key :creator_id) s/Uuid
                                     (s/optional-key :updator_id) s/Uuid
@@ -178,7 +197,16 @@
                                     (s/optional-key :updated_at) s/Any}]}
                        404 {:description "Not found."
                             :body s/Any}}
-           :parameters {:query {(s/optional-key :full_data) s/Bool
+           :parameters {:query {
+                                ;(s/optional-key :full_data) s/Bool
+                                ;(s/optional-key :attributes) (s/->Either ["" [allowed-values]])
+                                ;(s/optional-key :attributes) (s/->Either [s/nilable [allowed-values]])
+                                ;(s/optional-key :attributes) (s/maybe [allowed-values])
+                                (s/optional-key :attributes) [allowed-values]
+
+                                ;(s/optional-key :attributes) (s/maybe [allowed-values])
+
+
                                 (s/optional-key :id) s/Str
                                 (s/optional-key :media_entry_id) s/Uuid
                                 (s/optional-key :collection_id) s/Uuid}}}}]

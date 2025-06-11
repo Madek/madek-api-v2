@@ -70,7 +70,31 @@
 
 (sa/def ::context_id (st/spec {:spec string?}))
 (sa/def ::is_required (st/spec {:spec boolean?}))
-(sa/def ::full_data (st/spec {:spec boolean?}))
+
+
+
+;; Define the allowed values as a spec
+(sa/def ::allowed-value #{:test :me :now})
+
+;; Define the collection spec
+(sa/def ::full_data (sa/coll-of ::allowed-value :kind vector?))
+
+;; Optionally, use spec-tools to add Swagger metadata
+(def full-data-spec
+  (st/spec
+    {:spec ::full_data
+     :name "FullData"
+     :description "Array of allowed values"
+     :swagger/example [:test :me]
+     ;; Optional: if you want to display the enum in Swagger, you may need a custom mapping or use schema
+     ;; Most tools will auto-map, but for strict enum display, schema is easier.
+     }))
+
+;(sa/def ::full_data (st/spec {:spec boolean?}))
+;(sa/def ::full_data (st/spec {:spec (sa/coll-of [:test :me :now])}))
+
+
+
 (sa/def ::highlight (st/spec {:spec boolean?}))
 (sa/def ::is_master (st/spec {:spec boolean?}))
 (sa/def ::get_full_size (st/spec {:spec boolean?}))
