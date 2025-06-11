@@ -126,7 +126,7 @@ describe "/auth-info resource" do
   context "without any authentication" do
     context "via json" do
       let :response do
-        plain_faraday_json_client.get("/api-v2/auth-infos/")
+        plain_faraday_json_client.get("/api-v2/auth-info/")
       end
 
       it "responds with not authorized 401" do

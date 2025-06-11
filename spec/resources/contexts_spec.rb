@@ -35,7 +35,7 @@ describe "Context Resource Access" do
     include_context :json_client_for_authenticated_token_user
 
     it "allows access to auth-info endpoint with a valid token" do
-      response = client.get("/api-v2/auth-infos/")
+      response = client.get("/api-v2/auth-info/")
       expect(response.status).to eq(200)
     end
 
