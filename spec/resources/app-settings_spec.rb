@@ -6,11 +6,16 @@ context "Getting app-settings resource without authentication" do
   end
 
   let :plain_json_response do
-    plain_faraday_json_client.get("/api-v2/app-settings")
+    plain_faraday_json_client.get("/api-v2/app-settings/")
   end
 
   it "responds with 200" do
     expect(plain_json_response.status).to be == 200
+  end
+
+  it "responds with 404 without trailing /" do
+    response = plain_faraday_json_client.get("/api-v2/app-settings")
+    expect(response.status).to be == 404
   end
 
   it "has the proper data" do

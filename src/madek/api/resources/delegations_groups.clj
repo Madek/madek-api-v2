@@ -128,8 +128,8 @@
 ; TODO tests
 ; group self edit favorites 
 (def query-routes
-  ["/delegation/groups"
-   {:openapi {:tags ["delegation/groups"]}}
+  ["/delegations/groups/"
+   {:openapi {:tags ["delegations/groups"]}}
    {:get
     {:summary (sd/sum_adm "Query delegation groups.")
      :handler handle_list-delegations_groups-by-group
@@ -142,9 +142,9 @@
                       :body {:delegation_ids [s/Uuid]}}}}}])
 
 (def admin-routes
-  [["/delegation/"
-    {:openapi {:tags ["admin/delegation/groups"] :security ADMIN_AUTH_METHODS}}
-    ["groups"
+  [["/delegations/"
+    {:openapi {:tags ["admin/delegations/groups"] :security ADMIN_AUTH_METHODS}}
+    ["groups/"
      {:get
       {:summary (sd/sum_adm "Query delegations_groups.")
        :handler handle_list-delegations_groups
@@ -158,7 +158,7 @@
                             (s/optional-key :delegation_id) s/Uuid
                             (s/optional-key :full-data) s/Bool}}}}]
 
-    ["groups/delegation/groups/:delegation_id/:group_id"
+    ["groups/:delegation_id/:group_id"
      {:post
       {:summary (sd/sum_adm "Create delegations_group for group and delegation.")
        :handler handle_create-delegations_group

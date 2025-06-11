@@ -7,7 +7,7 @@ describe "ordering media entries" do
 
   include_context :json_client_for_authenticated_token_user do
     def resource(order = nil)
-      client.get("/api-v2/media-entries", {"order" => order})
+      client.get("/api-v2/media-entries/", {"order" => order})
     end
 
     context "old style string 'order' attribute" do
@@ -63,11 +63,11 @@ describe "ordering media entries" do
 
       describe "get media-entries with pagination" do
         it "responses with 200" do
-          resp1 = client.get("/api-v2/media-entries?page=1&size=5")
+          resp1 = client.get("/api-v2/media-entries/?page=1&size=5")
           expect(resp1.status).to be == 200
           expect(resp1.body["data"].count).to be 5
 
-          resp2 = client.get("/api-v2/media-entries?page=2&size=5")
+          resp2 = client.get("/api-v2/media-entries/?page=2&size=5")
           expect(resp2.status).to be == 200
           expect(resp2.body["data"].count).to be 5
 
@@ -75,7 +75,7 @@ describe "ordering media entries" do
         end
 
         it "responses with 200" do
-          resp = client.get("/api-v2/media-entries")
+          resp = client.get("/api-v2/media-entries/")
           expect(resp.status).to be == 200
           expect(resp.body["media_entries"].count).to be 30
         end
@@ -132,7 +132,7 @@ describe "ordering media entries" do
       context "response of ordering by the order attribute of the arc descending" do
         def resource(query)
           # media_entries_relation.get('order' => order)
-          client.get("/api-v2/media-entries", query)
+          client.get("/api-v2/media-entries/", query)
         end
 
         let :response do
@@ -187,7 +187,7 @@ describe "ordering media entries" do
       context "response of ordering by the time media entries are added to the set" do
         def resource(query)
           # media_entries_relation.get('order' => order)
-          client.get("/api-v2/media-entries", query)
+          client.get("/api-v2/media-entries/", query)
         end
 
         let :response do
@@ -227,7 +227,7 @@ describe "ordering media entries" do
         context "response of ordering by metadatum string (title usually)" do
           def resource(query)
             # media_entries_relation.get('order' => order)
-            client.get("/api-v2/media-entries", query)
+            client.get("/api-v2/media-entries/", query)
           end
 
           let :response do
@@ -261,7 +261,7 @@ describe "ordering media entries" do
 
       context "ordering by order param" do
         def resource(order)
-          client.get("/api-v2/media-entries", {
+          client.get("/api-v2/media-entries/", {
             collection_id: collection.id,
             order: order
           })
@@ -330,7 +330,7 @@ describe "ordering media entries" do
 
         context "stored_in_collection" do
           def mresource(query)
-            client.get("/api-v2/media-entries", query)
+            client.get("/api-v2/media-entries/", query)
           end
 
           def resource(*)
@@ -380,7 +380,7 @@ describe "ordering media entries" do
 
       context "default order ~> created_at ASC" do
         def mresource(query)
-          client.get("/api-v2/media-entries", query)
+          client.get("/api-v2/media-entries/", query)
         end
 
         def resource(*)

@@ -131,8 +131,8 @@
 ; TODO tests
 ; user self edit favorites 
 (def query-routes
-  ["/delegation/users"
-   {:openapi {:tags ["delegation/users"]}}
+  ["/delegations/users/"
+   {:openapi {:tags ["delegations/users"]}}
    {:get
     {:summary (sd/sum_adm "Query delegation users.")
      :handler handle_list-delegations_users-by-user
@@ -145,9 +145,9 @@
 
 ;; TODO: no usage??
 (def user-routes
-  ["/delegation/:delegation_id/"
-   {:openapi {:tags ["delegation/users"]}}
-   ["user"
+  ["/delegations/:delegation_id/"
+   {:openapi {:tags ["delegations/users"]}}
+   ["users/"
     {:post {:summary (sd/sum_cnv "Create delegations_user for authed user and media-entry.")
             :handler handle_create-delegations_user
             :middleware [(wwrap-find-delegation :delegation_id)
@@ -189,9 +189,9 @@
                                :body s/Any}}}}]])
 
 (def admin-routes
-  [["/delegation/"
-    {:openapi {:tags ["admin/delegation/users"] :security ADMIN_AUTH_METHODS}}
-    ["users"
+  [["/delegations/"
+    {:openapi {:tags ["admin/delegations/users"] :security ADMIN_AUTH_METHODS}}
+    ["users/"
      {:get
       {:summary (sd/sum_adm "Query delegations_users.")
        :handler handle_list-delegations_users

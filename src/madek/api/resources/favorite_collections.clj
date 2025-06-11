@@ -121,7 +121,7 @@
 ; TODO docu
 ; TODO tests
 (def favorite-routes
-  ["/favorite/collections"
+  ["/favorites/collections/"
    {:openapi {:tags ["api/favorite"]}}
    {:get
     {:summary (sd/sum_usr "List users favorite_collections.")
@@ -135,8 +135,8 @@
 ; TODO docu
 ; TODO tests
 (def collection-routes
-  ["/collection/:collection_id/favorite"
-   {:openapi {:tags ["api/collection"]}}
+  ["/collections/:collection_id/favorites"
+   {:openapi {:tags ["api/collections"]}}
    {:post {:summary (sd/sum_usr "Create favorite_collection for authed user and collection.")
            :handler handle_create-favorite_collection
            :middleware [authorization/wrap-authorized-user
@@ -175,9 +175,9 @@
 
 ; TODO tests
 (def admin-routes
-  [["/favorite/"
-    {:openapi {:tags ["admin/favorite/collections"] :security ADMIN_AUTH_METHODS}}
-    ["collections"
+  [["/favorites/"
+    {:openapi {:tags ["admin/favorites/collections"] :security ADMIN_AUTH_METHODS}}
+    ["collections/"
      {:get
       {:summary (sd/sum_adm (f "List favorite_collection users."))
        :handler handle_list-favorite_collection
@@ -190,7 +190,7 @@
        :responses {200 {:description "Returns the favorite_collections."
                         :body [schema_favorite_collection_export]}}}}]
     ; edit favorite collections for other users
-    ["collections/favorite/collections/:collection_id/:user_id"
+    ["collections/:collection_id/:user_id"
      {:post {:summary (sd/sum_adm "Create favorite_collection for user and collection.")
              :handler handle_create-favorite_collection
 

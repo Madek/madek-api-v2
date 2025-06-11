@@ -230,7 +230,7 @@
 (def admin-routes
   ["/"
    {:openapi {:tags ["admin/meta-keys"] :security ADMIN_AUTH_METHODS}}
-   ["meta-keys"
+   ["meta-keys/"
     {:get {:summary (sd/sum_adm "Get all meta-key ids")
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_adm-query-meta-keys
@@ -305,7 +305,7 @@
 (def query-routes
   ["/"
    {:openapi {:tags ["meta-keys"]}}
-   ["meta-keys"
+   ["meta-keys/"
     {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get all meta-key ids"))
            :description "Get list of meta-key ids. Paging is used as you get a limit of 100 entries."
            :handler handle_usr-query-meta-keys

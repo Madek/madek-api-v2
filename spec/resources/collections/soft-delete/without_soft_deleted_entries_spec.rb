@@ -23,19 +23,19 @@ describe "filtering collections" do
 
     describe "/api-v2/collection-collection-arcs/" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collection-collection-arcs")
+        response = client.get("/api-v2/collection-collection-arcs/")
         expect(response.status).to eq(200)
         expect(response.body["collection-collection-arcs"].count).to eq(4)
       end
 
       it "by parent and child" do
-        response = client.get("/api-v2/collection-collection-arcs?parent_id=#{parent_collection.id}&child_id=#{parent_collection.collections.first.id}")
+        response = client.get("/api-v2/collection-collection-arcs/?parent_id=#{parent_collection.id}&child_id=#{parent_collection.collections.first.id}")
         expect(response.status).to eq(200)
         expect(response.body["collection-collection-arcs"].count).to eq(1)
       end
 
       it "by parent" do
-        response = client.get("/api-v2/collection-collection-arcs?parent_id=#{parent_collection.id}")
+        response = client.get("/api-v2/collection-collection-arcs/?parent_id=#{parent_collection.id}")
         expect(response.status).to eq(200)
         expect(response.body["collection-collection-arcs"].count).to eq(4)
       end
@@ -43,13 +43,13 @@ describe "filtering collections" do
 
     describe "/api-v2/collection-media-entry-arcs/" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collection-media-entry-arcs")
+        response = client.get("/api-v2/collection-media-entry-arcs/")
         expect(response.status).to eq(200)
         expect(response.body["collection-media-entry-arcs"].count).to eq(2)
       end
 
       it "by collection_id" do
-        response = client.get("/api-v2/collection-media-entry-arcs?collection_id=#{parent_collection.collections.first.id}")
+        response = client.get("/api-v2/collection-media-entry-arcs/?collection_id=#{parent_collection.collections.first.id}")
         expect(response.status).to eq(200)
         expect(response.body["collection-media-entry-arcs"].count).to eq(1)
 
@@ -59,34 +59,34 @@ describe "filtering collections" do
       end
     end
 
-    describe "/api-v2/collection/{collection_id}" do
+    describe "/api-v2/collections/{collection_id}" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collection/#{parent_collection.id}")
+        response = client.get("/api-v2/collections/#{parent_collection.id}")
         expect(response.status).to eq(200)
       end
     end
 
-    describe "/api-v2/collection/{collection_id}/media-entry-arcs" do
+    describe "/api-v2/collections/{collection_id}/media-entry-arcs" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arcs")
+        response = client.get("/api-v2/collections/#{parent_collection.collections.first.id}/media-entry-arcs/")
         expect(response.status).to eq(200)
       end
     end
 
-    describe "Modify /api-v2/collection/{collection_id}/media-entry-arcs" do
+    describe "Modify /api-v2/collections/{collection_id}/media-entry-arcs" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arcs")
+        response = client.get("/api-v2/collections/#{parent_collection.collections.first.id}/media-entry-arcs/")
         expect(response.status).to eq(200)
       end
 
       it "returns status 200 for GET request" do
-        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arcs")
+        response = client.get("/api-v2/collections/#{parent_collection.collections.first.id}/media-entry-arcs/")
         expect(response.status).to eq(200)
       end
 
       it "creates, updates & deletes a new media entry arc" do
         media_entry_id = media_entries.first.id
-        response = client.post("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}") do |req|
+        response = client.post("/api-v2/collections/#{parent_collection.collections.first.id}/media-entry-arcs/#{media_entry_id}") do |req|
           req.body = {
             "highlight" => true,
             "cover" => true,
@@ -98,7 +98,7 @@ describe "filtering collections" do
         expect(response.status).to eq(200)
         expect(response.body["media_entry_id"]).to eq media_entry_id
 
-        response = client.put("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}") do |req|
+        response = client.put("/api-v2/collections/#{parent_collection.collections.first.id}/media-entry-arcs/#{media_entry_id}") do |req|
           req.body = {
             "highlight" => false,
             "cover" => false,
@@ -111,70 +111,70 @@ describe "filtering collections" do
         expect(response.body["media_entry_id"]).to eq media_entry_id
 
         media_entry_id = media_entries.first.id
-        response = client.delete("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}")
+        response = client.delete("/api-v2/collections/#{parent_collection.collections.first.id}/media-entry-arcs/#{media_entry_id}")
         expect(response.status).to eq(200)
 
-        response = client.delete("/api-v2/collection/#{parent_collection.collections.first.id}/media-entry-arc/#{media_entry_id}")
+        response = client.delete("/api-v2/collections/#{parent_collection.collections.first.id}/media-entry-arcs/#{media_entry_id}")
         expect(response.status).to eq(404)
       end
     end
 
-    describe "/api-v2/collection/{collection_id}/meta-data" do
+    describe "/api-v2/collections/{collection_id}/meta-data" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/meta-data")
+        response = client.get("/api-v2/collections/#{parent_collection.collections.first.id}/meta-data/")
         expect(response.status).to eq(200)
         expect(response.body["meta_data"].count).to be > 0
       end
     end
 
-    describe "/api-v2/collection/{collection_id}/media-entry-related" do
+    describe "/api-v2/collections/{collection_id}/media-entry-related" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/meta-data-related")
+        response = client.get("/api-v2/collections/#{parent_collection.collections.first.id}/meta-data-related/")
         mk = response.body.first["meta_data"]["meta_key_id"]
 
         expect(response.status).to eq(200)
         expect(response.body.count).to eq(1)
 
-        response = client.get("/api-v2/collection/#{parent_collection.collections.first.id}/meta-data-related?meta_key_id=#{mk}")
+        response = client.get("/api-v2/collections/#{parent_collection.collections.first.id}/meta-data-related/?meta_key_id=#{mk}")
         expect(response.status).to eq(200)
       end
     end
 
-    describe "/api-v2/collection/{collection_id}/media-data/{meta_key_id}" do
+    describe "/api-v2/collections/{collection_id}/media-data/{meta_key_id}" do
       it "fetch all existing" do
         cid = parent_collection.collections.first.id
-        response = client.get("/api-v2/collection/#{cid}/meta-data-related")
+        response = client.get("/api-v2/collections/#{cid}/meta-data-related/")
 
         expect(response.status).to eq(200)
         expect(response.body.count).to eq(1)
 
         mk = response.body.first["meta_data"]["meta_key_id"]
-        response = client.get("/api-v2/collection/#{cid}/meta-datum/#{mk}")
+        response = client.get("/api-v2/collections/#{cid}/meta-data/#{mk}")
         expect(response.status).to eq(200)
       end
     end
 
-    describe "/api-v2/collection/{collection_id}/media-data/{meta_key_id}/people" do
+    describe "/api-v2/collections/{collection_id}/media-data/{meta_key_id}/people" do
       it "fetch all existing" do
         cid = parent_collection.collections.first.id
-        response = client.get("/api-v2/collection/#{cid}/meta-data-related")
+        response = client.get("/api-v2/collections/#{cid}/meta-data-related/")
 
         expect(response.status).to eq(200)
         expect(response.body.count).to eq(1)
 
         mk = response.body.first["meta_data"]["meta_key_id"]
-        response = client.get("/api-v2/collection/#{cid}/meta-datum/#{mk}/people")
+        response = client.get("/api-v2/collections/#{cid}/meta-data/#{mk}/people/")
 
         expect(response.status).to eq(200)
         expect(response.body["people_ids"].count).to eq(1)
       end
     end
 
-    describe "/api-v2/collection/{collection_id}/collection-arc/{child_id}" do
+    describe "/api-v2/collections/{collection_id}/collection-arcs/{child_id}" do
       it "fetch all existing" do
         parent_id = parent_collection.id
         child_id = parent_collection.collections.first.id
-        response = client.get("/api-v2/collection/#{parent_id}/collection-arc/#{child_id}")
+        response = client.get("/api-v2/collections/#{parent_id}/collection-arcs/#{child_id}")
         expect(response.status).to eq(200)
         expect(response.body.count).to eq(8)
       end
@@ -182,13 +182,13 @@ describe "filtering collections" do
 
     describe "/api-v2/collections" do
       it "fetch all existing" do
-        response = client.get("/api-v2/collections")
+        response = client.get("/api-v2/collections/")
         expect(response.status).to eq(200)
         expect(response.body["collections"].count).to be > 0
 
         response_ids = response.body["collections"].map { |collection| collection["id"] }
         response_ids.each do |id|
-          response = client.get("/api-v2/collection/#{id}")
+          response = client.get("/api-v2/collections/#{id}")
           expect(response.status).to eq(200)
           expect(response.body["id"]).to eq(id)
         end
@@ -196,7 +196,7 @@ describe "filtering collections" do
 
       context "with soft-deleted entries" do
         before :each do
-          response = client.get("/api-v2/collections")
+          response = client.get("/api-v2/collections/")
           expect(response.status).to be == 200
           @collection_id = response.body["collections"][0]["id"]
           @collection = Collection.find(@collection_id)
@@ -230,19 +230,19 @@ describe "filtering collections" do
         end
 
         it "checks meta-datum" do
-          response = client.get("/api-v2/collections")
+          response = client.get("/api-v2/collections/")
           expect(response.status).to be == 200
           collection_id = response.body["collections"][0]["id"]
 
-          response = client.get("/api-v2/collection/#{collection_id}")
+          response = client.get("/api-v2/collections/#{collection_id}")
           expect(response.status).to be == 200
           expect(response.body["id"]).to eq(collection_id)
 
-          response = client.get("/api-v2/collection/#{collection_id}/meta-data")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/")
           expect(response.status).to be == 200
 
           ["test:people", "test:roles", "test:keywords"].each do |meta_key_id|
-            response = client.get("/api-v2/collection/#{collection_id}/meta-datum/#{meta_key_id}")
+            response = client.get("/api-v2/collections/#{collection_id}/meta-data/#{meta_key_id}")
             expect(response.status).to be == 200
             expect(response.body["meta_data"]["collection_id"]).to eq(collection_id)
           end
@@ -250,7 +250,7 @@ describe "filtering collections" do
           # json
           kw = "test:keywords2"
           FactoryBot.create(:meta_key_json, id: kw)
-          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/#{kw}/json") do |req|
+          response = client.post("/api-v2/collections/#{collection_id}/meta-data/#{kw}/json/") do |req|
             req.body = {
               json: "{}"
             }.to_json
@@ -258,19 +258,19 @@ describe "filtering collections" do
           end
           expect(response.body).to be
 
-          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/#{kw}")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/#{kw}")
           expect(response.status).to be == 200
           expect(response.body).to be
 
-          response = client.get("/api-v2/collection/#{collection_id}/meta-data-related")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data-related/")
           expect(response.status).to be == 200
           expect(response.body).to be
 
-          response = client.get("/api-v2/collection/#{collection_id}/meta-data")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/")
           expect(response.status).to be == 200
           expect(response.body).to be
 
-          response = client.put("/api-v2/collection/#{collection_id}/meta-datum/#{kw}/json") do |req|
+          response = client.put("/api-v2/collections/#{collection_id}/meta-data/#{kw}/json/") do |req|
             req.body = {
               json: {"foo" => "bar"}.to_json.to_s
             }.to_json
@@ -279,73 +279,73 @@ describe "filtering collections" do
           expect(response.status).to be == 200
           expect(response.body).to be
 
-          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/#{kw}")
+          response = client.delete("/api-v2/collections/#{collection_id}/meta-data/#{kw}")
           expect(response.status).to be == 200
           expect(response.body).to be
 
-          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/#{kw}")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/#{kw}")
           expect(response.status).to be == 404
 
           # keyword
-          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:keywords/keywords/")
           expect(response.status).to be == 200
 
           person_id = response.body["keywords_ids"].second
 
-          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:keywords/keywords/#{person_id}")
           expect(response.status).to be == 406
 
-          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          response = client.delete("/api-v2/collections/#{collection_id}/meta-data/test:keywords/keywords/#{person_id}")
           expect(response.status).to be == 200
 
-          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:keywords/keyword/#{person_id}")
+          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:keywords/keywords/#{person_id}")
           expect(response.status).to be == 200
 
           # people
-          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/test:people/people")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:people/people/")
           expect(response.status).to be == 200
           expect(response.body["md_people"].count).to be 3
 
           person_id = response.body["people_ids"].second
 
-          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:people/people/#{person_id}")
+          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:people/people/#{person_id}")
           expect(response.status).to be == 406
 
-          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/test:people/people/#{person_id}")
+          response = client.delete("/api-v2/collections/#{collection_id}/meta-data/test:people/people/#{person_id}")
           expect(response.status).to be == 200
 
-          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:people/people/#{person_id}")
+          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:people/people/#{person_id}")
           expect(response.status).to be == 200
 
           # role
           # FYI: not implemented
-          response = client.get("/api-v2/collection/#{collection_id}/meta-datum/test:roles/role")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:roles/roles")
           expect(response.status).to be == 404
 
-          response = client.post("/api-v2/collection/#{collection_id}/meta-datum/test:roles/role/#{@r1.id}")
+          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:roles/roles/#{@r1.id}")
           expect(response.status).to be == 200
 
           # FYI: not implemented
-          response = client.delete("/api-v2/collection/#{collection_id}/meta-datum/test:roles/role/#{@r1.id}/#{@person.id}")
+          response = client.delete("/api-v2/collections/#{collection_id}/meta-data/test:roles/roles/#{@r1.id}/#{@person.id}")
           expect(response.status).to be == 404
         end
       end
 
       it "fetch all existing conf-links" do
-        response = client.get("/api-v2/collections")
+        response = client.get("/api-v2/collections/")
         expect(response.status).to eq(200)
         expect(response.body["collections"].count).to be > 0
         me_id = response.body["collections"].first["id"]
 
-        response = client.get("/api-v2/collection/#{me_id}")
+        response = client.get("/api-v2/collections/#{me_id}")
         expect(response.status).to be == 200
         expect(response.body["id"]).to eq(me_id)
 
-        response = client.get("/api-v2/collection/#{me_id}/conf-links")
+        response = client.get("/api-v2/collections/#{me_id}/conf-links/")
         expect(response.status).to be == 200
         expect(response.body.count).to eq(0)
 
-        response = client.post("/api-v2/collection/#{me_id}/conf-links") do |req|
+        response = client.post("/api-v2/collections/#{me_id}/conf-links/") do |req|
           req.body = {
             "revoked" => false,
             "description" => "new conf link",
@@ -356,11 +356,11 @@ describe "filtering collections" do
         expect(response.status).to be == 200
         cl_id = response.body["id"]
 
-        response = client.get("/api-v2/collection/#{me_id}/conf-links")
+        response = client.get("/api-v2/collections/#{me_id}/conf-links/")
         expect(response.status).to be == 200
         expect(response.body.count).to eq(1)
 
-        response = client.put("/api-v2/collection/#{me_id}/conf-link/#{cl_id}") do |req|
+        response = client.put("/api-v2/collections/#{me_id}/conf-links/#{cl_id}") do |req|
           req.body = {
             "revoked" => false,
             "description" => "new conf link",
@@ -371,11 +371,11 @@ describe "filtering collections" do
         expect(response.status).to be == 200
 
         conf_link_id = response.body["id"]
-        response = client.get("/api-v2/collection/#{me_id}/conf-link/#{conf_link_id}")
+        response = client.get("/api-v2/collections/#{me_id}/conf-links/#{conf_link_id}")
         expect(response.status).to be == 200
         expect(response.body["id"]).to eq(conf_link_id)
 
-        response = client.delete("/api-v2/collection/#{me_id}/conf-link/#{conf_link_id}")
+        response = client.delete("/api-v2/collections/#{me_id}/conf-links/#{conf_link_id}")
         expect(response.status).to be == 200
         expect(response.body["id"]).to eq(conf_link_id)
       end

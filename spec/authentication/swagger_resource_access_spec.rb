@@ -58,7 +58,7 @@ shared_context :test_proper_public_user do
       end
 
       {
-        "/api-v2/auth-info" => 401
+        "/api-v2/auth-info/" => 401
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = wtoken_header_plain_faraday_json_client_get("Not-existing-user", url)
@@ -69,7 +69,7 @@ shared_context :test_proper_public_user do
       end
 
       {
-        "/api-v2/app-settings" => 401
+        "/api-v2/app-settings/" => 401
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = wtoken_header_plain_faraday_json_client_get("Not-existing-user", url)
@@ -82,7 +82,7 @@ shared_context :test_proper_public_user do
 
     context "with public user" do
       {
-        "/api-v2/app-settings" => 200, # public endpoint
+        "/api-v2/app-settings/" => 200, # public endpoint
         "/api-v2/api-docs/index.html" => 200,
         "/api-v2/api-docs/index.css" => 200,
         "/api-v2/api-docs/swagger-ui.css" => 200,
@@ -97,7 +97,7 @@ shared_context :test_proper_public_user do
       end
 
       {
-        "/api-v2/auth-info" => 401
+        "/api-v2/auth-info/" => 401
       }.each do |url, code|
         it "accessing #{url}    results in expected status-code" do
           response = plain_faraday_json_client.get(url)
@@ -122,8 +122,8 @@ shared_context :test_proper_user_token_auth do
   describe "2) Test access to api-docs and endpoints" do
     context "with valid token" do
       {
-        "/api-v2/app-settings" => 200, # public endpoint
-        "/api-v2/auth-info" => 200,
+        "/api-v2/app-settings/" => 200, # public endpoint
+        "/api-v2/auth-info/" => 200,
 
         "/api-v2/api-docs/index.html" => 200,
         "/api-v2/api-docs/index.css" => 200,
@@ -151,8 +151,8 @@ shared_context :test_proper_user_token_without_creds_auth do
   describe "3) Test access to api-docs and endpoints" do
     context "with token without permissions" do
       {
-        "/api-v2/app-settings" => 403, # public endpoint
-        "/api-v2/auth-info" => 403,
+        "/api-v2/app-settings/" => 403, # public endpoint
+        "/api-v2/auth-info/" => 403,
 
         "/api-v2/api-docs/index.html" => 200,
         "/api-v2/api-docs/index.css" => 200,

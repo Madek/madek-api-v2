@@ -3,7 +3,7 @@ require "spec_helper"
 describe "index" do
   include_context :json_client_for_authenticated_token_user do
     let :meta_keys_resource do
-      client.get("/api-v2/meta-keys")
+      client.get("/api-v2/meta-keys/")
     end
 
     it "should return 200 with only viewable by public meta-keys" do
