@@ -173,8 +173,29 @@
 ;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at nil]))
 ;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at]))
 ;(def allowed-values (s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at "Default-Values"))
+
 (def allowed-values (s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at))
+;(def allowed-values (s/->Either [(s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at) s/Str]))
+;; creates buttons to add entry
+
+(def attributes-schema
+  (s/->Either
+    [[allowed-values]    ;; zero-or-more keyword enum
+    ;(s/enum "")
+     s/Str
+     ]))       ;; literal "" only
+
+
 ;(def AllowedCustomUrlAttr (apply s/enum allowed-values))
+
+
+
+(def AttributesSchema
+  (s/cond-pre
+    ;; branch 1: empty string only
+    (s/pred #(and (string? %) (= "" %)) 'empty-string)
+    ;; branch 2: vector of your enum
+    [allowed-values]))
 
 
 ; TODO custom urls response coercion
@@ -202,9 +223,21 @@
                                 ;(s/optional-key :attributes) (s/->Either ["" [allowed-values]])
                                 ;(s/optional-key :attributes) (s/->Either [s/nilable [allowed-values]])
                                 ;(s/optional-key :attributes) (s/maybe [allowed-values])
-                                (s/optional-key :attributes) [allowed-values]
+
+                                ;(s/optional-key :attributes) AttributesSchema
+
 
                                 ;(s/optional-key :attributes) (s/maybe [allowed-values])
+
+                                (s/optional-key :attributes) [allowed-values]
+                                ;(s/optional-key :attributes) attributes-schema
+
+
+                                ;(s/optional-key :attributes)
+                                ;^{:swagger/default [] :json-schema/default []}
+                                ;[allowed-values]
+
+                                ;[(s/optional-key :attributes) :- [allowed-values] []] ;; error
 
 
                                 (s/optional-key :id) s/Str

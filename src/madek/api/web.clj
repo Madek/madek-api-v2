@@ -263,8 +263,24 @@
     swagger-routes]
    (filterv some?)))
 
+
+(defn wrap-empty-attributes
+  "If ?attributes=& produced an empty string, convert it to an empty vector so
+   Schema sees a valid [] instead of `\"\"`."
+  [handler]
+  (fn [request]
+    (let [qp      (:query-params request)
+          raw-attr (get qp "attributes")]
+      (handler
+        (if (and (string? raw-attr) (empty? raw-attr))
+          (assoc-in request [:query-params "attributes"] [])
+          request)))))
+
 (def ^:dynamic middlewares
-  [swagger/swagger-feature
+  [
+   wrap-empty-attributes
+
+   swagger/swagger-feature
    ring-wrap-cors
    db/wrap-tx
    wrap-cookies
