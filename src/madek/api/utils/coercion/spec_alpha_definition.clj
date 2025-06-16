@@ -1,5 +1,6 @@
 (ns madek.api.utils.coercion.spec-alpha-definition
   (:require
+   [clojure.spec.alpha :as s]
    [clojure.spec.alpha :as sa]
    [spec-tools.core :as st]))
 
@@ -74,10 +75,35 @@
 
 
 ;; Define the allowed values as a spec
-(sa/def ::allowed-value #{:test :me :now})
+;(sa/def ::allowed-value #{:id :name :type :created :updated_at :institutional_id :institutional_name
+;                          :institution :created_by_user_id :searchable
+;                          })
+
+
+(defn string->vec
+  [x]
+
+   (println ">o> abc.x" x (type x))
+
+  (cond
+    (empty? x)       []                                     ;; error
+    (string? x)       [x]
+    (sequential? x)   x
+    :else             ::s/invalid))
+
+(sa/def ::allowed-value #{"id" "name" "type" "created_at" "updated_at" "institutional_id"
+                          "institutional_name" "institution" "created_by_user_id" "searchable"})
 
 ;; Define the collection spec
-(sa/def ::full_data (sa/coll-of ::allowed-value :kind vector?))
+;(sa/def ::attributes (sa/coll-of ::allowed-value :kind vector?))
+
+(s/def ::attributes
+  (s/and
+    (s/conformer string->vec)           ;; 1) normalize string → [string], leave vectors alone
+    (s/coll-of ::allowed-value         ;; 2) enforce that it’s now a vector of allowed strings
+      :kind vector?)))
+
+(sa/def ::full_data (st/spec {:spec boolean?}))
 
 ;; Optionally, use spec-tools to add Swagger metadata
 (def full-data-spec

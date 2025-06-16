@@ -82,9 +82,64 @@
 
 ;### index ####################################################################
 ; TODO test query and paging
+
+
+(defn normalize-attributes
+    "Converts query attributes into a vector of keywords."
+    ([req]
+     (let [raw (get-in req [:parameters :query :attributes])
+
+           p (println ">o> abc11" raw)
+           ]
+
+       (if (empty? raw)
+         []
+
+       (mapv keyword (if (string? raw) [raw] (or raw [])))
+
+         )
+
+       ))
+    ([req prefix]
+     (let [raw (get-in req [:parameters :query :attributes])
+
+           p (println ">o> abc22" raw)
+           ]
+
+       (if (empty? raw)
+         []
+
+       (mapv #(keyword (str (name prefix) "." (name %)))
+             (if (string? raw) [raw] (or raw [])))
+
+         )
+
+       )))
+
+
+
+
+
 (defn build-index-query [req]
-  (let [query-params (-> req :parameters :query)
-        base-query (-> (sql/select :*)
+  (let [
+
+        columns (normalize-attributes req)
+
+        query-params (-> req :parameters :query)
+
+        ;columns (-> req :parameters :query :attributes)
+        ;p (println ">o> abc.columns1" columns)
+        ;
+        ;columns (mapv #(keyword  (name %)) columns)
+        ;p (println ">o> abc.columns2" columns)
+
+        p (println ">o> abc.columns3" columns)
+
+        base-query (->
+                    (if (empty? columns)
+                      (sql/select :*)
+                      (apply sql/select columns) ; select specific columns
+                      )
                        (sql/from :groups)
                        (sql/order-by [:id :asc])
                        (dbh/build-query-param query-params :created_by_user_id)
@@ -184,10 +239,18 @@
 
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
                                             ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
-                                            ::sp/full_data ::sp/page ::sp/size]))
 
-(sa/def :usr/groups (sa/keys :req-un [::sp/id] :opt-un [::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
+                                            ;::sp/full_data
+                                            ::sp/attributes
+
+                                            ::sp/page ::sp/size]))
+
+(sa/def :usr/groups (sa/keys
+                      ;:req-un [::sp/id]
+                      :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
                                                         ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable]))
+
+
 (sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
                                           :description "A list of persons"}))
 
