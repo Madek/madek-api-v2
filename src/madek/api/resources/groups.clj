@@ -13,7 +13,7 @@
             [madek.api.utils.auth :refer [wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-            [madek.api.utils.helper :refer [f mslurp]]
+            [madek.api.utils.helper :refer [f mslurp normalize-attributes]]
             [madek.api.utils.pagination :refer [pagination-handler]]
             [madek.api.utils.sql-next :refer [convert-sequential-values-to-sql-arrays]]
             [next.jdbc :as jdbc]
@@ -83,58 +83,29 @@
 ;### index ####################################################################
 ; TODO test query and paging
 
-
-(defn normalize-attributes
-    "Converts query attributes into a vector of keywords."
-    ([req]
-     (let [raw (get-in req [:parameters :query :attributes])
-
-           p (println ">o> abc11" raw)
-           ]
-
-       (if (empty? raw)
-         []
-
-       (mapv keyword (if (string? raw) [raw] (or raw [])))
-
-         )
-
-       ))
-    ([req prefix]
-     (let [raw (get-in req [:parameters :query :attributes])
-
-           p (println ">o> abc22" raw)
-           ]
-
-       (if (empty? raw)
-         []
-
-       (mapv #(keyword (str (name prefix) "." (name %)))
-             (if (string? raw) [raw] (or raw [])))
-
-         )
-
-       )))
-
-
-
+;(defn normalize-attributes
+;  "Converts query attributes into a vector of keywords."
+;  ([req]
+;   (normalize-attributes req nil))
+;  ([req prefix]
+;   (let [raw   (get-in req [:parameters :query :attributes])
+;         attrs (cond
+;                 (empty? raw)    []
+;                 (string? raw)   [raw]
+;                 :else           raw)]
+;     (mapv (fn [attr]
+;             (let [name-str (name attr)
+;                   full     (if prefix
+;                              (str (name prefix) "." name-str)
+;                              name-str)]
+;               (keyword full)))
+;       attrs))))
 
 
 (defn build-index-query [req]
   (let [
-
         columns (normalize-attributes req)
-
         query-params (-> req :parameters :query)
-
-        ;columns (-> req :parameters :query :attributes)
-        ;p (println ">o> abc.columns1" columns)
-        ;
-        ;columns (mapv #(keyword  (name %)) columns)
-        ;p (println ">o> abc.columns2" columns)
-
-        p (println ">o> abc.columns3" columns)
-
         base-query (->
                     (if (empty? columns)
                       (sql/select :*)
@@ -240,7 +211,6 @@
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
                                             ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
 
-                                            ;::sp/full_data
                                             ::sp/attributes
 
                                             ::sp/page ::sp/size]))

@@ -21,7 +21,7 @@
                   (sql/select :id, :media_entry_id, :collection_id)
 
                   (apply sql/select
-                         (map #(keyword (name %)) (-> query-params :attributes)))
+                    (map #(keyword (name %)) (-> query-params :attributes)))
                   )]
     (-> col-sel
         (sql/from :custom_urls)
@@ -52,9 +52,9 @@
         col-name (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
 
     (info "handle_get-custom-urls"
-          "\ntype: " mr-type
-          "\nmr-id: " mr-id
-          "\ncol-name: " col-name)
+      "\ntype: " mr-type
+      "\nmr-id: " mr-id
+      "\ncol-name: " col-name)
     (if-let [result (dbh/query-eq-find-one :custom_urls col-name mr-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for " mr-type " with id: " mr-id)))))
@@ -78,9 +78,9 @@
 
         (sd/logwrite req (str "handle_create-custom-urls"
                               "\nmr-type: " mr-type
-                              "\nmr-id: " mr-id
-                              "\nnew-dat: " dwid
-                              "\nresult: " ins-res))
+                                            "\nmr-id: " mr-id
+                                            "\nnew-dat: " dwid
+                                            "\nresult: " ins-res))
 
         (if-let [result (first ins-res)]
           (sd/response_ok result)
@@ -110,9 +110,9 @@
 
         (sd/logwrite req (str "handle_update-custom-urls"
                               "\nmr-type: " mr-type
-                              "\nmr-id: " mr-id
-                              "\nnew-data\n" dwid
-                              "\nresult:\n" upd-result))
+                                            "\nmr-id: " mr-id
+                                            "\nnew-data\n" dwid
+                                            "\nresult:\n" upd-result))
 
         (if (= 1 (first upd-result))
           (sd/response_ok (dbh/query-eq-find-one :custom_urls col-name mr-id tx))
@@ -141,8 +141,8 @@
 
             (sd/logwrite req (str "handle_delete-custom-urls"
                                   "\nmr-type: " mr-type
-                                  "\nmr-id: " mr-id
-                                  "\nresult: " del-result))
+                                                "\nmr-id: " mr-id
+                                                "\nresult: " del-result))
 
             (if (= 1 (first del-result))
               (sd/response_ok del-data)
@@ -168,35 +168,7 @@
    :media_entry_id (s/maybe s/Uuid)
    :collection_id (s/maybe s/Uuid)})
 
-
-;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at ""]))
-;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at nil]))
-;(def allowed-values (apply s/enum [:media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at]))
-;(def allowed-values (s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at "Default-Values"))
-
 (def allowed-values (s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at))
-;(def allowed-values (s/->Either [(s/enum :media_entry_id :collection_id :is_primary :creator_id :updator_id :created_at :updated_at) s/Str]))
-;; creates buttons to add entry
-
-(def attributes-schema
-  (s/->Either
-    [[allowed-values]    ;; zero-or-more keyword enum
-    ;(s/enum "")
-     s/Str
-     ]))       ;; literal "" only
-
-
-;(def AllowedCustomUrlAttr (apply s/enum allowed-values))
-
-
-
-(def AttributesSchema
-  (s/cond-pre
-    ;; branch 1: empty string only
-    (s/pred #(and (string? %) (= "" %)) 'empty-string)
-    ;; branch 2: vector of your enum
-    [allowed-values]))
-
 
 ; TODO custom urls response coercion
 (def query-routes
@@ -209,8 +181,8 @@
            :responses {200 {:description "Returns the custom_urls."
                             :body [{
                                     (s/optional-key :id) s/Str
-                                      (s/optional-key :media_entry_id) (s/maybe s/Uuid)
-                                        (s/optional-key :collection_id) (s/maybe s/Uuid)
+                                    (s/optional-key :media_entry_id) (s/maybe s/Uuid)
+                                    (s/optional-key :collection_id) (s/maybe s/Uuid)
                                     (s/optional-key :is_primary) s/Bool
                                     (s/optional-key :creator_id) s/Uuid
                                     (s/optional-key :updator_id) s/Uuid
@@ -219,26 +191,7 @@
                        404 {:description "Not found."
                             :body s/Any}}
            :parameters {:query {
-                                ;(s/optional-key :full_data) s/Bool
-                                ;(s/optional-key :attributes) (s/->Either ["" [allowed-values]])
-                                ;(s/optional-key :attributes) (s/->Either [s/nilable [allowed-values]])
-                                ;(s/optional-key :attributes) (s/maybe [allowed-values])
-
-                                ;(s/optional-key :attributes) AttributesSchema
-
-
-                                ;(s/optional-key :attributes) (s/maybe [allowed-values])
-
                                 (s/optional-key :attributes) [allowed-values]
-                                ;(s/optional-key :attributes) attributes-schema
-
-
-                                ;(s/optional-key :attributes)
-                                ;^{:swagger/default [] :json-schema/default []}
-                                ;[allowed-values]
-
-                                ;[(s/optional-key :attributes) :- [allowed-values] []] ;; error
-
 
                                 (s/optional-key :id) s/Str
                                 (s/optional-key :media_entry_id) s/Uuid

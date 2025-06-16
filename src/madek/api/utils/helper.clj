@@ -21,6 +21,24 @@
                   v])
                m))))
 
+(defn normalize-attributes
+  "Converts query attributes into a vector of keywords."
+  ([req]
+   (normalize-attributes req nil))
+  ([req prefix]
+   (let [raw   (get-in req [:parameters :query :attributes])
+         attrs (cond
+                 (empty? raw)    []
+                 (string? raw)   [raw]
+                 :else           raw)]
+     (mapv (fn [attr]
+             (let [name-str (name attr)
+                   full     (if prefix
+                              (str (name prefix) "." name-str)
+                              name-str)]
+               (keyword full)))
+       attrs))))
+
 (defn strip-prefixes-generic
   "Strips table/namespace prefixes from keyword keys.
    - If given a vector of maps, returns a vector of modified maps.
