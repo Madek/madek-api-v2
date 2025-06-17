@@ -82,26 +82,6 @@
 
 ;### index ####################################################################
 ; TODO test query and paging
-
-;(defn normalize-attributes
-;  "Converts query attributes into a vector of keywords."
-;  ([req]
-;   (normalize-attributes req nil))
-;  ([req prefix]
-;   (let [raw   (get-in req [:parameters :query :attributes])
-;         attrs (cond
-;                 (empty? raw)    []
-;                 (string? raw)   [raw]
-;                 :else           raw)]
-;     (mapv (fn [attr]
-;             (let [name-str (name attr)
-;                   full     (if prefix
-;                              (str (name prefix) "." name-str)
-;                              name-str)]
-;               (keyword full)))
-;       attrs))))
-
-
 (defn build-index-query [req]
   (let [
         columns (normalize-attributes req)

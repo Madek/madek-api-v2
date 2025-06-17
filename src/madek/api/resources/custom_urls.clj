@@ -11,11 +11,6 @@
             [taoensso.timbre :refer [info]]))
 
 (defn build-query [query-params]
-  ;(let [col-sel (if (true? (-> query-params :full_data))
-
-
-  (println ">o> abc??" (-> query-params :attributes))
-
   (let [col-sel (if (empty? (-> query-params :attributes))
                   ;(sql/select :*)
                   (sql/select :id, :media_entry_id, :collection_id)
