@@ -43,7 +43,7 @@
 (def base-query
   (-> (apply sql/select people-select-keys)
       (sql/from :people)
-      (sql/order-by [:searchable :asc] [:created_at :desc])))
+      (sql/order-by [:searchable :asc] [:id :asc])))
 
 (defn person-query [uid]
   (-> base-query

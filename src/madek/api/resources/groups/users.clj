@@ -38,7 +38,7 @@
   (-> (sql-select)
       (sql-merge-user-where-id some-id)
       (sql/from :users)
-      (sql/order-by [:created_at :desc] [:id :asc])
+      (sql/order-by [:id :asc])
       sql-format))
 
 (defn find-user [some-id tx]

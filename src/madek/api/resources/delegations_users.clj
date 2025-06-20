@@ -18,7 +18,7 @@
   [req]
   (let [delegation_id (-> req :parameters :query :delegation_id)
         user_id (-> req :parameters :query :user_id)
-
+        base-query (-> (sql/select :*) (sql/from :delegations_users))
         query (cond-> base-query
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 user_id (sql/where [:= :user_id user_id]))

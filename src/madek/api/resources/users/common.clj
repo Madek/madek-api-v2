@@ -38,7 +38,7 @@
   (-> (apply sql/select user-select-keys)
       (sql/select [is-admin-sub :is_admin])
       (sql/from :users)
-      (sql/order-by [:created_at :desc] [:id :asc])))
+      (sql/order-by [:id :asc])))
 
 ;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

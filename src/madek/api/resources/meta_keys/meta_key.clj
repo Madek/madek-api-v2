@@ -16,7 +16,7 @@
   [id tx]
   (let [query (-> (sql/select :key_map, :io_interface_id)
                   (sql/from :io_mappings)
-                  (sql/order-by [:created_at :asc] [:id :asc])
+                  (sql/order-by [:meta_key_id :asc] [:io_interface_id :asc])
                   (sql/where [:= :io_mappings.meta_key_id id])
                   (sql-format))]
     (jdbc/execute! tx query)))

@@ -21,7 +21,7 @@
   [query-params]
   (-> (sql/select :roles.*)
       (sql/from :roles)
-      (sql/order-by [:created_at :desc] [:id :asc])))
+      (sql/order-by [:creator_id :asc] [:id :asc])))
 
 (defn get-index
   [request]
@@ -34,7 +34,7 @@
 (defn query_role-find-one [id]
   (-> (sql/select :*)
       (sql/from :roles)
-      (sql/order-by [:created_at :desc] [:id :asc])
+      (sql/order-by [:creator_id :asc] [:id :asc])
       (sql/where [:= :roles.id id])
       (sql-format)))
 

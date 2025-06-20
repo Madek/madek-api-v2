@@ -10,7 +10,7 @@
                                        (meta-key/build-meta-key-query (:meta_key_id meta-datum))))
         query-base (-> (sql/select :keywords.*)
                        (sql/from :keywords)
-                       (sql/order-by [:term :asc] [:created_at :desc])
+                       (sql/order-by [:term :asc] [:id :asc])
                        (sql/join
                         :meta_data_keywords
                         [:= :meta_data_keywords.keyword_id :keywords.id])
