@@ -39,9 +39,9 @@ describe "Session/Cookie Authentication" do
       it "returns expected keys when fetching /custom_urls (schema/coercion)" do
         default_keys = ["id", "media_entry_id", "collection_id"]
         paths = [
-          ["/api-v2/custom_urls", 200, default_keys],
-          ["/api-v2/custom_urls?fields=", 200, default_keys],
-          ["/api-v2/custom_urls?fields=creator_id", 200, ["creator_id"]]
+          ["/api-v2/custom_urls/", 200, default_keys],
+          ["/api-v2/custom_urls/?fields=", 200, default_keys],
+          ["/api-v2/custom_urls/?fields=creator_id", 200, ["creator_id"]]
         ]
 
         paths.each do |path, expected_status, existing_keys|
