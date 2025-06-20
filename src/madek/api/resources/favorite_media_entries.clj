@@ -213,6 +213,7 @@
        :parameters {:path {:user_id s/Uuid
                            :media_entry_id s/Uuid}}}
 
+      ;; TODO: admin/favorites/colletions/:collection_id/users/:user_id
       :get
       {:summary (sd/sum_adm "Get favorite_media-entry for user and media-entry.")
        :handler handle_get-favorite_media_entry

@@ -15,6 +15,7 @@
 (def res-col-name :delegation_id)
 
 ; TODO query
+;; admin/delegations/delegation_id/groups/group_id
 (defn handle_list-delegations_groups
   [req]
   (let [delegation_id (-> req :parameters :query :delegation_id)

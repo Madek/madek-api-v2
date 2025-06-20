@@ -16,6 +16,7 @@
 (def res-table-name "favorite_collections")
 (def res-col-name :collection_id)
 
+;; TODO: admin/favorite/collections/:collection_id/users/:user_id
 (defn handle_list-favorite_collection
   [req]
   (let [fields (normalize-fields req)
