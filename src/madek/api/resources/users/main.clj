@@ -17,7 +17,7 @@
 
 (def admin-routes
   ["/"
-   {:openapi {:tags ["admin/users/"] :security ADMIN_AUTH_METHODS}}
+   {:openapi {:tags ["admin/users"] :security ADMIN_AUTH_METHODS}}
    ["users/"
     {:get index/route
      :post create-user/route}]

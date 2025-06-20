@@ -18,7 +18,7 @@ describe "Access edit_sessions " do
 
     context "GET requests to edit sessions" do
       it "allows access to public edit sessions" do
-        url = "/api-v2/edit_sessions"
+        url = "/api-v2/edit_sessions/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -26,7 +26,7 @@ describe "Access edit_sessions " do
       end
 
       it "denies access to admin edit sessions" do
-        url = "/api-v2/admin/edit_sessions?page=1&size=5"
+        url = "/api-v2/admin/edit_sessions/?page=1&size=5"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(403)
@@ -40,7 +40,7 @@ describe "Access edit_sessions " do
 
     context "GET requests to edit sessions" do
       it "allows access to admin edit sessions" do
-        url = "/api-v2/admin/edit_sessions"
+        url = "/api-v2/admin/edit_sessions/"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)
@@ -48,7 +48,7 @@ describe "Access edit_sessions " do
       end
 
       it "returns paginated data for admin edit sessions" do
-        url = "/api-v2/admin/edit_sessions?page=1&size=5"
+        url = "/api-v2/admin/edit_sessions/?page=1&size=5"
         response = wtoken_header_plain_faraday_json_client_get(token.token, url)
 
         expect(response.status).to eq(200)

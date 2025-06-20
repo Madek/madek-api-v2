@@ -3,7 +3,7 @@ require "spec_helper"
 context "with proper username but bad password" do
   include_context :json_client_for_authenticated_token_user_no_creds do
     let :response do
-      client.get("/api-v2/auth-info")
+      client.get("/api-v2/auth-info/")
     end
     it "responds with 403" do
       expect(response.status).to be == 403
@@ -14,7 +14,7 @@ end
 context "with proper username and password" do
   include_context :json_client_for_authenticated_token_user do
     let :response do
-      client.get("/api-v2/auth-info")
+      client.get("/api-v2/auth-info/")
     end
 
     it "responds with success 200" do
@@ -62,7 +62,7 @@ describe "/auth-info resource" do
     include_context :json_client_for_authenticated_token_user do
       context "via json" do
         let :response do
-          plain_faraday_json_client.get("/api-v2/auth-info")
+          plain_faraday_json_client.get("/api-v2/auth-info/")
         end
 
         it "responds with not authorized 401" do

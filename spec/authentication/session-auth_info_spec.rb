@@ -8,7 +8,7 @@ describe "Session/Cookie Authentication" do
 
   context "expired session object" do
     it "the body indicates that the session has expired" do
-      response = client.get("auth-info")
+      response = client.get("auth-info/")
       expect(response.status).to eq 200
     end
   end

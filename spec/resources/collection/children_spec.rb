@@ -16,7 +16,7 @@ describe "Getting the children of a collection" do
     # end
 
     def cme_query(filter)
-      plain_faraday_json_client.get("/api-v2/collection-media-entry-arcs", filter)
+      plain_faraday_json_client.get("/api-v2/collection-media-entry-arcs/", filter)
     end
 
     def cme_query_col(id)

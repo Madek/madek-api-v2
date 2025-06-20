@@ -149,19 +149,19 @@
    :expires_at (s/maybe s/Any)})
 
 (def public-routes
-  ["/confidential-link/:token/access"])
+  ["/confidential-links/:token/access"])
 
 (def public-me-routes
-  ["/media-entry/:media_entry_id/acess/:token"])
+  ["/media-entries/:media_entry_id/access/:token"])
 
 (def public-col-routes
-  ["/collection/:collection_id/acess/:token"])
+  ["/collections/:collection_id/access/:token"])
 
 ; TODO check can edit permissions
 (def user-me-routes
-  ["/media-entry/:media_entry_id"
-   {:openapi {:tags ["api/media-entry"]}}
-   ["/conf-links"
+  ["/media-entries/:media_entry_id"
+   {:openapi {:tags ["api/media-entries"]}}
+   ["/conf-links/"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link
             :middleware [jqh/ring-wrap-add-media-resource
@@ -185,7 +185,7 @@
                        406 {:description "Could not list confidential links."
                             :body s/Any}}}}]
 
-   ["/conf-link/:id"
+   ["/conf-links/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
            :handler handle_get-conf-link
            :middleware [jqh/ring-wrap-add-media-resource
@@ -227,9 +227,9 @@
 
 ; TODO check can edit permissions
 (def user-col-routes
-  ["/collection/:collection_id"
-   {:openapi {:tags ["api/collection/conf-links"]}}
-   ["/conf-links"
+  ["/collections/:collection_id"
+   {:openapi {:tags ["api/collections/conf-links"]}}
+   ["/conf-links/"
     {:post {:summary (sd/sum_adm "Create confidential link.")
             :handler handle_create-conf-link
             :middleware [jqh/ring-wrap-add-media-resource
@@ -253,7 +253,7 @@
                        406 {:description "Could not list confidential links."
                             :body s/Any}}}}]
 
-   ["/conf-link/:id"
+   ["/conf-links/:id"
     {:get {:summary (sd/sum_adm "Get confidential link by id.")
            :handler handle_get-conf-link
            :middleware [jqh/ring-wrap-add-media-resource

@@ -85,8 +85,8 @@
 ; TODO docu
 (def ring-routes
   ["/"
-   {:openapi {:tags ["admin/admins/"] :security ADMIN_AUTH_METHODS}}
-   ["admins"
+   {:openapi {:tags ["admin/admins"] :security ADMIN_AUTH_METHODS}}
+   ["admins/"
     {:get
      {:summary (sd/sum_adm "List admin users.")
       :handler handle_list-admin
@@ -118,13 +118,13 @@
       :parameters {:path {:id s/Uuid}}
       :responses {200 {:description "Returns the deleted admin."
                        :body schema_export-admin}
-                  404 {:description "Admin not found. HERE!!"
+                  404 {:description "Admin not found."
                        :body s/Any}
                   406 {:description "Could not delete admin."
                        :body s/Any}}}}]
 
    ; access via user
-   ["admins/:user_id/user"
+   ["admins/:user_id/users/"
     {:post
      {:summary (sd/sum_adm "Create admin for user with id.")
       :handler handle_create-admin

@@ -34,7 +34,7 @@ describe "Getting a media-file resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/media-file/#{@media_file.id}")
+        response = client.get("/api-v2/media-files/#{@media_file.id}")
         expect(response.status).to be == 200
       end
     end
@@ -49,7 +49,7 @@ describe "Getting a media-file resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/media-file/#{@media_file.id}")
+        response = client.get("/api-v2/media-files/#{@media_file.id}")
         expect(response.status).to be == 200
       end
     end
@@ -66,7 +66,7 @@ describe "Getting a media-file resource with authentication" do
       end
 
       it "is allowed 200" do
-        response = client.get("/api-v2/media-file/#{@media_file.id}")
+        response = client.get("/api-v2/media-files/#{@media_file.id}")
         expect(response.status).to be == 200
       end
     end

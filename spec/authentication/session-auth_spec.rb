@@ -30,7 +30,7 @@ describe "Session/Cookie Authentication" do
   end
 
   let :response do
-    client.get("auth-info")
+    client.get("auth-info/")
   end
 
   context "Session authentication is enabled" do

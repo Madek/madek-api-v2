@@ -2,7 +2,7 @@ require "spec_helper"
 
 shared_context :collection_resource_via_json do
   let :response do
-    plain_faraday_json_client.get("/api-v2/collection/#{CGI.escape(@collection.id)}")
+    plain_faraday_json_client.get("/api-v2/collections/#{CGI.escape(@collection.id)}")
   end
 end
 

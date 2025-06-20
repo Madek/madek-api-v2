@@ -88,7 +88,7 @@
                             :body s/Any}}
            :parameters {:path {:preview_id s/Uuid}}}}]
 
-   ["/:preview_id/data-stream"
+   ["/:preview_id/data-stream/"
     {:get {:summary "Get preview data-stream for id."
            :handler preview/get-preview-file-data-stream
            :middleware [ring-wrap-find-and-add-preview
@@ -104,10 +104,10 @@
 ; TODO auth
 ; TODO tests
 (def media-entry-routes
-  ["/media-entry"
-   {:openapi {:tags ["api/media-entry"]}}
+  ["/media-entries"
+   {:openapi {:tags ["api/media-entries"]}}
    ; TODO media-entry preview auth
-   ["/:media_entry_id/preview"
+   ["/:media_entry_id/previews/"
     {:get {:summary "Get preview for media-entry id."
            :handler handle_get-preview
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
@@ -122,7 +122,7 @@
                             :body s/Any}}}}]
 
    ; TODO media-entry preview auth
-   ["/:media_entry_id/preview/data-stream"
+   ["/:media_entry_id/previews/data-stream/"
     {:get {:summary "Get preview for media-entry id."
            :handler preview/get-preview-file-data-stream
            :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id
