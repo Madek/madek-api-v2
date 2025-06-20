@@ -197,7 +197,7 @@
                         :body schema_delegations_list_users_export}}
        :parameters {:query {(s/optional-key :user_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid}}}}]
-    ["users/:delegation_id/:user_id"
+    ["users/:user_id/delegations/:delegation_id"
      {:post
       {:summary (sd/sum_adm "Create delegations_user for user and delegation.")
        :handler handle_create-delegations_user

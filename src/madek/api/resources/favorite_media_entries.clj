@@ -195,7 +195,7 @@
                         :body [schema_favorite_media_entries_export]}}
        :coercion reitit.coercion.schema/coercion}}]
 
-    ["media-entries/:media_entry_id/:user_id"
+    ["media-entries/:media_entry_id/users/:user_id"
      {:post
       {:summary (sd/sum_adm "Create favorite_media-entry for user and media-entry.")
        :handler handle_create-favorite_media_entry

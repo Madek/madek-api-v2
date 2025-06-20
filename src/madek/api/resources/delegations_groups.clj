@@ -154,7 +154,7 @@
        :parameters {:query {(s/optional-key :group_id) s/Uuid
                             (s/optional-key :delegation_id) s/Uuid}}}}]
 
-    ["groups/:delegation_id/:group_id"
+    ["groups/:groups_id/delegations/:delegation_id"
      {:post
       {:summary (sd/sum_adm "Create delegations_group for group and delegation.")
        :handler handle_create-delegations_group

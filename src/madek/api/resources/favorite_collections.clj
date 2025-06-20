@@ -187,7 +187,7 @@
        :responses {200 {:description "Returns the favorite_collections."
                         :body [schema_favorite_collection_export]}}}}]
     ; edit favorite collections for other users
-    ["collections/:collection_id/:user_id"
+    ["collections/:collection_id/users/:user_id"
      {:post {:summary (sd/sum_adm "Create favorite_collection for user and collection.")
              :handler handle_create-favorite_collection
 
