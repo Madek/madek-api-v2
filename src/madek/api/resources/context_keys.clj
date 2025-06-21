@@ -31,7 +31,7 @@
   (let [req-query (-> req :parameters :query)
         db-query (-> (sql/select :*)
                      (sql/from :context_keys)
-
+                     (sql/order-by [:context_id :asc] [:meta_key_id :asc])
                      (dbh/build-query-param req-query :id)
                      (dbh/build-query-param req-query :context_id)
                      (dbh/build-query-param req-query :meta_key_id)
@@ -51,6 +51,7 @@
                                  :is_required :position :length_min :length_max
                                  :labels :hints :descriptions :documentation_urls)
                      (sql/from :context_keys)
+                     (sql/order-by [:context_id :asc] [:meta_key_id :asc])
                      (dbh/build-query-param req-query :id)
                      (dbh/build-query-param req-query :context_id)
                      (dbh/build-query-param req-query :meta_key_id)

@@ -15,6 +15,7 @@
 (defn arc-query [id]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
+      (sql/order-by [:media_entry_id :asc] [:collection_id :asc])
       (sql/where [:= :id (to-uuid id)])
       sql-format))
 
@@ -30,6 +31,7 @@
 (defn arcs-query [query-params]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
+      (sql/order-by [:media_entry_id :asc] [:collection_id :asc])
       (dbh/build-query-param query-params :collection_id)
       (dbh/build-query-param query-params :media_entry_id)))
 

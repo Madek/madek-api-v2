@@ -36,6 +36,7 @@
      nil
      (-> (sql/select :vocabulary_id)
          (sql/from :vocabulary_user_permissions)
+         (sql/order-by [:vocabulary_id :asc] [:user_id :asc])
          (sql/where
           [:= :vocabulary_user_permissions.user_id (to-uuid user-id)]
           [:= (keyword (apply str "vocabulary_user_permissions." acc-type)) true])
@@ -56,6 +57,7 @@
        nil
        (-> (sql/select :vocabulary_id)
            (sql/from :vocabulary_group_permissions)
+           (sql/order-by [:vocabulary_id :asc] [:group_id :asc])
            (sql/where
             [:in :vocabulary_group_permissions.group_id groups-ids-result]
             [:= (keyword (apply str "vocabulary_group_permissions." acc-type)) true])

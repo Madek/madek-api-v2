@@ -25,6 +25,7 @@
                    (apply sql/select fields))]
     (-> toselect
         (sql/from :collections)
+        (sql/order-by [:creator_id :asc] [:id :asc] )
         (cond-> (= softdelete-mode :deleted) (soft-deleted "collections"))
         (cond-> (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted "collections")))))
 

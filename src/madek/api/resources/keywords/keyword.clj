@@ -10,6 +10,7 @@
   (let [dbq (->
              (sql/select :*)
              (sql/from :keywords)
+             (sql/order-by [:term :asc] [:id :asc])
              (dbh/build-query-param query :id)
              (dbh/build-query-param query :rdf_class)
              (dbh/build-query-param-like query :meta_key_id)

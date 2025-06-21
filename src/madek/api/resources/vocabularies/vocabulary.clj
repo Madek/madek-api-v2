@@ -37,6 +37,7 @@
 (defn build-vocabulary-query [id user-id tx]
   (-> (sql/select :*)
       (sql/from :vocabularies)
+      (sql/order-by [:position :asc])
       (sql/where (where-clause id user-id tx))
       (sql-format)))
 

@@ -16,6 +16,7 @@
   (let [preview-id (or (-> request :params :preview_id) (-> request :parameters :path :preview_id))
         query (-> (sql/select :media_entries.*)
                   (sql/from :media_entries)
+                  (sql/order-by [:media_entries.id :asc])
                   (sql/join :media_files [:= :media_entries.id :media_files.media_entry_id])
                   (sql/join :previews [:= :media_files.id :previews.media_file_id])
                   (sql/where [:= :previews.id (to-uuid preview-id)])

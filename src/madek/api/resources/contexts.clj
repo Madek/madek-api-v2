@@ -20,6 +20,7 @@
   [req]
   (let [db-query (-> (sql/select :*)
                      (sql/from :contexts)
+                     (sql/order-by [:id :asc])
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
         result (map context_transform_ml db-result)]
@@ -30,6 +31,7 @@
   [req]
   (let [db-query (-> (sql/select :id :labels :descriptions)
                      (sql/from :contexts)
+                     (sql/order-by [:id :asc])
                      sql-format)
         db-result (jdbc/execute! (:tx req) db-query)
         result (map context_transform_ml db-result)]

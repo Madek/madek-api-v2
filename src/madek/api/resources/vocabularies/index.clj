@@ -21,6 +21,7 @@
   ([user-id query-params tx]
    (-> (sql/select :*)
        (sql/from :vocabularies)
+       (sql/order-by [:position :asc])
        (sql/where (where-clause user-id tx))))
   ([user-id query-params request tx]
    (let [is_admin_endpoint (str/includes? (-> request :uri) "/admin/")
@@ -29,6 +30,7 @@
                   (sql/select :id :admin_comment :position :labels :descriptions))]
      (-> select
          (sql/from :vocabularies)
+         (sql/order-by [:position :asc])
          (sql/where (where-clause user-id tx))))))
 
 (defn transform_ml [vocab]
