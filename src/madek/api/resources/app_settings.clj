@@ -71,6 +71,7 @@
    (s/optional-key :banner_messages) sd/schema_ml_list
    (s/optional-key :brand_logo_url) (s/maybe s/Str)
    (s/optional-key :brand_texts) sd/schema_ml_list
+   (s/optional-key :catalog_caching) (s/maybe s/Bool)
    (s/optional-key :catalog_context_keys) [s/Str]
    (s/optional-key :catalog_subtitles) sd/schema_ml_list
    (s/optional-key :catalog_titles) sd/schema_ml_list
@@ -113,6 +114,7 @@
    (s/optional-key :banner_messages) (s/maybe sd/schema_ml_list)
    (s/optional-key :brand_logo_url) (s/maybe s/Str)
    (s/optional-key :brand_texts) (s/maybe sd/schema_ml_list)
+   (s/optional-key :catalog_caching) (s/maybe s/Bool)
    (s/optional-key :catalog_context_keys) [s/Str]
    (s/optional-key :catalog_subtitles) (s/maybe sd/schema_ml_list)
    (s/optional-key :catalog_titles) (s/maybe sd/schema_ml_list)

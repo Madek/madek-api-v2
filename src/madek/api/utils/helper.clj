@@ -183,7 +183,8 @@
 (defn cast-to-hstore [data]
   (let [keys [:labels :descriptions :contents :hints :documentation_urls
               :site_titles :brand_texts :welcome_titles :welcome_texts
-              :featured_set_titles :featured_set_subtitles :catalog_subtitles :catalog_titles
+              :featured_set_titles :featured_set_subtitles
+              :catalog_subtitles :catalog_titles
               :about_pages :support_urls :provenance_notices]]
     (reduce (fn [acc key]
               (if (contains? acc key)

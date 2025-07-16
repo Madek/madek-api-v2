@@ -53,6 +53,7 @@ Full template:
   "copyright_notice_templates": [
     "string"
   ],
+  "catalog_caching": "boolean",
   "catalog_titles": {
     "de": "string",
     "en": "string"
