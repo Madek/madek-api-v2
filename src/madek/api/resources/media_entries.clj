@@ -16,7 +16,7 @@
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-alpha-definition-map :as sp-map]
             [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
-            [madek.api.utils.coercion.spec-utils :refer [string->vec]]
+            [madek.api.utils.coercion.spec-utils :refer [string->vec IsoOffsetDateTimeString]]
             [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
@@ -230,19 +230,11 @@
           "\n content: " file-content-type
           "\ntemppath\n" temppath)
 
-    (let [;mime (or file-content-type (mime-type-of temppath) )
-          mime file-content-type]
-
+    (let [mime file-content-type]
       (info "handle_create-media-entry" "\nmime-type\n" mime)
       (if (nil? auth)
         (sd/response_failed "Not authenticated" 406)
         (create-media_entry file auth mime collection-id tx)))))
-
-(def ISO8601TimestampWithoutMS
-  (s/constrained
-   s/Str
-   #(re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z" %)
-   "ISO 8601 timestamp without milliseconds"))
 
 (sa/def :media-entries/fields
   (sa/and
@@ -312,7 +304,7 @@
 
 (def schema_export_adm_media_entry
   (merge schema_export_media_entry
-         {:deleted_at (s/maybe ISO8601TimestampWithoutMS)}))
+         {:deleted_at (s/maybe IsoOffsetDateTimeString)}))
 
 ;; -----------------------
 
@@ -438,7 +430,7 @@
            :accept "application/json"
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Uuid}
-                        :body {:deleted_at (s/maybe ISO8601TimestampWithoutMS)}}
+                        :body {:deleted_at (s/maybe IsoOffsetDateTimeString)}}
            :responses {200 {:description "Returns the updated media-entry."
                             :body schema_export_adm_media_entry}
                        406 {:description "Not Acceptable."

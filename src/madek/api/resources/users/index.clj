@@ -30,7 +30,7 @@
       (email-filter query-params)
       (institution-filter query-params)))
 
-(defn handler
+(defn users-index-handler
   [{{params :query} :parameters tx :tx :as req}]
   (let [query (-> common/base-query
                   (filter-query params))
@@ -44,7 +44,7 @@
 (def route
   {:summary (sd/sum_adm (f "Get list of users ids." "no-list"))
    :description "Get list of users ids."
-   :handler handler
+   :handler users-index-handler
    :middleware [wrap-authorize-admin!]
    :parameters {:query ::users-query-def}
    :coercion spec/coercion

@@ -33,7 +33,7 @@
                     ::sp/institution
                     ::sp-nil/institutional_id
                     ::sp/is_admin
-                    ::sp-nil/active_until
+                    :nil-str/active_until
                     ::sp/password_sign_in_enabled
                     ::sp-nil/last_name
                     ::sp-nil/last_signed_in_at
@@ -48,7 +48,7 @@
 
 (sa/def ::users-body-resp-def (sa/keys :opt-un [:users-list/users ::sp/page ::sp/size]))
 
-(def schema
+(def response-schema
   {:accepted_usage_terms_id (s/maybe s/Uuid)
    :created_at s/Any
 
@@ -92,5 +92,5 @@
    :content-type "application/json"
    :parameters {:path {:id s/Str}}
    :responses {200 {:description "User found."
-                    :body schema}
+                    :body response-schema}
                404 (sd/create-error-message-response "Not Found." "No such user.")}})

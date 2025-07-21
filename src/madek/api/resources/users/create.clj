@@ -40,7 +40,7 @@
       (error "handle-create-user failed" {:request req})
       (sd/parsed_response_exception e))))
 
-(def schema
+(def schema-request-post
   {:person_id s/Uuid
    (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid)
    (s/optional-key :email) v/email-validation
@@ -53,7 +53,7 @@
    (s/optional-key :notes) (s/maybe s/Str)
    (s/optional-key :settings) v/vector-or-hashmap-validation})
 
-(def schema_post
+(def schema-response-post
   {:institution s/Str
    :institutional_id (s/maybe s/Str)
    :email (s/maybe v/email-validation)
@@ -84,9 +84,9 @@
    :description (mslurp (io/resource "md/admin-users-post.md"))
    :handler handle-create-user
    :middleware [wrap-authorize-admin!]
-   :parameters {:body schema}
+   :parameters {:body schema-request-post}
    :responses {201 {:description "Created."
-                    :body schema_post}
+                    :body schema-response-post}
                400 {:description "Bad Request"
                     :body s/Any}
                404 (sd/create-error-message-response "Not Found." "People entry not found")

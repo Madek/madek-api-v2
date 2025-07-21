@@ -42,7 +42,7 @@
    :content-type "application/json"
    :parameters {:path {:id s/Str}}
    :responses {200 {:description "Deleted."
-                    :body get-user/schema}
+                    :body get-user/response-schema}
                422 (sd/create-error-message-response "Unprocessable Content" "References still exist")
                404 (sd/create-error-message-response "Not Found." "No such user.")}})
 

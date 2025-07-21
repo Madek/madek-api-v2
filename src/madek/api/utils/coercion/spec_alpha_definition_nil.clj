@@ -1,13 +1,14 @@
 (ns madek.api.utils.coercion.spec-alpha-definition-nil
   (:require
-   [clojure.spec.alpha :as sa]
-   [spec-tools.core :as st]))
+   [clojure.spec.alpha :as sa])
+  (:import [java.time OffsetDateTime]
+           [java.time.format DateTimeParseException]))
 
 (defn nil-or [pred]
   (sa/or :nil nil? :value pred))
 
 (sa/def ::accepted_usage_terms_id (nil-or uuid?))
-(sa/def ::active_until (nil-or any?))
+(sa/def :nil-str/active_until (nil-or any?))
 (sa/def ::admin_comment (nil-or string?))
 (sa/def ::allowed_rdf_class (nil-or string?))
 (sa/def ::clipboard_user_id (nil-or uuid?))
@@ -49,15 +50,20 @@
 (sa/def ::updator_id (nil-or uuid?))
 (sa/def ::workflow_id (nil-or uuid?))
 
-(sa/def ::iso8601-date-time
-  (st/spec
-   {:spec (nil-or (sa/and string? #(re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z" %)))
-    :description "An ISO 8601 formatted date-time string"}))
+;; IsoOffsetDateTimeString for schema.spec, see: 'Timestamp-formats'
+(defn offset-date-time-string? [^String s]
+  (try
+    (OffsetDateTime/parse s)
+    true
+    (catch DateTimeParseException _ false)))
 
 (sa/def ::deleted_at
-  (st/spec
-   {:spec ::iso8601-date-time
-    :description "Timestamp when the resource was deleted, in ISO 8601 format"}))
+  (sa/nilable
+   (sa/and string? offset-date-time-string?)))
+
+(sa/def ::active_until
+  (sa/nilable
+   (sa/and string? offset-date-time-string?)))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

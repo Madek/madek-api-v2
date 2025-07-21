@@ -1,7 +1,10 @@
 (ns madek.api.utils.coercion.spec-alpha-definition-map
   (:require
    [clojure.spec.alpha :as sa]
-   [spec-tools.core :as st]))
+   [schema.core :as s]
+   [spec-tools.core :as st])
+  (:import [java.time OffsetDateTime]
+           [java.time.format DateTimeParseException]))
 
 (defn nil-or [pred]
   (sa/or :nil nil? :value pred))
@@ -39,15 +42,21 @@
     :description "An enum of :option1, :option2, or :option3"
     :json-schema {:enum ["not-deleted" "deleted" "all"]}}))
 
-(sa/def ::iso8601-date-time
-  (st/spec
-   {:spec (sa/and string? #(re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z" %))
-    :description "An ISO 8601 formatted date-time string"}))
+(defn offset-date-time-string? [^String s]
+  (try
+    (OffsetDateTime/parse s)
+    true
+    (catch DateTimeParseException _ false)))
+
+;; IsoOffsetDateTimeString for schema.spec, see: 'Timestamp-formats'
+(def iso-offset-date-time-string
+  (s/constrained string? offset-date-time-string? 'iso-offset-date-time-string))
 
 (sa/def ::deleted_at
   (st/spec
-   {:spec ::iso8601-date-time
-    :description "Timestamp when the resource was deleted, in ISO 8601 format"}))
+   {:spec iso-offset-date-time-string
+    :description "Timestamp when the resource was deleted, e.g:
+    ISO_OFFSET_DATE_TIME: \"2025-06-26T16:30:46.926173+02:00"}))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

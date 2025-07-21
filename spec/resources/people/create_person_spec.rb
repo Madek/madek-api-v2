@@ -35,9 +35,15 @@ context "people" do
           end
         end
 
-        describe "an institutional person with different Timestamp-formats" do
+        describe "an institutional person with different 'Timestamp-formats'" do
           it "works" do
-            ["2023-01-01 11:13:06.264577+02", "2023-01-01T12:02:00+10", nil].each do |timestamp|
+            ["2025-06-26T16:30:46+02:00",
+              "2025-06-26T16:30:46.926173+02:00",
+              "2025-06-26T16:30:46Z",
+              "2025-06-26T16:30:46.123456789Z",
+              "2025-06-26T16:30:46.926173-05:00",
+              "2025-06-26T16:30:46.123+00:00",
+              nil].each do |timestamp|
               expect(client.post("/api-v2/admin/people/") do |req|
                 req.body = {first_name: nil,
                             last_name: "Bachelor",

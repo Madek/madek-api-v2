@@ -49,9 +49,9 @@
                         (sql/values [ins-data])
                         (sql/returning :*)
                         sql-format)
-              ins-result (jdbc/execute! tx query)]
+              ins-result (jdbc/execute-one! tx query)]
           (sd/logwrite req (str "handle_create-collection: " ins-result))
-          (if-let [result (first ins-result)]
+          (if-let [result ins-result]
             (sd/response_ok result)
             (sd/response_failed "Could not create collection" 406)))
         (sd/response_failed "Could not create collection. Not logged in." 406)))
@@ -137,7 +137,6 @@
 
 (sa/def :adm/collections-update (sa/keys :opt-un [::sp/layout ::sp/is_master ::sp/sorting ::sp-nil/default_context_id
                                                   ::sp-nil/workflow_id ::sp/default_resource_type
-
                                                   ::sp-nil/deleted_at]))
 
 (sa/def :collection/fields
@@ -166,7 +165,7 @@
                                                             ::sp/page ::sp/size
                                                             ::sp-map/filter_softdelete]))
 
-(def schema_collection-export
+(def schema-collection-response
   {:id s/Uuid
    (s/optional-key :get_metadata_and_previews) s/Bool
 
@@ -191,12 +190,11 @@
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
-(sa/def :usr/collections-put (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/deleted_at] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
-                                                                                                     ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
-                                                                                                 ;::sp/deleted_at
-                                                                                                     ::sp/updated_at ::sp/meta_data_updated_at
-                                                                                                     ::sp/edit_session_updated_at ::sp-nil/clipboard_user_id ::sp-nil/workflow_id
-                                                                                                     ::sp-nil/responsible_delegation_id ::sp/default_resource_type]))
+(sa/def :usr/collections-put-response (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/deleted_at] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
+                                                                                                              ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
+                                                                                                              ::sp/updated_at ::sp/meta_data_updated_at
+                                                                                                              ::sp/edit_session_updated_at ::sp-nil/clipboard_user_id ::sp-nil/workflow_id
+                                                                                                              ::sp-nil/responsible_delegation_id ::sp/default_resource_type]))
 
 (sa/def :usr/collections
   (sa/keys :opt-un [::sp/get_metadata_and_previews
@@ -251,7 +249,7 @@
            :parameters {:path {:collection_id uuid?}
                         :body :adm/collections-update}
            :responses {200 {:description "Returns the updated collection."
-                            :body (st/spec {:spec (sa/coll-of :usr/collections-put)
+                            :body (st/spec {:spec (sa/coll-of :usr/collections-put-response)
                                             :description "A list of persons"})}
                        404 {:description "Collection not found."
                             :body any?}
@@ -283,7 +281,7 @@
       :middleware [authorization/wrap-authorized-user]
       :coercion reitit.coercion.schema/coercion
       :responses {200 {:description "Returns the created collection."
-                       :body schema_collection-export}
+                       :body schema-collection-response}
                   406 {:description "Could not create collection."
                        :body s/Any}}}}]
 
@@ -297,7 +295,7 @@
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:collection_id s/Uuid}}
            :responses {200 {:description "Returns the collection."
-                            :body schema_collection-export}
+                            :body schema-collection-response}
                        404 {:description "Collection not found."
                             :body s/Any}
                        422 {:description "Could not get collection."
@@ -330,7 +328,7 @@
               :coercion reitit.coercion.schema/coercion
               :parameters {:path {:collection_id s/Uuid}}
               :responses {200 {:description "Returns the deleted collection."
-                               :body schema_collection-export}
+                               :body schema-collection-response}
                           404 {:description "Collection not found."
                                :body s/Any}
                           422 {:description "Could not delete collection."

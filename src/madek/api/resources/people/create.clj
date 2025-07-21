@@ -6,11 +6,14 @@
    [madek.api.resources.people.get :as get-person]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [wrap-authorize-admin!]]
+   [madek.api.utils.coercion.spec-utils :refer [IsoOffsetDateTimeString]]
    [madek.api.utils.helper :refer [convert-map-if-exist]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [error]]))
+   [taoensso.timbre :refer [error]])
+  (:import [java.time OffsetDateTime]
+           [java.time.format DateTimeParseException]))
 
 (defn handle-create-person
   [{{data :body} :parameters
@@ -24,24 +27,6 @@
                      ((partial jdbc/execute-one! tx) {:return-keys true}))]
     (sd/response_ok (find-person-by-uid id tx) 201)))
 
-(def timestamp‐regex
-  #"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+([+-]\d{2})$")
-
-(s/defschema TimestampTzString
-  (s/constrained
-   s/Str
-   #(boolean (re-matches timestamp‐regex %))
-   'TimestampTzString))
-
-(def iso‐tz‐regex
-  #"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}$")
-
-(s/defschema IsoTimestampTzString
-  (s/constrained
-   s/Str
-   #(boolean (re-matches iso‐tz‐regex %))
-   'IsoTimestampTzString))
-
 (def people-schema
   {:subtype (s/maybe s/Str)
    (s/optional-key :description) (s/maybe s/Str)
@@ -54,7 +39,7 @@
    (s/optional-key :pseudonym) (s/maybe s/Str)
    (s/optional-key :identification_info) (s/maybe s/Str)
    (s/optional-key :institutional_directory_infos) [s/Str]
-   (s/optional-key :institutional_directory_inactive_since) (s/maybe (s/->Either [IsoTimestampTzString TimestampTzString]))})
+   (s/optional-key :institutional_directory_inactive_since) (s/maybe IsoOffsetDateTimeString)})
 
 (def people-schema-opt (-> people-schema
                            (dissoc :subtype)
@@ -67,7 +52,7 @@
    :description "Create a person.\nThe [subtype] has to be one of [\"Person\" \"PeopleGroup\" \"PeopleInstitutionalGroup\"].
    \nAt least one of [first_name, last_name, description] must have a value.
      \n\nDefault: \"subtype\": \"Person\",\n  \"institutional_id\": null,
-     \n\nTimestamp with TZ format: \"2025-06-02 11:13:06.264577+02\" (PG timestamptz), \"2023-01-01T12:02:00+10\" (ISO)"
+     \n\nISO_OFFSET_DATE_TIME: \"2025-06-26T16:30:46.926173+02:00\""
    :handler handle-create-person
    :middleware [wrap-authorize-admin!]
    :parameters {:body people-schema-opt}
