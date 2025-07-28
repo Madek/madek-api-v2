@@ -47,6 +47,7 @@
    (s/optional-key :first_name) s/Str
    (s/optional-key :institution) s/Str
    (s/optional-key :institutional_id) s/Str
+   (s/optional-key :active_until) (s/maybe s/Any)
    (s/optional-key :last_name) s/Str
    (s/optional-key :login) (s/maybe s/Str)
    (s/optional-key :password_sign_in_enabled) s/Bool
