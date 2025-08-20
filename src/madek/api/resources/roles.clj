@@ -11,13 +11,12 @@
    [spec-tools.core :as st]))
 
 (def schema_create-role
-  {:meta_key_id s/Str
-   :labels sd/schema_ml_list})
+  {:labels sd/schema_ml_list})
 
 (def schema_update-role
   {:labels sd/schema_ml_list})
 
-(sa/def :roles-resp-def/role (sa/keys :req-un [::sp/id ::sp/meta_key_id ::sp/labels]
+(sa/def :roles-resp-def/role (sa/keys :req-un [::sp/id ::sp/labels]
                                       :opt-un [::sp/creator_id ::sp/created_at ::sp/updated_at]))
 
 (sa/def :roles-resp-def/roles (st/spec {:spec (sa/coll-of :roles-resp-def/role)
@@ -26,13 +25,11 @@
 
 (def schema_export-role
   {:id s/Uuid
-   :meta_key_id s/Str
    :labels sd/schema_ml_list
    (s/optional-key :creator_id) s/Uuid
    (s/optional-key :created_at) s/Any
    (s/optional-key :updated_at) s/Any})
 
-; TODO roles by meta_key_id ?
 ; TODO tests
 (def user-routes
   ["/"
@@ -58,7 +55,6 @@
                        404 {:description "Not found."
                             :body s/Any}}}}]])
 
-; switch to meta_key as address?
 ; TODO tests
 (def admin-routes
   ["/"

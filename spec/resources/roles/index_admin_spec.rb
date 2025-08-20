@@ -11,21 +11,9 @@ describe "roles" do
   include_context :json_client_for_authenticated_token_admin do
     describe "modify roles" do
       it "responses with 200" do
-        mk_key = "madek_test:title"
-
         resp = client.post("/api-v2/admin/roles/") do |req|
           req.body = {
-            meta_key_id: mk_key, labels: {de: "Rolle 1", en: "Role 1"}
-          }.to_json
-          req.headers["Content-Type"] = "application/json"
-        end
-        expect(resp.status).to be == 500
-        expect(resp.body["message"]).to include("is not present in table \"meta_keys\"")
-
-        FactoryBot.create(:meta_key_text, id: mk_key)
-        resp = client.post("/api-v2/admin/roles/") do |req|
-          req.body = {
-            meta_key_id: mk_key, labels: {de: "Rolle 1", en: "Role 1"}
+            labels: {de: "Rolle 1", en: "Role 1"}
           }.to_json
           req.headers["Content-Type"] = "application/json"
         end
@@ -35,7 +23,6 @@ describe "roles" do
 
         resp = client.put("/api-v2/admin/roles/#{role_id}") do |req|
           req.body = {
-            # meta_key_id: mk_key,
             labels: {de: "Rolle 2", en: "Role 2"}
           }.to_json
           req.headers["Content-Type"] = "application/json"

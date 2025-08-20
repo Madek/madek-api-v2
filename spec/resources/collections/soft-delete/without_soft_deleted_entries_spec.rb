@@ -154,7 +154,7 @@ describe "filtering collections" do
       end
     end
 
-    describe "/api-v2/collections/{collection_id}/media-data/{meta_key_id}/people" do
+    describe "/api-v2/collections/{collection_id}/meta-data/{meta_key_id}/meta-data-people" do
       it "fetch all existing" do
         cid = parent_collection.collections.first.id
         response = client.get("/api-v2/collections/#{cid}/meta-data-related/")
@@ -163,10 +163,10 @@ describe "filtering collections" do
         expect(response.body.count).to eq(1)
 
         mk = response.body.first["meta_data"]["meta_key_id"]
-        response = client.get("/api-v2/collections/#{cid}/meta-data/#{mk}/people/")
+        response = client.get("/api-v2/collections/#{cid}/meta-data/#{mk}/meta-data-people/")
 
         expect(response.status).to eq(200)
-        expect(response.body["people_ids"].count).to eq(1)
+        expect(response.body["md_people"].count).to eq(1)
       end
     end
 
@@ -198,35 +198,38 @@ describe "filtering collections" do
         before :each do
           response = client.get("/api-v2/collections/")
           expect(response.status).to be == 200
-          @collection_id = response.body["collections"][0]["id"]
-          @collection = Collection.find(@collection_id)
-          @meta_key_people = FactoryBot.create :meta_key_people
-          @meta_datum = FactoryBot.create :meta_datum_people,
-            collection: @collection,
-            meta_key: @meta_key_people
+          collection_id = response.body["collections"][0]["id"]
+          collection = Collection.find(collection_id)
 
-          @meta_key_people = FactoryBot.create :meta_key_roles
+          meta_key_people = FactoryBot.create :meta_key_people
+          FactoryBot.create :meta_datum_people,
+            collection: collection,
+            meta_key: meta_key_people
+
           @person = FactoryBot.create(:person)
-          p2 = FactoryBot.create(:person)
-          @r1 = FactoryBot.create(:role)
 
-          FactoryBot.create(:meta_datum_people, people: [@person, p2])
-          FactoryBot.create(:meta_datum_roles,
-            collection: @collection,
-            people_with_roles: [{person: @person, role: @r1},
-              {person: p2, role: @r1}])
+          roles_list = FactoryBot.create(:roles_list)
+          @meta_key_people_with_roles = FactoryBot.create(:meta_key_people_with_roles,
+            roles_list: roles_list)
+          @role = FactoryBot.create(:role)
+          roles_list.roles << @role
 
-          @meta_key_people = MetaKey.find_by(id: attributes_for(:meta_key_keywords)[:id]) \
+          @mdp_wr = FactoryBot.create(:meta_datum_people_with_roles,
+            meta_key: @meta_key_people_with_roles,
+            collection: collection,
+            people_with_roles: [{person: @person, role: @role}])
+
+          meta_key_keywords = MetaKey.find_by(id: attributes_for(:meta_key_keywords)[:id]) \
             || FactoryBot.create(:meta_key_keywords)
 
-          @meta_datum = FactoryBot.create :meta_datum_keywords,
-            collection: @collection,
-            meta_key: @meta_key_people
+          FactoryBot.create :meta_datum_keywords,
+            collection: collection,
+            meta_key: meta_key_keywords
 
-          @meta_key_people = FactoryBot.create :meta_key_json
-          @meta_datum = FactoryBot.create :meta_datum_json,
-            collection: @collection,
-            meta_key: @meta_key_people
+          meta_key_json = FactoryBot.create :meta_key_json
+          FactoryBot.create :meta_datum_json,
+            collection: collection,
+            meta_key: meta_key_json
         end
 
         it "checks meta-datum" do
@@ -241,7 +244,7 @@ describe "filtering collections" do
           response = client.get("/api-v2/collections/#{collection_id}/meta-data/")
           expect(response.status).to be == 200
 
-          ["test:people", "test:roles", "test:keywords"].each do |meta_key_id|
+          ["test:people", "test:keywords"].each do |meta_key_id|
             response = client.get("/api-v2/collections/#{collection_id}/meta-data/#{meta_key_id}")
             expect(response.status).to be == 200
             expect(response.body["meta_data"]["collection_id"]).to eq(collection_id)
@@ -302,32 +305,32 @@ describe "filtering collections" do
           expect(response.status).to be == 200
 
           # people
-          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:people/people/")
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:people/meta-data-people/")
           expect(response.status).to be == 200
           expect(response.body["md_people"].count).to be 3
 
-          person_id = response.body["people_ids"].second
+          mdp = response.body["md_people"].second
 
-          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:people/people/#{person_id}")
-          expect(response.status).to be == 406
-
-          response = client.delete("/api-v2/collections/#{collection_id}/meta-data/test:people/people/#{person_id}")
+          response = client.delete("/api-v2/collections/#{collection_id}/meta-data/test:people/meta-data-people/#{mdp["id"]}")
           expect(response.status).to be == 200
 
-          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:people/people/#{person_id}")
+          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:people/meta-data-people/") do |req|
+            req.body = {
+              "person_id" => mdp["person_id"]
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
           expect(response.status).to be == 200
 
-          # role
-          # FYI: not implemented
-          response = client.get("/api-v2/collections/#{collection_id}/meta-data/test:roles/roles")
-          expect(response.status).to be == 404
-
-          response = client.post("/api-v2/collections/#{collection_id}/meta-data/test:roles/roles/#{@r1.id}")
+          # people with roles
+          meta_datum_person = MetaDatum::Person.find_by(meta_datum_id: @mdp_wr.id)
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/#{@meta_key_people_with_roles.id}/meta-data-people/#{meta_datum_person.id}/person")
           expect(response.status).to be == 200
+          expect(response.body["id"]).to eq @person.id
 
-          # FYI: not implemented
-          response = client.delete("/api-v2/collections/#{collection_id}/meta-data/test:roles/roles/#{@r1.id}/#{@person.id}")
-          expect(response.status).to be == 404
+          response = client.get("/api-v2/collections/#{collection_id}/meta-data/#{@meta_key_people_with_roles.id}/meta-data-people/#{meta_datum_person.id}/role")
+          expect(response.status).to be == 200
+          expect(response.body["id"]).to eq @role.id
         end
       end
 

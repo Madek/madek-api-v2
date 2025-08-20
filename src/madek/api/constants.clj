@@ -13,7 +13,6 @@
     "MetaDatum::Licenses" ; old: migrated to: keywords
       ;"MetaDatum::MediaEntry" ; TODO reintegrate
     "MetaDatum::People"
-    "MetaDatum::Roles" ; are multi language via h-store
     "MetaDatum::Text"
       ; TODO future: check if multi-language implementation
       ; is possible with new API2

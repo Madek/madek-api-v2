@@ -34,22 +34,6 @@
 ; delete all those namespaces and move the stuff over here, somthing like (def
 ; people-with-ids [meta-datum] ...  and so on
 
-(defn find-meta-data-roles
-  [meta-datum tx]
-  (let [query (-> (sql/select :meta_data_roles.*)
-                  (sql/from :meta_data_roles)
-                  (sql/where [:= :meta_data_roles.meta_datum_id (:id meta-datum)])
-                  sql-format)]
-    (jdbc/execute! tx query)))
-
-(defn- find-meta-datum-role
-  [id tx]
-  (let [query (-> (sql/select :meta_data_roles.*)
-                  (sql/from :meta_data_roles)
-                  (sql/where [:= :meta_data_roles.id (to-uuid id)])
-                  sql-format)]
-    (jdbc/execute-one! tx query)))
-
 (defn- prepare-meta-datum [meta-datum tx]
   (merge (select-keys meta-datum [:id :meta_key_id :type])
          {:value (let [meta-datum-type (:type meta-datum)]
@@ -61,17 +45,11 @@
                      (map #(select-keys % [:id])
                           ((case meta-datum-type
                              "MetaDatum::Keywords" keywords/get-index
-                             "MetaDatum::People" get-people-index
-                             "MetaDatum::Roles" find-meta-data-roles)
+                             "MetaDatum::People" get-people-index)
                            meta-datum tx))))}
          (->> (select-keys meta-datum [:media_entry_id :collection_id])
               (filter (fn [[k v]] v))
               (into {}))))
-
-(defn- prepare-meta-datum-role
-  [id tx]
-  (let [meta-datum (find-meta-datum-role id tx)]
-    (select-keys meta-datum [:id :meta_datum_id :person_id :role_id :position])))
 
 (defn get-meta-datum [request]
   (let [meta-datum (:meta-datum request)
@@ -93,15 +71,6 @@
       (str value) (-> {:body value}
                       (ring-response/header "Content-Type" content-type))
       :else {:body value})))
-
-(defn handle_get-meta-datum-role
-  [req]
-  (let [id (-> req :parameters :path :meta_data_role_id)
-        tx (:tx req)
-        result (prepare-meta-datum-role id tx)]
-    (if-let [id (:id result)]
-      (sd/response_ok result)
-      (sd/response_not_found "No such meta-data-role"))))
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

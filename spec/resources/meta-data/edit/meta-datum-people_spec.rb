@@ -4,8 +4,7 @@ require Pathname(File.expand_path("../..", __FILE__)).join("shared")
 
 describe "generated runs" do
   include_context :json_client_for_authenticated_token_user do
-    # (1..ROUNDS).each do |round|
-    (1..1).each do |round|
+    (1..ROUNDS).each do |round|
       describe "ROUND #{round}" do
         describe "edit meta-data-people for random_resource_type" do
           include_context :random_resource_type
@@ -24,9 +23,7 @@ describe "generated runs" do
             [person_data.id, person_data2.id]
           end
 
-          let(:mdtype_url) { resource_url_typed(meta_key.id, "people") }
-          let(:mdp_url) { resource_url_typed_ided(meta_key.id, "people", person_data.id) }
-          let(:mdp2_url) { resource_url_typed_ided(meta_key.id, "people", person_data2.id) }
+          let(:mdtype_url) { resource_url_typed(meta_key.id, "meta-data-people") }
 
           describe "client" do
             after :each do |example|
@@ -37,8 +34,7 @@ describe "generated runs" do
                 example.exception.message << "\n  Client: #{entity} " \
                   " #{entity.attributes}"
 
-                example.exception.message << "\n  URLs: #{mdtype_url} : " \
-                  " #{mdp_url}"
+                example.exception.message << "\n  URLs: #{mdtype_url}"
               end
             end
 
@@ -51,8 +47,18 @@ describe "generated runs" do
 
               describe "create the meta-datum resource" do
                 let :response do
-                  expect(client.post(mdp_url).status).to be == 200
-                  expect(client.post(mdp2_url).status).to be == 200
+                  expect(
+                    client.post(mdtype_url) do |req|
+                      req.body = {person_id: person_data.id}.to_json
+                      req.headers["Content-Type"] = "application/json"
+                    end.status
+                  ).to be == 200
+                  expect(
+                    client.post(mdtype_url) do |req|
+                      req.body = {person_id: person_data2.id}.to_json
+                      req.headers["Content-Type"] = "application/json"
+                    end.status
+                  ).to be == 200
 
                   client.get(mdtype_url)
                 end
@@ -71,26 +77,27 @@ describe "generated runs" do
                     expect(people_data_ids).to include md_person["person_id"]
                   end
                 end
-
-                it "holds the new people_ids value" do
-                  response.body["people_ids"].each do |person_id|
-                    expect(people_data_ids).to include person_id
-                  end
-                end
-
-                it "holds the new people value" do
-                  response.body["people"].each do |person|
-                    expect(people_data_ids).to include person["id"]
-                  end
-                end
               end
 
               describe "create and delete the meta-datum resource" do
                 let :response do
-                  expect(client.post(mdp_url).status).to be == 200
-                  expect(client.post(mdp2_url).status).to be == 200
+                  expect(
+                    client.post(mdtype_url) do |req|
+                      req.body = {person_id: person_data.id}.to_json
+                      req.headers["Content-Type"] = "application/json"
+                    end.status
+                  ).to be == 200
 
-                  expect(client.delete(mdp2_url).status).to be == 200
+                  resp = client.post(mdtype_url) do |req|
+                    req.body = {person_id: person_data2.id}.to_json
+                    req.headers["Content-Type"] = "application/json"
+                  end
+
+                  expect(resp.status).to be == 200
+
+                  mdp_id = resp.body["md_people"]["id"]
+                  url = resource_url_typed_ided(meta_key.id, "meta-data-people", mdp_id)
+                  expect(client.delete(url).status).to be == 200
 
                   client.get(mdtype_url)
                 end
@@ -106,14 +113,6 @@ describe "generated runs" do
 
                 it "holds the new meta-data-people value" do
                   expect(response.body["md_people"][0]["person_id"]).to be == person_data.id
-                end
-
-                it "holds the new people_ids value" do
-                  expect(response.body["people_ids"][0]).to be == person_data.id
-                end
-
-                it "holds the new people value" do
-                  expect(response.body["people"][0]["id"]).to be == person_data.id
                 end
               end
             end

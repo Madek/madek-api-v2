@@ -4,8 +4,7 @@ require Pathname(File.expand_path("../..", __FILE__)).join("shared")
 
 describe "generated runs" do
   include_context :json_client_for_authenticated_token_user do
-    # (1..ROUNDS).each do |round|
-    (1..1).each do |round|
+    (1..ROUNDS).each do |round|
       describe "ROUND #{round}" do
         describe "edit meta-data-json for random_resource_type" do
           include_context :random_resource_type
