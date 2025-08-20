@@ -10,16 +10,12 @@
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
-            [taoensso.timbre :refer [error info]]))
+            [taoensso.timbre :refer [debug error info]]))
 
 (def MD_TYPE_PEOPLE "MetaDatum::People")
 (def MD_KEY_PEOPLE :people)
 (def MD_KEY_PEOPLE_DATA :md_people)
 (def MD_KEY_PEOPLE_IDS :people_ids)
-(def MD_TYPE_ROLES "MetaDatum::Roles")
-(def MD_KEY_ROLES :roles)
-(def MD_KEY_ROLES_DATA :md_roles)
-(def MD_KEY_ROLES_IDS :roles_ids)
 (def MD_TYPE_KEYWORDS "MetaDatum::Keywords")
 (def MD_KEY_KWS :keywords)
 (def MD_KEY_KW_DATA :md_keywords)
@@ -116,7 +112,6 @@
   (try
     (catcher/with-logging {}
       (jdbc/with-transaction [tx tx]
-        (let [meta-data (db-get-meta-data mr meta-key-id nil tx)])
         (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
           ; already has meta-data
           (if-let [result (db-create-meta-data-keyword tx (:id meta-data) kw-id user-id)]
@@ -136,42 +131,43 @@
       nil)))
 
 (defn db-create-meta-data-people
-  [db md-id person-id user-id]
-  (let [data {:meta_datum_id (to-uuid md-id)
-              :person_id person-id
-              :created_by_id user-id}
-        sql-query (-> (sql/insert-into :meta_data_people)
-                      (sql/values [data])
-                      (sql/returning :*)
-                      sql-format)
-        result (-> (jdbc/execute-one! db sql-query)
-                   strip-prefixes-generic)]
+  ([db md-id person-id user-id]
+   (db-create-meta-data-people db md-id person-id nil user-id))
+  ([db md-id person-id role-id user-id]
+   (let [data {:meta_datum_id (to-uuid md-id)
+               :person_id person-id
+               :role_id role-id
+               :created_by_id user-id}
+         sql-query (-> (sql/insert-into :meta_data_people)
+                       (sql/values [data])
+                       (sql/returning :*)
+                       sql-format)
+         result (-> (jdbc/execute-one! db sql-query)
+                    strip-prefixes-generic)]
 
-    ;(info "db-create-meta-data-people" "\npeople-data\n" data "\nresult\n" result)
-    result))
+     ;(info "db-create-meta-data-people" "\npeople-data\n" data "\nresult\n" result)
+     result)))
 
 (defn create_md_and_people
-  [mr meta-key-id person-id user-id tx]
+  [mr meta-key-id person-id role-id user-id tx]
   (try
     (catcher/with-logging {}
       (jdbc/with-transaction [tx tx]
         (if-let [meta-data (db-get-meta-data mr meta-key-id nil tx)]
           ; already has meta-data
-          (do
-            (if-let [result (db-create-meta-data-people tx (:id meta-data) person-id user-id)]
-              (do
+          (do (debug "create_md_and_people: already has meta-data")
+              (if-let [result (db-create-meta-data-people tx (:id meta-data) person-id role-id user-id)]
                 {:meta_data meta-data
-                 MD_KEY_PEOPLE_DATA result})
-              nil))
+                 MD_KEY_PEOPLE_DATA result}
+                nil))
 
           ; create meta-data and md-people
           (if-let [mdins-result (db-create-meta-data tx mr meta-key-id MD_TYPE_PEOPLE user-id)]
-            (do
-              (if-let [ip-result (db-create-meta-data-people tx (-> mdins-result :id str) person-id user-id)]
-                (do
+            (do (debug "create_md_and_people: creating new meta-data")
+                (if-let [ip-result (db-create-meta-data-people tx (-> mdins-result :id str) person-id role-id user-id)]
                   {:meta_data mdins-result
-                   MD_KEY_PEOPLE_DATA ip-result})
-                nil))
+                   MD_KEY_PEOPLE_DATA ip-result}
+                  nil))
             nil))))
     (catch Exception _
       (error "Could not create md people" _)
@@ -188,9 +184,6 @@
     (info "db-get-meta-data-keywords:\n" query)
     (let [result (jdbc/query tx query)]
       (info "db-get-meta-data-keywords:\n" result)))
-
-(defn db-get-meta-data-roles [md-id tx]
-  (dbh/query-eq-find-all :meta_data_roles :meta_datum_id md-id tx))
 
 (defn db-get-meta-data-people
   [md-id tx]

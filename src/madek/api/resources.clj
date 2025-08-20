@@ -186,7 +186,6 @@
 
    ;meta_data
    meta-data/meta-data-routes
-   meta-data/role-routes
 
    previews/preview-routes
 

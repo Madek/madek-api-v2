@@ -16,11 +16,6 @@
    ;:responses {200 {:body s/Any}
    ;422 {:body s/Any}}
    ])
-(def role-routes
-  ["/meta-data-roles"
-   {:openapi {:tags ["api/meta-data-role"]}}
-   ["/:meta_data_role_id"
-    {:get get/meta-data-role.meta_data_role_id}]])
 
 (def collection-routes
   ["/collections"
@@ -59,18 +54,18 @@
 
       :delete delete/delete.meta_key_id.keyword.keyword_id}]
 
-    ["/:meta_key_id/people/"
-     {:get get/meta_key_id.people2}]
+    ["/:meta_key_id/meta-data-people/"
+     {:get get/collection_id.meta_key_id.meta_data_people
+      :post post/collection_id.meta_key_id.meta_data_people}]
 
-    ["/:meta_key_id/people/:person_id"
-     {:post post/collection_id.meta_key_id.people.person_id
+    ["/:meta_key_id/meta-data-people/:meta_datum_person_id"
+     {:get get/collection_id.meta_key_id.meta_data_people.meta_datum_person_id
+      :delete delete/collection_id.meta_key_id.meta_data_people.meta_datum_person_id}]
 
-      ;; TODO???
-      :delete delete/collection.meta_key_id.people.person_id}]
-
-    ; TODO meta-data roles
-    ["/:meta_key_id/roles/:role_id"
-     {:post post/collection_id.meta_key_id.role.role_id}]]])
+    ["/:meta_key_id/meta-data-people/:meta_datum_person_id/person"
+     {:get get/collection_id.meta_key_id.meta_data_people.meta_datum_person_id.person}]
+    ["/:meta_key_id/meta-data-people/:meta_datum_person_id/role"
+     {:get get/collection_id.meta_key_id.meta_data_people.meta_datum_person_id.role}]]])
 
 (def media-entry-routes
   ["/media-entries"
@@ -109,23 +104,18 @@
 
       :delete delete/meta_key_id.keyword.keyword_id2}]
 
-    ["/:meta_key_id/people/"
-     {:get get/meta_key_id.people}]
+    ["/:meta_key_id/meta-data-people/"
+     {:get get/media_entry_id.meta_key_id.meta_data_people
+      :post post/media_entry_id.meta_key_id.meta_data_people}]
 
-    ["/:meta_key_id/people/:person_id"
-     {:post post/media_entry_id.meta-datum.meta_key_id.people.person_id
+    ["/:meta_key_id/meta-data-people/:meta_datum_person_id"
+     {:get get/media_entry_id.meta_key_id.meta_data_people.meta_datum_person_id
+      :delete delete/media_entry_id.meta_key_id.meta_data_people.meta_datum_person_id}]
 
-      ;; TODO: ????
-      :delete delete/media_entry.meta_key_id.people.person_id}]
-
-    ["/:meta_key_id/roles/"
-     {:get get/meta_key_id.role}]
-
-    ["/:meta_key_id/roles/:role_id/:person_id"
-     {:delete delete/meta_key_id.role.role_id.person_id}]
-
-    ["/:meta_key_id/roles/:role_id/:person_id/:position"
-     {:post post/media_entry_id.meta-datum.meta_key_id.role.role_id.person_id.position}]]])
+    ["/:meta_key_id/meta-data-people/:meta_datum_person_id/person"
+     {:get get/media_entry_id.meta_key_id.meta_data_people.meta_datum_person_id.person}]
+    ["/:meta_key_id/meta-data-people/:meta_datum_person_id/role"
+     {:get get/media_entry_id.meta_key_id.meta_data_people.meta_datum_person_id.role}]]])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

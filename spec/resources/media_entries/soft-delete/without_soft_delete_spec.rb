@@ -150,9 +150,9 @@ describe "a bunch of media entries with different properties" do
 
           response = client.get("/api-v2/media-entries/#{me_id}/meta-data/")
           expect(response.status).to be == 200
-          expect(response.body["meta_data"].count).to eq(6)
+          expect(response.body["meta_data"].count).to eq(5)
 
-          ["test:people", "test:roles", "test:keywords"].each do |meta_key_id|
+          ["test:people", "test:keywords"].each do |meta_key_id|
             response = client.get("/api-v2/media-entries/#{me_id}/meta-data/#{meta_key_id}")
             expect(response.status).to be == 200
             expect(response.body["meta_data"]["media_entry_id"]).to eq(me_id)
@@ -213,33 +213,21 @@ describe "a bunch of media entries with different properties" do
           expect(response.status).to be == 200
 
           # people
-          response = client.get("/api-v2/media-entries/#{me_id}/meta-data/test:people/people/")
+          response = client.get("/api-v2/media-entries/#{me_id}/meta-data/test:people/meta-data-people/")
           expect(response.status).to be == 200
           expect(response.body["md_people"].count).to be 3
 
-          person_id = response.body["people_ids"].second
+          mdp = response.body["md_people"].second
 
-          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:people/people/#{person_id}")
-          expect(response.status).to be == 406
-
-          response = client.delete("/api-v2/media-entries/#{me_id}/meta-data/test:people/people/#{person_id}")
+          response = client.delete("/api-v2/media-entries/#{me_id}/meta-data/test:people/meta-data-people/#{mdp["id"]}")
           expect(response.status).to be == 200
 
-          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:people/people/#{person_id}")
-          expect(response.status).to be == 200
-
-          # role
-          response = client.get("/api-v2/media-entries/#{me_id}/meta-data/test:roles/roles/")
-          expect(response.status).to be == 200
-
-          role_id = response.body["roles"].first["id"]
-          person_id = response.body["md_roles"].second["person_id"]
-          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:roles/roles/#{role_id}/#{person_id}/11")
-          expect(response.status).to be == 200
-
-          role_id = response.body["md_roles"].first["role_id"]
-          person_id = response.body["md_roles"].first["person_id"]
-          response = client.delete("/api-v2/media-entries/#{me_id}/meta-data/test:roles/roles/#{role_id}/#{person_id}")
+          response = client.post("/api-v2/media-entries/#{me_id}/meta-data/test:people/meta-data-people/") do |req|
+            req.body = {
+              "person_id" => mdp["person_id"]
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
           expect(response.status).to be == 200
         end
       end

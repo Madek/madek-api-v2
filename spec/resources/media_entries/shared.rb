@@ -69,9 +69,6 @@ shared_context :bunch_of_media_entries do
       @meta_datum_text = FactoryBot.create :meta_datum_title,
         media_entry: me
 
-      @meta_datum_text = FactoryBot.create :meta_datum_roles,
-        media_entry: me
-
       FactoryBot.create(:meta_datum_text,
         media_entry: me,
         meta_key: title_meta_key,

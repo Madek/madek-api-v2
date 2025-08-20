@@ -135,8 +135,7 @@
                                    "MetaDatum::TextDate"
                                    "MetaDatum::JSON"
                                    "MetaDatum::Keywords"
-                                   "MetaDatum::People"
-                                   "MetaDatum::Roles")
+                                   "MetaDatum::People")
    (s/optional-key :keywords_alphabetical_order) s/Bool
    (s/optional-key :position) s/Int
    :is_enabled_for_media_entries s/Bool
@@ -152,6 +151,8 @@
    (s/optional-key :descriptions) (s/maybe sd/schema_ml_list)
    (s/optional-key :hints) (s/maybe sd/schema_ml_list)
    (s/optional-key :documentation_urls) (s/maybe sd/schema_ml_list)
+
+   (s/optional-key :roles_list_id) (s/maybe s/Uuid)
 
    (s/optional-key :admin_comment) (s/maybe s/Str)})
 
