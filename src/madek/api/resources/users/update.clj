@@ -44,7 +44,7 @@
    (s/optional-key :institution) s/Str
    (s/optional-key :last_name) s/Str
    (s/optional-key :active_until) IsoOffsetDateTimeString
-   (s/optional-key :login) s/Str
+   (s/optional-key :login) (s/maybe s/Str)
    (s/optional-key :password_sign_in_enabled) s/Bool
    (s/optional-key :notes) (s/maybe s/Str) ; TODO
    (s/optional-key :searchable) s/Str})
