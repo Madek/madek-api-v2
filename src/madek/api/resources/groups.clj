@@ -96,7 +96,8 @@
                        (dbh/build-query-param query-params :institutional_id)
                        (dbh/build-query-param query-params :institutional_name)
                        (dbh/build-query-param query-params :name)
-                       (dbh/build-query-param query-params :type))]
+                       (dbh/build-query-param query-params :type)
+                       (dbh/build-query-param query-params :is_assignable))]
     (debug "groups base-query" base-query)
     base-query))
 
@@ -115,7 +116,8 @@
    (s/optional-key :institutional_id) (s/maybe s/Str)
    (s/optional-key :institutional_name) (s/maybe s/Str)
    (s/optional-key :institution) (s/maybe s/Str)
-   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)})
+   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
+   (s/optional-key :is_assignable) s/Bool})
 
 (def schema_update-group
   {(s/optional-key :name) s/Str
@@ -123,7 +125,8 @@
    (s/optional-key :institutional_id) (s/maybe s/Str)
    (s/optional-key :institutional_name) (s/maybe s/Str)
    (s/optional-key :institution) (s/maybe s/Str)
-   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)})
+   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
+   (s/optional-key :is_assignable) s/Bool})
 
 (defn handle_create-group
   [req]
@@ -169,7 +172,8 @@
    (s/optional-key :institutional_id) (s/maybe s/Str)
    (s/optional-key :institutional_name) (s/maybe s/Str)
    (s/optional-key :institution) (s/maybe s/Str)
-   (s/optional-key :searchable) s/Str})
+   (s/optional-key :searchable) s/Str
+   (s/optional-key :is_assignable) s/Bool})
 
 (def schema_export-group-min
   {:id s/Uuid
@@ -189,16 +193,16 @@
   (sa/and
    (sa/conformer string->vec)
    (sa/coll-of #{"id" "name" "type" "created_at" "updated_at" "institutional_id"
-                 "institutional_name" "institution" "created_by_user_id" "searchable"}
+                 "institutional_name" "institution" "created_by_user_id" "searchable" "is_assignable"}
                :kind vector?)))
 
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
-                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable
+                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/is_assignable
                                             :group/fields
                                             ::sp/page ::sp/size]))
 
 (sa/def :usr/groups (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
-                                      ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable]))
+                                      ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable ::sp/is_assignable]))
 
 (sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
                                           :description "A list of persons"}))

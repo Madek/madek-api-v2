@@ -119,13 +119,28 @@ context "groups" do
           ).to be < @groups.count
         end
 
-        # TODO json roa remove: get groups collection by id
-        # it 'using the roa collection we can retrieve all groups' do
-        #  set_of_created_ids = Set.new(@groups.map(&:id))
-        #  set_of_retrieved_ids = Set.new(groups_result.collection().map(&:get).map{|x| x.data['id']})
-        #  expect(set_of_retrieved_ids.count).to be== set_of_created_ids.count
-        #  expect(set_of_retrieved_ids).to be== set_of_created_ids
-        # end
+        it "includes is_assignable key for each group item" do
+          expect(groups_result.body["data"]).not_to be_empty
+          expect(groups_result.body["data"].all? { |g| g.key?("is_assignable") }).to eq true
+        end
+      end
+    end
+  end
+
+  context "Filter groups by is_assignable for admin" do
+    include_context :json_client_for_authenticated_token_admin do
+      before :each do
+        @non_assignable_group = FactoryBot.create(:group, is_assignable: false)
+      end
+
+      it "returns only non-assignable groups when is_assignable=false" do
+        result = client.get("/api-v2/admin/groups/?is_assignable=false")
+        expect(result.status).to be == 200
+        data = result.body["groups"] || result.body["data"]
+        expect(data).not_to be_nil
+        expect(data.all? { |g| g["is_assignable"] == false }).to eq true
+        ids = data.map { |g| g["id"] }
+        expect(ids).to include(@non_assignable_group.id)
       end
     end
   end

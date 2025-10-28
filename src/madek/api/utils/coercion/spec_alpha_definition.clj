@@ -75,6 +75,7 @@
 (sa/def ::is_master (st/spec {:spec boolean?}))
 (sa/def ::get_full_size (st/spec {:spec boolean?}))
 (sa/def ::is_admin (st/spec {:spec boolean?}))
+(sa/def ::is_assignable (st/spec {:spec boolean?}))
 (sa/def ::password_sign_in_enabled (st/spec {:spec boolean?}))
 (sa/def ::public_get_metadata_and_previews (st/spec {:spec boolean?}))
 (sa/def ::me_get_metadata_and_previews (st/spec {:spec boolean?}))
