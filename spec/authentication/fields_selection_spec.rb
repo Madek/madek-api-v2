@@ -54,7 +54,7 @@ describe "Session/Cookie Authentication" do
 
       it "returns expected keys when fetching /groups (clojure/spec)" do
         default_keys = ["institution", "institutional_id", "name", "type", "searchable", "updated_at", "id",
-          "created_by_user_id", "institutional_name", "created_at"]
+          "created_by_user_id", "is_assignable", "institutional_name", "created_at"]
         paths = [
           ["/api-v2/groups/", 200, default_keys],
           ["/api-v2/groups/?fields=", 200, default_keys],
