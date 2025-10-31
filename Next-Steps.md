@@ -20,8 +20,7 @@ Todo
    2. Swagger-UI-Fields werden anders definiert & reitit.schema-Validierung muss anscheinend 
       via primärer Middlewarehandler validiert werden. Testen via UI & cUrl
    3. Generelle Verwendung von:
-      1. Pagination (zero-based, max 1000)
-      2. LevelOfDetail nur für bestimmte Endpoints?
+      1. LevelOfDetail nur für bestimmte Endpoints?
    4. Deklaration von Responses
       1. 500er sollten nicht nötig sein
       2. 500er via 4xx & UserInputValidation vermieden werden

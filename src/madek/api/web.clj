@@ -145,15 +145,23 @@
                       :produces ["text/html" "application/json"]}
             :handler sign-in/get-sign-in}}]]
 
+   ["/api-v2/sign-out/"
+    {:get {:accept "application/json"
+           :handler sign-in/logout-handler
+           :openapi {:tags ["api/auth-info"] :security []}
+           :coercion reitit.coercion.schema/coercion
+           :responses {200 {:description "Logout successful."
+                            :body {:status s/Str
+                                   :message s/Str}}
+                       400 {:description "Bad request."
+                            :body {:status s/Str
+                                   :message s/Str}}
+                       404 {:description "No active session found"
+                            :body {:status s/Str
+                                   :message s/Str}}}}}]
+
    ["/api-v2"
     {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
-
-    ["/sign-out/"
-     {:swagger {:tags ["Logout"] :security []}
-      :no-doc false
-      :post {:accept "application/json"
-             :swagger {:produces ["text/html" "application/json"]}
-             :handler sign-in/logout-handler}}]
 
     ["/auth-info/"
      {:get

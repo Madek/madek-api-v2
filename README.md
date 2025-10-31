@@ -45,8 +45,11 @@ Requirements:
 *  ⚠️ WARNING: local tests can fail caused by wrong order of results (see terms_for_sorting_shared_context.rb)
 
 ### Simple login (dev)
-- Use http://localhost:3104/sign-in
-- DB: Password login has to be activated: users.password_sign_in_enabled=true
+- Use http://localhost:3104/sign-in to login
+- Trigger http://localhost:3104/api-v2/sign-out/ to logout
+- Required DB-Settings
+   - Password login has to be activated: users.password_sign_in_enabled=true
+   - Add admins-entry to access /admin/* endpoints
 
 ### CSRF
 - Use http://localhost:3104/api-v2/api-docs/index.html#/api%2Fauth-info/get_api_v2_csrf_token to fetch CSRF
@@ -126,11 +129,6 @@ Create a config/settings.local.yml with content similar like:
 
     database:
       url: postgresql://localhost:5415/madek?pool=3
-
-### Config-parameters
-
-- `ZERO_BASED_PAGINATION`
-  Pagination: used to define `zero-based` OR `one-based pagination`
 
 ### Test Configuration
 

@@ -26,7 +26,7 @@
                                     (str/starts-with? (str/lower-case hdr) "token ")))]
       (if (or api-request? (token-auth-header? auth))
         (handler request)
-        (if (and (not (some #(= % uri) ["/sign-in" "/inventory/login"]))
+        (if (and (not (some #(= % uri) ["/sign-in"]))
                  (not (token-auth-header? auth)))
           ((anti-csrf/wrap handler) request)
           (handler request))))))

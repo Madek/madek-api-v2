@@ -18,7 +18,6 @@
    [reitit.coercion.schema]
    [reitit.coercion.spec]
    [ring.middleware.json]
-   [ring.util.response]
    [ring.util.response :as response]
    [schema.core :as s]))
 
@@ -49,12 +48,8 @@
       (be/create-error-response username request)
       (let [request (if ACTIVATE-DEV-MODE-REDIRECT
                       (assoc-in request [:form-params :return-to] "/api-v2/api-docs/")
-                      request)
-            resp (be/routes (convert-params request))
-            created-session (get-in resp [:cookies "madek-user-session" :value])]
-        (assoc request :sessions created-session
-               :cookies {"madek-user-session" {:value created-session}})
-        resp))))
+                      request)]
+        (be/routes (convert-params request))))))
 
 (defn parse-cookies [cookie-header]
   (->> (str/split cookie-header #";\s*")
@@ -63,27 +58,29 @@
 
 (defn logout-handler [request]
   (let [user-id (-> request :authenticated-entity :id)
-        cookie-header (get-in request [:headers "cookie"] "")
-        cookies-map (parse-cookies cookie-header)
-        session-id (get cookies-map "madek-session")
-        hashed-token (token-hash session-id)
-        delete-query (-> (sql/delete-from :user_sessions)
-                         (sql/where [:= :token_hash hashed-token])
-                         sql-format)
-        delete-result (jdbc/execute! (:tx request) delete-query)]
-    (try
-      (if (> (:next.jdbc/update-count (first delete-result)) 0)
-        (do
-          (log/info "Successfully removed session for user_id:" user-id)
-          (-> (response/response {:status "success" :message "User logged out successfully"})
-              (response/set-cookie "madek-session" "" {:max-age 0 :path "/"})))
-        (do
-          (log/warn "No session found for user_id:" user-id)
-          (response/status
-           (response/response {:status "failure" :message "No active session found"}) 404)))
-      (catch Exception e
-        (log/error "Error in logout-handler:" e)
-        (response/status (response/response {:message (.getMessage e)}) 400)))))
+        cookies-map (parse-cookies (get-in request [:headers "cookie"] ""))
+        session-id (get cookies-map "madek-session")]
+
+    (if (nil? session-id)
+      (response/status (response/response {:status "failure" :message "No active session found"}) 404)
+      (let [hashed-token (token-hash session-id)
+            delete-query (-> (sql/delete-from :user_sessions)
+                             (sql/where [:= :token_hash hashed-token])
+                             sql-format)
+            delete-result (jdbc/execute! (:tx request) delete-query)]
+
+        (try
+          (if (> (:next.jdbc/update-count (first delete-result)) 0)
+            (do
+              (log/info "Successfully removed session for user_id:" user-id)
+              (-> (response/response {:status "success" :message "User logged out successfully"})
+                  (response/set-cookie "madek-session" "" {:max-age 0 :path "/"})))
+            (do
+              (log/warn "No session found for user_id:" user-id)
+              (response/status (response/response {:status "failure" :message "No active session found"}) 404)))
+          (catch Exception e
+            (log/error "Error in logout-handler:" e)
+            (response/status (response/response {:status "failure" :message (.getMessage e)}) 400)))))))
 
 (def csrf-error-examples [{:summary "Has not been send"
                            :value {:msg "The x-csrf-token has not been send!"}}

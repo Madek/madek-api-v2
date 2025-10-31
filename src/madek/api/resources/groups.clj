@@ -298,7 +298,7 @@
 
    ; groups-users/ring-routes
    ["groups/:group-id/users/" {:get {:summary "Get group users by id"
-                                     :description "Get group users by id. (zero-based paging)"
+                                     :description "Get group users by id."
                                      :content-type "application/json"
                                      :handler group-users/handle_get-group-users
                                      :coercion spec/coercion
