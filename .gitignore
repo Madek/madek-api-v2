@@ -19,3 +19,4 @@ pom.xml
 pom.xml.asc
 resources/built-info.yml
 spec/config/database.yml
+./vscode/
