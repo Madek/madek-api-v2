@@ -25,6 +25,7 @@
          :catalog_titles (sd/transform_ml (:catalog_titles data))
          :featured_set_subtitles (sd/transform_ml (:featured_set_subtitles data))
          :featured_set_titles (sd/transform_ml (:featured_set_titles data))
+         :permission_public_descriptions (sd/transform_ml (:permission_public_descriptions data))
          :provenance_notices (sd/transform_ml (:provenance_notices data))
          :site_titles (sd/transform_ml (:site_titles data))
          :support_urls (sd/transform_ml (:support_urls data))
@@ -95,6 +96,7 @@
    (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
+   (s/optional-key :permission_public_descriptions) sd/schema_ml_list
    (s/optional-key :person_info_fields) [s/Str]
    (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
    (s/optional-key :section_meta_key_id) (s/maybe s/Str)
@@ -141,6 +143,7 @@
    (s/optional-key :media_entry_default_license_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_meta_key) (s/maybe s/Str)
    (s/optional-key :media_entry_default_license_usage_text) (s/maybe s/Str)
+   (s/optional-key :permission_public_descriptions) (s/maybe sd/schema_ml_list)
    (s/optional-key :person_info_fields) [s/Str]
    (s/optional-key :provenance_notices) (s/maybe sd/schema_ml_list)
    (s/optional-key :section_meta_key_id) (s/maybe s/Str)
