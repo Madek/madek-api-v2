@@ -21,10 +21,10 @@
         org.bouncycastle/bcprov-jdk15on {:mvn/version "1.70"}
         org.clj-commons/byte-streams {:mvn/version "0.3.4"}
         digest/digest {:mvn/version "1.4.10"}
-        hickory/hickory {:mvn/version "0.7.1"}
+        hickory/hickory {:mvn/version "0.7.1" :exclusions [org.jsoup/jsoup]}
         compojure/compojure {:mvn/version "1.7.1"}
         drtom/clj-uuid {:mvn/version "0.1.7"}
-        ring-middleware-accept {:mvn/version "2.0.0"}
+        ring-middleware-accept/ring-middleware-accept {:mvn/version "2.0.0"}
         environ/environ {:mvn/version "1.2.0"}
         funcool/cuerdas {:mvn/version "2023.11.09-407"} ;;2023.11.09-407
         honeysql/honeysql {:mvn/version "1.0.461"}
@@ -33,21 +33,26 @@
         inflections/inflections {:mvn/version "0.14.2"}
         javax.servlet/servlet-api {:mvn/version "2.5"}
         logbug/logbug {:mvn/version "5.0.0"}
-        me.raynes/fs {:mvn/version "1.4.6"}
+        me.raynes/fs {:mvn/version "1.4.6"
+                      :exclusions [org.apache.commons/commons-compress]}
         nrepl/nrepl {:mvn/version "1.3.1"}
-        org.apache.commons/commons-lang3 {:mvn/version "3.14.0"}
+        org.apache.commons/commons-compress #:mvn{:version "1.28.0"}
+        org.apache.commons/commons-lang3 {:mvn/version "3.20.0"}
         org.clojars.hozumi/clj-commons-exec {:mvn/version "1.2.0"}
-        org.clojure/clojure {:mvn/version "1.11.3"}
+        org.clojure/clojure {:mvn/version "1.11.4"}
+        org.clojure/clojurescript {:mvn/version "1.11.60"}
         org.clojure/core.match {:mvn/version "1.1.0"}
         org.clojure/data.codec {:mvn/version "0.2.0"}
         org.clojure/tools.cli {:mvn/version "1.1.230"}
         org.clojure/tools.logging {:mvn/version "1.3.0"}
+        org.jsoup/jsoup {:mvn/version "1.15.3"} ; CVE-2021-37714, CVE-2022-36033 (see hickory/hickory)
+        org.postgresql/postgresql {:mvn/version "42.6.2"}
         org.yaml/snakeyaml {:mvn/version "2.2"}
         pg-types/pg-types {:mvn/version "3.0.0"}
         ring-cors/ring-cors {:mvn/version "0.1.13"}
-        ring/ring-core {:mvn/version "1.12.2"}
-        ring/ring-devel {:mvn/version "1.12.2"}
-        ring/ring-jetty-adapter {:mvn/version "1.12.2"}
+        ring/ring-core {:mvn/version "1.15.2"}
+        ring/ring-devel {:mvn/version "1.15.2"}
+        ring/ring-jetty-adapter {:mvn/version "1.15.2"}
         ring/ring-json {:mvn/version "0.5.1"}
         spootnik/signal {:mvn/version "0.2.5"}
         uritemplate-clj/uritemplate-clj {:mvn/version "1.3.1"}
@@ -83,6 +88,11 @@
 
   :outdated {:deps {com.github.liquidz/antq {:mvn/version "2.6.1121"}}
              :main-opts ["-m" "antq.core"]}
+
+  :clj-watson {:replace-deps
+               {io.github.clj-holmes/clj-watson
+                {:git/tag "v6.0.1" :git/sha "b520351"}}
+               :main-opts ["-m" "clj-watson.cli"]}
 
   :resources {:extra-paths ["resources"]}
   :test {:extra-paths ["test"]
