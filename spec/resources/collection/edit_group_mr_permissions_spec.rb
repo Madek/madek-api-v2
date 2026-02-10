@@ -92,7 +92,6 @@ describe "Getting a media-entry resource with authentication" do
         "get_metadata_and_previews" => true,
         "responsible_user_id" => user.id,
         "clipboard_user_id" => nil,
-        "workflow_id" => nil,
         "responsible_delegation_id" => nil
       }
 

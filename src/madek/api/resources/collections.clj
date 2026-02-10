@@ -120,11 +120,9 @@
    (s/optional-key :get_metadata_and_previews) s/Bool
 
    (s/optional-key :layout) schema_layout_types
-   (s/optional-key :is_master) s/Bool
    (s/optional-key :sorting) schema_sorting_types
    (s/optional-key :default_context_id) (s/maybe s/Str) ;;caution
    ;(s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-   (s/optional-key :workflow_id) (s/maybe s/Uuid)
 
    ;; TODO: only one (:responsible_user_id OR :responsible_delegation_id) should be set (uuid & null check)
    (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
@@ -132,25 +130,25 @@
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
-(sa/def :usr/collections-update (sa/keys :opt-un [::sp/layout ::sp/is_master ::sp/sorting ::sp-nil/default_context_id
-                                                  ::sp-nil/workflow_id ::sp/default_resource_type]))
+(sa/def :usr/collections-update (sa/keys :opt-un [::sp/layout ::sp/sorting ::sp-nil/default_context_id
+                                                  ::sp/default_resource_type]))
 
-(sa/def :adm/collections-update (sa/keys :opt-un [::sp/layout ::sp/is_master ::sp/sorting ::sp-nil/default_context_id
-                                                  ::sp-nil/workflow_id ::sp/default_resource_type
+(sa/def :adm/collections-update (sa/keys :opt-un [::sp/layout ::sp/sorting ::sp-nil/default_context_id
+                                                  ::sp/default_resource_type
                                                   ::sp-nil/deleted_at]))
 
 (sa/def :collection/fields
   (sa/and
    (sa/conformer string->vec)
    (sa/coll-of #{"get_metadata_and_previews" "id" "created_at" "deleted_at" "layout"
-                 "is_master" "sorting" "responsible_user_id" "creator_id" "default_context_id" "updated_at"
-                 "meta_data_updated_at" "edit_session_updated_at" "clipboard_user_id" "workflow_id" "responsible_delegation_id"
+                 "sorting" "responsible_user_id" "creator_id" "default_context_id" "updated_at"
+                 "meta_data_updated_at" "edit_session_updated_at" "clipboard_user_id" "responsible_delegation_id"
                  "default_resource_type"}
                :kind vector?)))
 
 (sa/def :collection-query/query-def (sa/keys :opt-un [:collection/fields
                                                       ::sp/collection_id ::sp/order ::sp/creator_id
-                                                      ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
+                                                      ::sp/responsible_user_id ::sp/clipboard_user_id
                                                       ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                       ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
                                                       ::sp/me_edit_metadata_and_relations
@@ -158,7 +156,7 @@
 
 (sa/def :collection-query/query-admin-def (sa/keys :opt-un [:collection/fields
                                                             ::sp/collection_id ::sp/order ::sp/creator_id
-                                                            ::sp/responsible_user_id ::sp/clipboard_user_id ::sp/workflow_id
+                                                            ::sp/responsible_user_id ::sp/clipboard_user_id
                                                             ::sp/responsible_delegation_id ::sp/public_get_metadata_and_previews
                                                             ::sp/me_get_metadata_and_previews ::sp/me_edit_permission
                                                             ::sp/me_edit_metadata_and_relations
@@ -170,7 +168,6 @@
    (s/optional-key :get_metadata_and_previews) s/Bool
 
    (s/optional-key :layout) schema_layout_types
-   (s/optional-key :is_master) s/Bool
    (s/optional-key :sorting) schema_sorting_types
 
    (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
@@ -185,15 +182,14 @@
    (s/optional-key :edit_session_updated_at) s/Any
 
    (s/optional-key :clipboard_user_id) (s/maybe s/Str)
-   (s/optional-key :workflow_id) (s/maybe s/Uuid)
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)
 
    (s/optional-key :default_resource_type) schema_default_resource_type})
 
-(sa/def :usr/collections-put-response (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/deleted_at] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/is_master ::sp/sorting
+(sa/def :usr/collections-put-response (sa/keys :req-un [::sp/id ::sp/created_at ::sp-nil/deleted_at] :opt-un [::sp/get_metadata_and_previews ::sp/layout ::sp/sorting
                                                                                                               ::sp-nil/responsible_user_id ::sp/creator_id ::sp-nil/default_context_id
                                                                                                               ::sp/updated_at ::sp/meta_data_updated_at
-                                                                                                              ::sp/edit_session_updated_at ::sp-nil/clipboard_user_id ::sp-nil/workflow_id
+                                                                                                              ::sp/edit_session_updated_at ::sp-nil/clipboard_user_id
                                                                                                               ::sp-nil/responsible_delegation_id ::sp/default_resource_type]))
 
 (sa/def :usr/collections
@@ -202,7 +198,6 @@
                     ::sp/created_at
                     ::sp-nil/deleted_at
                     ::sp/layout
-                    ::sp/is_master
                     ::sp/sorting
                     ::sp-nil/responsible_user_id
                     ::sp/creator_id
@@ -211,7 +206,6 @@
                     ::sp/meta_data_updated_at
                     ::sp/edit_session_updated_at
                     ::sp-nil/clipboard_user_id
-                    ::sp-nil/workflow_id
                     ::sp-nil/responsible_delegation_id
                     ::sp/default_resource_type
                     ::sp-nil/position

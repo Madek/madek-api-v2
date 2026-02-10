@@ -48,7 +48,6 @@
 (sa/def ::responsible_user_id (nil-or uuid?))
 (sa/def ::updated_at (nil-or any?))
 (sa/def ::updator_id (nil-or uuid?))
-(sa/def ::workflow_id (nil-or uuid?))
 
 ;; IsoOffsetDateTimeString for schema.spec, see: 'Timestamp-formats'
 (defn offset-date-time-string? [^String s]

@@ -13,16 +13,10 @@ shared_context :setup_post_data do
   let!(:put_data) do
     {
       layout: "list",
-      is_master: true,
       sorting: "created_at DESC",
       default_context_id: nil,
-      workflow_id: nil,
       default_resource_type: "all"
     }
-  end
-
-  let!(:workflow) do
-    Workflow.create(name: Faker::Educator.course, creator: user)
   end
 
   let!(:context) do
@@ -33,11 +27,9 @@ shared_context :setup_post_data do
     {
       default_resource_type: "collections",
       get_metadata_and_previews: true,
-      is_master: true,
       default_context_id: context.id,
       layout: "list",
       sorting: "manual DESC",
-      workflow_id: workflow.id,
       responsible_delegation_id: nil,
       responsible_user_id: user.id
     }

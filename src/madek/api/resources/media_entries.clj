@@ -164,7 +164,7 @@
 ; This is done via front-end.
 ;(me_add-default-license new-mer)
 ;(me_exract-and-store-metadata new-mer)
-;(me_add-to-collection new-mer (or col_id_param (-> workflow :master_collection :id)))
+;(me_add-to-collection new-mer col_id_param))
 ;(if-let [collection (dbh/query-eq-find-one "collections" "id" collection-id)]
 ;  (if-let [add-col-res (collection-media-entry-arcs/create-col-me-arc collection-id (:id media-entry) {} tx)]
 ;    (info "handle_uploaded_file_resp_ok: added to collection: " collection-id "\nresult\n" add-col-res)
@@ -181,7 +181,6 @@
         new-me {:responsible_user_id (str user-id)
                 :creator_id (str user-id)
                 :is_published false}]
-    ; handle workflow authorize
 
     (let [new-me {:responsible_user_id (str user-id)
                   :creator_id (str user-id)
@@ -209,7 +208,6 @@
 ; this is only for dev
 ; no collection add
 ; no meta data / entry clone
-; no workflows
 ; no preview generation
 ; no file media conversion
 ; use madek web-app to upload files and create entries.

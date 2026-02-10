@@ -46,7 +46,6 @@ describe "1) Test status-code as public-user" do
       "/api-v2/keywords/?page=1&size=2" => 200,
       "/api-v2/groups/" => 200,
 
-      "/api-v2/workflows/" => 401,
       "/api-v2/auth-info/" => 401,
       "/api-v2/edit_sessions/?page=1&size=1" => 401,
 
@@ -113,7 +112,6 @@ shared_context :test_proper_public_user do
         "/api-v2/keywords/?page=1&size=2" => 200, # FIXME
         "/api-v2/groups/" => 200,
 
-        "/api-v2/workflows/" => 401,
         "/api-v2/auth-info/" => 401,
         "/api-v2/edit_sessions/?page=1&size=1" => 401,
 
@@ -209,7 +207,6 @@ context "3) resource with admin auth" do
           "/api-v2/keywords/?page=1&size=2" => 200,
           "/api-v2/groups/" => 200,
 
-          "/api-v2/workflows/" => 200,
           "/api-v2/auth-info/" => 200,
           "/api-v2/edit_sessions/?page=1&size=1" => 200,
 
@@ -288,7 +285,6 @@ context "4) resource with token-user auth" do
           "/api-v2/keywords/?page=1&size=2" => 200,
           "/api-v2/groups/" => 200,
 
-          "/api-v2/workflows/" => 200,
           "/api-v2/auth-info/" => 200,
           "/api-v2/edit_sessions/?page=1&size=1" => 200,
 
@@ -391,7 +387,6 @@ context "5) resource with token-user auth with admin-credentials" do
           "/api-v2/keywords/?page=1&size=2" => 200,
           "/api-v2/groups/" => 200,
 
-          "/api-v2/workflows/" => 200,
           "/api-v2/auth-info/" => 200,
           "/api-v2/edit_sessions/?page=1&size=1" => 200,
 

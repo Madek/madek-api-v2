@@ -31,7 +31,6 @@
 (sa/def ::collection_id (st/spec {:spec uuid?}))
 (sa/def ::responsible_user_id (st/spec {:spec uuid?}))
 (sa/def ::clipboard_user_id (st/spec {:spec uuid?}))
-(sa/def ::workflow_id (st/spec {:spec uuid?}))
 (sa/def ::responsible_delegation_id (st/spec {:spec uuid?}))
 
 (sa/def ::child_id (st/spec {:spec uuid?}))
@@ -72,7 +71,6 @@
 (sa/def ::is_required (st/spec {:spec boolean?}))
 (sa/def ::full_data (st/spec {:spec boolean?}))
 (sa/def ::highlight (st/spec {:spec boolean?}))
-(sa/def ::is_master (st/spec {:spec boolean?}))
 (sa/def ::get_full_size (st/spec {:spec boolean?}))
 (sa/def ::is_admin (st/spec {:spec boolean?}))
 (sa/def ::is_assignable (st/spec {:spec boolean?}))

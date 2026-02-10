@@ -35,7 +35,6 @@
    [madek.api.resources.usage-terms :as usage-terms]
    [madek.api.resources.users.main :as users]
    [madek.api.resources.vocabularies :as vocabularies]
-   [madek.api.resources.workflows :as workflows]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [taoensso.timbre :refer [debug]]))
@@ -85,9 +84,7 @@
    ;                :put (constantly sd/no_impl)
    ;                :delete (constantly sd/no_impl)}]
 
-; TODO confidential-links post, get, patch, delete
-
-   ; TODO Frage: delegations workflows post, get, patch, delete
+   ; TODO confidential-links post, get, patch, delete
    ])
 (def admin-routes
   ; TODO use wrap admin
@@ -195,8 +192,7 @@
    groups/user-routes
    usage-terms/user-routes
 
-   vocabularies/user-routes
-   workflows/user-routes])
+   vocabularies/user-routes])
 
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

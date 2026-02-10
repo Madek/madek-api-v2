@@ -174,7 +174,7 @@
                         406 {:description "Could not create confidential link."
                              :body s/Any}}}
 
-     :get {:summary (sd/sum_adm "List workflows.")
+     :get {:summary (sd/sum_adm "List confidential links.")
            :handler handle_list-conf-links
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-permissions]
@@ -242,7 +242,7 @@
                         406 {:description "Could not create confidential link."
                              :body s/Any}}}
 
-     :get {:summary (sd/sum_adm "List workflows.")
+     :get {:summary (sd/sum_adm "List confidential links.")
            :handler handle_list-conf-links
            :middleware [jqh/ring-wrap-add-media-resource
                         jqh/ring-wrap-authorization-edit-permissions]

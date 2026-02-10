@@ -8,11 +8,9 @@ CAUTION: Either :responsible_user_id OR :responsible_delegation_id has to be set
 {
   "default_resource_type": "collections",
   "get_metadata_and_previews": true,
-  "is_master": true,
   "default_context_id": "columns",
   "layout": "list",
   "sorting": "manual DESC",
-  "workflow_id": "5e0f0a61-746f-4823-9d9c-6d05eb4d9876",
   
   // either .. or ..
   "responsible_delegation_id": null,

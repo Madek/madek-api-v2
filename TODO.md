@@ -33,8 +33,6 @@
 
 ### FRAGE: Oettli: delegations
 
-#### FRAGE: Oettli: delegations_workflows
-
 ## TODO datalayer
 
 add cast for collection layout and sorting types
@@ -115,8 +113,6 @@ Description, docu:
 
 ### TODO usage_terms: get the most recent one ?!? order by updated_at ?
 
-### workflows - response coercion: jsonb not hstore conversion problem
-
 ### updated_at created_at coercion
 
 ### meta_data_type MediaEntry
@@ -140,8 +136,6 @@ Description, docu:
 ### rdf_classes
 
 ### sections
-
-### users_workflows
 
 ### visualizations
 

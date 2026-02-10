@@ -28,7 +28,6 @@
                                    :creator_id
                                    :responsible_user_id
                                    :clipboard_user_id
-                                   :workflow_id
                                    :get_metadata_and_previews
                                    :responsible_delegation_id])
      :default (throw ((ex-info "Invalid media-resource type" {:status 500}))))))
@@ -37,7 +36,6 @@
   {(s/optional-key :get_metadata_and_previews) s/Bool
    (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
    (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-   (s/optional-key :workflow_id) (s/maybe s/Uuid)
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
 
 (def schema_create-collection-user-permission
@@ -81,7 +79,6 @@
    (s/optional-key :responsible_user_id) (s/maybe s/Uuid)
 
    (s/optional-key :clipboard_user_id) (s/maybe s/Uuid)
-   (s/optional-key :workflow_id) (s/maybe s/Uuid)
    (s/optional-key :responsible_delegation_id) (s/maybe s/Uuid)})
 
 (def schema_export_collection-permissions-all
