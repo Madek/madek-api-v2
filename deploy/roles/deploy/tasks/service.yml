@@ -12,9 +12,10 @@
   failed_when: false
 
 - name: (re)start api-v2-service
-  service:
+  systemd:
     name: madek-api-v2
     state: restarted
+    enabled: yes
   register: api_v2_service_details
   until: api_v2_service_details.status.ActiveState == "active"
   retries: 3
