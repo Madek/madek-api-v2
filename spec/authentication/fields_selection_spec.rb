@@ -12,6 +12,7 @@ describe "Session/Cookie Authentication" do
   context "Session authentication as admin" do
     before :each do
       FactoryBot.create(:custom_url, creator: user)
+      FactoryBot.create(:group)
     end
 
     context "expired session object" do

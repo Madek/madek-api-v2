@@ -1,7 +1,7 @@
 require "spec_helper"
 require "shared/audit-validator"
 
-expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
+expected_audit_entries = ["INSERT auth_systems", "INSERT rdf_classes", "INSERT rdf_classes",
   "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users",
   "INSERT admins", "INSERT api_tokens", "INSERT people"]
 
@@ -31,7 +31,7 @@ context "people" do
               req.headers["Content-Type"] = "application/json"
             end.status).to be == 201
 
-            expect_audit_entries("POST /api-v2/admin/people/", expected_audit_entries, 201)
+            expect_audit_entries("POST /api-v2/admin/people/", expected_audit_entries, 201, {distinct: true})
           end
         end
 
@@ -72,7 +72,7 @@ context "people" do
           it "has the proper institutional_id" do
             expect(created_person.body["institutional_id"]).to be == "12345/x"
 
-            expect_audit_entries("POST /api-v2/admin/people/", expected_audit_entries, 201)
+            expect_audit_entries("POST /api-v2/admin/people/", expected_audit_entries, 201, {distinct: true})
           end
         end
       end

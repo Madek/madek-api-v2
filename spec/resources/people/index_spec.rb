@@ -2,8 +2,8 @@ require "spec_helper"
 require "shared/audit-validator"
 
 context "people" do
-  expected_audit_entries = ["INSERT admins", "INSERT api_tokens", "INSERT auth_systems_users", "INSERT groups",
-    "INSERT people", "INSERT rdf_classes", "INSERT usage_terms", "INSERT users", "UPDATE auth_systems"]
+  expected_audit_entries = ["INSERT admins", "INSERT api_tokens", "INSERT auth_systems", "INSERT auth_systems_users",
+    "INSERT people", "INSERT rdf_classes", "INSERT usage_terms", "INSERT users"]
 
   before :each do
     @people = 77.times.map {
