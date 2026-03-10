@@ -75,6 +75,7 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "returns 200 for authorized GET request" do
+      FactoryBot.create(:group)
       response = plain_faraday_json_client.get("/api-v2/groups/")
       expect(response.status).to eq(200)
       id = response.body["groups"].first["id"]
