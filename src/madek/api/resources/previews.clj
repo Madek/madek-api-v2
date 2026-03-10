@@ -23,12 +23,13 @@
   [req]
   (let [media-file (-> req :media-file)
         id (:id media-file)
-        size (or (-> req :parameters :query :size) "small")]
-    (if-let [preview (dbh/query-eq-find-one :previews :media_file_id id :thumbnail size (:tx req))]
+        requested-size (-> req :parameters :query :size)
+        size (or requested-size "medium")]
+    (if-let [preview (or (dbh/query-eq-find-one :previews :media_file_id id :thumbnail size (:tx req))
+                         (when (nil? requested-size)
+                           (dbh/query-eq-find-one :previews :media_file_id id :thumbnail "maximum" (:tx req))))]
       (sd/response_ok preview)
-      (sd/response_not_found "No such preview file"))
-    ;(info "handle_get-preview" "\nid\n" id "\nmf\n" media-file "\npreviews\n" preview)
-    ))
+      (sd/response_not_found "No such preview file"))))
 (defn add-preview-for-media-file [handler request]
   (let [media-file (-> request :media-file)
         id (:id media-file)
@@ -55,7 +56,7 @@
    :media_file_id s/Uuid
    :media_type s/Str
    :content_type s/Str
-   ;(s/enum "small" "small_125" "medium" "large" "x-large" "maximum")
+   ;(s/enum "small" "small_125" "medium" "large" "x-large" "grand" "maximum")
    :thumbnail s/Str
    :width (s/maybe s/Int)
    :height (s/maybe s/Int)
@@ -66,8 +67,8 @@
 
 (def schema-image-size
   {(s/optional-key :size)
-   ^{:description "The size of the media entry. Allowed values: small, small_125, medium, large, x-large, maximum"}
-   (s/enum "small" "small_125" "medium" "large" "x-large" "maximum")})
+   ^{:description "The size of the preview image. Allowed values: small, small_125, medium, large, x-large, grand, maximum"}
+   (s/enum "small" "small_125" "medium" "large" "x-large" "grand" "maximum")})
 
 ; TODO tests
 (def preview-routes

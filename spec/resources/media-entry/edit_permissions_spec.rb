@@ -212,7 +212,7 @@ describe "Getting a media-entry resource with authentication" do
         edit_permissions: true
       })
       expect(user_perm.status).to eq 200
-      expect_audit_entries_count(1, 26, 1)
+      expect_audit_entries_count(1, 24, 1)
     end
 
     before(:each) { remove_all_audits }
