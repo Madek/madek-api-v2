@@ -28,6 +28,25 @@ context "groups" do
             end
             expect(resp.status).to be == 201
             expect(resp.body["is_assignable"]).to eq true
+            expect(resp.body["creator_id"]).to be_nil
+            expect(resp.body["updator_id"]).to be_nil
+          end
+
+          it "accepts client-provided creator and updater ids" do
+            creator = FactoryBot.create(:user)
+            updator = FactoryBot.create(:user)
+            resp = client.post("/api-v2/admin/groups/") do |req|
+              req.body = {
+                name: "server-managed-audit-fields",
+                creator_id: creator.id,
+                updator_id: updator.id
+              }.to_json
+              req.headers["Content-Type"] = "application/json"
+            end
+
+            expect(resp.status).to be == 201
+            expect(resp.body["creator_id"]).to eq creator.id
+            expect(resp.body["updator_id"]).to eq updator.id
           end
         end
 

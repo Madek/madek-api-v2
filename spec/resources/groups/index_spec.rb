@@ -67,6 +67,26 @@ context "groups" do
         expect(resp1.status).to be == 200
         expect(resp1.body).to be_a Hash
       end
+
+      it "includes both audit fields in list entries even when updater is missing" do
+        group = FactoryBot.create(:group, creator_id: user.id, updator_id: nil)
+
+        resp = client.get("/api-v2/groups/?id=#{group.id}")
+        expect(resp.status).to be == 200
+        item = resp.body["groups"].find { |g| g["id"] == group.id }
+        expect(item).not_to be_nil
+        expect(item).to have_key("creator_id")
+        expect(item).to have_key("updator_id")
+      end
+
+      it "includes both audit fields in single group response" do
+        group = FactoryBot.create(:group, creator_id: user.id, updator_id: nil)
+
+        resp = client.get("/api-v2/groups/#{group.id}")
+        expect(resp.status).to be == 200
+        expect(resp.body).to have_key("creator_id")
+        expect(resp.body).to have_key("updator_id")
+      end
     end
   end
 
@@ -90,14 +110,14 @@ context "groups" do
         expect(resp1.body["groups"].count).to be 202
       end
 
-      it "responses with 200 for all but 403 for single" do
+      it "responses with 200" do
         resp = client.get("/api-v2/groups/")
         expect(resp.status).to be == 200
         expect(resp.body["groups"].count).to be 202
 
         group_id = resp.body["groups"].first["id"]
         resp = client.get("/api-v2/groups/#{group_id}")
-        expect(resp.status).to be == 403
+        expect(resp.status).to be == 200
       end
     end
   end

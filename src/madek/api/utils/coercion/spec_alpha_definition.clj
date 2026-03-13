@@ -27,7 +27,6 @@
 (sa/def ::person_id (st/spec {:spec uuid?}))
 (sa/def ::media_entry_id (st/spec {:spec uuid?}))
 (sa/def ::user_id (st/spec {:spec uuid?}))
-(sa/def ::created_by_user_id (st/spec {:spec uuid?}))
 (sa/def ::collection_id (st/spec {:spec uuid?}))
 (sa/def ::responsible_user_id (st/spec {:spec uuid?}))
 (sa/def ::clipboard_user_id (st/spec {:spec uuid?}))
@@ -56,6 +55,7 @@
 (sa/def ::admin_comment (st/spec {:spec string?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
+(sa/def ::updator_id (st/spec {:spec uuid?}))
 (sa/def ::created_at (st/spec {:spec any?}))
 (sa/def ::updated_at (st/spec {:spec any?}))
 (sa/def ::deleted_at (st/spec {:spec any?}))

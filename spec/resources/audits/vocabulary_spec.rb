@@ -79,9 +79,8 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
       expect(response.status).to eq(200)
       id = response.body["groups"].first["id"]
 
-      # FIXME: fetchAll is public but fetch not?
       response = plain_faraday_json_client.get("/api-v2/groups/#{id}")
-      expect(response.status).to eq(403)
+      expect(response.status).to eq(200)
 
       response = wtoken_header_plain_faraday_json_client_get(admin_user_token.token, "/api-v2/groups/#{id}")
       expect(response.status).to eq(200)
