@@ -36,6 +36,24 @@ context "groups" do
           it "contains the update" do
             expect(patch_result.body["name"]).to be == "new name"
           end
+
+          it "does not auto-set updater" do
+            expect(patch_result.body["updator_id"]).to be_nil
+          end
+        end
+
+        it "does not change creator when creator_id is not provided" do
+          creator = FactoryBot.create(:user)
+          @group.update!(creator_id: creator.id)
+
+          resp = client.patch("/api-v2/admin/groups/#{@group.id}") do |req|
+            req.body = {name: "new name once more"}.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+
+          expect(resp.status).to be == 200
+          expect(resp.body["creator_id"]).to eq creator.id
+          expect(resp.body["updator_id"]).to be_nil
         end
 
         it "can update is_assignable to false" do
@@ -71,6 +89,22 @@ context "groups" do
           fin = client.get("/api-v2/admin/groups/#{@group.id}")
           expect(fin.status).to be == 200
           expect(fin.body["is_assignable"]).to eq true
+        end
+
+        it "accepts client-provided creator and updater ids" do
+          creator = FactoryBot.create(:user)
+          updator = FactoryBot.create(:user)
+          resp = client.patch("/api-v2/admin/groups/#{@group.id}") do |req|
+            req.body = {
+              creator_id: creator.id,
+              updator_id: updator.id
+            }.to_json
+            req.headers["Content-Type"] = "application/json"
+          end
+
+          expect(resp.status).to be == 200
+          expect(resp.body["creator_id"]).to eq creator.id
+          expect(resp.body["updator_id"]).to eq updator.id
         end
       end
     end

@@ -42,7 +42,10 @@
 
 (defn get-group [id-or-institutional-group-id tx]
   (if-let [group (groups/find-group id-or-institutional-group-id tx)]
-    {:body (dissoc group :previous_id :searchable)}
+    {:body (-> group
+               (dissoc :previous_id :searchable)
+               (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
+               (#(if (contains? % :updator_id) % (assoc % :updator_id nil))))}
     {:status 404 :body {:message "No such group found"}})) ; TODO: toAsk 204 No Content
 
 ;### delete group ##############################################################
@@ -73,7 +76,9 @@
 (defn patch-group [{body :body {group-id :group-id} :params} tx]
   (try
     (if-let [result (db_update-group group-id body tx)]
-      {:body result}
+      {:body (-> result
+                 (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
+                 (#(if (contains? % :updator_id) % (assoc % :updator_id nil))))}
       {:status 404})
 
     (catch Exception e
@@ -90,7 +95,8 @@
                          (apply sql/select fields))
                        (sql/from :groups)
                        (sql/order-by [:id :asc])
-                       (dbh/build-query-param query-params :created_by_user_id)
+                       (dbh/build-query-param query-params :creator_id)
+                       (dbh/build-query-param query-params :updator_id)
                        (dbh/build-query-param query-params :id)
                        (dbh/build-query-param query-params :institution)
                        (dbh/build-query-param query-params :institutional_id)
@@ -103,7 +109,19 @@
 
 (defn index [req]
   (let [base-query (build-index-query req)
-        res (pagination-handler req base-query :groups)]
+        res (pagination-handler req base-query :groups)
+        ensure-audit-keys (fn [group]
+                            (-> group
+                                (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
+                                (#(if (contains? % :updator_id) % (assoc % :updator_id nil)))))
+        res (cond
+              (and (map? res) (contains? res :groups))
+              (update res :groups (fn [items] (mapv ensure-audit-keys items)))
+
+              (and (map? res) (contains? res :data))
+              (update res :data (fn [items] (mapv ensure-audit-keys items)))
+
+              :else res)]
     (sd/response_ok res)))
 
 ;### routes ###################################################################
@@ -116,7 +134,8 @@
    (s/optional-key :institutional_id) (s/maybe s/Str)
    (s/optional-key :institutional_name) (s/maybe s/Str)
    (s/optional-key :institution) (s/maybe s/Str)
-   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
+   (s/optional-key :creator_id) (s/maybe s/Uuid)
+   (s/optional-key :updator_id) (s/maybe s/Uuid)
    (s/optional-key :is_assignable) s/Bool})
 
 (def schema_update-group
@@ -125,7 +144,8 @@
    (s/optional-key :institutional_id) (s/maybe s/Str)
    (s/optional-key :institutional_name) (s/maybe s/Str)
    (s/optional-key :institution) (s/maybe s/Str)
-   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
+   (s/optional-key :creator_id) (s/maybe s/Uuid)
+   (s/optional-key :updator_id) (s/maybe s/Uuid)
    (s/optional-key :is_assignable) s/Bool})
 
 (defn handle_create-group
@@ -134,12 +154,16 @@
     (let [params (get-in req [:parameters :body])
           data_wid (assoc params :id (or (:id params) (clj-uuid/v4)))
           data_wtype (assoc data_wid :type (or (:type data_wid) "Group"))
+          data_waudit data_wtype
           resultdb (->> (jdbc/execute-one! (:tx req) (-> (sql/insert-into :groups)
-                                                         (sql/values [data_wtype])
+                                                         (sql/values [data_waudit])
                                                          (sql/returning :*)
                                                          sql-format)))
-          result (dissoc resultdb :previous_id :searchable)]
-      (info (apply str ["handler_create-group: \ndata:" data_wtype "\nresult-db: " resultdb "\nresult: " result]))
+          result (-> resultdb
+                     (dissoc :previous_id :searchable)
+                     (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
+                     (#(if (contains? % :updator_id) % (assoc % :updator_id nil))))]
+      (info (apply str ["handler_create-group: \ndata:" data_waudit "\nresult-db: " resultdb "\nresult: " result]))
       {:status 201 :body result})
     (catch Exception e
       (error "handle-create-group failed" {:request req})
@@ -166,7 +190,8 @@
   {:id s/Uuid
    (s/optional-key :name) s/Str
    (s/optional-key :type) s/Str ; TODO enum
-   (s/optional-key :created_by_user_id) (s/maybe s/Uuid)
+   (s/optional-key :creator_id) (s/maybe s/Uuid)
+   (s/optional-key :updator_id) (s/maybe s/Uuid)
    (s/optional-key :created_at) s/Any
    (s/optional-key :updated_at) s/Any
    (s/optional-key :institutional_id) (s/maybe s/Str)
@@ -193,16 +218,18 @@
   (sa/and
    (sa/conformer string->vec)
    (sa/coll-of #{"id" "name" "type" "created_at" "updated_at" "institutional_id"
-                 "institutional_name" "institution" "created_by_user_id" "searchable" "is_assignable"}
+                 "institutional_name" "institution" "creator_id" "updator_id" "searchable" "is_assignable"}
                :kind vector?)))
 
 (sa/def ::group-query-def (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp/institutional_id
-                                            ::sp/institutional_name ::sp/institution ::sp/created_by_user_id ::sp/searchable ::sp/is_assignable
+                                            ::sp/institutional_name ::sp/institution ::sp/creator_id ::sp/updator_id
+                                            ::sp/searchable ::sp/is_assignable
                                             :group/fields
                                             ::sp/page ::sp/size]))
 
 (sa/def :usr/groups (sa/keys :opt-un [::sp/id ::sp/name ::sp/type ::sp/created_at ::sp/updated_at ::sp-nil/institutional_id
-                                      ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/created_by_user_id ::sp/searchable ::sp/is_assignable]))
+                                      ::sp-nil/institutional_name ::sp-nil/institution ::sp-nil/creator_id
+                                      ::sp-nil/updator_id ::sp/searchable ::sp/is_assignable]))
 
 (sa/def :usr-groups-list/groups (st/spec {:spec (sa/coll-of :usr/groups)
                                           :description "A list of persons"}))

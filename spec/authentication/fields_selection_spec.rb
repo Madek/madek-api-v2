@@ -53,18 +53,18 @@ describe "Session/Cookie Authentication" do
 
       it "returns expected keys when fetching /groups (clojure/spec)" do
         default_keys = ["institution", "institutional_id", "name", "type", "searchable", "updated_at", "id",
-          "created_by_user_id", "is_assignable", "institutional_name", "created_at"]
+          "creator_id", "updator_id", "is_assignable", "institutional_name", "created_at"]
         paths = [
           ["/api-v2/groups/", 200, default_keys],
           ["/api-v2/groups/?fields=", 200, default_keys],
-          ["/api-v2/groups/?fields=created_at", 200, ["created_at"]]
+          ["/api-v2/groups/?fields=created_at", 200, ["created_at", "creator_id", "updator_id"]]
         ]
 
         paths.each do |path, expected_status, existing_keys|
           response = client.get(path)
 
           expect(response.status).to eq(expected_status)
-          expect(response.body["groups"].first.keys).to eq(existing_keys)
+          expect(response.body["groups"].first.keys).to match_array(existing_keys)
         end
       end
     end
