@@ -17,11 +17,11 @@ context "people" do
             end.status
           ).to be == 200
 
-          expected_audit_entries = ["INSERT auth_systems", "INSERT rdf_classes", "INSERT rdf_classes",
+          expected_audit_entries = ["INSERT auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "UPDATE people"]
 
-          expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200, {distinct: true})
+          expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
         end
 
         it "works when we do no changes" do
@@ -32,11 +32,11 @@ context "people" do
             end.status
           ).to be == 200
 
-          expected_audit_entries = ["INSERT auth_systems", "INSERT rdf_classes", "INSERT rdf_classes",
+          expected_audit_entries = ["INSERT auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users",
             "INSERT admins", "INSERT api_tokens"]
 
-          expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200, {distinct: true})
+          expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
         end
 
         context "patch result" do
@@ -49,11 +49,11 @@ context "people" do
           it "contains the update" do
             expect(patch_result.body["last_name"]).to be == "new name"
 
-            expected_audit_entries = ["INSERT auth_systems", "INSERT rdf_classes", "INSERT rdf_classes",
+            expected_audit_entries = ["INSERT auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
               "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
               "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "UPDATE people"]
 
-            expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200, {distinct: true})
+            expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
           end
         end
       end

@@ -18,10 +18,10 @@ context "people" do
         it "works" do
           expect(get_person_result.status).to be == 200
 
-          expected_audit_entries = ["INSERT auth_systems", "INSERT rdf_classes", "INSERT rdf_classes",
+          expected_audit_entries = ["INSERT auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens"]
-          expect_audit_entries("GET /api-v2/people/#{@person.id}", expected_audit_entries, 200, OPT_DISTINCT_CHANGE_AUDITS_ONLY)
+          expect_audit_entries("GET /api-v2/people/#{@person.id}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end
 
         it "has the proper data" do
@@ -53,11 +53,11 @@ context "people" do
           expect(result.status).to be == 200
           expect(result.body["id"]).to be == @inst_person["id"]
 
-          expected_audit_entries = ["INSERT auth_systems", "INSERT rdf_classes", "INSERT rdf_classes",
+          expected_audit_entries = ["INSERT auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
             "INSERT people", "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens"]
 
-          expect_audit_entries("GET #{url}}", expected_audit_entries, 200, OPT_DISTINCT_CHANGE_AUDITS_ONLY)
+          expect_audit_entries("GET #{url}}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end
       end
     end

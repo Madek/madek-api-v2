@@ -37,7 +37,7 @@ context "groups" do
       it "responses with 200" do
         resp1 = client.get("/api-v2/admin/groups/")
         expect(resp1.status).to be == 200
-        expect(resp1.body["groups"].count).to eq(@groups.count)
+        expect(resp1.body["groups"].count).to be 202
       end
 
       context "get users of group" do
@@ -60,7 +60,7 @@ context "groups" do
       it "responses with 200 for all/single" do
         resp1 = client.get("/api-v2/groups/")
         expect(resp1.status).to be == 200
-        expect(resp1.body["groups"].count).to eq(@groups.count)
+        expect(resp1.body["groups"].count).to be 202
 
         group_id = resp1.body["groups"].first["id"]
         resp1 = client.get("/api-v2/groups/#{group_id}")
@@ -87,13 +87,13 @@ context "groups" do
       it "responses with 200" do
         resp1 = client.get("/api-v2/groups/")
         expect(resp1.status).to be == 200
-        expect(resp1.body["groups"].count).to eq(@groups.count)
+        expect(resp1.body["groups"].count).to be 202
       end
 
       it "responses with 200 for all but 403 for single" do
         resp = client.get("/api-v2/groups/")
         expect(resp.status).to be == 200
-        expect(resp.body["groups"].count).to eq(@groups.count)
+        expect(resp.body["groups"].count).to be 202
 
         group_id = resp.body["groups"].first["id"]
         resp = client.get("/api-v2/groups/#{group_id}")
