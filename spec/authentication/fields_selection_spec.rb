@@ -57,7 +57,7 @@ describe "Session/Cookie Authentication" do
         paths = [
           ["/api-v2/groups/", 200, default_keys],
           ["/api-v2/groups/?fields=", 200, default_keys],
-          ["/api-v2/groups/?fields=created_at", 200, ["created_at", "creator_id", "updator_id"]]
+          ["/api-v2/groups/?fields=created_at", 200, ["created_at"]]
         ]
 
         paths.each do |path, expected_status, existing_keys|

@@ -43,9 +43,7 @@
 (defn get-group [id-or-institutional-group-id tx]
   (if-let [group (groups/find-group id-or-institutional-group-id tx)]
     {:body (-> group
-               (dissoc :previous_id :searchable)
-               (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
-               (#(if (contains? % :updator_id) % (assoc % :updator_id nil))))}
+               (dissoc :previous_id :searchable))}
     {:status 404 :body {:message "No such group found"}})) ; TODO: toAsk 204 No Content
 
 ;### delete group ##############################################################
@@ -76,9 +74,7 @@
 (defn patch-group [{body :body {group-id :group-id} :params} tx]
   (try
     (if-let [result (db_update-group group-id body tx)]
-      {:body (-> result
-                 (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
-                 (#(if (contains? % :updator_id) % (assoc % :updator_id nil))))}
+      {:body result}
       {:status 404})
 
     (catch Exception e
@@ -110,17 +106,9 @@
 (defn index [req]
   (let [base-query (build-index-query req)
         res (pagination-handler req base-query :groups)
-        ensure-audit-keys (fn [group]
-                            (-> group
-                                (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
-                                (#(if (contains? % :updator_id) % (assoc % :updator_id nil)))))
         res (cond
-              (and (map? res) (contains? res :groups))
-              (update res :groups (fn [items] (mapv ensure-audit-keys items)))
-
-              (and (map? res) (contains? res :data))
-              (update res :data (fn [items] (mapv ensure-audit-keys items)))
-
+              (and (map? res) (contains? res :groups)) res
+              (and (map? res) (contains? res :data)) res
               :else res)]
     (sd/response_ok res)))
 
@@ -160,9 +148,7 @@
                                                          (sql/returning :*)
                                                          sql-format)))
           result (-> resultdb
-                     (dissoc :previous_id :searchable)
-                     (#(if (contains? % :creator_id) % (assoc % :creator_id nil)))
-                     (#(if (contains? % :updator_id) % (assoc % :updator_id nil))))]
+                     (dissoc :previous_id :searchable))]
       (info (apply str ["handler_create-group: \ndata:" data_waudit "\nresult-db: " resultdb "\nresult: " result]))
       {:status 201 :body result})
     (catch Exception e
