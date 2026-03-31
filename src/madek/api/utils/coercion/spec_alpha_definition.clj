@@ -100,7 +100,9 @@
 (sa/def ::data (st/spec {:spec (sa/coll-of any?)
                          :description "An array of any types"}))
 (sa/def ::rdf_class (st/spec {:spec string?}))
-(sa/def ::scope (st/spec {:spec string?}))
+(sa/def ::scope (st/spec {:spec (sa/and string? #{"view" "use"})
+                          :description "Permission scope"
+                          :json-schema {:enum ["view" "use"]}}))
 
 (sa/def ::layout (st/spec {:spec any?}))
 (sa/def ::sorting (st/spec {:spec any?}))

@@ -1,13 +1,9 @@
 (ns madek.api.resources.media-entries.advanced-filter.meta-data
   (:require
-   [clojure.string]
    [honey.sql.helpers :as sql]
    [madek.api.resources.meta-keys.meta-key :as meta-key]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]))
-
-(defn sql-escape [s]
-  (clojure.string/replace s "'" "''"))
 
 (def ^:private match-columns {"meta_data_people" {:table "people",
                                                   :resource "person",
@@ -63,23 +59,22 @@
          [:= full-column (to-uuid value column)]))))
 
 (defn- sql-raw-text-search [column search-string]
-  ; we need to pass 'english' because it was also used
-  ; when creating indexes
-  [[:raw (str "to_tsvector('english', "
-              column
-              ") @@ plainto_tsquery('english', '" (sql-escape search-string) "')")]])
+  ; we need to pass 'english' because it was also used when creating indexes
+  [[:raw [(str "to_tsvector('english', " column ") @@ plainto_tsquery('english', ")
+          [:lift search-string]
+          ")"]]])
 
 (defn- sql-merge-where-with-match
   [sqlmap related-meta-data-table match]
   (cond-> sqlmap
     related-meta-data-table
-    (sql/where [:raw (str "to_tsvector('english', "
-                          (get-in match-columns
-                                  [related-meta-data-table :table])
-                          "."
-                          (get-in match-columns
-                                  [related-meta-data-table :match_column])
-                          ") @@ plainto_tsquery('english', '" (sql-escape match) "')")])))
+    (sql/where [:raw [(str "to_tsvector('english', "
+                           (get-in match-columns [related-meta-data-table :table])
+                           "."
+                           (get-in match-columns [related-meta-data-table :match_column])
+                           ") @@ plainto_tsquery('english', ")
+                      [:lift match]
+                      ")"]])))
 
 (defn- primitive-type? [md-object-type]
   (or (= md-object-type "MetaDatum::Text")

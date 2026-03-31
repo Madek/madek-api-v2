@@ -3,12 +3,17 @@
    [honey.sql.helpers :as sql]
    [madek.api.utils.helper :refer [to-uuid]]))
 
+(def ^:private safe-identifier-pattern #"^[a-zA-Z_][a-zA-Z0-9_]*$")
+
 (defn- sql-merge-where-media-file-spec [sqlmap media-file-spec]
-  (let [key (:key media-file-spec)
-        key-prefixed (keyword (str "media_files." key))
-        val (to-uuid (:value media-file-spec) key)]
-    (-> sqlmap
-        (sql/where [:= key-prefixed val]))))
+  (let [k (:key media-file-spec)]
+    (if (and (string? k) (re-matches safe-identifier-pattern k))
+      (let [key-prefixed (keyword (str "media_files." k))
+            val (to-uuid (:value media-file-spec) k)]
+        (-> sqlmap
+            (sql/where [:= key-prefixed val])))
+      (throw (ex-info (str "Invalid media_files filter key: " k)
+                      {:status 422})))))
 
 (defn sql-filter-by [sqlmap media-file-specs]
   (if-not (empty? media-file-specs)
