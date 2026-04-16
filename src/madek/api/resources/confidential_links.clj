@@ -9,8 +9,7 @@
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
-            [schema.core :as s]
-            [taoensso.timbre :refer [info]]))
+            [schema.core :as s]))
 
 (defn create-conf-link-token
   []
@@ -22,10 +21,6 @@
                   #(rand-nth "0123456789abcdef"))))
         token (-> random hash/sha512 bytes->b64u bytes->str)
         cut (apply str (take 45 token))]
-    (info "create-conf-link-token: "
-          "\nrandom: " random
-          "\n token: " token
-          "\n cut: " cut)
     cut))
 
 (defn handle_create-conf-link

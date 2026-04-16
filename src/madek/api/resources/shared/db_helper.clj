@@ -10,7 +10,7 @@
             [madek.api.utils.helper :refer [to-uuid]]
             [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
-            [taoensso.timbre :refer [error info spy]]))
+            [taoensso.timbre :refer [debug error]]))
 
 ; begin db-helpers
 ; TODO move to sql file
@@ -45,17 +45,17 @@
 
 (defn try-parse-date-time [dt_string]
   (try
-    (info "try-parse-date-time "
-          dt_string)
+    (debug "try-parse-date-time "
+           dt_string)
     (let [zoneid (java.time.ZoneId/systemDefault)
 
           parsed2 (jt/local-date-time (jt/offset-date-time dt_string) zoneid)
           pcas (.toString parsed2)]
-      (info "try-parse-date-time "
-            dt_string
-            "\n zoneid " zoneid
-            "\n parsed " parsed2
-            "\n result:  " pcas)
+      (debug "try-parse-date-time "
+             dt_string
+             "\n zoneid " zoneid
+             "\n parsed " parsed2
+             "\n result:  " pcas)
       pcas)
 
     (catch Exception ex
@@ -65,7 +65,7 @@
 (defn build-query-ts-after [query query-params param col-name]
   (let [date (-> query-params param)
         instant (some-> date try-convert-to-instant)]
-    (info "build-query-ts-after: " date ":" instant)
+    (debug "build-query-ts-after: " date ":" instant)
     (if (nil? instant)
       query
       (-> query (sql/where [:raw (str "'" instant "'::timestamp < " col-name)])))))
@@ -73,7 +73,7 @@
 (defn build-query-created-or-updated-after [query query-params param]
   (let [date (-> query-params param)
         instant (some-> date try-convert-to-instant)]
-    (info "build-query-created-or-updated-after: " date ":" instant)
+    (debug "build-query-created-or-updated-after: " date ":" instant)
     (if (nil? date)
       query
       (-> query (sql/where [:or
@@ -130,8 +130,7 @@
    (let [query (-> (build-query-base table-name (table->col-keys table-name))
                    (sql/where [:= col-name (to-uuid row-data col-name)])
                    (sql/where [:= col-name2 (to-uuid row-data2 col-name2)])
-                   (sql-format :inline true)
-                   spy)]
+                   (sql-format :inline true))]
      query)))
 
 (defn sql-update-clause

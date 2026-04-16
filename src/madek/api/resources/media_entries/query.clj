@@ -13,7 +13,7 @@
    [madek.api.utils.helper :refer [to-uuid]]
    [madek.api.utils.soft-delete :refer [non-soft-deleted soft-deleted]]
    [next.jdbc :as jdbc]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 ;### collection_id ############################################################
 
@@ -173,7 +173,7 @@
                                                              {:status 422})))
                      (seq? order) (reduce order-reducer query order)
                      :else (default-order query))]
-        (info "set-order" "\norder\n" order)
+        (debug "set-order" "\norder\n" order)
         result)
       (sql/order-by [:media_entries.id :asc])))
 

@@ -9,7 +9,7 @@
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
-            [taoensso.timbre :refer [info]]))
+            [taoensso.timbre :refer [debug]]))
 
 (defn build-query [req]
   (let [fields (normalize-fields req)
@@ -29,7 +29,7 @@
   [req]
   (let [db-query (build-query req)
         db-result (jdbc/execute! (:tx req) db-query)]
-    (info "handle_list-custom-urls" "\ndb-query\n" db-query "\nresult\n" db-result)
+    (debug "handle_list-custom-urls" "\ndb-query\n" db-query "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_get-custom-url
@@ -46,10 +46,10 @@
         mr-id (-> mr :id str)
         col-name (if (= mr-type "MediaEntry") :media_entry_id :collection_id)]
 
-    (info "handle_get-custom-urls"
-          "\ntype: " mr-type
-          "\nmr-id: " mr-id
-          "\ncol-name: " col-name)
+    (debug "handle_get-custom-urls"
+           "\ntype: " mr-type
+           "\nmr-id: " mr-id
+           "\ncol-name: " col-name)
     (if-let [result (dbh/query-eq-find-one :custom_urls col-name mr-id (:tx req))]
       (sd/response_ok result)
       (sd/response_not_found (str "No such custom_url for " mr-type " with id: " mr-id)))))

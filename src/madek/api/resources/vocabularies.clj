@@ -14,7 +14,7 @@
    [madek.api.utils.helper :refer [cast-to-hstore convert-map-if-exist]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 ; TODO logwrite
 
@@ -58,7 +58,7 @@
 
             (if upd-res
               (do
-                (info "handle_update-vocab" "\nid: " id "\nnew-data:\n" upd-res)
+                (debug "handle_update-vocab" "\nid: " id "\nnew-data:\n" upd-res)
                 (sd/response_ok upd-res))
               (sd/response_failed "Could not update vocabulary." 406)))
           (sd/response_not_found "No such vocabulary."))))

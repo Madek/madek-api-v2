@@ -10,7 +10,7 @@
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
-            [taoensso.timbre :refer [debug error info]]))
+            [taoensso.timbre :refer [debug error]]))
 
 (def MD_TYPE_PEOPLE "MetaDatum::People")
 (def MD_KEY_PEOPLE :people)
@@ -66,7 +66,7 @@
 
 (defn db-create-meta-data
   ([db meta-data]
-   (info "db-create-meta-data: " meta-data)
+   (debug "db-create-meta-data: " meta-data)
    (let [sql-query (-> (sql/insert-into :meta_data)
                        (sql/values [(convert-map-if-exist meta-data)])
                        (sql/returning :*)
@@ -101,9 +101,9 @@
                       (sql/returning :*)
                       sql-format)
         result (jdbc/execute! db sql-query builder-fn-options-default)]
-    (info "db-create-meta-data-keyword"
-          "\nkw-data\n" data
-          "\nresult\n" result)
+    (debug "db-create-meta-data-keyword"
+           "\nkw-data\n" data
+           "\nresult\n" result)
     result))
 
 (defn create_md_and_keyword

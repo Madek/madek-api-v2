@@ -9,7 +9,7 @@
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [schema.core :as s]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 ;;; temporary users stuff ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -87,7 +87,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn add-user [group-id user-id req]
-  (info "add-user" group-id ":" user-id)
+  (debug "add-user" group-id ":" user-id)
   (if-let [user (find-group-user group-id user-id (:tx req))]
     (sd/response_ok (group-users group-id req))
     (let [tx (:tx req)
@@ -221,13 +221,13 @@
         group-id (-> converted :group-id)
         user-id (-> converted :user-id)]
 
-    (info "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
+    (debug "handle_get-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
     (get-group-user group-id user-id tx)))
 
 (defn handle_delete-group-user [req]
   (let [group-id (-> req :parameters :path :group-id)
         user-id (-> req :parameters :path :user-id)]
-    (info "handle_delete-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
+    (debug "handle_delete-group-user" "\ngroup-id\n" group-id "\nuser-id\n" user-id)
     (remove-user group-id user-id req)))
 
 (defn handle_get-group-users [request]
@@ -238,7 +238,7 @@
   (let [id (-> req :parameters :path :group-id)
         data (-> req :parameters :body)
         tx (:tx req)]
-    (info "handle_update-group-users" "\nid\n" id "\ndata\n" data)
+    (debug "handle_update-group-users" "\nid\n" id "\ndata\n" data)
     (update-group-users id data tx)))
 
 (defn handle_add-group-user [req]

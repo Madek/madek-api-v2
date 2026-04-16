@@ -10,7 +10,7 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [error info]]))
+   [taoensso.timbre :refer [debug error]]))
 
 ;### handlers #################################################################
 
@@ -40,7 +40,7 @@
                       (sql/returning :*)
                       sql-format)
             ins-res (jdbc/execute-one! (:tx req) query)]
-        (info "handle_create-io_interfaces: " "\ndata:\n" data "\nresult:\n" ins-res)
+        (debug "handle_create-io_interfaces: " "\ndata:\n" data "\nresult:\n" ins-res)
 
         (if-let [result ins-res]
           (sd/response_ok result)
@@ -61,7 +61,7 @@
                       sql-format)
             upd-result (jdbc/execute-one! tx query)]
 
-        (info "handle_update-io_interfaces: " "id: " id "\nnew-data:\n" dwid "\nresult: " upd-result)
+        (debug "handle_update-io_interfaces: " "id: " id "\nnew-data:\n" dwid "\nresult: " upd-result)
 
         (if (= 1 (::jdbc/update-count upd-result))
           (sd/response_ok (dbh/query-eq-find-one :io_interfaces :id id tx))

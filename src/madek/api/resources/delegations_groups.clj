@@ -8,7 +8,7 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [error info]]))
+   [taoensso.timbre :refer [debug error]]))
 
 (def res-req-name :delegation_group)
 (def res-table-name "delegations_groups")
@@ -24,7 +24,7 @@
                 delegation_id (sql/where [:= :delegation_id delegation_id])
                 group_id (sql/where [:= :group_id group_id]))
         db-result (jdbc/execute! (:tx req) (sql-format query))]
-    (info "handle_list-delegations_group" "\nresult\n" db-result)
+    (debug "handle_list-delegations_group" "\nresult\n" db-result)
     (sd/response_ok db-result)))
 
 (defn handle_list-delegations_groups-by-group
@@ -33,7 +33,7 @@
         group-id (-> req :authenticated-entity :id)
         db-result (dbh/query-eq-find-all :delegations_groups :group_id group-id (:tx req))
         id-set (map :delegation_id db-result)]
-    (info "handle_list-delegations_group" "\nresult\n" db-result "\nid-set\n" id-set)
+    (debug "handle_list-delegations_group" "\nresult\n" db-result "\nid-set\n" id-set)
     (sd/response_ok {:delegation_ids id-set})
     ;(if full-data (sd/response_ok db-result) (sd/response_ok {:delegation_ids id-set})) 
     ))
@@ -92,7 +92,7 @@
     (fn [request]
       (let [group-id (-> request :authenticated-entity :id str)
             del-id (-> request :parameters :path :delegation_id str)]
-        (info "uid\n" group-id "del-id\n" del-id)
+        (debug "uid\n" group-id "del-id\n" del-id)
         (sd/req-find-data-search2
          request handler
          group-id del-id

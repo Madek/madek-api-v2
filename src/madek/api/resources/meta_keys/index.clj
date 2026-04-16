@@ -3,13 +3,13 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.vocabularies.permissions :as permissions]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn- where-clause
   [user-id scope tx]
   (let [vocabulary-ids (permissions/accessible-vocabulary-ids user-id scope tx)
         perm-kw (keyword (str "vocabularies.enabled_for_public_" scope))]
-    (info "vocabs where clause: " vocabulary-ids " for user " user-id " and " scope)
+    (debug "vocabs where clause: " vocabulary-ids " for user " user-id " and " scope)
     (if (empty? vocabulary-ids)
       [:= perm-kw true]
       [:or

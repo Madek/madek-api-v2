@@ -10,7 +10,7 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn handle_list-usage_term
   [req]
@@ -39,7 +39,7 @@
                           sql-format)
             ins-res (jdbc/execute-one! (:tx req) sql-query)]
 
-        (info "handle_create-usage_term: " "\ndata:\n" data "\nresult:\n" ins-res)
+        (debug "handle_create-usage_term: " "\ndata:\n" data "\nresult:\n" ins-res)
 
         (if ins-res
           (sd/response_ok ins-res)
@@ -59,7 +59,7 @@
                           sql-format)
             upd-result (jdbc/execute-one! (:tx req) sql-query)]
 
-        (info "handle_update-usage_terms: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
+        (debug "handle_update-usage_terms: " "\nid\n" id "\ndwid\n" dwid "\nupd-result:" upd-result)
 
         (if upd-result
           (sd/response_ok upd-result)

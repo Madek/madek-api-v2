@@ -13,8 +13,7 @@
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec]
-            [schema.core :as s]
-            [taoensso.timbre :as timbre :refer [spy]]))
+            [schema.core :as s]))
 
 ;; ###meta-data-routes ##########################################################
 

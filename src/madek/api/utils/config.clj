@@ -12,7 +12,7 @@
    [madek.api.utils.daemon :refer [defdaemon]]
    [madek.api.utils.duration :refer [parse-string-to-seconds]]
    [madek.api.utils.fs :refer :all]
-   [taoensso.timbre :refer [info warn]]))
+   [taoensso.timbre :refer [debug warn]]))
 
 (defonce ^:private conf (atom {}))
 
@@ -42,7 +42,7 @@
                             (fn [current-config params]
                               (deep-merge current-config params))
                             params)]
-      (info "config changed to " new-config))))
+      (debug "config changed to " new-config))))
 
 (defn slurp-and-merge [config slurpable]
   (->> (slurp slurpable)

@@ -11,7 +11,7 @@
             [reitit.coercion.schema]
             [reitit.coercion.spec]
             [schema.core :as s]
-            [taoensso.timbre :refer [debug info]]))
+            [taoensso.timbre :refer [debug]]))
 
 (defn- handle-delete-meta-data [req]
   (let [mr (-> req :media-resource)
@@ -30,7 +30,7 @@
                       (sql/where [:= :meta_datum_id md-id] [:= :keyword_id kw-id])
                       sql-format)
         result (jdbc/execute-one! db sql-query)]
-    (info "db-delete-meta-data-keyword" "\nmd-id\n" md-id "\nkw-id\n" kw-id "\nresult\n" result)
+    (debug "db-delete-meta-data-keyword" "\nmd-id\n" md-id "\nkw-id\n" kw-id "\nresult\n" result)
     result))
 
 (defn handle-delete-meta-data-keyword [req]

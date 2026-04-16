@@ -11,7 +11,7 @@
    [reitit.coercion.schema]
    [schema.core :as s]
    [spec-tools.core :as st]
-   [taoensso.timbre :refer [error info spy]]))
+   [taoensso.timbre :refer [error]]))
 
 (s/defn valid-email?
   [email]

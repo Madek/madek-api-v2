@@ -3,8 +3,7 @@
             [honey.sql.helpers :as sql]
             [madek.api.resources.shared.media_resource_helper :as mrh]
             [madek.api.utils.helper :refer [to-uuid]]
-            [next.jdbc :as jdbc]
-            [taoensso.timbre :refer [info]]))
+            [next.jdbc :as jdbc]))
 
 ; begin meta-data helpers
 

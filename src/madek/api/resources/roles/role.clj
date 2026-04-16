@@ -8,7 +8,7 @@
    [madek.api.utils.helper :refer [cast-to-hstore]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn export-role [db-role]
   (select-keys db-role [:id :meta_key_id :labels :created_at]))
@@ -76,7 +76,7 @@
             ins-res (jdbc/execute-one! tx insert-stmt)
             ins-res (transform-ml-role ins-res)]
 
-        (info "handle_create-role: " "\new-data:\n" data "\nresult:\n" ins-res)
+        (debug "handle_create-role: " "\new-data:\n" data "\nresult:\n" ins-res)
 
         (if ins-res
           (sd/response_ok ins-res)
@@ -99,7 +99,7 @@
                             sql-format)
             upd-result (jdbc/execute-one! tx update-stmt)]
 
-        (info "handle_update-role: " id "\nnew-data\n" dwid "\nupd-result\n" upd-result)
+        (debug "handle_update-role: " id "\nnew-data\n" dwid "\nupd-result\n" upd-result)
 
         (if upd-result
           (sd/response_ok (transform-ml-role
@@ -122,7 +122,7 @@
                 del-result (jdbc/execute-one! tx delete-stmt)
                 del-result (transform-ml-role del-result)]
 
-            (info "handle_delete-role: " id " result: " del-result)
+            (debug "handle_delete-role: " id " result: " del-result)
             (if del-result
               (sd/response_ok del-result)
               (sd/response_failed "Could not delete role." 406)))

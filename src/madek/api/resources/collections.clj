@@ -20,7 +20,7 @@
    [reitit.coercion.spec :as spec]
    [schema.core :as s]
    [spec-tools.core :as st]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn handle_get-collection [request]
   (let [collection (:media-resource request)
@@ -34,7 +34,7 @@
 (defn handle_get-index [req]
   (let [query-params (-> req :parameters :query)
         qreq (assoc-in req [:query-params] query-params)]
-    (info "handle_get-index" "\nquery-params\n" query-params)
+    (debug "handle_get-index" "\nquery-params\n" query-params)
     (get-index qreq)))
 
 (defn handle_create-collection [req]

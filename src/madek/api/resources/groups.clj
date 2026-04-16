@@ -21,7 +21,7 @@
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
             [spec-tools.core :as st]
-            [taoensso.timbre :refer [debug error info]]))
+            [taoensso.timbre :refer [debug error]]))
 
 ;### create group #############################################################
 
@@ -148,7 +148,7 @@
                                                          sql-format)))
           result (-> resultdb
                      (dissoc :previous_id :searchable))]
-      (info (apply str ["handler_create-group: \ndata:" data_wtype "\nresult-db: " resultdb "\nresult: " result]))
+      (debug (apply str ["handler_create-group: \ndata:" data_wtype "\nresult-db: " resultdb "\nresult: " result]))
       {:status 201 :body result})
     (catch Exception e
       (error "handle-create-group failed" {:request req})
@@ -157,7 +157,7 @@
 (defn handle_get-group [req]
   (let [group-id (-> req :parameters :path :id)
         tx (:tx req)]
-    (info "handle_get-group" "\nid\n" group-id)
+    (debug "handle_get-group" "\nid\n" group-id)
     (get-group group-id tx)))
 
 (defn handle_delete-group [req]

@@ -10,7 +10,7 @@
    [next.jdbc :as jdbc]
    [pg-types.all]
    [ring.util.codec]
-   [taoensso.timbre :refer [info]])
+   [taoensso.timbre :refer [debug info]])
   (:import
    [com.mchange.v2.c3p0 ComboPooledDataSource DataSources]
    [java.net URI]))
@@ -79,7 +79,7 @@
     (Integer. ps)))
 
 (defn- create-c3p0-datasources [db-conf]
-  (info create-c3p0-datasources [db-conf])
+  (debug create-c3p0-datasources (dissoc db-conf :password :pg-password))
   (reset! ds
           {:datasource
            (doto (ComboPooledDataSource.)
@@ -96,7 +96,7 @@
               (or (:max-idle-time-exess-connections db-conf) (* 10 60))))}))
 
 (defn initialize [db-conf]
-  (info initialize [db-conf])
+  (debug initialize (dissoc db-conf :password :pg-password))
   (create-c3p0-datasources db-conf)
   (.addShutdownHook (Runtime/getRuntime)
                     (Thread. (fn []

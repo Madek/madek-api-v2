@@ -12,7 +12,7 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [error info spy]]))
+   [taoensso.timbre :refer [debug error]]))
 
   ;#### create ##################################################################
 
@@ -21,13 +21,11 @@
     {auth-entity-id :id} :authenticated-entity
     tx :tx
     :as req}]
-  (info "handle-create-user" {:request req})
+  (debug "handle-create-user" (select-keys req [:uri :request-method]))
   (try
     (let [data (-> data
-                   spy
                    convert-map-if-exist
-                   (assoc :creator_id auth-entity-id)
-                   spy)
+                   (assoc :creator_id auth-entity-id))
           query (-> (sql/insert-into :users)
                     (sql/values [data])
                     (sql/returning :*)

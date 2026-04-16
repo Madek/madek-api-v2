@@ -10,7 +10,7 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [error info]]))
+   [taoensso.timbre :refer [debug error]]))
 
 (def res-req-name :favorite_media_entry)
 (def res-table-name "favorite_media_entries")
@@ -92,7 +92,7 @@
     (fn [request]
       (let [user-id (-> request :authenticated-entity :id str)
             me-id (-> request :parameters :path :media_entry_id str)]
-        (info "uid\n" user-id "meid\n" me-id)
+        (debug "uid\n" user-id "meid\n" me-id)
         (sd/req-find-data-search2
          request handler
          user-id me-id

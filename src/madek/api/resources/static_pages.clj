@@ -10,7 +10,7 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn handle_list-static_pages
   [req]
@@ -38,9 +38,9 @@
             ins-res (jdbc/execute-one! (:tx req) sql-query)
             ins-res (sd/transform_ml_map ins-res)]
 
-        (info "handle_create-static-page:"
-              "\ninsert data:\n" ins-data
-              "\nresult:\n " ins-res)
+        (debug "handle_create-static-page:"
+               "\ninsert data:\n" ins-data
+               "\nresult:\n " ins-res)
 
         (if ins-res
           (sd/response_ok ins-res)
@@ -61,10 +61,10 @@
             upd-result (jdbc/execute-one! (:tx req) sql-query)
             upd-result (sd/transform_ml_map upd-result)]
 
-        (info "handle_update-static_pages: "
-              "\nid:\n" id
-              "\nnew-data:\n" dwid
-              "\nupd-result:" upd-result)
+        (debug "handle_update-static_pages: "
+               "\nid:\n" id
+               "\nnew-data:\n" dwid
+               "\nupd-result:" upd-result)
 
         (if upd-result
           (sd/response_ok upd-result)
@@ -82,9 +82,9 @@
             delresult (jdbc/execute-one! (:tx req) sql-query)
             delresult (sd/transform_ml_map delresult)]
 
-        (info "handle_delete-static_page: "
-              " id: " id
-              " result: " delresult)
+        (debug "handle_delete-static_page: "
+               " id: " id
+               " result: " delresult)
         (if delresult
           (sd/response_ok delresult)
           (sd/response_failed "Could not delete static page." 422))))

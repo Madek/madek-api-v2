@@ -12,7 +12,7 @@
             [reitit.coercion.schema]
             [reitit.coercion.spec]
             [schema.core :as s]
-            [taoensso.timbre :refer [info]]))
+            [taoensso.timbre :refer [debug]]))
 
 (defn- sql-cls-upd-meta-data-typed-id [stmt mr mk-id md-type]
   (let [column (col-key-for-mr-type mr)
@@ -55,7 +55,7 @@
         upd-data {:string text-data}
         md-type "MetaDatum::Text"]
 
-    (info "handle_update-meta-data-text" "\nupd-data\n" upd-data)
+    (debug "handle_update-meta-data-text" "\nupd-data\n" upd-data)
     (handle_update-meta-data-text-base req md-type upd-data)))
 
 (defn handle_update-meta-data-text-date
@@ -64,7 +64,7 @@
         upd-data {:string text-data}
         ; TODO multi line ? or other params
         md-type "MetaDatum::TextDate"]
-    (info "handle_update-meta-data-text-date" "\nupd-data\n" upd-data)
+    (debug "handle_update-meta-data-text-date" "\nupd-data\n" upd-data)
     (handle_update-meta-data-text-base req md-type upd-data)))
 
 (defn handle_update-meta-data-json
@@ -74,8 +74,8 @@
         ;upd-data {:json json-parsed}
         upd-data {:json (with-meta json-parsed {:pgtype "jsonb"})}
         md-type "MetaDatum::JSON"]
-    (info "handle_update-meta-data-json"
-          "\nupd-data\n" upd-data)
+    (debug "handle_update-meta-data-json"
+           "\nupd-data\n" upd-data)
     (handle_update-meta-data-text-base req md-type upd-data)))
 
 (def media_entry.meta_key_id.json {:summary "Update meta-data json for media-entry"

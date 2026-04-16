@@ -9,7 +9,7 @@
    [reitit.coercion.schema]
    [reitit.coercion.spec]
    [schema.core :as s]
-   [taoensso.timbre :as timbre :refer [debug spy]]))
+   [taoensso.timbre :refer [debug]]))
 
 ; TODO tests, response coercion
 (defn handle_create-meta-data-text

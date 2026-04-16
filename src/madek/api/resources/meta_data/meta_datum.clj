@@ -7,8 +7,7 @@
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.helper :refer [to-uuid]]
    [next.jdbc :as jdbc]
-   [ring.util.response :as ring-response]
-   [taoensso.timbre :refer [info]]))
+   [ring.util.response :as ring-response]))
 
 ;### people ###################################################################
 

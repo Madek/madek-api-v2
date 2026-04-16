@@ -6,7 +6,7 @@
    [madek.api.constants]
    [madek.api.data-streaming :as data-streaming]
    [next.jdbc :as jdbc]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn db-get-preview [id tx]
   (let [query (-> (sql/select :*)
@@ -20,7 +20,7 @@
   (let [id (-> request :parameters :path :preview_id)
         tx (:tx request)
         result (db-get-preview id tx)]
-    (info "get-preview" "\nid\n" id "\nresult\n" result)
+    (debug "get-preview" "\nid\n" id "\nresult\n" result)
     {:body result}))
 
 (defn- preview-file-path [preview]
@@ -36,9 +36,9 @@
 (defn get-preview-file-data-stream [request]
   (catcher/snatch {}
                   (when-let [preview (:preview request)]
-                    (info "get-preview-file-ds" "\npreview\n" preview)
+                    (debug "get-preview-file-ds" "\npreview\n" preview)
                     (when-let [file-path (preview-file-path preview)]
-                      (info "get-preview-file-ds" "\nfilepath\n" file-path)
+                      (debug "get-preview-file-ds" "\nfilepath\n" file-path)
                       (data-streaming/respond-with-file file-path
                                                         (:content_type preview))))))
 

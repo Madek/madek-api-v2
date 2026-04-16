@@ -4,7 +4,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.resources.media-entries.permissions :as me-permissions]
    [next.jdbc :as jdbc]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn- media-file-authorize [request handler scope]
   (let [media-entry-id (get-in request [:media-file :media_entry_id])
@@ -13,7 +13,7 @@
                                                              (sql/from :media_entries)
                                                              (sql/where [:= :id media-entry-id])
                                                              sql-format)))]
-    (info "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
+    (debug "authorize" "\nmedia-entry-id\n" media-entry-id "\nmedia-entry\n" media-entry)
     (if (get media-entry scope)
       (handler request)
       (if-let [auth-entity (:authenticated-entity request)]

@@ -5,7 +5,7 @@
    [madek.api.resources.media-resources.core :as c]
    [madek.api.utils.helper :refer [convert-map-if-exist to-uuid]]
    [next.jdbc :as jdbc]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn resource-permission-get-query
   ([media-resource tx]
@@ -29,9 +29,9 @@
                         (sql/where [:= :id (to-uuid mr-id)])
                         sql-format)
         upd-result (jdbc/execute-one! tx update-stmt)]
-    (info "update resource permissions"
-          "\ntable\n" tname
-          "\nperm-data\n" perm-data)
+    (debug "update resource permissions"
+           "\ntable\n" tname
+           "\nperm-data\n" perm-data)
     upd-result))
 
 (defn query-list-user-permissions
@@ -63,7 +63,7 @@
                         sql-format)
         ins-result (jdbc/execute-one! tx insert-stmt)]
 
-    (info "create-user-permissions" mr-id mr-type user-id auth-entity-id tname insdata)
+    (debug "create-user-permissions" mr-id mr-type user-id auth-entity-id tname insdata)
     (if-let [result ins-result]
       result
       nil)))
@@ -81,7 +81,7 @@
                         (c/sql-cls-resource-and mr-type mr-id :user_id user-id)
                         sql-format)
         delresult (jdbc/execute-one! tx delete-stmt)]
-    (info "delete-user-permissions: " mr-id user-id delresult)
+    (debug "delete-user-permissions: " mr-id user-id delresult)
     (if (= 1 (::jdbc/update-count delresult))
       true
       false)))
@@ -102,10 +102,10 @@
                         (c/sql-cls-resource-and mr-type mr-id :user_id user-id)
                         sql-format)
         result (jdbc/execute-one! tx update-stmt)]
-    (info "update user permissions"
-          "\ntable\n" tname
-          "\nperm-data\n" perm-data
-          "\nresult:\n" result)
+    (debug "update user permissions"
+           "\ntable\n" tname
+           "\nperm-data\n" perm-data
+           "\nresult:\n" result)
     result))
 
 (defn query-get-group-permission
@@ -135,7 +135,7 @@
                         (sql/returning :*)
                         sql-format)
         insresult (jdbc/execute-one! tx insert-stmt)]
-    (info "create-group-permissions" mr-id mr-type group-id auth-entity-id tname insdata)
+    (debug "create-group-permissions" mr-id mr-type group-id auth-entity-id tname insdata)
     (if-let [result insresult]
       result
       nil)))
@@ -152,7 +152,7 @@
                         (c/sql-cls-resource-and mr-type mr-id :group_id group-id)
                         sql-format)
         delresult (jdbc/execute-one! tx delete-stmt)]
-    (info "delete-group-permissions: " mr-id group-id delresult)
+    (debug "delete-group-permissions: " mr-id group-id delresult)
     (if (= 1 (::jdbc/update-count delresult))
       true
       false)))
@@ -172,10 +172,10 @@
                         (c/sql-cls-resource-and mr-type mr-id :group_id group-id)
                         sql-format)
         result (jdbc/execute-one! tx update-stmt)]
-    (info "update group permissions"
-          "\ntable\n" tname
-          "\nperm-data\n" perm-data
-          "\nresult\n" result)
+    (debug "update group permissions"
+           "\ntable\n" tname
+           "\nperm-data\n" perm-data
+           "\nresult\n" result)
     result))
 
 (defn permission-by-auth-entity? [resource auth-entity perm-name mr-type tx]

@@ -24,7 +24,7 @@
             [reitit.ring.middleware.multipart :as multipart]
             [schema.core :as s]
             [spec-tools.core :as st]
-            [taoensso.timbre :refer [info]]))
+            [taoensso.timbre :refer [debug error]]))
 
 (defn handle_query_media_entry [req]
   (get-index req))
@@ -48,9 +48,9 @@
                               sql-format)
         dresult (jdbc/execute! tx sql-query-entries)]
 
-    (info "handle_delete_media_entry"
-          "\n eid: \n" eid
-          "\n dresult: \n" dresult)
+    (debug "handle_delete_media_entry"
+           "\n eid: \n" eid
+           "\n dresult: \n" dresult)
     (if (= 1 (::jdbc/update-count (first dresult)))
       (sd/response_ok {:deleted mr})
       (sd/response_failed "Failed to delete media entry" 406))))
@@ -80,13 +80,13 @@
         tf (for [elem hasMetaData] (vals elem))
         publishable (reduce (fn [tfresult tfval] (and tfresult (first tfval))) [true] tf)]
 
-    (info "handle_try-publish-media-entry"
-          "\n eid: \n" eid
-          "\n validationContexts: \n" validationContexts
-          "\n contextKeys: \n" contextKeys
-          "\n hasMetaData: \n" hasMetaData
-          "\n tf: \n" tf
-          "\n publishable: \n" publishable)
+    (debug "handle_try-publish-media-entry"
+           "\n eid: \n" eid
+           "\n validationContexts: \n" validationContexts
+           "\n contextKeys: \n" contextKeys
+           "\n hasMetaData: \n" hasMetaData
+           "\n tf: \n" tf
+           "\n publishable: \n" publishable)
     (if (true? publishable)
       (let [data {:is_published true}
             eid (to-uuid eid)
@@ -96,9 +96,9 @@
                           sql-format)
             dresult (jdbc/execute-one! tx sql-query)]
 
-        (info "handle_try-publish-media-entry"
-              "\n published: entry_id: \n" eid
-              "\n dresult: \n" dresult)
+        (debug "handle_try-publish-media-entry"
+               "\n published: entry_id: \n" eid
+               "\n dresult: \n" dresult)
 
         (if (= 1 (::jdbc/update-count dresult))
           (sd/response_ok (dbh/query-eq-find-one :media_entries :id eid tx))
@@ -198,7 +198,7 @@
                             sql-format)
               new-mfr (jdbc/execute-one! tx sql-query)]
 
-          (info "\ncreate-me: " "\ncreated media-entry: " new-mer "\nnew media-file: " new-mf)
+          (debug "\ncreate-me: " "\ncreated media-entry: " new-mer "\nnew media-file: " new-mf)
 
           (if new-mfr
             (handle_uploaded_file_resp_ok file new-mfr new-mer collection-id tx)
@@ -220,16 +220,16 @@
         temppath (.getPath (:tempfile file))
         auth (-> req :authenticated-entity)]
 
-    (info "handle_create-media-entry"
-          "\nauth\n" (:id auth)
-          "\ncopy_md\n" copy-md-id
-          "\ncollection-id\n" collection-id
-          "\nfile\n" file
-          "\n content: " file-content-type
-          "\ntemppath\n" temppath)
+    (debug "handle_create-media-entry"
+           "\nauth\n" (:id auth)
+           "\ncopy_md\n" copy-md-id
+           "\ncollection-id\n" collection-id
+           "\nfile\n" file
+           "\n content: " file-content-type
+           "\ntemppath\n" temppath)
 
     (let [mime file-content-type]
-      (info "handle_create-media-entry" "\nmime-type\n" mime)
+      (debug "handle_create-media-entry" "\nmime-type\n" mime)
       (if (nil? auth)
         (sd/response_failed "Not authenticated" 406)
         (create-media_entry file auth mime collection-id tx)))))

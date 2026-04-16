@@ -4,7 +4,7 @@
    [environ.core :refer [env]]
    [madek.api.utils.config :refer [get-config]]
    [me.raynes.fs :as clj-fs]
-   [taoensso.timbre :refer [info warn]]))
+   [taoensso.timbre :refer [debug warn]]))
 
 (def SUPPORTED_META_DATA_TYPES
   #{"MetaDatum::Groups" ; old: migrated to: people
@@ -59,7 +59,7 @@
               (clojure.string/join (java.io.File/separator)
                                    [DEFAULT_STORAGE_DIR "thumbnails"])))))
 
-  (info
+  (debug
    {:DEFAULT_STORAGE_DIR DEFAULT_STORAGE_DIR
     :FILE_STORAGE_DIR FILE_STORAGE_DIR
     :THUMBNAILS_STORAGE_DIR THUMBNAILS_STORAGE_DIR}))

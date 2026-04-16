@@ -8,15 +8,15 @@
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn ring-wrap-find-and-add-preview
   ([handler] #(ring-wrap-find-and-add-preview % handler))
   ([request handler]
    (when-let [preview-id (-> request :parameters :path :preview_id)]
-     (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id)
+     (debug "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id)
      (when-let [preview (first (dbh/query-eq-find-all :previews :id preview-id (:tx request)))]
-       (info "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
+       (debug "ring-wrap-find-and-add-preview" "\npreview-id\n" preview-id "\npreview\n" preview)
        (handler (assoc request :preview preview))))))
 
 (defn handle_get-preview

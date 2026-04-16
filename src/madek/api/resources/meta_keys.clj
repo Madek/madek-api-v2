@@ -21,7 +21,7 @@
    [reitit.coercion.spec]
    [schema.core :as s]
    [spec-tools.core :as st]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn adm-export-meta-key [meta-key]
   (-> meta-key
@@ -110,7 +110,7 @@
                       sql-format)
         db-result (-> (jdbc/execute-one! tx sql-query)
                       (replace-java-hashmaps))]
-    (info "handle_update_meta-key:" "\nid: " id "\ndwid\n" dwid)
+    (debug "handle_update_meta-key:" "\nid: " id "\ndwid\n" dwid)
     (if db-result
       (sd/response_ok db-result)
       (sd/response_failed "Could not update meta_key." 406))))

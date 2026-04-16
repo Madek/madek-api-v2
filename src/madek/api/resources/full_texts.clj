@@ -16,7 +16,7 @@
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
             [spec-tools.core :as st]
-            [taoensso.timbre :refer [error info]]))
+            [taoensso.timbre :refer [debug error]]))
 
 (defn handle_list-full_texts
   [req]
@@ -30,7 +30,7 @@
                      (dbh/build-query-param-like query-params :text))
         db-result (pagination-handler req db-query)]
 
-    (info "handle_list-full_texts:" "\nquery:\n" db-query)
+    (debug "handle_list-full_texts:" "\nquery:\n" db-query)
     (sd/response_ok db-result)))
 
 (defn handle_get-full_text
@@ -54,7 +54,7 @@
                           sql-format)
             ins-res (jdbc/execute-one! (:tx req) sql-query)]
 
-        (info "handle_create-full_texts: " "\nnew-data:\n" ins-data "\nresult:\n" ins-res)
+        (debug "handle_create-full_texts: " "\nnew-data:\n" ins-data "\nresult:\n" ins-res)
 
         (if ins-res
           (sd/response_ok ins-res)
@@ -78,7 +78,7 @@
                           sql-format)
             upd-result (jdbc/execute-one! (:tx req) sql-query)]
 
-        (info "handle_update-full_texts: " mr-id "\new-data:\n" dwid "\nresult:\n" upd-result)
+        (debug "handle_update-full_texts: " mr-id "\new-data:\n" dwid "\nresult:\n" upd-result)
 
         (if upd-result
           (sd/response_ok upd-result)
@@ -97,7 +97,7 @@
                           sql-format)
             del-result (jdbc/execute-one! (:tx req) sql-query)]
 
-        (info "handle_delete-full_texts: " mr-id " result: " del-result)
+        (debug "handle_delete-full_texts: " mr-id " result: " del-result)
 
         (if del-result
           (sd/response_ok del-result)

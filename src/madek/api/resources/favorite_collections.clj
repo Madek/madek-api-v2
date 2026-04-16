@@ -10,7 +10,7 @@
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [schema.core :as s]
-            [taoensso.timbre :refer [info]]))
+            [taoensso.timbre :refer [debug]]))
 
 (def res-req-name :favorite_collection)
 (def res-table-name "favorite_collections")
@@ -90,7 +90,7 @@
     (fn [request]
       (let [user-id (-> request :authenticated-entity :id str)
             col-id (-> request :parameters :path :collection_id str)]
-        (info "uid\n" user-id "col-id\n" col-id)
+        (debug "uid\n" user-id "col-id\n" col-id)
         (sd/req-find-data-search2
          request handler
          user-id col-id

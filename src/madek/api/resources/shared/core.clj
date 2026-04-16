@@ -8,7 +8,7 @@
             [madek.api.utils.helper :refer [to-uuid]]
             [next.jdbc :as jdbc]
             [schema.core :as s]
-            [taoensso.timbre :refer [info debug error]]))
+            [taoensso.timbre :refer [debug error]]))
 
 (defn transform_ml [hashMap]
   "Builds Map with keys as keywords and values from HashMap (sql-hstore)"
@@ -80,9 +80,8 @@
   "Logs requests authed user id "
   [request msg]
   (if-let [auth-id (-> request :authenticated-entity :id)]
-    (info "WRITE: User: " auth-id "; Message: " msg)
-    (info "WRITE: anonymous; Message: " msg)))
-
+    (debug "WRITE: User: " auth-id "; Message: " msg)
+    (debug "WRITE: anonymous; Message: " msg)))
 ;([auth-entity msg entity]
 ; (info
 ;  "WRITE: "
@@ -127,7 +126,7 @@
    It does send404 if set true and no such entity is found.
    If it exists it is associated with the request as reqkey"
   [request handler search search2 db_table db_col_name db_col_name2 reqkey send404]
-  (info "req-find-data-search2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
+  (debug "req-find-data-search2" "\nc1: " db_col_name "\ns1: " search "\nc2: " db_col_name2 "\ns2: " search2)
   (if-let [result-db (dbh/query-eq-find-one db_table db_col_name search db_col_name2 search2 (:tx request))]
     (handler (assoc request reqkey result-db))
     (if (= true send404)

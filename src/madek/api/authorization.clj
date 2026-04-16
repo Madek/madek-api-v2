@@ -2,7 +2,7 @@
   (:require
    [madek.api.resources.collections.permissions :as collection-perms :only [viewable-by-auth-entity?]]
    [madek.api.resources.media-entries.permissions :as media-entry-perms :only [viewable-by-auth-entity?]]
-   [taoensso.timbre :refer [info debug]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn authorized-view? [auth-entity resource tx]
   (case (:type resource)
@@ -27,7 +27,7 @@
                    ;"Collection" (mr-permissions/permission-by-auth-entity?
                    ;              resource auth-entity :edit_metadata_and_relations "collection")
                    false)]
-    (info "auth-edit-metadata" auth-res)
+    (debug "auth-edit-metadata" auth-res)
     auth-res))
 
 (defn authorized-edit-permissions? [auth-entity resource tx]

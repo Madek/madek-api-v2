@@ -9,7 +9,7 @@
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]
-   [taoensso.timbre :refer [info]]))
+   [taoensso.timbre :refer [debug]]))
 
 (defn handle_list-delegations
   [req]
@@ -22,7 +22,7 @@
 (defn handle_get-delegation
   [req]
   (let [delegation (-> req :delegation)]
-    (info "handle_get-delegation" delegation)
+    (debug "handle_get-delegation" delegation)
     ; TODO hide some fields
     (sd/response_ok delegation)))
 
@@ -54,13 +54,13 @@
                       (sql/where [:= :id id])
                       sql-format)]
     ; create delegation entry
-    (info "handle_update-delegations: " "\nid\n" id "\ndwid\n" dwid
-          "\nold-data\n" old-data
-          "\nupd-query\n" upd-query)
+    (debug "handle_update-delegations: " "\nid\n" id "\ndwid\n" dwid
+           "\nold-data\n" old-data
+           "\nupd-query\n" upd-query)
 
     (if-let [ins-res (first (jdbc/execute! tx sql-query))]
       (let [new-data (dbh/query-eq-find-one :delegations :id id tx)]
-        (info "handle_update-delegations:" "\nnew-data\n" new-data)
+        (debug "handle_update-delegations:" "\nnew-data\n" new-data)
         (sd/response_ok new-data))
       (sd/response_failed "Could not update delegation." 406))))
 
