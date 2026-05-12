@@ -54,9 +54,11 @@ describe "a bunch of media entries with different properties" do
 
           response = client.get("/api-v2/media-entries/#{me_id}/previews/")
           expect(response.status).to be == 200
-          expect(response.body["media_type"]).to eq("image")
+          expect(response.body).to be_a Array
+          expect(response.body.first.keys).to include("id", "thumbnail")
 
-          response = client.get("/api-v2/media-entries/#{me_id}/previews/data-stream/")
+          preview_id = response.body.first["id"]
+          response = client.get("/api-v2/previews/#{preview_id}/data-stream")
           expect(response.status).to be == 200
 
           response = client.get("/api-v2/media-entries/#{me_id}/media-files/")
