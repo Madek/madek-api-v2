@@ -41,7 +41,7 @@
 (def schema-request-post
   {:person_id s/Uuid
    (s/optional-key :accepted_usage_terms_id) (s/maybe s/Uuid)
-   (s/optional-key :email) v/email-validation
+   (s/optional-key :email) (s/maybe v/email-validation)
    (s/optional-key :first_name) s/Str
    (s/optional-key :institution) s/Str
    (s/optional-key :institutional_id) s/Str

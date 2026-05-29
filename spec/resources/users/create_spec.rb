@@ -20,6 +20,17 @@ context "users" do
               req.headers["Content-Type"] = "application/json"
             end.status).to be == 201
           end
+
+          it "accepts explicit null email" do
+            response = client.post("/api-v2/admin/users/") do |req|
+              req.body = {login: "test-no-email",
+                          person_id: @person[:id],
+                          email: nil}.to_json
+              req.headers["Content-Type"] = "application/json"
+            end
+            expect(response.status).to be == 201
+            expect(response.body["email"]).to be_nil
+          end
         end
       end
 
