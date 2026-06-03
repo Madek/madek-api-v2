@@ -107,8 +107,67 @@ describe "MediaFile Resource" do
                 "66e1eb76ef8079968ff6a3e7519749be3fbb7b05d54a6f1270727273ccb2a539"
             end
           end
+
+          describe "with media_size query parameter" do
+            let :media_file_response do
+              authenticated_json_client.get("/api-v2/media-files/#{media_file.id}")
+            end
+
+            let :preview_tier do
+              previews = media_file_response.body["previews"]
+              expect(previews).not_to be_empty
+              previews.first["thumbnail"]
+            end
+
+            let :sized_data_stream_response do
+              authenticated_json_client.get(
+                "/api-v2/media-files/#{media_file.id}/data-stream/?media_size=#{preview_tier}"
+              )
+            end
+
+            it "streams a preview for a valid media_size" do
+              expect(sized_data_stream_response.status).to be == 200
+              expect(sized_data_stream_response.headers["content-type"]).to be == "image/jpeg"
+            end
+
+            it "responds with 404 for an invalid media_size" do
+              response = authenticated_json_client.get(
+                "/api-v2/media-files/#{media_file.id}/data-stream/?media_size=not-a-tier"
+              )
+              expect(response.status).to be == 404
+            end
+          end
         end
       end
+    end
+  end
+
+  describe "the video media file via media-entry" do
+    let :media_entry do
+      FactoryBot.create :media_entry,
+        get_full_size: true,
+        get_metadata_and_previews: true
+    end
+
+    let! :media_file do
+      mf = FactoryBot.create :media_file_for_movie, media_entry: media_entry
+      FactoryBot.create :preview,
+        media_file: mf,
+        media_type: "image",
+        thumbnail: "large",
+        content_type: "image/jpeg"
+      mf
+    end
+
+    it "returns media-files for media-entry id (detect-ui-preview SQL)" do
+      expect(media_file).to be
+      response = authenticated_json_client.get(
+        "/api-v2/media-entries/#{media_entry.id}/media-files/"
+      )
+      expect(response.status).to be == 200
+      expect(response.body["media_type"]).to eq "video"
+      expect(response.body["previews"]).to be_a Array
+      expect(response.body["previews"]).not_to be_empty
     end
   end
 end
