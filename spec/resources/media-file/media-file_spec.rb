@@ -66,6 +66,13 @@ describe "MediaFile Resource" do
           it "includes the media_type key" do
             expect(response.body.keys).to include "media_type"
           end
+
+          it "includes content_type on each preview" do
+            response.body["previews"].each do |preview|
+              expect(preview.keys).to include "content_type"
+              expect(preview["content_type"]).to eq "image/jpeg"
+            end
+          end
         end
       end
 
@@ -168,6 +175,7 @@ describe "MediaFile Resource" do
       expect(response.body["media_type"]).to eq "video"
       expect(response.body["previews"]).to be_a Array
       expect(response.body["previews"]).not_to be_empty
+      expect(response.body["previews"].first["content_type"]).to eq "image/jpeg"
     end
   end
 end

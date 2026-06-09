@@ -14,7 +14,7 @@
        :body (conj (select-keys media-file [:id :size :created_at :updated_at
                                             :media_type :media_entry_id
                                             :filename :content_type])
-                   {:previews (map #(select-keys % [:id :thumbnail :used_as_ui_preview])
+                   {:previews (map #(select-keys % [:id :thumbnail :content_type :used_as_ui_preview])
                                    (previews/get-index media-file (:tx request)))})})))
 
 (defn- media-file-path [media-file]

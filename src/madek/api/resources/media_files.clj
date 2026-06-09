@@ -43,6 +43,12 @@
           (sd/response_not_found "No media-file for media_entry_id")
           (handler (assoc request :media-file (first media-files))))))))
 
+(def schema-preview-in-media-file
+  {:id s/Uuid
+   :thumbnail s/Str
+   :content_type (s/maybe s/Str)
+   (s/optional-key :used_as_ui_preview) s/Bool})
+
 (def schema_export-media-file
   {:id s/Uuid
    :media_entry_id s/Uuid
@@ -50,7 +56,7 @@
    :content_type s/Str
    :filename s/Str
 
-   :previews s/Any
+   :previews [schema-preview-in-media-file]
    :size s/Int
    ;:width s/Int
    ;:height s/Int
