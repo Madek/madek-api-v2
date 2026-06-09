@@ -34,37 +34,5 @@
        (jdbc/execute! tx (-> sqlmap sql-format))
        detected-id))))
 
-(def ^:private tier-order
-  #{"maximum" "x_large" "large" "medium" "small"})
-
-(defn normalize-media-size
-  "Normalize ``media_size`` query (e.g. x-large → x_large)."
-  [raw]
-  (when-let [s (not-empty (clojure.string/trim (str raw)))]
-    (let [k (-> s clojure.string/lower-case (clojure.string/replace "-" "_"))]
-      (cond
-        (= k "xlarge") "x_large"
-        (tier-order k) k
-        :else nil))))
-
-(defn- tier-preference-order
-  [pref]
-  (let [p (or (normalize-media-size pref) "x_large")]
-    (into [p] (remove #{p} ["maximum" "x_large" "large" "medium" "small"]))))
-
-(defn filter-by-media-size
-  "Keep previews for requested tier; fallback to nearest tier in preference order."
-  [previews media-size]
-  (if-let [pref (normalize-media-size media-size)]
-    (let [exact (filter #(= (:thumbnail %) pref) previews)]
-      (if (seq exact)
-        (vec exact)
-        (or (some (fn [t]
-                    (let [tier (filter #(= (:thumbnail %) t) previews)]
-                      (when (seq tier) (vec tier))))
-                  (tier-preference-order pref))
-            (vec previews))))
-    (vec previews)))
-
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)

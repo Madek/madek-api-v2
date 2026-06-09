@@ -92,8 +92,7 @@
            :middleware [wrap-find-and-add-media-file
                         media-files.authorization/wrap-auth-media-file-full_size]
            :coercion reitit.coercion.schema/coercion
-           :parameters {:path {:media_file_id s/Str}
-                        :query {(s/optional-key :media_size) s/Str}}
+           :parameters {:path {:media_file_id s/Str}}
            :responses {200 {:description "Returns the media-file data-stream for id."
                             :body s/Any}
                        404 {:description "Not found."
@@ -123,8 +122,7 @@
                    jqh/ring-wrap-add-media-resource
                    jqh/ring-wrap-authorization-download]
       :coercion reitit.coercion.schema/coercion
-      :parameters {:path {:media_entry_id s/Str}
-                   :query {(s/optional-key :media_size) s/Str}}
+      :parameters {:path {:media_entry_id s/Str}}
       :responses {200 {:description "Returns the media-file data-stream for media-entry id."
                        :body s/Any}
                   404 {:description "Not found."

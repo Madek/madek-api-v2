@@ -114,36 +114,6 @@ describe "MediaFile Resource" do
                 "66e1eb76ef8079968ff6a3e7519749be3fbb7b05d54a6f1270727273ccb2a539"
             end
           end
-
-          describe "with media_size query parameter" do
-            let :media_file_response do
-              authenticated_json_client.get("/api-v2/media-files/#{media_file.id}")
-            end
-
-            let :preview_tier do
-              previews = media_file_response.body["previews"]
-              expect(previews).not_to be_empty
-              previews.first["thumbnail"]
-            end
-
-            let :sized_data_stream_response do
-              authenticated_json_client.get(
-                "/api-v2/media-files/#{media_file.id}/data-stream/?media_size=#{preview_tier}"
-              )
-            end
-
-            it "streams a preview for a valid media_size" do
-              expect(sized_data_stream_response.status).to be == 200
-              expect(sized_data_stream_response.headers["content-type"]).to be == "image/jpeg"
-            end
-
-            it "responds with 404 for an invalid media_size" do
-              response = authenticated_json_client.get(
-                "/api-v2/media-files/#{media_file.id}/data-stream/?media_size=not-a-tier"
-              )
-              expect(response.status).to be == 404
-            end
-          end
         end
       end
     end
