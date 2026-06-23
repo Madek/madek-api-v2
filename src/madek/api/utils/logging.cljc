@@ -31,7 +31,7 @@
                   ;"madek.api.utils.pagination"
                   ;"madek.api.resources.users.create"
                   ;"madek.api.web"
-                  }:debug]
+                  } :debug]
                [#{#?(:clj "com.zaxxer.hikari.*")
                   "madek.*"} :info]
                [#{"*"} :warn]]

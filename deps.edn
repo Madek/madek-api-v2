@@ -1,63 +1,68 @@
 {:paths ["src" "resources"]
- :deps {buddy/buddy-sign {:mvn/version "3.5.351"}
+ :deps {buddy/buddy-sign {:mvn/version "3.6.1-359"}
         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
         cheshire/cheshire {:mvn/version "5.13.0"}
-        cider-ci/open-session {:mvn/version "2.0.0-beta.1"} ; upgrade will break
-        cider/cider-nrepl {:mvn/version "0.56.0"}
-        clj-http/clj-http {:mvn/version "3.13.0"}
+        cider-ci/open-session {:mvn/version "2.0.0-beta.1"
+                               :exclusions [org.bouncycastle/bcprov-jdk15on
+                                            org.bouncycastle/bcpkix-jdk18on]}
+        cider/cider-nrepl {:mvn/version "0.59.0"}
+        clj-http/clj-http {:mvn/version "3.13.1"}
         clj-pid/clj-pid {:mvn/version "0.1.2"}
         clj-yaml/clj-yaml {:mvn/version "0.4.0"}
         clojure-humanize/clojure-humanize {:mvn/version "0.2.2"}
-        clojure.java-time/clojure.java-time {:mvn/version "1.4.2"}
+        clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
+        com.fasterxml.jackson.core/jackson-core {:mvn/version "2.18.6"} ; transitive dependency of serveral others; GHSA-72hv-8253-57qq 
         com.fzakaria/slf4j-timbre {:mvn/version "0.4.1"}
         com.github.mfornos/humanize-slim {:mvn/version "1.2.2"}
         com.github.seancorfield/honeysql {:mvn/version "2.6.1147"}
-        com.github.seancorfield/next.jdbc {:mvn/version "1.3.939"}
-        com.mchange/c3p0 {:mvn/version "0.12.0"}
-        com.taoensso/timbre {:mvn/version "6.5.0"}
+        com.github.seancorfield/next.jdbc {:mvn/version "1.3.1118"}
+        com.google.guava/guava {:mvn/version "32.0.0-jre"} ; transitive dependency of com.github.mfornos/humanize-slim; several CVEs
+        com.mchange/c3p0 {:mvn/version "0.14.1"}
+        com.taoensso/timbre {:mvn/version "6.8.0"}
         com.zaxxer/HikariCP {:mvn/version "5.1.0"}
         pandect/pandect {:mvn/version "1.0.2"
                          :exclusions [org.bouncycastle/bcprov-jdk15on]}
-        org.bouncycastle/bcprov-jdk15on {:mvn/version "1.70"}
+        org.bouncycastle/bcprov-jdk18on {:mvn/version "1.84"} ; transitive dependency of several others; several GHSA/CVE
+        org.bouncycastle/bcpkix-jdk18on {:mvn/version "1.84"} ; transitive dependency of several others; several GHSA/CVE
         org.clj-commons/byte-streams {:mvn/version "0.3.4"}
         digest/digest {:mvn/version "1.4.10"}
         hickory/hickory {:mvn/version "0.7.1" :exclusions [org.jsoup/jsoup]}
-        compojure/compojure {:mvn/version "1.7.1"}
+        compojure/compojure {:mvn/version "1.7.2"}
         drtom/clj-uuid {:mvn/version "0.1.7"}
-        ring-middleware-accept/ring-middleware-accept {:mvn/version "2.0.0"}
+        ring-middleware-accept/ring-middleware-accept {:mvn/version "2.0.3"}
         environ/environ {:mvn/version "1.2.0"}
         funcool/cuerdas {:mvn/version "2023.11.09-407"} ;;2023.11.09-407
         honeysql/honeysql {:mvn/version "1.0.461"}
-        http-kit/http-kit {:mvn/version "2.8.0"}
-        io.github.tonsky/clj-reload {:mvn/version "0.9.6"}
-        inflections/inflections {:mvn/version "0.14.2"}
+        http-kit/http-kit {:mvn/version "2.8.1"}
+        io.github.tonsky/clj-reload {:mvn/version "1.0.0"}
+        inflections/inflections {:mvn/version "0.15.0"}
         javax.servlet/servlet-api {:mvn/version "2.5"}
         logbug/logbug {:mvn/version "5.0.0"}
         me.raynes/fs {:mvn/version "1.4.6"
                       :exclusions [org.apache.commons/commons-compress]}
-        nrepl/nrepl {:mvn/version "1.3.1"}
+        nrepl/nrepl {:mvn/version "1.7.0"}
         org.apache.commons/commons-compress #:mvn{:version "1.28.0"}
         org.apache.commons/commons-lang3 {:mvn/version "3.20.0"}
         org.clojars.hozumi/clj-commons-exec {:mvn/version "1.2.0"}
-        org.clojure/clojure {:mvn/version "1.11.4"}
-        org.clojure/clojurescript {:mvn/version "1.11.60"}
-        org.clojure/core.match {:mvn/version "1.1.0"}
-        org.clojure/data.codec {:mvn/version "0.2.0"}
+        org.clojure/clojure {:mvn/version "1.12.5"}
+        org.clojure/clojurescript {:mvn/version "1.12.145"}
+        org.clojure/core.match {:mvn/version "1.1.1"}
+        org.clojure/data.codec {:mvn/version "0.2.1"}
         org.clojure/tools.cli {:mvn/version "1.1.230"}
-        org.clojure/tools.logging {:mvn/version "1.3.0"}
-        org.jsoup/jsoup {:mvn/version "1.15.3"} ; CVE-2021-37714, CVE-2022-36033 (see hickory/hickory)
-        org.postgresql/postgresql {:mvn/version "42.6.2"}
-        org.yaml/snakeyaml {:mvn/version "2.2"}
+        org.clojure/tools.logging {:mvn/version "1.3.1"}
+        org.jsoup/jsoup {:mvn/version "1.22.2"} ; CVE-2021-37714, CVE-2022-36033 (see hickory/hickory)
+        org.postgresql/postgresql {:mvn/version "42.7.11"}
+        org.yaml/snakeyaml {:mvn/version "2.6"}
         pg-types/pg-types {:mvn/version "3.0.0"}
         ring-cors/ring-cors {:mvn/version "0.1.13"}
-        ring/ring-core {:mvn/version "1.15.2"}
-        ring/ring-devel {:mvn/version "1.15.2"}
-        ring/ring-jetty-adapter {:mvn/version "1.15.2"}
+        ring/ring-core {:mvn/version "1.15.4"}
+        ring/ring-devel {:mvn/version "1.15.4"}
+        ring/ring-jetty-adapter {:mvn/version "1.15.4"}
         ring/ring-json {:mvn/version "0.5.1"}
         spootnik/signal {:mvn/version "0.2.5"}
-        uritemplate-clj/uritemplate-clj {:mvn/version "1.3.1"}
+        uritemplate-clj/uritemplate-clj {:mvn/version "1.4.0"}
 
-        ring/ring-defaults {:mvn/version "0.5.0"}
+        ring/ring-defaults {:mvn/version "0.7.0"}
         metosin/muuntaja {:mvn/version "0.6.10"}
         fi.metosin/reitit-openapi {:mvn/version "0.7.1"}
         metosin/reitit {:mvn/version "0.7.1"}
@@ -72,8 +77,8 @@
         }
  :aliases
  {:cljfmt {:extra-deps {io.github.weavejester/cljfmt
-                        {:git/tag "0.11.2"
-                         :sha "fb26b22f569724b05c93eb2502592dfc2de898c3"}}
+                        {:git/tag "0.16.4"
+                         :sha "389e7cafc7cd5d435ccd83ab931913449b807479"}}
            :main-opts ["-m" "cljfmt.main"]}
 
   :depstar {:extra-deps {seancorfield/depstar {:mvn/version "2.0.216"}}}
@@ -84,9 +89,9 @@
             :sha "809d5981b6c6ec7267328b74f8dd61630df01daf"}}
           :main-opts ["-m" "clojure.tools.deps.graph"]}
 
-  :nREPL {:extra-deps {nrepl/nrepl {:mvn/version "1.3.1"}}}
+  :nREPL {:extra-deps {nrepl/nrepl {:mvn/version "1.7.0"}}}
 
-  :outdated {:deps {com.github.liquidz/antq {:mvn/version "2.6.1121"}}
+  :outdated {:deps {com.github.liquidz/antq {:mvn/version "2.11.1276"}}
              :main-opts ["-m" "antq.core"]}
 
   :resources {:extra-paths ["resources"]}
