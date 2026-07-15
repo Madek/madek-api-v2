@@ -65,7 +65,6 @@ Full template:
   "contexts_for_collection_extra": [
     "string"
   ],
-  "edit_meta_data_power_users_group_id": "61c41787-5c3f-4f3b-b83b-3182962de8e5",
   "about_pages": {
     "de": "string",
     "en": "string"

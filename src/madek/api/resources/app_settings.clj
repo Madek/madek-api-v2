@@ -88,7 +88,6 @@
    (s/optional-key :copyright_notice_default_text) (s/maybe s/Str)
    (s/optional-key :copyright_notice_templates) [s/Str]
    (s/optional-key :default_locale) (s/maybe s/Str)
-   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Uuid)
    (s/optional-key :featured_set_subtitles) sd/schema_ml_list
    (s/optional-key :featured_set_titles) sd/schema_ml_list
    (s/optional-key :ignored_keyword_keys_for_browsing) (s/maybe s/Str)
@@ -133,7 +132,6 @@
    (s/optional-key :copyright_notice_templates) [s/Str]
    (s/optional-key :created_at) s/Any
    (s/optional-key :default_locale) (s/maybe s/Str)
-   (s/optional-key :edit_meta_data_power_users_group_id) (s/maybe s/Uuid)
    (s/optional-key :featured_set_id) (s/maybe s/Uuid)
    (s/optional-key :featured_set_subtitles) (s/maybe sd/schema_ml_list)
    (s/optional-key :featured_set_titles) (s/maybe sd/schema_ml_list)

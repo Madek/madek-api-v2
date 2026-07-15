@@ -137,7 +137,6 @@
       ;; uuid
       (modify-if-exists :id #(to-uuid % :id))
       (modify-if-exists :media_entry_default_license_id to-uuid)
-      (modify-if-exists :edit_meta_data_power_users_group_id to-uuid)
       (modify-if-exists :creator_id to-uuid)
       (modify-if-exists :person_id to-uuid)
       (modify-if-exists :user_id to-uuid)
