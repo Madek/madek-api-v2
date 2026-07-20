@@ -3,6 +3,7 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.resources.contexts.permissions :as permissions]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [madek.api.utils.helper :refer [cast-to-hstore]]
@@ -27,13 +28,29 @@
     ;(info "handle_adm-list-context" "\nquery\n" db-query "\nresult\n" result)
     (sd/response_ok result)))
 
+(defn- viewable-where-clause
+  [user-id tx]
+  (let [context-ids (permissions/accessible-context-ids user-id "view" tx)]
+    (if (empty? context-ids)
+      [:= :contexts.enabled_for_public_view true]
+      [:or
+       [:= :contexts.enabled_for_public_view true]
+       [:in :contexts.id context-ids]])))
+
+(defn- viewable? [context user-id tx]
+  (or (:enabled_for_public_view context)
+      (some #(= % (:id context)) (permissions/accessible-context-ids user-id "view" tx))))
+
 (defn handle_usr-list-contexts
   [req]
-  (let [db-query (-> (sql/select :id :labels :descriptions)
+  (let [user-id (-> req :authenticated-entity :id)
+        tx (:tx req)
+        db-query (-> (sql/select :id :labels :descriptions)
                      (sql/from :contexts)
+                     (sql/where (viewable-where-clause user-id tx))
                      (sql/order-by [:id :asc])
                      sql-format)
-        db-result (jdbc/execute! (:tx req) db-query)
+        db-result (jdbc/execute! tx db-query)
         result (map context_transform_ml db-result)]
     ;(info "handle_usr-list-context" "\nquery\n" db-query "\nresult\n" result)
     (sd/response_ok result)))
@@ -46,9 +63,12 @@
 
 (defn handle_usr-get-context
   [req]
-  (let [context (-> req :context context_transform_ml sd/remove-internal-keys)]
-    ;(info "handle_usr-get-context" context)
-    (sd/response_ok context)))
+  (let [context (-> req :context)
+        user-id (-> req :authenticated-entity :id)
+        tx (:tx req)]
+    (if (viewable? context user-id tx)
+      (sd/response_ok (-> context context_transform_ml sd/remove-internal-keys))
+      (sd/response_not_found "Context not found."))))
 
 (defn handle_create-contexts
   [req]
