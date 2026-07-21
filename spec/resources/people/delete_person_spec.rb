@@ -1,8 +1,7 @@
 require "spec_helper"
 require "shared/audit-validator"
 
-expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
-  "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
+expected_audit_entries = ["INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
   "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "DELETE people"]
 
 context "people" do

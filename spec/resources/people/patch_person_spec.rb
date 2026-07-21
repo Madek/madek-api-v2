@@ -17,8 +17,7 @@ context "people" do
             end.status
           ).to be == 200
 
-          expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
-            "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
+          expected_audit_entries = ["INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "UPDATE people"]
 
           expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
@@ -32,8 +31,7 @@ context "people" do
             end.status
           ).to be == 200
 
-          expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
-            "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users",
+          expected_audit_entries = ["INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users", "INSERT auth_systems_users",
             "INSERT admins", "INSERT api_tokens"]
 
           expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
@@ -49,8 +47,7 @@ context "people" do
           it "contains the update" do
             expect(patch_result.body["last_name"]).to be == "new name"
 
-            expected_audit_entries = ["UPDATE auth_systems", "INSERT groups", "INSERT rdf_classes", "INSERT rdf_classes",
-              "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
+            expected_audit_entries = ["INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
               "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "UPDATE people"]
 
             expect_audit_entries("PATCH /api-v2/admin/people/#{CGI.escape(@person.id)}", expected_audit_entries, 200)
