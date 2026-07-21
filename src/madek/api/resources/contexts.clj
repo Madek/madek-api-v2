@@ -151,7 +151,9 @@
   {:id s/Str
    :labels (s/maybe sd/schema_ml_list)
    :descriptions (s/maybe sd/schema_ml_list)
-   :admin_comment (s/maybe s/Str)})
+   :admin_comment (s/maybe s/Str)
+   :enabled_for_public_view s/Bool
+   :enabled_for_public_use s/Bool})
 
 ; TODO more checks
 ; TODO response coercion
