@@ -19,7 +19,8 @@ context "people" do
           expect(get_person_result.status).to be == 200
 
           expected_audit_entries = ["INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
-            "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens"]
+            "INSERT auth_systems_users", "INSERT admins", *(["INSERT admin_permissions"] * AdminPermission::KEYS.size),
+            "INSERT api_tokens"]
           expect_audit_entries("GET /api-v2/people/#{@person.id}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end
 
@@ -53,7 +54,8 @@ context "people" do
           expect(result.body["id"]).to be == @inst_person["id"]
 
           expected_audit_entries = ["INSERT people", "INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
-            "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens"]
+            "INSERT auth_systems_users", "INSERT admins", *(["INSERT admin_permissions"] * AdminPermission::KEYS.size),
+            "INSERT api_tokens"]
 
           expect_audit_entries("GET #{url}}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end

@@ -2,7 +2,7 @@ require "spec_helper"
 require "shared/audit-validator"
 
 context "people" do
-  expected_audit_entries = ["INSERT admins", "INSERT api_tokens", "INSERT auth_systems_users",
+  expected_audit_entries = ["INSERT admins", "INSERT admin_permissions", "INSERT api_tokens", "INSERT auth_systems_users",
     "INSERT people", "INSERT usage_terms", "INSERT users"]
 
   before :each do

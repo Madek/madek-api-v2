@@ -2,7 +2,8 @@ require "spec_helper"
 require "shared/audit-validator"
 
 expected_audit_entries = ["INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
-  "INSERT auth_systems_users", "INSERT admins", "INSERT api_tokens", "DELETE people"]
+  "INSERT auth_systems_users", "INSERT admins", *(["INSERT admin_permissions"] * AdminPermission::KEYS.size),
+  "INSERT api_tokens", "DELETE people"]
 
 context "people" do
   before :each do
