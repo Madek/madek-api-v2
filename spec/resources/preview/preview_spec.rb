@@ -12,6 +12,7 @@ SHAS =
    large: "4adbe33f15234a0f8d669a2ee0a221a5a0b45bc9e3f9db55fd70984fa8f076a1",
    x_large: "4adbe33f15234a0f8d669a2ee0a221a5a0b45bc9e3f9db55fd70984fa8f076a1",
    grand: "66e1eb76ef8079968ff6a3e7519749be3fbb7b05d54a6f1270727273ccb2a539",
+   x_grand: "4adbe33f15234a0f8d669a2ee0a221a5a0b45bc9e3f9db55fd70984fa8f076a1",
    maximum: "4adbe33f15234a0f8d669a2ee0a221a5a0b45bc9e3f9db55fd70984fa8f076a1"}
 
 describe "Getting a random preview for a specific media-entry" do
