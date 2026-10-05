@@ -54,9 +54,10 @@
                  (if is_admin_endpoint
                    (-> db-result
                        transform_ml)
+                   ;; Keep enabled_for_public_* (same as /api); only hide admin_comment.
                    (-> db-result
                        transform_ml
-                       sd/remove-internal-keys)))]
+                       (sd/remove-internal-keys [:admin_comment]))))]
     (if result
       (sd/response_ok result)
       (sd/response_failed "Vocabulary could not be found!" 404))))

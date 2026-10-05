@@ -24,15 +24,23 @@
                 [:= :meta_keys.vocabulary_id :vocabularies.id])
       (sql/where (where-clause user-id scope tx))))
 
+(defn- where-eq-prefixed
+  "Qualify column with `meta_keys.` so the vocabularies join cannot collide."
+  [query qparams param]
+  (let [pval (some-> qparams param str not-empty)]
+    (if (nil? pval)
+      query
+      (sql/where query [:= (keyword (str "meta_keys." (name param))) pval]))))
+
 (defn build-query [request]
   (let [qparams (-> request :parameters :query)
         tx (:tx request)
         scope (or (:scope qparams) "view")
         user-id (-> request :authenticated-entity :id)]
     (-> (base-query user-id scope tx)
-        (dbh/build-query-param qparams :vocabulary_id)
+        (where-eq-prefixed qparams :vocabulary_id)
         (dbh/build-query-param-like qparams :id :meta_keys.id)
-        (dbh/build-query-param qparams :meta_datum_object_type)
+        (where-eq-prefixed qparams :meta_datum_object_type)
         (dbh/build-query-param qparams :is_enabled_for_collections)
         (dbh/build-query-param qparams :is_enabled_for_media_entries)
         (sql/order-by [:meta_keys.id :asc]))))

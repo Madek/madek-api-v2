@@ -6,6 +6,8 @@
 
 (def schema_export-vocabulary
   {:id s/Str
+   :enabled_for_public_view s/Bool
+   :enabled_for_public_use s/Bool
    :position s/Int
    :labels (s/maybe sd/schema_ml_list)
    :descriptions (s/maybe sd/schema_ml_list)

@@ -15,7 +15,8 @@
 (sa/def ::descriptions map?)
 
 (sa/def :adm/schema_export-vocabulary
-  (sa/keys :req-un [::sp/id ::sp/position ::sp/labels ::descriptions]
+  (sa/keys :req-un [::sp/id ::sp/position ::sp/labels ::descriptions
+                    ::sp/enabled_for_public_view ::sp/enabled_for_public_use]
            :opt-un [::sp/admin_comment]))
 
 (sa/def :adm/vocabularies-response (st/spec {:spec (sa/coll-of :adm/schema_export-vocabulary)

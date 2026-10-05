@@ -1,28 +1,34 @@
 (ns madek.api.resources.locales
   (:require
-   [honey.sql :refer [format] :rename {format sql-format}]
-   [honey.sql.helpers :as sql]
-   [madek.api.utils.config :refer [get-config]]
-   [next.jdbc :as jdbc]))
+   [madek.api.db.settings :as settings]
+   [madek.api.utils.config :refer [get-config]]))
 
-;; TODO: not in use?
-;(defn- find-app-setting
-;  [tx]
-;  (let [query (-> (sql/select :*)
-;                  (sql/from :app_settings)
-;                  (sql-format))]
-;    (jdbc/execute-one! tx query)))
-;
-;(defn- default-locale
-;  [tx]
-;  (let [app-setting (find-app-setting tx)]
-;    (if-not (nil? app-setting)
-;      (:default_locale app-setting)
-;      (let [config (get-config)]
-;        (:madek_default_locale config)))))
-;
-;(defn add-field-for-default-locale
-;  [field-name result tx]
-;  (let [field-plural (keyword (str field-name "s"))
-;        field-name (keyword field-name)]
-;    (assoc result field-name (get-in result [field-plural (default-locale tx)]))))
+(defn default-locale
+  "App-settings default locale, then config, then `de`."
+  ([tx]
+   (or (some-> (settings/settings tx) :default_locale str not-empty)
+       (some-> (get-config) :madek_default_locale str not-empty)
+       "de"))
+  ([]
+   (or (some-> (get-config) :madek_default_locale str not-empty)
+       "de")))
+
+(defn add-field-for-default-locale
+  "Copy plural hstore/map field (`labels` → `label`) for the default locale."
+  ([field-name result locale]
+   (let [field-plural (keyword (str field-name "s"))
+         field-name (keyword field-name)
+         loc (keyword (or locale "de"))]
+     (assoc result field-name (get-in result [field-plural loc]))))
+  ([field-name result]
+   (add-field-for-default-locale field-name result (default-locale))))
+
+(defn add-fields-for-default-locale
+  "Same as `/api`: singular `:label`, `:description`, `:hint` from the default locale."
+  ([result locale]
+   (-> result
+       (add-field-for-default-locale "label" locale)
+       (add-field-for-default-locale "description" locale)
+       (add-field-for-default-locale "hint" locale)))
+  ([result]
+   (add-fields-for-default-locale result (default-locale))))

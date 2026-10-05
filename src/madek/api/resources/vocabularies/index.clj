@@ -27,7 +27,8 @@
    (let [is_admin_endpoint (str/includes? (-> request :uri) "/admin/")
          select (if is_admin_endpoint
                   (sql/select :*)
-                  (sql/select :id :admin_comment :position :labels :descriptions))]
+                  (sql/select :id :admin_comment :position :labels :descriptions
+                              :enabled_for_public_view :enabled_for_public_use))]
      (-> select
          (sql/from :vocabularies)
          (sql/order-by [:position :asc])

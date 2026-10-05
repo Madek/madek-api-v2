@@ -21,6 +21,17 @@
                   (sql-format))]
     (jdbc/execute! tx query)))
 
+(defn- get-io-mappings-for-ids
+  [ids tx]
+  (if (empty? ids)
+    []
+    (let [query (-> (sql/select :meta_key_id :key_map :io_interface_id)
+                    (sql/from :io_mappings)
+                    (sql/order-by [:meta_key_id :asc] [:io_interface_id :asc])
+                    (sql/where [:in :io_mappings.meta_key_id (vec ids)])
+                    (sql-format))]
+      (jdbc/execute! tx query))))
+
 (defn- prepare-io-mappings-from
   [io-mappings]
   (let [groupped (group-by :io_interface_id io-mappings)]
@@ -35,6 +46,16 @@
   [result id tx]
   (let [io-mappings (prepare-io-mappings-from (get-io-mappings id tx))]
     (assoc result :io_mappings io-mappings)))
+
+(defn include-io-mappings-many
+  "Attach `:io_mappings` to each meta-key (same shape as single GET / `/api`)."
+  [meta-keys tx]
+  (let [ids (mapv :id meta-keys)
+        by-id (group-by :meta_key_id (get-io-mappings-for-ids ids tx))]
+    (mapv (fn [mk]
+            (assoc mk :io_mappings
+                   (prepare-io-mappings-from (get by-id (:id mk) []))))
+          meta-keys)))
 
 (defn build-meta-key-query [id]
   (-> (sql/select :*)
