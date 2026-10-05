@@ -12,8 +12,9 @@
 (defn- detect-ui-preview-id [sqlmap media-type tx]
   (if (= media-type "video")
     (let [query (-> sqlmap
-                    (sql/where [:= :media_type "image"]
-                               [:= :thumbnail "large"])
+                    ;; Qualify: both previews and media_files have media_type.
+                    (sql/where [:= :previews.media_type "image"]
+                               [:= :previews.thumbnail "large"])
                     sql-format)]
       (let [previews (jdbc/execute! tx query)]
         (:id (get-first-or-30-percent previews))))
