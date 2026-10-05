@@ -35,12 +35,11 @@
 (defn- prepare-io-mappings-from
   [io-mappings]
   (let [groupped (group-by :io_interface_id io-mappings)]
-    (let [io-interfaces (keys groupped)]
-      (map (fn [io-interface-id] {:id io-interface-id
-                                  :keys (reduce (fn [m key-map]
-                                                  (conj m {:key (:key_map key-map)}))
-                                                []
-                                                (get groupped io-interface-id))}) io-interfaces))))
+    (mapv (fn [io-interface-id]
+            {:id io-interface-id
+             :keys (mapv (fn [row] {:key (:key_map row)})
+                         (get groupped io-interface-id))})
+          (keys groupped))))
 
 (defn include-io-mappings
   [result id tx]

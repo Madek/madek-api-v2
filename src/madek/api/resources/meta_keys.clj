@@ -173,10 +173,11 @@
             ::sp/selection_field_type
             ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view]))
 
-(sa/def ::label (st/spec {:spec (sa/nilable string?)}))
-(sa/def ::description (st/spec {:spec (sa/nilable string?)}))
-(sa/def ::hint (st/spec {:spec (sa/nilable string?)}))
-(sa/def ::roles_list_id (st/spec {:spec (sa/nilable uuid?)}))
+;; Keep these loose: nilable st/spec broke OpenAPI / response coercion in CI.
+(sa/def ::label any?)
+(sa/def ::description any?)
+(sa/def ::hint any?)
+(sa/def ::roles_list_id any?)
 
 (sa/def ::schema_export-meta-key-usr
   (sa/keys
@@ -207,7 +208,8 @@
             ::roles_list_id
             ::label ::description ::hint]))
 
-(sa/def ::meta-query-def (sa/keys :opt-un [::sp/id ::sp/vocabulary_id ::sp/meta_datum_object_type
+;; Meta-key ids are strings (`vocab:key`), not uuids. `::sp/id` is uuid — do not use it here.
+(sa/def ::meta-query-def (sa/keys :opt-un [::sp-str/id ::sp/vocabulary_id ::sp/meta_datum_object_type
                                            ::sp/is_enabled_for_collections ::sp/is_enabled_for_media_entries
                                            ::sp/scope ::sp/page ::sp/size]))
 

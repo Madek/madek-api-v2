@@ -1,12 +1,29 @@
 (ns madek.api.resources.locales
   (:require
-   [madek.api.db.settings :as settings]
-   [madek.api.utils.config :refer [get-config]]))
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
+   [madek.api.utils.config :refer [get-config]]
+   [next.jdbc :as jdbc]))
+
+(defn- default-locale-from-db [tx]
+  (when tx
+    (try
+      (some-> (-> (sql/select :default_locale)
+                  (sql/from :app_settings)
+                  (sql/where [:= :id 0])
+                  sql-format
+                  (#(jdbc/execute-one! tx %)))
+              :default_locale
+              str
+              not-empty)
+      (catch Exception _
+        nil))))
 
 (defn default-locale
-  "App-settings default locale, then config, then `de`."
+  "App-settings default locale, then config, then `de`.
+  Never throws — meta-key export must stay available if settings are missing."
   ([tx]
-   (or (some-> (settings/settings tx) :default_locale str not-empty)
+   (or (default-locale-from-db tx)
        (some-> (get-config) :madek_default_locale str not-empty)
        "de"))
   ([]
@@ -17,9 +34,14 @@
   "Copy plural hstore/map field (`labels` → `label`) for the default locale."
   ([field-name result locale]
    (let [field-plural (keyword (str field-name "s"))
-         field-name (keyword field-name)
-         loc (keyword (or locale "de"))]
-     (assoc result field-name (get-in result [field-plural loc]))))
+         field-kw (keyword field-name)
+         loc (keyword (or locale "de"))
+         plural (get result field-plural)]
+     (assoc result field-kw
+            (cond
+              (map? plural) (or (get plural loc)
+                                (get plural (name loc)))
+              :else nil))))
   ([field-name result]
    (add-field-for-default-locale field-name result (default-locale))))
 

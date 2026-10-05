@@ -52,11 +52,11 @@ describe "meta-key" do
           .to eq({"de" => "label de", "en" => "label en"})
       end
 
-      #      specify 'result contains a label from default locale' do
-      #        expect(
-      #          json_meta_key_resource(meta_key.id).body['label']
-      #        ).to eq 'label de'
-      #      end
+      specify "result contains a label from default locale" do
+        expect(
+          json_meta_key_resource(meta_key.id).body["label"]
+        ).to eq "label de"
+      end
     end
 
     describe "multilingual descriptions" do
@@ -78,11 +78,11 @@ describe "meta-key" do
           .to eq({"de" => "description de", "en" => "description en"})
       end
 
-      # specify 'result contains a description from default locale' do
-      #  expect(
-      #    json_meta_key_resource(meta_key.id).body['description']
-      #  ).to eq 'description de'
-      # end
+      specify "result contains a description from default locale" do
+        expect(
+          json_meta_key_resource(meta_key.id).body["description"]
+        ).to eq "description de"
+      end
     end
 
     describe "multilingual hints" do
@@ -106,11 +106,11 @@ describe "meta-key" do
           .to eq({"de" => "hint de", "en" => "hint en"})
       end
 
-      # specify 'result contains a hint from default locale' do
-      #  expect(
-      #    json_meta_key_resource(meta_key.id).body['hint']
-      #  ).to eq 'hint de'
-      # end
+      specify "result contains a hint from default locale" do
+        expect(
+          json_meta_key_resource(meta_key.id).body["hint"]
+        ).to eq "hint de"
+      end
     end
 
     it "does not return admin_comment property" do
