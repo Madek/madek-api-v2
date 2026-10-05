@@ -4,6 +4,7 @@
    [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.resources.locales :as locales]
    [madek.api.resources.meta-keys.index :as mkindex]
    [madek.api.resources.meta-keys.meta-key :as mk]
    [madek.api.resources.shared.core :as sd]
@@ -23,65 +24,55 @@
    [spec-tools.core :as st]
    [taoensso.timbre :refer [debug]]))
 
-(defn adm-export-meta-key [meta-key]
-  (-> meta-key
-      (assoc :hints (sd/transform_ml (:hints meta-key))
-             :labels (sd/transform_ml (:labels meta-key))
-             :descriptions (sd/transform_ml (:descriptions meta-key))
-             :documentation_urls (sd/transform_ml (:documentation_urls meta-key)))))
+(defn- request-locale [req]
+  (locales/default-locale (:tx req)))
 
-(defn adm-export-meta-key-list [meta-key]
-  (-> meta-key
-      (assoc :hints (sd/transform_ml (:hints meta-key))
-             :labels (sd/transform_ml (:labels meta-key))
-             :descriptions (sd/transform_ml (:descriptions meta-key))
-             :documentation_urls (sd/transform_ml (:documentation_urls meta-key))
+(defn- transform-ml-fields [meta-key]
+  (assoc meta-key
+         :hints (sd/transform_ml (:hints meta-key))
+         :labels (sd/transform_ml (:labels meta-key))
+         :descriptions (sd/transform_ml (:descriptions meta-key))
+         :documentation_urls (sd/transform_ml (:documentation_urls meta-key))))
 
-             :labels_2 (sd/transform_ml (:labels_2 meta-key))
-             :descriptions_2 (sd/transform_ml (:descriptions_2 meta-key)))))
-
-(defn user-export-meta-key [meta-key]
+(defn adm-export-meta-key [meta-key locale]
   (-> meta-key
-      (dissoc :admin_comment :admin_comment_2)
-      (assoc :hints (sd/transform_ml (:hints meta-key))
-             :labels (sd/transform_ml (:labels meta-key))
-             :descriptions (sd/transform_ml (:descriptions meta-key))
-             :documentation_urls (sd/transform_ml (:documentation_urls meta-key)))))
+      transform-ml-fields
+      (locales/add-fields-for-default-locale locale)))
 
-(defn user-export-meta-key-list [meta-key]
+(defn user-export-meta-key [meta-key locale]
   (-> meta-key
-      (dissoc :admin_comment :admin_comment_2)
-      (assoc :hints (sd/transform_ml (:hints meta-key))
-             :labels (sd/transform_ml (:labels meta-key))
-             :descriptions (sd/transform_ml (:descriptions meta-key))
-             :documentation_urls (sd/transform_ml (:documentation_urls meta-key))
-             :labels_2 (sd/transform_ml (:labels_2 meta-key))
-             :descriptions_2 (sd/transform_ml (:descriptions_2 meta-key)))))
+      (dissoc :admin_comment)
+      transform-ml-fields
+      (locales/add-fields-for-default-locale locale)))
+
+(defn- query-meta-keys [req export-fn]
+  (let [locale (request-locale req)
+        tx (:tx req)
+        query (mkindex/build-query req)
+        after-fnc (fn [rows]
+                    (mk/include-io-mappings-many
+                     (map #(export-fn % locale) rows)
+                     tx))]
+    (sd/response_ok (pagination-handler req query :meta-keys after-fnc))))
 
 (defn handle_adm-query-meta-keys [req]
-  (let [query (mkindex/build-query req)
-        after-fnc (fn [res] (map adm-export-meta-key-list res))
-        res (pagination-handler req query :meta-keys after-fnc)]
-    (sd/response_ok res))) ;; TODO: add headers.x-total-count?
+  (query-meta-keys req adm-export-meta-key))
 
 (defn handle_usr-query-meta-keys [req]
-  (let [query (mkindex/build-query req)
-        after-fnc (fn [res] (map user-export-meta-key-list res))
-        res (pagination-handler req query :meta-keys after-fnc)]
-    (sd/response_ok res))) ;; TODO: add headers.x-total-count?
+  (query-meta-keys req user-export-meta-key))
 
 (defn handle_adm-get-meta-key [req]
   (let [mk (-> req :meta_key)
         tx (:tx req)
         result (mk/include-io-mappings
-                (adm-export-meta-key mk) (:id mk) tx)]
+                (adm-export-meta-key mk (request-locale req)) (:id mk) tx)]
     (sd/response_ok result)))
 
 (defn handle_usr-get-meta-key [req]
   (let [mk (-> req :meta_key)
         tx (:tx req)
         result (mk/include-io-mappings
-                (user-export-meta-key mk) (:id mk) tx)]
+                (user-export-meta-key mk (request-locale req)) (:id mk) tx)]
     (sd/response_ok result)))
 
 (defn handle_create_meta-key [req]
@@ -156,12 +147,6 @@
 
    (s/optional-key :admin_comment) (s/maybe s/Str)})
 
-(sa/def ::meta-query-def (sa/keys :opt-un [::sp/is_extensible_list ::sp/keywords_alphabetical_order ::sp/position
-                                           ::sp/is_enabled_for_media_entries ::sp/is_enabled_for_collections ::sp/vocabulary_id
-                                           ::sp/allowed_people_subtypes ::sp-str/text_type ::sp-nil/allowed_rdf_class
-                                           ::sp-nil/labels ::sp-nil/descriptions ::sp-nil/hints ::sp-nil/documentation_urls
-                                           ::sp-nil/admin_comment]))
-
 (sa/def ::schema_update-meta-key
   (sa/keys
    :req-un [::sp-str/id
@@ -174,8 +159,13 @@
             ::sp/admin_comment
             ::sp/multiple_selection
             ::sp/selection_field_type
-            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
-            ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2]))
+            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view]))
+
+;; Keep these loose: nilable st/spec broke OpenAPI / response coercion in CI.
+(sa/def ::label any?)
+(sa/def ::description any?)
+(sa/def ::hint any?)
+(sa/def ::roles_list_id any?)
 
 (sa/def ::schema_export-meta-key-usr
   (sa/keys
@@ -187,8 +177,9 @@
             ::sp/io_mappings
             ::sp/multiple_selection
             ::sp/selection_field_type
-            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
-            ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2]))
+            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view
+            ::roles_list_id
+            ::label ::description ::hint]))
 
 (sa/def ::schema_export-meta-key-adm
   (sa/keys
@@ -201,10 +192,11 @@
             ::sp/io_mappings
             ::sp/multiple_selection
             ::sp/selection_field_type
-            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view ::sp/position_2
-            ::sp-nil/labels_2 ::sp-nil/descriptions_2 ::sp/id_2 ::sp/admin_comment_2]))
+            ::sp/is_enabled_for_public_use ::sp/is_enabled_for_public_view
+            ::roles_list_id
+            ::label ::description ::hint]))
 
-(sa/def ::meta-query-def (sa/keys :opt-un [::sp/id ::sp/vocabulary_id ::sp/meta_datum_object_type
+(sa/def ::meta-query-def (sa/keys :opt-un [::sp-str/id ::sp/vocabulary_id ::sp/meta_datum_object_type
                                            ::sp/is_enabled_for_collections ::sp/is_enabled_for_media_entries
                                            ::sp/scope ::sp/page ::sp/size]))
 
@@ -309,7 +301,7 @@
     {:get {:summary (sd/?no-auth? (sd/sum_usr_pub "Get all meta-key ids"))
            :description "Get list of meta-key ids."
            :handler handle_usr-query-meta-keys
-           :parameters {:query sp/schema_pagination_opt}
+           :parameters {:query ::meta-query-def}
            :content-type "application/json"
            :coercion reitit.coercion.spec/coercion
            :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"

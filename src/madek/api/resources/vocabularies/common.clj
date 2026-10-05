@@ -6,19 +6,14 @@
 
 (def schema_export-vocabulary
   {:id s/Str
-   :position s/Int
-   :labels (s/maybe sd/schema_ml_list)
-   :descriptions (s/maybe sd/schema_ml_list)
-   (s/optional-key :admin_comment) (s/maybe s/Str)})
-
-(def schema_export-vocabulary-admin
-  {:id s/Str
    :enabled_for_public_view s/Bool
    :enabled_for_public_use s/Bool
    :position s/Int
    :labels (s/maybe sd/schema_ml_list)
    :descriptions (s/maybe sd/schema_ml_list)
    (s/optional-key :admin_comment) (s/maybe s/Str)})
+
+(def schema_export-vocabulary-admin schema_export-vocabulary)
 
 (def schema_import-vocabulary
   {:id s/Str

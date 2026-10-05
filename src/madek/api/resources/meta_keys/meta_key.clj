@@ -13,28 +13,38 @@
 ;                           "hint" result tx) tx)tx))
 
 (defn- get-io-mappings
-  [id tx]
-  (let [query (-> (sql/select :key_map, :io_interface_id)
-                  (sql/from :io_mappings)
-                  (sql/order-by [:meta_key_id :asc] [:io_interface_id :asc])
-                  (sql/where [:= :io_mappings.meta_key_id id])
-                  (sql-format))]
-    (jdbc/execute! tx query)))
+  [ids tx]
+  (when (seq ids)
+    (jdbc/execute!
+     tx
+     (-> (sql/select :meta_key_id :key_map :io_interface_id)
+         (sql/from :io_mappings)
+         (sql/order-by [:meta_key_id :asc] [:io_interface_id :asc])
+         (sql/where [:in :io_mappings.meta_key_id (vec ids)])
+         sql-format))))
 
 (defn- prepare-io-mappings-from
   [io-mappings]
-  (let [groupped (group-by :io_interface_id io-mappings)]
-    (let [io-interfaces (keys groupped)]
-      (map (fn [io-interface-id] {:id io-interface-id
-                                  :keys (reduce (fn [m key-map]
-                                                  (conj m {:key (:key_map key-map)}))
-                                                []
-                                                (get groupped io-interface-id))}) io-interfaces))))
+  (let [grouped (group-by :io_interface_id io-mappings)]
+    (mapv (fn [io-interface-id]
+            {:id io-interface-id
+             :keys (mapv (fn [row] {:key (:key_map row)})
+                         (get grouped io-interface-id))})
+          (keys grouped))))
 
 (defn include-io-mappings
   [result id tx]
-  (let [io-mappings (prepare-io-mappings-from (get-io-mappings id tx))]
-    (assoc result :io_mappings io-mappings)))
+  (assoc result :io_mappings
+         (prepare-io-mappings-from (get-io-mappings [id] tx))))
+
+(defn include-io-mappings-many
+  "Attach `:io_mappings` to each meta-key (same shape as single GET / `/api`)."
+  [meta-keys tx]
+  (let [by-id (group-by :meta_key_id (get-io-mappings (mapv :id meta-keys) tx))]
+    (mapv (fn [mk]
+            (assoc mk :io_mappings
+                   (prepare-io-mappings-from (get by-id (:id mk)))))
+          meta-keys)))
 
 (defn build-meta-key-query [id]
   (-> (sql/select :*)

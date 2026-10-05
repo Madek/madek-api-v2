@@ -6,6 +6,14 @@ describe "index" do
       client.get("/api-v2/vocabularies/")
     end
 
+    it "does not return admin_comment" do
+      data = vocabularies_resource.body["vocabularies"]
+      expect(data).not_to be_empty
+      data.each do |vocab|
+        expect(vocab).not_to have_key("admin_comment")
+      end
+    end
+
     it "should return 200 with only viewable by public vocabularies" do
       FactoryBot.create(:vocabulary, enabled_for_public_view: false)
       expect(vocabularies_resource.status).to be == 200

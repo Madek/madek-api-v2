@@ -15,6 +15,7 @@
 (sa/def :usr/people
   (sa/keys :req-un [::sp/id
                     ::sp/created_at
+                    ::sp-nil/creator_id
                     ::sp-nil/description
                     ::sp/external_uris
                     ::sp-nil/first_name
@@ -25,6 +26,7 @@
                     ::sp-nil/pseudonym
                     ::sp/subtype
                     ::sp/updated_at
+                    ::sp-nil/updator_id
                     ::sp-nil/identification_info
                     ::sp/institutional_directory_infos
                     ::sp-nil/institutional_directory_inactive_since]))
@@ -36,6 +38,7 @@
 
 (def schema
   {:created_at s/Any
+   :creator_id (s/maybe s/Uuid)
    :description (s/maybe s/Str)
    :external_uris [s/Str]
    :first_name (s/maybe s/Str)
@@ -43,10 +46,11 @@
    :institution s/Str
    :institutional_id (s/maybe s/Str)
    :last_name (s/maybe s/Str)
-   :admin_comment (s/maybe s/Str)
+   (s/optional-key :admin_comment) (s/maybe s/Str)
    :pseudonym (s/maybe s/Str)
    :subtype (s/enum "Person" "PeopleGroup" "PeopleInstitutionalGroup")
    :updated_at s/Any
+   :updator_id (s/maybe s/Uuid)
    :identification_info (s/maybe s/Str)
    :institutional_directory_infos [s/Str]
    :institutional_directory_inactive_since (s/maybe s/Any)})
@@ -59,7 +63,8 @@
   (if-let [person (-> (person-query id)
                       sql-format
                       (->> (jdbc/execute-one! tx)))]
-    (sd/response_ok person)
+    (sd/response_ok (cond-> person
+                      (not (:is_admin req)) (dissoc :admin_comment)))
     (sd/response_failed "No such person found" 404)))
 
 (def route

@@ -53,6 +53,8 @@
 (sa/def ::vocabulary_id (st/spec {:spec string?}))
 (sa/def ::meta_datum_object_type (st/spec {:spec string?}))
 (sa/def ::admin_comment (st/spec {:spec string?}))
+(sa/def ::enabled_for_public_view (st/spec {:spec boolean?}))
+(sa/def ::enabled_for_public_use (st/spec {:spec boolean?}))
 
 (sa/def ::creator_id (st/spec {:spec uuid?}))
 (sa/def ::updator_id (st/spec {:spec uuid?}))
