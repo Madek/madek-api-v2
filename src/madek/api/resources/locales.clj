@@ -46,11 +46,19 @@
    (add-field-for-default-locale field-name result (default-locale))))
 
 (defn add-fields-for-default-locale
-  "Same as `/api`: singular `:label`, `:description`, `:hint` from the default locale."
+  "Same as `/api`: singular `:label`, `:description`, `:hint` from the default locale.
+
+  NOTE: `add-field-for-default-locale` takes `[field-name result locale]` — do not
+  thread with `->` (that would put `result` in the field-name position and
+  `assoc` onto a String → ClassCastException)."
   ([result locale]
-   (-> result
-       (add-field-for-default-locale "label" locale)
-       (add-field-for-default-locale "description" locale)
-       (add-field-for-default-locale "hint" locale)))
+   (add-field-for-default-locale
+    "label"
+    (add-field-for-default-locale
+     "description"
+     (add-field-for-default-locale
+      "hint" result locale)
+     locale)
+    locale))
   ([result]
    (add-fields-for-default-locale result (default-locale))))
