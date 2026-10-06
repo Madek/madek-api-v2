@@ -304,7 +304,7 @@
            :parameters {:query ::meta-query-def}
            :content-type "application/json"
            :coercion reitit.coercion.spec/coercion
-           :responses {200 {:description "Meta-Keys-Object that contians list of meta-key-entries OR empty list"
+           :responses {200 {:description "Meta-Keys-Object that contains list of meta-key-entries OR empty list"
                             :body ::meta-keys-id-response-usr-def}}}}]
 
    ["meta-keys/:id"

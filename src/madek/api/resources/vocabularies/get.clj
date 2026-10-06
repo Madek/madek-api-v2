@@ -15,11 +15,15 @@
 (sa/def ::descriptions map?)
 ;; Local `:id` — must not use `::sp/id` (uuid); vocabulary ids are strings.
 (sa/def ::id (st/spec {:spec string?}))
+;; Nilable: a missing default-locale entry copies as nil.
+(sa/def ::label any?)
+(sa/def ::description any?)
 
 (sa/def :adm/schema_export-vocabulary
   ;; enabled_for_public_* are selected for user+admin lists; optional for coercion tolerance.
   (sa/keys :req-un [::id ::sp/position ::sp/labels ::descriptions]
            :opt-un [::sp/admin_comment
+                    ::label ::description
                     ::sp/enabled_for_public_view ::sp/enabled_for_public_use]))
 
 (sa/def :adm/vocabularies-response (st/spec {:spec (sa/coll-of :adm/schema_export-vocabulary)

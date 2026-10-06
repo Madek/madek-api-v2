@@ -3,6 +3,7 @@
    [clojure.string :as str]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [madek.api.resources.locales :as locales]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [next.jdbc :as jdbc]))
@@ -11,13 +12,6 @@
   (assoc vocab
          :labels (sd/transform_ml (:labels vocab))
          :descriptions (sd/transform_ml (:descriptions vocab))))
-
-;; TODO: not in use?
-;(defn- add-fields-for-default-locale
-;  [result]
-;  (add-field-for-default-locale
-;   "label" (add-field-for-default-locale
-;            "description" result)))
 
 (defn- where-clause
   [id user-id tx]
@@ -41,22 +35,23 @@
       (sql/where (where-clause id user-id tx))
       (sql-format)))
 
-; TODO for admin do not remove internal keys (admin_comment)
-; TODO add flag for default locale
 (defn get-vocabulary [request]
   (let [id (-> request :parameters :path :id)
         user-id (-> request :authenticated-entity :id)
         tx (:tx request)
         query (build-vocabulary-query id user-id tx)
         is_admin_endpoint (str/includes? (-> request :uri) "/admin/")
+        locale (locales/default-locale tx)
         db-result (jdbc/execute-one! tx query)
         result (if (not (nil? db-result))
                  (if is_admin_endpoint
                    (-> db-result
-                       transform_ml)
+                       transform_ml
+                       (locales/add-label-and-description locale))
                    ;; Keep enabled_for_public_* (same as /api); only hide admin_comment.
                    (-> db-result
                        transform_ml
+                       (locales/add-label-and-description locale)
                        (sd/remove-internal-keys [:admin_comment]))))]
     (if result
       (sd/response_ok result)

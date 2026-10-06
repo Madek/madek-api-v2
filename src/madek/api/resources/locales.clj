@@ -21,10 +21,16 @@
              (or (get plural loc)
                  (get plural (name loc)))))))
 
+(defn add-label-and-description
+  "Singular `:label` and `:description` for the default locale (vocabularies have no hints)."
+  [result locale]
+  (-> result
+      (add-field-for-default-locale "label" locale)
+      (add-field-for-default-locale "description" locale)))
+
 (defn add-fields-for-default-locale
   "Singular `:label`, `:description`, and `:hint` for the default locale (same as `/api`)."
   [result locale]
   (-> result
-      (add-field-for-default-locale "label" locale)
-      (add-field-for-default-locale "description" locale)
+      (add-label-and-description locale)
       (add-field-for-default-locale "hint" locale)))

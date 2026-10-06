@@ -3,6 +3,7 @@
    [clojure.string :as str]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.resources.locales :as locales]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.vocabularies.permissions :as permissions]
    [madek.api.utils.pagination :refer [pagination-handler]]
@@ -44,7 +45,12 @@
         tx (:tx request)
         qparams (-> request :query-params)
         query (base-query user-id qparams request tx)
-        after-fnc (fn [res] (map transform_ml res))
+        locale (locales/default-locale tx)
+        after-fnc (fn [res]
+                    (map #(-> %
+                              transform_ml
+                              (locales/add-label-and-description locale))
+                         res))
         result (pagination-handler request query :vocabularies after-fnc)]
     (debug 'vocabularies result)
     result))

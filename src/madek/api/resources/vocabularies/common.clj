@@ -11,6 +11,8 @@
    :position s/Int
    :labels (s/maybe sd/schema_ml_list)
    :descriptions (s/maybe sd/schema_ml_list)
+   (s/optional-key :label) (s/maybe s/Str)
+   (s/optional-key :description) (s/maybe s/Str)
    (s/optional-key :admin_comment) (s/maybe s/Str)})
 
 (def schema_export-vocabulary-admin schema_export-vocabulary)
