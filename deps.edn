@@ -11,8 +11,8 @@
         clj-yaml/clj-yaml {:mvn/version "0.4.0"}
         clojure-humanize/clojure-humanize {:mvn/version "0.2.2"}
         clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
-        com.fasterxml.jackson.core/jackson-core {:mvn/version "2.18.9"} ; transitive dependency of serveral others; multiple GHSA 
-        com.fasterxml.jackson.core/jackson-databind {:mvn/version "2.18.9"} ; transitive dependency of serveral others; multiple GHSA
+        com.fasterxml.jackson.core/jackson-core {:mvn/version "2.18.11"} ; transitive dependency of serveral others; multiple GHSA 
+        com.fasterxml.jackson.core/jackson-databind {:mvn/version "2.18.11"} ; transitive dependency of serveral others; multiple GHSA
         com.fzakaria/slf4j-timbre {:mvn/version "0.4.1"}
         com.github.mfornos/humanize-slim {:mvn/version "1.2.2"}
         com.github.seancorfield/honeysql {:mvn/version "2.7.1437"}
@@ -55,7 +55,7 @@
         org.eclipse.jetty/jetty-unixdomain-server {:mvn/version "12.1.12"} ; to align version with org.eclipse.jetty.ee9/jetty-ee9-servlet
         org.eclipse.jetty.ee9/jetty-ee9-servlet {:mvn/version "12.1.12"} ; transitive dependency of ring/ring-jetty-adapter; several GHSA
         org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server {:mvn/version "12.1.12"} ; to align version with org.eclipse.jetty.ee9/jetty-ee9-servlet
-        org.jsoup/jsoup {:mvn/version "1.23.1"} ; CVE-2021-37714, CVE-2022-36033 (see hickory/hickory)
+        org.jsoup/jsoup {:mvn/version "1.23.2"} ; CVE-2021-37714, CVE-2022-36033, GHSA-65r4-943x-97jj (see hickory/hickory)
         org.postgresql/postgresql {:mvn/version "42.7.13"}
         org.yaml/snakeyaml {:mvn/version "2.6"}
         pg-types/pg-types {:mvn/version "3.0.0"}
