@@ -230,8 +230,27 @@ describe "Media resource authorization" do
       end
 
       it "does not list a private entry" do
-        pending "the index applies permission filters only on request"
         expect(listed_ids).not_to include private_entry.id
+      end
+
+      def listed_ids_for(client)
+        response = client.get("/api-v2/media-entries/", collection_id: collection.id)
+        expect(response.status).to eq 200
+        response.body["media_entries"].map { |e| e["id"] }
+      end
+
+      it "lists a private entry for its responsible user" do
+        expect(listed_ids_for(owner_client)).to include private_entry.id
+      end
+
+      it "does not list a private entry for another user" do
+        expect(listed_ids_for(other_user_client)).not_to include private_entry.id
+      end
+
+      it "lists a private entry for a user with view permission" do
+        FactoryBot.create :media_entry_user_permission, media_entry: private_entry, user: other_user,
+          get_metadata_and_previews: true, get_full_size: false, edit_metadata: false, edit_permissions: false
+        expect(listed_ids_for(other_user_client)).to include private_entry.id
       end
     end
 
@@ -254,8 +273,27 @@ describe "Media resource authorization" do
       end
 
       it "does not list a private collection" do
-        pending "the index applies permission filters only on request"
         expect(listed_ids).not_to include private_collection.id
+      end
+
+      def listed_ids_for(client)
+        response = client.get("/api-v2/collections/", responsible_user_id: owner.id)
+        expect(response.status).to eq 200
+        response.body["collections"].map { |c| c["id"] }
+      end
+
+      it "lists a private collection for its responsible user" do
+        expect(listed_ids_for(owner_client)).to include private_collection.id
+      end
+
+      it "does not list a private collection for another user" do
+        expect(listed_ids_for(other_user_client)).not_to include private_collection.id
+      end
+
+      it "lists a private collection for a user with view permission" do
+        FactoryBot.create :collection_user_permission, collection: private_collection, user: other_user,
+          get_metadata_and_previews: true, edit_metadata_and_relations: false, edit_permissions: false
+        expect(listed_ids_for(other_user_client)).to include private_collection.id
       end
     end
   end
@@ -282,12 +320,24 @@ describe "Media resource authorization" do
     end
 
     it "the full text of a private entry is not readable" do
-      pending "full_texts routes have no authorization"
       expect(anonymous_client.get("/api-v2/full_texts/#{private_entry.id}").status).to be_in [401, 403, 404]
     end
 
+    it "the full text of a private entry is readable by its responsible user" do
+      expect(owner_client.get("/api-v2/full_texts/#{private_entry.id}").status).to eq 200
+    end
+
+    it "the full text of a private entry is not readable by another user" do
+      expect(other_user_client.get("/api-v2/full_texts/#{private_entry.id}").status).to eq 403
+    end
+
+    it "the full text of a private entry is searchable by its responsible user" do
+      response = owner_client.get("/api-v2/full_texts/", text: "secret text", size: 1000)
+      ids = Array(response.body.is_a?(Hash) ? response.body["data"] : response.body).map { |ft| ft["media_resource_id"] }
+      expect(ids).to include private_entry.id, public_entry.id
+    end
+
     it "the full text of a private entry is not searchable" do
-      pending "full_texts routes have no authorization"
       response = anonymous_client.get("/api-v2/full_texts/", text: "secret text", size: 1000)
       ids = Array(response.body.is_a?(Hash) ? response.body["data"] : response.body).map { |ft| ft["media_resource_id"] }
       expect(ids).not_to include private_entry.id

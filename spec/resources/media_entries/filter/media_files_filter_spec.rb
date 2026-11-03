@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe "filtering media entries by media_files attributes" do
-  let(:target_entry) { FactoryBot.create(:media_entry_with_image_media_file) }
-  let(:other_entry) { FactoryBot.create(:media_entry_with_image_media_file) }
+  let(:target_entry) { FactoryBot.create(:media_entry_with_image_media_file, get_metadata_and_previews: true) }
+  let(:other_entry) { FactoryBot.create(:media_entry_with_image_media_file, get_metadata_and_previews: true) }
 
   def get_media_entries(filter)
     plain_faraday_json_client

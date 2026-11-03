@@ -108,7 +108,8 @@ describe "filtering collections" do
                 :collection_group_permission,
                 collection: FactoryBot.create(:collection,
                   get_metadata_and_previews: false),
-                group: g
+                group: g,
+                get_metadata_and_previews: true
             end
 
             resp1 = client.get("/api-v2/collections/?page=1&size=5")

@@ -3,20 +3,55 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.catcher :as catcher]
+            [madek.api.resources.collections.advanced-filter.permissions :as coll-perms]
+            [madek.api.resources.media-entries.advanced-filter.permissions :as me-perms]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
+            [madek.api.resources.shared.media_resource_helper :as mrh]
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-utils :refer [string->vec]]
             [madek.api.utils.helper :refer [to-uuid normalize-fields]]
             [madek.api.utils.pagination :refer [pagination-handler]]
+            [madek.api.utils.soft-delete :refer [non-soft-deleted]]
             [next.jdbc :as jdbc]
             [reitit.coercion.schema]
             [reitit.coercion.spec :as spec]
             [schema.core :as s]
             [spec-tools.core :as st]
             [taoensso.timbre :refer [debug error]]))
+
+(defn- filter-by-viewable-media-resource
+  "Restricts full_texts to those of media-entries and collections the client
+  may view. Admins are not restricted."
+  [sqlmap req]
+  (if (true? (:is_admin req))
+    sqlmap
+    (sql/where sqlmap
+               [:or
+                [:in :full_texts.media_resource_id
+                 (-> (sql/select :media_entries.id)
+                     (sql/from :media_entries)
+                     (non-soft-deleted "media_entries")
+                     (me-perms/filter-by-view-permission req))]
+                [:in :full_texts.media_resource_id
+                 (-> (sql/select :collections.id)
+                     (sql/from :collections)
+                     (non-soft-deleted "collections")
+                     (coll-perms/filter-by-view-permission req))]])))
+
+(defn- wrap-add-media-resource-by-id
+  "Adds the media-entry or collection with id :media_resource_id as
+  :media-resource, so that jqh/ring-wrap-authorization-view can authorize
+  against it."
+  [handler]
+  (fn [request]
+    (let [tx (:tx request)]
+      (if-let [resource (or (mrh/get-media-resource request :media_resource_id "media_entries" "MediaEntry" tx)
+                            (mrh/get-media-resource request :media_resource_id "collections" "Collection" tx))]
+        (handler (assoc request :media-resource resource))
+        (sd/response_not_found "No such media-resource.")))))
 
 (defn handle_list-full_texts
   [req]
@@ -27,7 +62,8 @@
                      (sql/from :full_texts)
                      (sql/order-by [:text :asc] [:media_resource_id :asc])
                      (dbh/build-query-param query-params :media_resource_id)
-                     (dbh/build-query-param-like query-params :text))
+                     (dbh/build-query-param-like query-params :text)
+                     (filter-by-viewable-media-resource req))
         db-result (pagination-handler req db-query)]
 
     (debug "handle_list-full_texts:" "\nquery:\n" db-query)
@@ -139,7 +175,6 @@
     :description "Supports both flat and paginated full_texts formats"}))
 
 ; TODO tests
-; TODO howto access control or full_texts is public meta data
 (def query-routes
   ["/"
    {:openapi {:tags ["full_texts"]}}
@@ -159,7 +194,9 @@
                             :body {:media_resource_id s/Uuid
                                    :text s/Str}}}
            :parameters {:path {:media_resource_id s/Uuid}}
-           :middleware [(wrap-find-full_text :media_resource_id true)]}}]])
+           :middleware [wrap-add-media-resource-by-id
+                        jqh/ring-wrap-authorization-view
+                        (wrap-find-full_text :media_resource_id true)]}}]])
 
 ; TODO tests
 ; TODO Frage: siehe web-app: ??

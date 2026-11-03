@@ -146,9 +146,9 @@ end
 def create_collections_3_visible_0_deleted(user)
   @collection = FactoryBot.create(:collection)
 
-  collection_1 = FactoryBot.create(:collection)
-  collection_2 = FactoryBot.create(:collection)
-  collection_3 = FactoryBot.create(:collection)
+  collection_1 = FactoryBot.create(:collection, get_metadata_and_previews: true)
+  collection_2 = FactoryBot.create(:collection, get_metadata_and_previews: true)
+  collection_3 = FactoryBot.create(:collection, get_metadata_and_previews: true)
 
   collection_3.user_permissions <<
     FactoryBot.create(:collection_user_permission,
@@ -166,15 +166,18 @@ def create_collections_2_visible_2_deleted(user)
   @collection = FactoryBot.create(:collection)
 
   collection_1 = FactoryBot.create(:collection,
+    get_metadata_and_previews: true,
     deleted_at: Time.now)
 
   collection_2 = FactoryBot.create(:collection,
+    get_metadata_and_previews: true,
     deleted_at: Time.now + 1.day)
 
   collection_3 = FactoryBot.create(:collection,
+    get_metadata_and_previews: true,
     deleted_at: Time.now - 1.day)
 
-  collection_4 = FactoryBot.create(:collection)
+  collection_4 = FactoryBot.create(:collection, get_metadata_and_previews: true)
 
   collection_3.user_permissions <<
     FactoryBot.create(:collection_user_permission,
