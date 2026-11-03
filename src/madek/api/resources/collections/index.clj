@@ -45,6 +45,7 @@
                       (dbh/build-query-param query-params :creator_id)
                       (dbh/build-query-param query-params :responsible_user_id)
                       (filter-by-collection-id query-params)
+                      (permissions/filter-by-view-permission request)
                       (permissions/filter-by-query-params query-params
                                                           authenticated-entity))]
     ;(logging/info "build-query"

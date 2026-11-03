@@ -3,7 +3,7 @@
    [honey.sql.helpers :as sql]
    [madek.api.utils.helper :refer [to-uuid]]))
 
-(defn- delegation-ids-subquery [user_id]
+(defn delegation-ids-subquery [user_id]
   {:union
    [(-> (sql/select :delegation_id)
         (sql/from :delegations_groups)
@@ -74,6 +74,18 @@
    (user-permission-exists-condition perm id)
    ;(group-permission-for-user-exists-condition perm id)
    ])
+
+(defn filter-by-view-permission
+  "Restricts the query to media-entries the client may view: public ones,
+  and for signed-in users additionally those they are responsible for or
+  have view permission on. Admins are not restricted."
+  [sqlmap {:keys [authenticated-entity is_admin]}]
+  (cond
+    (true? is_admin) sqlmap
+    (= "User" (:type authenticated-entity)) (sql/where sqlmap (user-authorized-condition
+                                                               "get_metadata_and_previews"
+                                                               (:id authenticated-entity)))
+    :else (sql/where sqlmap [:= :media_entries.get_metadata_and_previews true])))
 
 (defn- filter-by-permission-for-auth-entity [sqlmap permission authenticated-entity]
   (case (:type authenticated-entity)

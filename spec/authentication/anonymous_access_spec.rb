@@ -58,7 +58,6 @@ describe "Anonymous access" do
       end
 
       it "does not list a private entry" do
-        pending "the index applies permission filters only on request"
         expect(listed_ids).not_to include private_entry.id
       end
     end
@@ -213,7 +212,6 @@ describe "Anonymous access" do
       end
 
       it "does not list a private collection" do
-        pending "the index applies permission filters only on request"
         expect(listed_ids).not_to include private_collection.id
       end
     end

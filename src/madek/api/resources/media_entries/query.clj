@@ -188,6 +188,7 @@
         query-res (-> (base-query props-by softdelete-mode)
                       (set-order query-params tx)
                       (filter-by-collection-id query-params)
+                      (permissions/filter-by-view-permission request)
                       (permissions/filter-by-query-params query-params authenticated-entity)
                       (advanced-filter/filter-by filter-by tx))]
 
