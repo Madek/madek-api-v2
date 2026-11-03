@@ -49,14 +49,21 @@ describe "Media resource authorization" do
       end
 
       it "is forbidden for another user" do
-        pending "collection-collection arc routes have no authorization"
         expect(other_user_client.post(url, {}.to_json).status).to eq 403
         expect(arc_exists?).to be false
       end
 
       it "is forbidden for anonymous" do
-        pending "collection-collection arc routes have no authorization"
         expect(anonymous_client.post(url, {}.to_json).status).to be_in [401, 403]
+        expect(arc_exists?).to be false
+      end
+    end
+
+    context "POST with a child the client cannot view" do
+      let(:child) { FactoryBot.create :collection, responsible_user: other_user }
+
+      it "is forbidden for the owner of the parent" do
+        expect(owner_client.post(url, {}.to_json).status).to eq 403
         expect(arc_exists?).to be false
       end
     end
@@ -70,25 +77,20 @@ describe "Media resource authorization" do
       end
 
       it "is forbidden for another user" do
-        pending "collection-collection arc routes have no authorization"
         expect(other_user_client.delete(url).status).to eq 403
         expect(arc_exists?).to be true
       end
 
       it "is forbidden for anonymous" do
-        pending "collection-collection arc routes have no authorization"
         expect(anonymous_client.delete(url).status).to be_in [401, 403]
         expect(arc_exists?).to be true
       end
     end
   end
 
-  describe "deleting meta-data requires edit rights, not only view rights" do
-    let(:media_entry) do
-      FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: true
-    end
-    let!(:meta_datum) { FactoryBot.create :meta_datum_text, media_entry: media_entry }
-    let(:url) { "/api-v2/media-entries/#{media_entry.id}/meta-data/#{meta_datum.meta_key_id}" }
+  shared_examples :meta_data_delete_requires_edit_rights do
+    let!(:meta_datum) { FactoryBot.create :meta_datum_text, resource_key => resource }
+    let(:url) { "/api-v2/#{resource_path}/#{resource.id}/meta-data/#{meta_datum.meta_key_id}" }
 
     it "succeeds for the owner" do
       expect(owner_client.delete(url).status).to eq 200
@@ -96,15 +98,35 @@ describe "Media resource authorization" do
     end
 
     it "is forbidden for another user who can only view" do
-      pending "meta-data DELETE only checks view permission"
       expect(other_user_client.delete(url).status).to eq 403
       expect(MetaDatum.exists?(meta_datum.id)).to be true
     end
 
-    it "is forbidden for anonymous on a public entry" do
-      pending "meta-data DELETE only checks view permission"
+    it "is forbidden for anonymous on a public resource" do
       expect(anonymous_client.delete(url).status).to be_in [401, 403]
       expect(MetaDatum.exists?(meta_datum.id)).to be true
+    end
+  end
+
+  describe "deleting meta-data requires edit rights, not only view rights" do
+    context "media-entries" do
+      let(:resource) do
+        FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: true
+      end
+      let(:resource_key) { :media_entry }
+      let(:resource_path) { "media-entries" }
+
+      include_examples :meta_data_delete_requires_edit_rights
+    end
+
+    context "collections" do
+      let(:resource) do
+        FactoryBot.create :collection, responsible_user: owner, get_metadata_and_previews: true
+      end
+      let(:resource_key) { :collection }
+      let(:resource_path) { "collections" }
+
+      include_examples :meta_data_delete_requires_edit_rights
     end
   end
 
@@ -127,45 +149,56 @@ describe "Media resource authorization" do
     end
 
     it "does not delete meta-data-people of a foreign entry" do
-      pending "the delete is not restricted to the meta-datum of the authorized entry"
       foreign_person = foreign_meta_datum.meta_data_people.first
       other_user_client.delete(delete_url(foreign_person.id))
       expect(MetaDatum::Person.exists?(foreign_person.id)).to be true
     end
   end
 
-  describe "confidential links are scoped to the authorized media-entry" do
-    let(:own_entry) { FactoryBot.create :media_entry, responsible_user: other_user }
-    let(:own_link) { FactoryBot.create :confidential_link, resource: own_entry, user: other_user }
-
-    let(:foreign_entry) { FactoryBot.create :media_entry, responsible_user: owner }
+  shared_examples :conf_links_scoped_to_resource do
+    let(:own_link) { FactoryBot.create :confidential_link, resource: own_resource, user: other_user }
     let!(:foreign_link) do
-      FactoryBot.create :confidential_link, resource: foreign_entry, user: owner, revoked: true
+      FactoryBot.create :confidential_link, resource: foreign_resource, user: owner, revoked: true
     end
 
     def link_url(link)
-      "/api-v2/media-entries/#{own_entry.id}/conf-links/#{link.id}"
+      "/api-v2/#{resource_path}/#{own_resource.id}/conf-links/#{link.id}"
     end
 
-    it "GET succeeds for a link of one's own entry" do
+    it "GET succeeds for a link of one's own resource" do
       expect(other_user_client.get(link_url(own_link)).status).to eq 200
     end
 
-    it "GET does not return a link of a foreign entry" do
-      pending "conf-links/:id is looked up by id only"
+    it "GET does not return a link of a foreign resource" do
       expect(other_user_client.get(link_url(foreign_link)).status).to be_in [403, 404]
     end
 
-    it "PUT does not modify a link of a foreign entry" do
-      pending "conf-links/:id is looked up by id only"
+    it "PUT does not modify a link of a foreign resource" do
       other_user_client.put(link_url(foreign_link), {revoked: false}.to_json)
       expect(foreign_link.reload.revoked).to be true
     end
 
-    it "DELETE does not delete a link of a foreign entry" do
-      pending "conf-links/:id is looked up by id only"
+    it "DELETE does not delete a link of a foreign resource" do
       other_user_client.delete(link_url(foreign_link))
       expect(ConfidentialLink.exists?(foreign_link.id)).to be true
+    end
+  end
+
+  describe "confidential links are scoped to the authorized resource" do
+    context "media-entries" do
+      let(:own_resource) { FactoryBot.create :media_entry, responsible_user: other_user }
+      let(:foreign_resource) { FactoryBot.create :media_entry, responsible_user: owner }
+      let(:resource_path) { "media-entries" }
+
+      include_examples :conf_links_scoped_to_resource
+    end
+
+    context "collections" do
+      let(:own_resource) { FactoryBot.create :collection, responsible_user: other_user }
+      let(:foreign_resource) { FactoryBot.create :collection, responsible_user: owner }
+      let(:resource_path) { "collections" }
+
+      include_examples :conf_links_scoped_to_resource
     end
   end
 

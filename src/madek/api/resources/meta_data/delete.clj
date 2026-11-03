@@ -66,12 +66,19 @@
             tx (:tx req)
             md (db-get-meta-data mr meta-key-id MD_TYPE_PEOPLE tx)
             sql-query (-> (sql/delete-from :meta_data_people)
-                          (sql/where [:= :id meta-datum-person-id])
+                          (sql/where [:= :id meta-datum-person-id]
+                                     [:= :meta_datum_id (:id md)])
                           (sql/returning :*)
                           sql-format)
-            del-result (jdbc/execute! tx sql-query)]
-        (if (= 1 (count del-result))
+            del-result (when md (jdbc/execute! tx sql-query))]
+        (cond
+          (= 1 (count del-result))
           (sd/response_ok {:meta_data md MD_KEY_PEOPLE_DATA (db-get-meta-data-people (:id md) tx)})
+
+          (empty? del-result)
+          (sd/response_not_found "No such meta-data-people for this resource and meta-key.")
+
+          :else
           (sd/response_failed "Failed to delete meta data people" 406))))
     (catch Exception ex (sd/response_exception ex))))
 
@@ -114,7 +121,7 @@
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
-                                            :middleware [jqh/ring-wrap-add-media-resource jqh/ring-wrap-authorization-view wrap-me-add-meta-data]
+                                            :middleware [jqh/ring-wrap-add-media-resource jqh/ring-wrap-authorization-edit-metadata wrap-me-add-meta-data]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid :meta_key_id s/Str}}
                                             :responses {200 {:description "Returns the deleted meta-data." :body s/Any}}})
@@ -208,14 +215,14 @@
 
 (def media_entry_id.meta-datum.meta_key_id {:summary "Delete meta-data for media-entry and meta-key"
                                             :handler handle-delete-meta-data
-                                            :middleware [jqh/ring-wrap-add-media-resource jqh/ring-wrap-authorization-view wrap-me-add-meta-data]
+                                            :middleware [jqh/ring-wrap-add-media-resource jqh/ring-wrap-authorization-edit-metadata wrap-me-add-meta-data]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:media_entry_id s/Uuid :meta_key_id s/Str}}
                                             :responses {200 {:description "Returns the deleted meta-data." :body MetaDataSchema}}})
 
 (def collection_id.meta-datum.meta_key_id {:summary "Delete meta-data for collection and meta-key"
                                            :handler handle-delete-meta-data
-                                           :middleware [jqh/ring-wrap-add-media-resource jqh/ring-wrap-authorization-view wrap-col-add-meta-data]
+                                           :middleware [jqh/ring-wrap-add-media-resource jqh/ring-wrap-authorization-edit-metadata wrap-col-add-meta-data]
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid :meta_key_id s/Str}}
                                            :responses {200 {:description "Returns the deleted meta-data."
