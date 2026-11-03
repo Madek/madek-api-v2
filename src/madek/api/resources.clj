@@ -35,6 +35,7 @@
    [madek.api.resources.usage-terms :as usage-terms]
    [madek.api.resources.users.main :as users]
    [madek.api.resources.vocabularies :as vocabularies]
+   [madek.api.utils.auth :refer [wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [taoensso.timbre :refer [debug]]))
@@ -87,12 +88,11 @@
    ; TODO confidential-links post, get, patch, delete
    ])
 (def admin-routes
-  ; TODO use wrap admin
-  ["/api-v2/admin" ;{:middleware [
-                ;              authentication/wrap
-                              ;wrap-authorize-admin!
-                ;              ]}
-   {:openapi {:security [{"auth" []}]}}
+  ; Every route below /api-v2/admin requires an admin; authentication/wrap is
+  ; part of the global middleware stack and runs before this check.
+  ["/api-v2/admin"
+   {:middleware [wrap-authorize-admin!]
+    :openapi {:security [{"auth" []}]}}
 
    admins/ring-routes
    app-settings/admin-routes

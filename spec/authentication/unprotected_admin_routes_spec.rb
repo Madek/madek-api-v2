@@ -1,10 +1,10 @@
 require "spec_helper"
 
-# Admin routes without the wrap-authorize-admin! middleware. Non-admin tokens
-# are rejected by the token check on "/api-v2/admin/" URIs only; the examples
-# for non-admin sessions and anonymous requests are pending until fixed.
+# Admin routes that formerly lacked an admin check. All routes below
+# /api-v2/admin are now guarded by wrap-authorize-admin! at the route-group
+# level (src/madek/api/resources.clj); these examples guard against regressions.
 
-describe "Unprotected admin routes" do
+describe "Admin routes require an admin" do
   let(:csrf_token) { "ab63c8ab-a224-441d-9251-8068f6245252" }
 
   def json_client(headers = {})
@@ -51,13 +51,11 @@ describe "Unprotected admin routes" do
     end
 
     it "is forbidden for a non-admin session" do
-      pending "route lacks wrap-authorize-admin!"
       expect(send_request.call(user_session_client).status).to eq 403
       expect(unchanged.call).to be true
     end
 
     it "is forbidden for anonymous" do
-      pending "route lacks wrap-authorize-admin!"
       expect(send_request.call(anonymous_client).status).to be_in [401, 403]
       expect(unchanged.call).to be true
     end
@@ -88,7 +86,7 @@ describe "Unprotected admin routes" do
     let(:send_request) { ->(client) { client.delete("/api-v2/admin/delegations/#{delegation.id}") } }
     let(:unchanged) { -> { Delegation.exists?(delegation.id) } }
 
-    include_examples :admin_only, with_admin_example: false
+    include_examples :admin_only
   end
 
   describe "PUT /admin/groups/:group-id/users/" do

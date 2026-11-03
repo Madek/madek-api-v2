@@ -73,7 +73,7 @@
                       (sql/returning :*)
                       sql-format)]
     (try
-      (if (dbh/query-eq-find-one :delegation :id id tx)
+      (if (dbh/query-eq-find-one :delegations :id id tx)
         (if (jdbc/execute-one! tx sql-query)
           (sd/response_ok delegation)
           (sd/response_failed "Could not delete delegation." 406))
