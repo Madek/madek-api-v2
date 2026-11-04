@@ -14,8 +14,20 @@ def json_roa_client(&)
   )
 end
 
-def plain_faraday_json_client
-  @plain_faraday_json_client ||= Faraday.new(
+# Memoizes one client per helper and arguments. Clients configured via a block
+# are not memoized.
+def memoized_faraday_client(key, configured)
+  return yield if configured
+  @faraday_clients ||= {}
+  @faraday_clients[key] ||= yield
+end
+
+def plain_faraday_json_client(&block)
+  memoized_faraday_client([:plain], block) { build_plain_faraday_json_client(&block) }
+end
+
+def build_plain_faraday_json_client
+  Faraday.new(
     url: api_base_url,
     headers: {accept: "application/json"}
   ) do |conn|
@@ -25,8 +37,12 @@ def plain_faraday_json_client
   end
 end
 
-def plain_faraday_json_client_csrf
-  @plain_faraday_json_client ||= Faraday.new(
+def plain_faraday_json_client_csrf(&block)
+  memoized_faraday_client([:csrf], block) { build_plain_faraday_json_client_csrf(&block) }
+end
+
+def build_plain_faraday_json_client_csrf
+  Faraday.new(
     url: api_base_url,
     headers: {"accept" => "application/json", "Cookie" => "madek-anti-csrf-token=valid_csrf_token;",
               "x-csrf-token" => "valid_csrf_token"}
@@ -38,8 +54,12 @@ def plain_faraday_json_client_csrf
   end
 end
 
-def wtoken_header_plain_faraday_json_client(token)
-  @plain_faraday_json_client ||= Faraday.new(
+def wtoken_header_plain_faraday_json_client(token, &block)
+  memoized_faraday_client([:token, token], block) { build_wtoken_header_plain_faraday_json_client(token, &block) }
+end
+
+def build_wtoken_header_plain_faraday_json_client(token)
+  Faraday.new(
     url: api_base_url,
     headers: {accept: "application/json", Authorization: "token #{token}"}
   ) do |conn|
@@ -83,7 +103,7 @@ def token_header_plain_faraday_json_client(method, url, token, body: nil, header
   end
 end
 
-def session_auth_plain_faraday_json_client(cookie_string, custom_headers = {})
+def session_auth_plain_faraday_json_client(cookie_string, custom_headers = {}, &block)
   default_headers = {
     accept: "application/json",
     Cookie: cookie_string
@@ -91,7 +111,13 @@ def session_auth_plain_faraday_json_client(cookie_string, custom_headers = {})
 
   merged_headers = default_headers.merge(custom_headers)
 
-  @plain_faraday_json_client ||= Faraday.new(
+  memoized_faraday_client([:session, merged_headers], block) do
+    build_session_auth_plain_faraday_json_client(merged_headers, &block)
+  end
+end
+
+def build_session_auth_plain_faraday_json_client(merged_headers)
+  Faraday.new(
     url: api_base_url,
     headers: merged_headers
   ) do |conn|
