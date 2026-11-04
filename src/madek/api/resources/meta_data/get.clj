@@ -534,7 +534,7 @@
 (def media_entry_id.meta-datum.meta_key_id {:summary "Get meta-data for media-entry and meta-key."
                                             :handler handle_get-meta-key-meta-data
                                             :middleware [wrap-add-meta-key
-                                                         ;wrap-check-vocab
+                                                         wrap-check-vocab
                                                          jqh/ring-wrap-add-media-resource
                                                          jqh/ring-wrap-authorization-view]
                                             :coercion reitit.coercion.schema/coercion

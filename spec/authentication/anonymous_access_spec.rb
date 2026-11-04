@@ -90,7 +90,6 @@ describe "Anonymous access" do
       end
 
       it "of a non-public vocabulary are not readable" do
-        pending "the single meta-datum route of media-entries does not check vocabulary permissions"
         response = client.get("/api-v2/media-entries/#{public_entry.id}/meta-data/#{hidden_meta_key.id}")
         expect(response.status).to be_in [403, 404]
       end
