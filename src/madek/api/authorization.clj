@@ -38,10 +38,6 @@
                   resource auth-entity tx)
     false))
 
-(defn authorized-view?! [request resource]
-  (or authorized-view?
-      (throw (ex-info "Forbidden" {:status 403}))))
-
 (defn authorized? [auth-entity resource scope tx]
   (let [auth-res (case scope
                    :view (authorized-view? auth-entity resource tx)
