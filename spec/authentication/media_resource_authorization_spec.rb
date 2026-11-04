@@ -373,4 +373,85 @@ describe "Media resource authorization" do
       expect(ids).not_to include private_entry.id
     end
   end
+
+  describe "permission lists require edit-permission rights" do
+    let(:entry) { FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: true }
+    let(:url) { "/api-v2/media-entries/#{entry.id}/perms/users/" }
+
+    it "are readable by the responsible user" do
+      expect(owner_client.get(url).status).to eq 200
+    end
+
+    it "are not readable by a user with view rights only" do
+      expect(other_user_client.get(url).status).to eq 403
+    end
+  end
+
+  describe "collection-media-entry arcs" do
+    let(:collection) { FactoryBot.create :collection, responsible_user: owner }
+    let(:private_entry) { FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: false }
+    let!(:arc) do
+      FactoryBot.create :collection_media_entry_arc, collection: collection, media_entry: private_entry
+    end
+
+    def listed_entry_ids(client)
+      response = client.get("/api-v2/collection-media-entry-arcs/", collection_id: collection.id)
+      Array(response.body["collection-media-entry-arcs"]).map { |a| a["media_entry_id"] }
+    end
+
+    it "are listed for the responsible user" do
+      expect(listed_entry_ids(owner_client)).to include private_entry.id
+    end
+
+    it "are not listed for another user" do
+      expect(listed_entry_ids(other_user_client)).not_to include private_entry.id
+    end
+
+    it "a single arc is not readable by another user" do
+      expect(other_user_client.get("/api-v2/collection-media-entry-arcs/#{arc.id}").status).to eq 404
+    end
+
+    context "creating an arc requires view rights on the media-entry" do
+      let(:own_collection) { FactoryBot.create :collection, responsible_user: other_user }
+      let(:url) { "/api-v2/collections/#{own_collection.id}/media-entry-arcs/#{private_entry.id}" }
+
+      it "is forbidden for an entry the user may not view" do
+        expect(other_user_client.post(url, {}.to_json).status).to eq 403
+        expect(Arcs::CollectionMediaEntryArc.where(collection_id: own_collection.id)).to be_empty
+      end
+
+      it "succeeds for a viewable entry" do
+        private_entry.update_column(:get_metadata_and_previews, true)
+        expect(other_user_client.post(url, {}.to_json).status).to eq 200
+      end
+    end
+  end
+
+  describe "favoring requires view rights" do
+    let(:private_entry) { FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: false }
+    let(:private_collection) { FactoryBot.create :collection, responsible_user: owner, get_metadata_and_previews: false }
+
+    it "a private media-entry can not be favored by another user" do
+      expect(other_user_client.post("/api-v2/media-entry/#{private_entry.id}/favorites/").status).to eq 403
+    end
+
+    it "a private media-entry can be favored by its responsible user" do
+      expect(owner_client.post("/api-v2/media-entry/#{private_entry.id}/favorites/").status).to eq 200
+    end
+
+    it "a private collection can not be favored by another user" do
+      expect(other_user_client.post("/api-v2/collections/#{private_collection.id}/favorites").status).to eq 403
+    end
+
+    it "a private collection can be favored by its responsible user" do
+      expect(owner_client.post("/api-v2/collections/#{private_collection.id}/favorites").status).to eq 200
+    end
+
+    it "the favorites of the user are listed" do
+      owner_client.post("/api-v2/media-entry/#{private_entry.id}/favorites/")
+      response = owner_client.get("/api-v2/favorites/media-entries/")
+      expect(response.status).to eq 200
+      expect(response.body["media_entry_ids"]).to eq [private_entry.id]
+    end
+  end
 end

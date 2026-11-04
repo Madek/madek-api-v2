@@ -105,7 +105,6 @@ describe "Anonymous access" do
       end
 
       it "the users holding permissions are not readable" do
-        pending "permission lists only require view rights"
         expect(client.get("/api-v2/media-entries/#{public_entry.id}/perms/users/").status).to be_in [401, 403]
       end
     end
@@ -123,7 +122,6 @@ describe "Anonymous access" do
       end
 
       it "the preview list of a private entry is not readable" do
-        pending "media-entries/:id/previews/ has no authorization"
         expect(client.get("/api-v2/media-entries/#{private_entry.id}/previews/").status).to be_in [401, 403]
       end
 
@@ -228,7 +226,6 @@ describe "Anonymous access" do
       end
 
       it "the arcs of a private collection are not listed" do
-        pending "collection-media-entry-arcs/ has no authorization"
         response = client.get("/api-v2/collection-media-entry-arcs/", collection_id: private_collection.id)
         expect(response.body.to_json).not_to include private_entry.id
       end
@@ -273,7 +270,6 @@ describe "Anonymous access" do
     end
 
     it "internal fields of a person are not readable" do
-      pending "people/:id returns admin_comment and identification_info"
       response = client.get("/api-v2/people/#{person.id}")
       expect(response.body.keys).not_to include("admin_comment", "identification_info")
     end

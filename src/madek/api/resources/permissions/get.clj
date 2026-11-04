@@ -75,7 +75,7 @@
                                        :content-type "application/json"
                                        :handler handle_list-perms
                                        :middleware [jqh/ring-wrap-add-media-resource
-                                                    jqh/ring-wrap-authorization-view]
+                                                    jqh/ring-wrap-authorization-edit-permissions]
                                        :coercion reitit.coercion.schema/coercion
                                        :parameters {:path {:media_entry_id s/Uuid}}
                                        :responses {200 {:description "Returns the media-entry permissions."
@@ -97,7 +97,7 @@
                                              :content-type "application/json"
                                              :handler handle_list-user-perms
                                              :middleware [jqh/ring-wrap-add-media-resource
-                                                          jqh/ring-wrap-authorization-view]
+                                                          jqh/ring-wrap-authorization-edit-permissions]
                                              :coercion reitit.coercion.schema/coercion
                                              :parameters {:path {:media_entry_id s/Uuid}}
                                              :responses {200 {:description "Returns the media-entry user permissions."
@@ -120,7 +120,7 @@
                                               :content-type "application/json"
                                               :handler handle_list-group-perms
                                               :middleware [jqh/ring-wrap-add-media-resource
-                                                           jqh/ring-wrap-authorization-view]
+                                                           jqh/ring-wrap-authorization-edit-permissions]
                                               :coercion reitit.coercion.schema/coercion
                                               :parameters {:path {:media_entry_id s/Uuid}}
                                               :responses {200 {:description "Returns the media-entry group permissions."
@@ -143,7 +143,7 @@
                                      :content-type "application/json"
                                      :handler handle_list-perms
                                      :middleware [jqh/ring-wrap-add-media-resource
-                                                  jqh/ring-wrap-authorization-view]
+                                                  jqh/ring-wrap-authorization-edit-permissions]
                                      :coercion reitit.coercion.schema/coercion
                                      :parameters {:path {:collection_id s/Uuid}}
                                      :responses {200 {:description "Returns the collection permissions."
@@ -165,7 +165,7 @@
                                            :content-type "application/json"
                                            :handler handle_list-user-perms
                                            :middleware [jqh/ring-wrap-add-media-resource
-                                                        jqh/ring-wrap-authorization-view]
+                                                        jqh/ring-wrap-authorization-edit-permissions]
                                            :coercion reitit.coercion.schema/coercion
                                            :parameters {:path {:collection_id s/Uuid}}
                                            :responses {200 {:description "Returns the collection user permissions."
@@ -176,7 +176,7 @@
                                                   :content-type "application/json"
                                                   :handler handle_get-user-perms
                                                   :middleware [jqh/ring-wrap-add-media-resource
-                                                               jqh/ring-wrap-authorization-view]
+                                                               jqh/ring-wrap-authorization-edit-permissions]
                                                   :coercion reitit.coercion.schema/coercion
                                                   :parameters {:path {:collection_id s/Uuid
                                                                       :user_id s/Uuid}}
@@ -188,7 +188,7 @@
                                             :content-type "application/json"
                                             :handler handle_list-group-perms
                                             :middleware [jqh/ring-wrap-add-media-resource
-                                                         jqh/ring-wrap-authorization-view]
+                                                         jqh/ring-wrap-authorization-edit-permissions]
                                             :coercion reitit.coercion.schema/coercion
                                             :parameters {:path {:collection_id s/Uuid}}
                                             :responses {200 {:description "Returns the collection group permissions."
