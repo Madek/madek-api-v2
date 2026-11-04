@@ -70,10 +70,11 @@
                             (sql/where [:= :user_id user-id] [:= :media_entry_id media_entry-id])
                             sql-format)
               del-result (jdbc/execute-one! (:tx req) sql-query)]
-          (if (= 1 del-result)
+          (if (= 1 (:next.jdbc/update-count del-result))
             (sd/response_ok favorite_media_entry)
-            (error "Failed delete favorite_media_entry "
-                   "user-id: " user-id "media_entry-id: " media_entry-id)))))
+            (do (error "Failed delete favorite_media_entry "
+                       "user-id: " user-id "media_entry-id: " media_entry-id)
+                (sd/response_failed "Could not delete favorite_media_entry." 406))))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn wwrap-find-favorite_media_entry [send404]
