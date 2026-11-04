@@ -27,6 +27,12 @@
    :people.institutional_directory_infos
    :people.institutional_directory_inactive_since])
 
+(def internal-people-keys
+  #{:people.admin_comment :people.identification_info})
+
+(def public-people-select-keys
+  (vec (remove internal-people-keys people-select-keys)))
+
 (defn where-uid
   "Adds a where condition to the people people query against a unique id. The
   uid can be either the id, or the json encoded pair [insitution, institutional_id]."
@@ -47,6 +53,11 @@
 
 (defn person-query [uid]
   (-> base-query
+      (where-uid uid)))
+
+(defn public-person-query [uid]
+  (-> (apply sql/select public-people-select-keys)
+      (sql/from :people)
       (where-uid uid)))
 
 (defn find-person-by-uid [uid tx]

@@ -14,7 +14,7 @@
     {;:get index/route
      }]
    ["people/:id"
-    {:get get-person/route}]])
+    {:get get-person/public-route}]])
 
 (def admin-routes
   ["/"
