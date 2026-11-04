@@ -211,6 +211,16 @@
           {:flashMessages [{:messageID "sign_in_wrong_password_flash_message"
                             :level "error"}]})})
 
+(defn- https-request?
+  "True when the client reached us via https, directly or through a proxy."
+  [request]
+  (or (= :https (:scheme request))
+      (= "https" (some-> (get-in request [:headers "x-forwarded-proto"])
+                         (clojure.string/split #",")
+                         first
+                         clojure.string/trim
+                         clojure.string/lower-case))))
+
 (defn create-user-session
   [user authentication_system_id
    {:as request tx :tx settings :settings}
@@ -257,7 +267,8 @@
                              {:value (:token user-session),
                               :http-only true,
                               :path "/",
-                              :secure (:sessions_force_secure settings)}}}
+                              :same-site :lax,
+                              :secure (https-request? request)}}}
           response (if (= (-> request :accept :mime) :json)
                      (merge {:status 200, :body {:location location}} cookies)
                      (merge {:status 302, :headers {"Location" location}} cookies))]
