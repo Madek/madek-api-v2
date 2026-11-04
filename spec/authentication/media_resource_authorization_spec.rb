@@ -298,6 +298,36 @@ describe "Media resource authorization" do
     end
   end
 
+  describe "meta-data writes require use rights on the vocabulary" do
+    let(:entry) { FactoryBot.create :media_entry, responsible_user: owner }
+    let(:vocabulary) do
+      FactoryBot.create :vocabulary, enabled_for_public_view: true, enabled_for_public_use: false
+    end
+    let(:meta_key) { FactoryBot.create :meta_key_text, id: "#{vocabulary.id}:restricted" }
+    let(:url) { "/api-v2/media-entries/#{entry.id}/meta-data/#{meta_key.id}/texts/" }
+
+    def meta_datum_exists?
+      MetaDatum.exists?(media_entry_id: entry.id, meta_key_id: meta_key.id)
+    end
+
+    it "is forbidden without use permission" do
+      expect(owner_client.post(url, {string: "text"}.to_json).status).to eq 403
+      expect(meta_datum_exists?).to be false
+    end
+
+    it "succeeds with use permission" do
+      FactoryBot.create :vocabulary_user_permission, vocabulary: vocabulary, user: owner, use: true, view: true
+      expect(owner_client.post(url, {string: "text"}.to_json).status).to eq 200
+      expect(meta_datum_exists?).to be true
+    end
+
+    it "succeeds for a publicly usable vocabulary" do
+      vocabulary.update!(enabled_for_public_use: true)
+      expect(owner_client.post(url, {string: "text"}.to_json).status).to eq 200
+      expect(meta_datum_exists?).to be true
+    end
+  end
+
   describe "full texts are only readable with view rights" do
     let(:public_entry) do
       FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: true
