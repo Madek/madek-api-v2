@@ -454,4 +454,112 @@ describe "Media resource authorization" do
       expect(response.body["media_entry_ids"]).to eq [private_entry.id]
     end
   end
+
+  describe "changing the responsibility requires being responsible" do
+    let(:third_user) { FactoryBot.create :user }
+
+    def put_perms(client, url, body)
+      client.put(url, body.to_json)
+    end
+
+    context "media-entry" do
+      let(:media_entry) { FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: false }
+      let(:url) { "/api-v2/media-entries/#{media_entry.id}/perms/resources/" }
+
+      before do
+        FactoryBot.create :media_entry_user_permission, media_entry: media_entry, user: other_user,
+          get_metadata_and_previews: true, get_full_size: false, edit_metadata: true, edit_permissions: true
+      end
+
+      it "a user with edit_permissions can not take over the responsibility" do
+        response = put_perms(other_user_client, url, {responsible_user_id: other_user.id})
+        expect(response.status).to eq 403
+        expect(media_entry.reload.responsible_user_id).to eq owner.id
+      end
+
+      it "a user with edit_permissions can not hand the responsibility to a delegation" do
+        delegation = FactoryBot.create :delegation
+        delegation.users << other_user
+        response = put_perms(other_user_client, url,
+          {responsible_user_id: nil, responsible_delegation_id: delegation.id})
+        expect(response.status).to eq 403
+        expect(media_entry.reload.responsible_user_id).to eq owner.id
+      end
+
+      it "a user with edit_permissions can still change public permissions" do
+        response = put_perms(other_user_client, url, {get_metadata_and_previews: true})
+        expect(response.status).to eq 200
+        expect(media_entry.reload.get_metadata_and_previews).to be true
+      end
+
+      it "sending the unchanged responsible user is allowed" do
+        response = put_perms(other_user_client, url,
+          {get_metadata_and_previews: true, responsible_user_id: owner.id})
+        expect(response.status).to eq 200
+      end
+
+      it "the responsible user can hand over the responsibility" do
+        response = put_perms(owner_client, url, {responsible_user_id: third_user.id})
+        expect(response.status).to eq 200
+        expect(media_entry.reload.responsible_user_id).to eq third_user.id
+      end
+
+      context "with a responsible delegation" do
+        let(:delegation) do
+          FactoryBot.create(:delegation).tap { |d| d.users << third_user }
+        end
+        let(:media_entry) do
+          FactoryBot.create :media_entry, responsible_user: nil, responsible_delegation_id: delegation.id,
+            get_metadata_and_previews: false
+        end
+
+        it "a member of the delegation can hand over the responsibility" do
+          response = put_perms(session_client(third_user), url,
+            {responsible_user_id: third_user.id, responsible_delegation_id: nil})
+          expect(response.status).to eq 200
+          expect(media_entry.reload.responsible_user_id).to eq third_user.id
+        end
+
+        it "a user with edit_permissions outside the delegation can not" do
+          response = put_perms(other_user_client, url,
+            {responsible_user_id: other_user.id, responsible_delegation_id: nil})
+          expect(response.status).to eq 403
+          expect(media_entry.reload.responsible_delegation_id).to eq delegation.id
+        end
+      end
+    end
+
+    context "collection" do
+      let(:collection) { FactoryBot.create :collection, responsible_user: owner, get_metadata_and_previews: false }
+      let(:url) { "/api-v2/collections/#{collection.id}/perms/resources/" }
+
+      before do
+        FactoryBot.create :collection_user_permission, collection: collection, user: other_user,
+          get_metadata_and_previews: true, edit_metadata_and_relations: true, edit_permissions: true
+      end
+
+      it "a user with edit_permissions can not take over the responsibility" do
+        response = put_perms(other_user_client, url, {responsible_user_id: other_user.id})
+        expect(response.status).to eq 403
+        expect(collection.reload.responsible_user_id).to eq owner.id
+      end
+
+      it "a user with edit_permissions can not set the clipboard user" do
+        response = put_perms(other_user_client, url, {clipboard_user_id: other_user.id})
+        expect(response.status).to eq 403
+        expect(collection.reload.clipboard_user_id).to be_nil
+      end
+
+      it "a user with edit_permissions can still change public permissions" do
+        response = put_perms(other_user_client, url, {get_metadata_and_previews: true})
+        expect(response.status).to eq 200
+      end
+
+      it "the responsible user can hand over the responsibility" do
+        response = put_perms(owner_client, url, {responsible_user_id: third_user.id})
+        expect(response.status).to eq 200
+        expect(collection.reload.responsible_user_id).to eq third_user.id
+      end
+    end
+  end
 end
