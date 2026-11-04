@@ -34,6 +34,11 @@
 
 ;### query ####################################################################
 
+(defn- filter-uuid [k v]
+  (or (if (uuid? v) v (parse-uuid (str v)))
+      (throw (ex-info (str "Invalid uuid for filter_by.media_entry." (name k))
+                      {:status 422}))))
+
 (defn- base-query [me-query softdelete-mode]
   ; TODO make full-data selectable
   (let [sel (sql/select [:media_entries.id :media_entry_id]
@@ -51,13 +56,13 @@
                  sel
                  (sql/where sel [:= :media_entries.is_published (= true is-pub)]))
         creator-id (:creator_id me-query)
-        where2 (if (blank? creator-id) ; or not uuid
+        where2 (if (blank? creator-id)
                  where1
-                 (sql/where where1 [:= :media_entries.creator_id creator-id]))
+                 (sql/where where1 [:= :media_entries.creator_id (filter-uuid :creator_id creator-id)]))
         ru-id (:responsible_user_id me-query)
-        where3 (if (blank? ru-id) ; or not uuid
+        where3 (if (blank? ru-id)
                  where2
-                 (sql/where where2 [:= :media_entries.responsible_user_id ru-id]))
+                 (sql/where where2 [:= :media_entries.responsible_user_id (filter-uuid :responsible_user_id ru-id)]))
         where4 (cond
                  (= softdelete-mode :deleted) (soft-deleted where3 "media_entries")
                  (or (nil? softdelete-mode) (= softdelete-mode :not-deleted)) (non-soft-deleted where3 "media_entries"))
