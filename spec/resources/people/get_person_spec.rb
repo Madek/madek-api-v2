@@ -12,7 +12,7 @@ context "people" do
     include_context :json_client_for_authenticated_token_admin do
       context "retriving a standard person" do
         let :get_person_result do
-          client.get("/api-v2/people/#{@person.id}")
+          client.get("/api-v2/admin/people/#{@person.id}")
         end
 
         it "works" do
@@ -21,7 +21,7 @@ context "people" do
           expected_audit_entries = ["INSERT people", "INSERT people", "INSERT usage_terms", "INSERT users",
             "INSERT auth_systems_users", "INSERT admins", *(["INSERT admin_permissions"] * AdminPermission::KEYS.size),
             "INSERT api_tokens"]
-          expect_audit_entries("GET /api-v2/people/#{@person.id}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
+          expect_audit_entries("GET /api-v2/admin/people/#{@person.id}", expected_audit_entries, 200, OPT_CHANGE_AUDITS_ONLY)
         end
 
         it "has the proper data" do
