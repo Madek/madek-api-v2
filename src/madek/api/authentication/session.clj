@@ -46,7 +46,8 @@
       (sql/join :people [:= :people.id :users.person_id])
       (sql/join :auth_systems [:= :user_sessions.auth_system_id :auth_systems.id])
       (sql/where [:= :user_sessions.token_hash token-hash])
-      (sql/where [:<= [:now] expiration-sql-expr])))
+      (sql/where [:<= [:now] expiration-sql-expr])
+      (sql/where [:< [:now] :users.active_until])))
 
 (defn user-session [token-hash tx]
   (-> token-hash

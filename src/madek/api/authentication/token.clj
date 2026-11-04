@@ -32,6 +32,7 @@
                             (map hash-string))])
            (sql/where [:<> :api_tokens.revoked true])
            (sql/where [:raw "now() < api_tokens.expires_at"])
+           (sql/where [:< [:now] :users.active_until])
            (sql/join :users [:= :users.id :api_tokens.user_id])
            (sql-format))
        (jdbc/execute! tx)

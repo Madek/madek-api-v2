@@ -87,7 +87,6 @@ describe "Access by entity" do
       before { user.update_column(:active_until, 1.day.ago) }
 
       it "is rejected" do
-        pending "active_until is not checked for token authentication"
         expect(response.status).to eq 401
       end
     end
@@ -118,7 +117,6 @@ describe "Access by entity" do
       before { user.update_column(:active_until, 1.day.ago) }
 
       it "is rejected" do
-        pending "active_until is not checked for session authentication"
         expect(response.status).to eq 401
       end
     end
