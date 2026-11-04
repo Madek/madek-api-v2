@@ -234,8 +234,8 @@
            :handler handle_update-collection
            :description (mslurp (io/resource "md/collections-put.md"))
            :middleware [wrap-authorize-admin!
-                        jqh/ring-wrap-authorization-edit-permissions
                         jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-edit-permissions
                         jqh/ring-wrap-authorization-edit-metadata]
            :swagger {:produces "application/json"
                      :consumes "application/json"}
