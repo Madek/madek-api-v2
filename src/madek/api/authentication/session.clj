@@ -55,16 +55,16 @@
       (sql-format :inline false)
       (#(jdbc/execute! tx %))))
 
-(defn- session-enbabled? []
-  (or (-> (get-config) :madek_api_session_enabled boolean) true))
+(defn- session-enabled? []
+  (let [enabled (:madek_api_session_enabled (get-config))]
+    (if (nil? enabled) true (boolean enabled))))
 
 (defn- get-cookie-value [request]
   (-> request keywordize-keys :cookies
       (get (get-madek-session-cookie-name)) :value))
 
 (defn- handle [request handler]
-  (debug 'handle request)
-  (if-let [cookie-value (and (session-enbabled?) (get-cookie-value request))]
+  (if-let [cookie-value (and (session-enabled?) (get-cookie-value request))]
     (let [token-hash (token-hash cookie-value)
           tx (:tx request)]
       (if-let [user-session (first (user-session token-hash tx))]
