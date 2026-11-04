@@ -3,7 +3,7 @@ require "shared/audit-validator"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
 require Pathname(File.expand_path("../../media-entry", __FILE__)).join("shared")
 
-def favorite_url(me_id, user_id)
+def media_entry_favorite_url(me_id, user_id)
   "/api-v2/admin/favorites/media-entries/#{me_id}/users/#{user_id}"
 end
 
@@ -32,7 +32,7 @@ RSpec.describe "Admin::Favorites API", type: :request do
       media_entry.favor_by(admin_user)
       response = wtoken_header_plain_faraday_json_client_post(
         admin_token.token,
-        favorite_url(media_entry.id, admin_user.id)
+        media_entry_favorite_url(media_entry.id, admin_user.id)
       )
 
       expect(response.status).to eq(200)
@@ -44,21 +44,21 @@ RSpec.describe "Admin::Favorites API", type: :request do
       # retrieve
       response = wtoken_header_plain_faraday_json_client_get(
         admin_token.token,
-        favorite_url(media_entry.id, admin_user.id)
+        media_entry_favorite_url(media_entry.id, admin_user.id)
       )
       expect(response.status).to eq(200)
 
       # delete
       response = wtoken_header_plain_faraday_json_client_delete(
         admin_token.token,
-        favorite_url(media_entry.id, admin_user.id)
+        media_entry_favorite_url(media_entry.id, admin_user.id)
       )
       expect(response.status).to eq(200)
 
       # ensure it's gone
       response = wtoken_header_plain_faraday_json_client_get(
         admin_token.token,
-        favorite_url(media_entry.id, admin_user.id)
+        media_entry_favorite_url(media_entry.id, admin_user.id)
       )
       expect(response.status).to eq(404)
     end

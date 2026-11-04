@@ -3,7 +3,7 @@ require "shared/audit-validator"
 require Pathname(File.expand_path("..", __FILE__)).join("shared")
 require Pathname(File.expand_path("../../media-entry", __FILE__)).join("shared")
 
-def favorite_url(collection_id, user_id)
+def collection_favorite_url(collection_id, user_id)
   "/api-v2/admin/favorites/collections/#{collection_id}/users/#{user_id}"
 end
 
@@ -32,7 +32,7 @@ RSpec.describe "Admin::Favorites API", type: :request do
       collection.favor_by(admin_user)
       response = wtoken_header_plain_faraday_json_client_post(
         admin_token.token,
-        favorite_url(collection.id, admin_user.id)
+        collection_favorite_url(collection.id, admin_user.id)
       )
 
       expect(response.status).to eq(200)
@@ -44,21 +44,21 @@ RSpec.describe "Admin::Favorites API", type: :request do
       # retrieve
       response = wtoken_header_plain_faraday_json_client_get(
         admin_token.token,
-        favorite_url(collection.id, admin_user.id)
+        collection_favorite_url(collection.id, admin_user.id)
       )
       expect(response.status).to eq(200)
 
       # delete
       response = wtoken_header_plain_faraday_json_client_delete(
         admin_token.token,
-        favorite_url(collection.id, admin_user.id)
+        collection_favorite_url(collection.id, admin_user.id)
       )
       expect(response.status).to eq(200)
 
       # ensure it's gone
       response = wtoken_header_plain_faraday_json_client_get(
         admin_token.token,
-        favorite_url(collection.id, admin_user.id)
+        collection_favorite_url(collection.id, admin_user.id)
       )
       expect(response.status).to eq(404)
     end
