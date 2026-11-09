@@ -10,6 +10,9 @@ describe "Call swagger-endpoints" do
       expect(resp.status).to eq(404)
 
       resp = plain_faraday_json_client.get("/api-v2/auth-info/")
+      expect(resp.status).to eq(401)
+
+      resp = client.get("/api-v2/auth-info/")
       expect(resp.status).to eq(200)
 
       resp = client.get("/api-v2/test-csrf/")
@@ -38,6 +41,9 @@ describe "Call swagger-endpoints" do
       expect(resp.status).to eq(404)
 
       resp = plain_faraday_json_client.get("/api-v2/auth-info/")
+      expect(resp.status).to eq(401)
+
+      resp = client.get("/api-v2/auth-info/")
       expect(resp.status).to eq(200)
 
       resp = client.get("/api-v2/test-csrf/")
