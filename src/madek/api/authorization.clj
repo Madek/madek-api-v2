@@ -54,15 +54,5 @@
       (handler request)
       {:status 401 :body {:message "Not authorized"}})))
 
-(def destructive-methods #{:post :put :delete})
-
-(defn wrap-authorize-http-method [handler]
-  (fn [request]
-    (if (and (= (request :authentication-method) "Session")
-             (destructive-methods (request :request-method)))
-      {:status 405,
-       :body {:message "Destructive methods not allowed for session authentication!"}}
-      (handler request))))
-
 ;### Debug ####################################################################
 ;(debug/debug-ns *ns*)
