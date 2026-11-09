@@ -5,6 +5,7 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.collection-media-entry-arcs :refer [schema_collection-collection-arc-export]]
+   [madek.api.resources.collections.advanced-filter.permissions :as coll-perms]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
@@ -20,6 +21,22 @@
    [spec-tools.core :as st]))
 
 ;### authorization ############################################################
+
+(defn- filter-by-viewable-collections
+  "Restricts arcs to those whose parent and child collection the client may
+  view. Admins are not restricted."
+  [sqlmap req]
+  (if (true? (:is_admin req))
+    sqlmap
+    (sql/where sqlmap
+               [:in :collection_collection_arcs.parent_id
+                (-> (sql/select :collections.id)
+                    (sql/from :collections)
+                    (coll-perms/filter-by-view-permission req))]
+               [:in :collection_collection_arcs.child_id
+                (-> (sql/select :collections.id)
+                    (sql/from :collections)
+                    (coll-perms/filter-by-view-permission req))])))
 
 (defn- wrap-add-parent-collection
   "Adds the parent collection (path param :parent_id) as :media-resource, so
@@ -50,6 +67,7 @@
       (sql/from :collection_collection_arcs)
       (sql/order-by [:parent_id :asc] [:child_id :asc])
       (sql/where [:= :id (-> request :parameters :path :id to-uuid)])
+      (filter-by-viewable-collections request)
       sql-format))
 
 (defn handle_get-arc [req]
@@ -74,15 +92,16 @@
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
 
-(defn arcs-query [query-params]
+(defn arcs-query [query-params req]
   (-> (sql/select :*)
       (sql/from :collection_collection_arcs)
       (sql/order-by [:parent_id :asc] [:child_id :asc])
       (dbh/build-query-param query-params :child_id)
-      (dbh/build-query-param query-params :parent_id)))
+      (dbh/build-query-param query-params :parent_id)
+      (filter-by-viewable-collections req)))
 
 (defn handle_query-arcs [req]
-  (let [query (arcs-query (-> req :parameters :query))
+  (let [query (arcs-query (-> req :parameters :query) req)
         db-result (pagination-handler req query :collection-collection-arcs)]
     (sd/response_ok db-result)))
 
@@ -180,7 +199,6 @@
                                                       :description "A list of collection-collection-arcs"}))
 (sa/def ::response-groups-body (sa/keys :opt-un [:list-of/collection-collection-arcs ::sp/data ::sp/pagination]))
 
-; TODO add permission checks
 (def ring-routes
   ["/collection-collection-arcs"
    {:openapi {:tags ["api/collections"]}}
@@ -193,7 +211,6 @@
       :responses {200 {:description "Returns the collection collection arcs."
                        :body ::response-groups-body}}}}]
    ; TODO rename param to collection_id
-   ; TODO add permission checks
    ["/:id"
     {:get
      {:summary (sd/?no-auth? "Get collection collection arcs.")

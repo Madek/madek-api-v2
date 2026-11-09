@@ -11,6 +11,7 @@
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.route-authorization :as route-authorization]
    [madek.api.sign-in.core :as sign-in]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.cli :refer [long-opt-for-key]]
@@ -339,7 +340,8 @@
 
 (defn create-app [router-data]
   (rr/ring-handler
-   (rr/router router-data get-router-options)
+   (route-authorization/assert-routes-protected!
+    (rr/router router-data get-router-options))
    common-routes))
 
 (def app-all (create-app get-router-data-all))

@@ -90,6 +90,8 @@
 (def admin-routes
   ; Every route below /api-v2/admin requires an admin; authentication/wrap is
   ; part of the global middleware stack and runs before this check.
+  ; The wrap-authorize-admin! entries on single routes below are redundant on
+  ; purpose (defense in depth, and they keep the OpenAPI/route data explicit).
   ["/api-v2/admin"
    {:middleware [wrap-authorize-admin!]
     :openapi {:security [{"auth" []}]}}
