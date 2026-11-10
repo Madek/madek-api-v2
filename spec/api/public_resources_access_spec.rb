@@ -45,17 +45,27 @@ describe "Access parity with the legacy API: public resources" do
     end
   end
 
-  # The legacy API serves `/delegations/:id` to everybody, restricted to
-  # id, name and description. api-v2 only has `/admin/delegations/:id`; the
-  # public counterpart is expected next to `/people/:id` and `/groups/:id`.
-  describe "GET /delegations/:id" do
+  # Deliberate divergence: the legacy API serves `/delegations/:id` to
+  # everybody (id, name and description). api-v2 serves delegations only on
+  # `/admin/delegations/:id`; non-admins get no delegation data.
+  describe "GET /delegations/:id (not public in api-v2)" do
     let(:delegation) { FactoryBot.create :delegation }
-    let(:path) { "/api-v2/delegations/#{delegation.id}" }
 
-    include_examples :legacy_public_access
+    it "is not served to anonymous" do
+      expect(anonymous_client.get("/api-v2/delegations/#{delegation.id}").status).to be_in [401, 403, 404]
+    end
 
-    it "exposes only id, name and description" do
-      expect(anonymous_client.get(path).body.keys).to match_array %w[id name description]
+    it "is not served to a user" do
+      expect(client_for(FactoryBot.create(:user)).get("/api-v2/delegations/#{delegation.id}").status)
+        .to be_in [401, 403, 404]
+    end
+
+    it "GET /admin/delegations/:id responds 403 to a user" do
+      expect(client_for(FactoryBot.create(:user)).get("/api-v2/admin/delegations/#{delegation.id}").status).to eq 403
+    end
+
+    it "GET /admin/delegations/:id grants access to an admin" do
+      expect(client_for(create_admin_user).get("/api-v2/admin/delegations/#{delegation.id}").status).to eq 200
     end
   end
 
