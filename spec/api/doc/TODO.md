@@ -16,9 +16,9 @@ divergence.
 
 Legacy specs that relied on the admin bypass (`spec/authentication/full_text_spec.rb`,
 `spec/resources/collection/edit_group_mr_permissions_spec.rb`,
-`spec/resources/collections/soft-delete/*`) now run each scenario with the admin
-as responsible user and with a user permission, plus a "no permissions" variant
-that expects denial. See `spec/shared/admin_access.rb`.
+`spec/resources/collections/soft-delete/*`) now run each scenario as a normal
+user and as an admin, each as responsible user, with a user permission and
+without permissions (expects denial). See `spec/shared/resource_access.rb`.
 
 ## 1. DONE: Admin bypass on media resources
 

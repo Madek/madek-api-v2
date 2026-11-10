@@ -1,132 +1,65 @@
+master'.
+ruby 3.3.8 is already installed
+ruby 3.3.8 is already installed
+
+a bunch of media entries with different properties
+SPEC_SEED 000a8f43e66180ce8a3c2883c453afc2cabdb068 set env SPEC_SEED to force value
+JSON `client` for authenticated `user`
+the media_entries resource
+Data from '/ramdisk/ci-working-dir/58651700-4a32-4a4a-a370-c7baf6feda6c/datalayer/db/seeds.pgbin' has been restored to                         'madek_api_58651700-4a32-4a4a-a370-c7baf6feda6c'
+delete media_entries (FAILED - 1)
+Data from '/ramdisk/ci-working-dir/58651700-4a32-4a4a-a370-c7baf6feda6c/datalayer/db/seeds.pgbin' has been restored to                         'madek_api_58651700-4a32-4a4a-a370-c7baf6feda6c'
+delete media_entries
+Data from '/ramdisk/ci-working-dir/58651700-4a32-4a4a-a370-c7baf6feda6c/datalayer/db/seeds.pgbin' has been restored to                         'madek_api_58651700-4a32-4a4a-a370-c7baf6feda6c'
+checks conf-links (FAILED - 2)
+Data from '/ramdisk/ci-working-dir/58651700-4a32-4a4a-a370-c7baf6feda6c/datalayer/db/seeds.pgbin' has been restored to                         'madek_api_58651700-4a32-4a4a-a370-c7baf6feda6c'
+checks media-file (FAILED - 3)
+Data from '/ramdisk/ci-working-dir/58651700-4a32-4a4a-a370-c7baf6feda6c/datalayer/db/seeds.pgbin' has been restored to                         'madek_api_58651700-4a32-4a4a-a370-c7baf6feda6c'
+checks meta-datum (FAILED - 4)
+SPEC_SEED 000a8f43e66180ce8a3c2883c453afc2cabdb068 set env SPEC_SEED to force value
 
 Failures:
 
-1) Access parity with the legacy API: public resources GET /people/:id exposes no more than the legacy fields to anonymous
-   Failure/Error: expect(anonymous_client.get(path).body.keys - legacy_fields).to be_empty
-   expected `["institutional_id", "institutional_directory_infos", "institutional_directory_inactive_since"].empty?` to be truthy, got false
-   # ./spec/api/public_resources_access_spec.rb:40:in `block (3 levels) in <top (required)>'
+1) a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource delete media_entries
+   Failure/Error: expect(response.status).to be == 200
 
-2) Access parity with the legacy API: public resources GET /people/:id exposes no more than the legacy fields to a user
-   Failure/Error: expect(client_for(FactoryBot.create(:user)).get(path).body.keys - legacy_fields).to be_empty
-   expected `["institutional_id", "institutional_directory_infos", "institutional_directory_inactive_since"].empty?` to be truthy, got false
-   # ./spec/api/public_resources_access_spec.rb:44:in `block (3 levels) in <top (required)>'
+   expected: == 200
+   got:    403
+   Shared Example Group: :json_client_for_authenticated_token_admin called from ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:8
+   # ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:23:in `block (6 levels) in <top (required)>'
+   # ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:21:in `each'
+   # ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:21:in `block (5 levels) in <top (required)>'
 
-3) Access parity with the legacy API: public resources GET /delegations/:id grants access to anonymous
-   Failure/Error: expect(response.status).to eq(expected)
+2) a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource checks conf-links
+   Failure/Error: expect(response.status).to be == 200
 
-   expected: 200
-   got: 404
+   expected: == 200
+   got:    403
+   Shared Example Group: :json_client_for_authenticated_token_admin called from ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:8
+   # ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:89:in `block (5 levels) in <top (required)>'
 
-   (compared using ==)
-   Shared Example Group: :legacy_public_access called from ./spec/api/public_resources_access_spec.rb:55
-   # ./spec/api/shared.rb:164:in `expect_legacy_status'
-   # ./spec/api/shared.rb:239:in `block (2 levels) in <top (required)>'
+3) a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource checks media-file
+   Failure/Error: expect(response.status).to be == 200
 
-4) Access parity with the legacy API: public resources GET /delegations/:id grants access to a user
-   Failure/Error: expect(response.status).to eq(expected)
+   expected: == 200
+   got:    403
+   Shared Example Group: :json_client_for_authenticated_token_admin called from ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:8
+   # ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:139:in `block (5 levels) in <top (required)>'
 
-   expected: 200
-   got: 404
+4) a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource checks meta-datum
+   Failure/Error: expect(response.status).to be == 200
 
-   (compared using ==)
-   Shared Example Group: :legacy_public_access called from ./spec/api/public_resources_access_spec.rb:55
-   # ./spec/api/shared.rb:164:in `expect_legacy_status'
-   # ./spec/api/shared.rb:243:in `block (2 levels) in <top (required)>'
+   expected: == 200
+   got:    404
+   Shared Example Group: :json_client_for_authenticated_token_admin called from ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:8
+   # ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:175:in `block (5 levels) in <top (required)>'
 
-5) Access parity with the legacy API: public resources GET /delegations/:id exposes only id, name and description
-   Failure/Error: expect(anonymous_client.get(path).body.keys).to match_array %w[id name description]
-
-   NoMethodError:
-   undefined method `keys' for an instance of String
-   # ./spec/api/public_resources_access_spec.rb:58:in `block (3 levels) in <top (required)>'
-
-Finished in 2.53 seconds (files took 1.48 seconds to load)
-15 examples, 5 failures
+Finished in 6.61 seconds (files took 1.83 seconds to load)
+5 examples, 4 failures
 
 Failed examples:
 
-rspec ./spec/api/public_resources_access_spec.rb:39 # Access parity with the legacy API: public resources GET /people/:id exposes no more than the legacy fields to anonymous
-rspec ./spec/api/public_resources_access_spec.rb:43 # Access parity with the legacy API: public resources GET /people/:id exposes no more than the legacy fields to a user
-rspec ./spec/api/public_resources_access_spec.rb[1:5:1] # Access parity with the legacy API: public resources GET /delegations/:id grants access to anonymous
-rspec ./spec/api/public_resources_access_spec.rb[1:5:2] # Access parity with the legacy API: public resources GET /delegations/:id grants access to a user
-rspec ./spec/api/public_resources_access_spec.rb:57 # Access parity with the legacy API: public resources GET /delegations/:id exposes only id, name and description
-
-
---------
-
-    responds 404 for a collection
-SPEC_SEED a24a4ed4f09d9d8a4917c2d7508dba37df7abd88 set env SPEC_SEED to force value
-
-Failures:
-
-1) Access parity with the legacy API: media-resources media-entry with a media-file and a preview GET /media-entries/:id/media-files/data-stream when the resource is public grants access to anonymous
-   Failure/Error: expect(response.status).to eq(expected)
-
-   expected: 200
-   got: 401
-
-   (compared using ==)
-   Shared Example Group: :legacy_media_resource_access called from ./spec/api/media_resources_access_spec.rb:82
-   # ./spec/api/shared.rb:164:in `expect_legacy_status'
-   # ./spec/api/shared.rb:191:in `block (4 levels) in <top (required)>'
-
-Finished in 44.87 seconds (files took 1.63 seconds to load)
-268 examples, 1 failure
-
-Failed examples:
-
-rspec ./spec/api/media_resources_access_spec.rb[1:1:5:3:1:1] # Ac
-
-
-______
-
-
-SPEC_SEED a24a4ed4f09d9d8a4917c2d7508dba37df7abd88 set env SPEC_SEED to force value
-
-Failures:
-
-1) Access parity with the legacy API: admin-only resources GET /groups/ denies anonymous
-   Failure/Error: expect(response.status).to be_in(DENIED)
-   expected `200.in?([401, 403])` to be truthy, got false
-   Shared Example Group: :legacy_admin_only_access called from ./spec/api/admin_only_access_spec.rb:26
-   # ./spec/api/shared.rb:162:in `expect_legacy_status'
-   # ./spec/api/shared.rb:224:in `block (2 levels) in <top (required)>'
-
-2) Access parity with the legacy API: admin-only resources GET /groups/ responds 403 to a user
-   Failure/Error: expect(response.status).to eq(expected)
-
-   expected: 403
-   got: 200
-
-   (compared using ==)
-   Shared Example Group: :legacy_admin_only_access called from ./spec/api/admin_only_access_spec.rb:26
-   # ./spec/api/shared.rb:164:in `expect_legacy_status'
-   # ./spec/api/shared.rb:228:in `block (2 levels) in <top (required)>'
-
-3) Access parity with the legacy API: admin-only resources GET /groups/:id denies anonymous
-   Failure/Error: expect(response.status).to be_in(DENIED)
-   expected `200.in?([401, 403])` to be truthy, got false
-   Shared Example Group: :legacy_admin_only_access called from ./spec/api/admin_only_access_spec.rb:26
-   # ./spec/api/shared.rb:162:in `expect_legacy_status'
-   # ./spec/api/shared.rb:224:in `block (2 levels) in <top (required)>'
-
-4) Access parity with the legacy API: admin-only resources GET /groups/:id responds 403 to a user
-   Failure/Error: expect(response.status).to eq(expected)
-
-   expected: 403
-   got: 200
-
-   (compared using ==)
-   Shared Example Group: :legacy_admin_only_access called from ./spec/api/admin_only_access_spec.rb:26
-   # ./spec/api/shared.rb:164:in `expect_legacy_status'
-   # ./spec/api/shared.rb:228:in `block (2 levels) in <top (required)>'
-
-Finished in 3.6 seconds (files took 1.59 seconds to load)
-24 examples, 4 failures
-
-Failed examples:
-
-rspec ./spec/api/admin_only_access_spec.rb[1:1:1] # Access parity with the legacy API: admin-only resources GET /groups/ denies anonymous
-rspec ./spec/api/admin_only_access_spec.rb[1:1:2] # Access parity with the legacy API: admin-only resources GET /groups/ responds 403 to a user
-rspec ./spec/api/admin_only_access_spec.rb[1:2:1] # Access parity with the legacy API: admin-only resources GET /groups/:id denies anonymous
-rspec ./spec/api/admin_only_access_spec.rb[1:2:2] # Access parity with the legacy API: admin-on
+rspec ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:14 # a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource delete media_entries
+rspec ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:78 # a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource checks conf-links
+rspec ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:123 # a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource checks media-file
+rspec ./spec/resources/media_entries/soft-delete/without_soft_delete_spec.rb:142 # a bunch of media entries with different properties JSON `client` for authenticated `user` the media_entries resource checks meta-datum
