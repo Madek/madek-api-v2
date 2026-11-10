@@ -1,6 +1,7 @@
 (ns madek.api.resources.media-entries.advanced-filter.permissions
   (:require
    [honey.sql.helpers :as sql]
+   [madek.api.utils.auth :as auth]
    [madek.api.utils.helper :refer [to-uuid]]))
 
 (defn delegation-ids-subquery [user_id]
@@ -78,10 +79,10 @@
 (defn filter-by-view-permission
   "Restricts the query to media-entries the client may view: public ones,
   and for signed-in users additionally those they are responsible for or
-  have view permission on. Admins are not restricted."
-  [sqlmap {:keys [authenticated-entity is_admin]}]
+  have view permission on. Admins are only unrestricted on admin routes."
+  [sqlmap {:keys [authenticated-entity] :as request}]
   (cond
-    (true? is_admin) sqlmap
+    (auth/admin-route-authorized? request) sqlmap
     (= "User" (:type authenticated-entity)) (sql/where sqlmap (user-authorized-condition
                                                                "get_metadata_and_previews"
                                                                (:id authenticated-entity)))

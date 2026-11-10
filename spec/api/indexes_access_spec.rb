@@ -21,7 +21,7 @@ describe "Access parity with the legacy API: indexes" do
     context "when the resource is public" do
       before { media_resource.update_columns(get_metadata_and_previews: true) }
 
-      %i[anonymous unrelated_user].each do |condition|
+      %i[anonymous unrelated_user admin_without_permission].each do |condition|
         it "lists it for #{condition}" do
           expect(listed_ids(condition)).to include media_resource.id
         end

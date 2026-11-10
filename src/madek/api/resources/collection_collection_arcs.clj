@@ -10,6 +10,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.resources.shared.media_resource_helper :as mrh]
+   [madek.api.utils.auth :as auth]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [to-uuid]]
@@ -24,9 +25,9 @@
 
 (defn- filter-by-viewable-collections
   "Restricts arcs to those whose parent and child collection the client may
-  view. Admins are not restricted."
+  view. Admins are only unrestricted on admin routes."
   [sqlmap req]
-  (if (true? (:is_admin req))
+  (if (auth/admin-route-authorized? req)
     sqlmap
     (sql/where sqlmap
                [:in :collection_collection_arcs.parent_id

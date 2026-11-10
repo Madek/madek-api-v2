@@ -9,7 +9,7 @@
             [madek.api.resources.shared.db_helper :as dbh]
             [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.resources.shared.media_resource_helper :as mrh]
-            [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
+            [madek.api.utils.auth :as auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
             [madek.api.utils.coercion.spec-alpha-definition :as sp]
             [madek.api.utils.coercion.spec-utils :refer [string->vec]]
             [madek.api.utils.helper :refer [to-uuid normalize-fields]]
@@ -24,9 +24,9 @@
 
 (defn- filter-by-viewable-media-resource
   "Restricts full_texts to those of media-entries and collections the client
-  may view. Admins are not restricted."
+  may view. Admins are only unrestricted on admin routes."
   [sqlmap req]
-  (if (true? (:is_admin req))
+  (if (auth/admin-route-authorized? req)
     sqlmap
     (sql/where sqlmap
                [:or

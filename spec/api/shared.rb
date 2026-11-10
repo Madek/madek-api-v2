@@ -29,6 +29,10 @@ module ApiAccessParity
     responsible_delegation_group_member
     user_permission
     group_permission
+    admin_responsible_user
+    admin_responsible_delegation_member
+    admin_user_permission
+    admin_group_permission
   ].freeze
 
   DENYING_CONDITIONS = %i[
@@ -36,7 +40,21 @@ module ApiAccessParity
     admin_without_permission
     user_permission_without_scope
     group_permission_without_scope
+    admin_user_permission_without_scope
+    admin_group_permission_without_scope
   ].freeze
+
+  # Admin variants: the same user as in the base condition, additionally an
+  # admin. Being an admin must neither add nor remove access on user routes.
+  ADMIN_VARIANTS = {
+    admin_without_permission: :unrelated_user,
+    admin_responsible_user: :responsible_user,
+    admin_responsible_delegation_member: :responsible_delegation_member,
+    admin_user_permission: :user_permission,
+    admin_group_permission: :group_permission,
+    admin_user_permission_without_scope: :user_permission_without_scope,
+    admin_group_permission_without_scope: :group_permission_without_scope
+  }.freeze
 
   def anonymous_client
     plain_faraday_json_client
@@ -47,29 +65,49 @@ module ApiAccessParity
     wtoken_header_plain_faraday_json_client(token.token)
   end
 
+  # Session (cookie) authenticated client; enough for GET requests.
+  def session_client_for(user)
+    session = UserSession.create!(user: user, auth_system: AuthSystem.first.presence,
+      token_hash: "hashimotio", created_at: Time.now)
+    cookie = CGI::Cookie.new("name" => Madek::Constants::MADEK_SESSION_COOKIE_NAME,
+      "value" => session.token).to_s
+    session_auth_plain_faraday_json_client(cookie)
+  end
+
+  def make_admin(user)
+    FactoryBot.create(:admin, user: user) unless Admin.exists?(user_id: user.id)
+    user
+  end
+
   def create_admin_user
-    FactoryBot.create(:user).tap { |user| FactoryBot.create(:admin, user: user) }
+    make_admin(FactoryBot.create(:user))
   end
 
   # Returns a client acting under `condition` with regard to `resource`;
   # creates the users, groups, delegations and permissions this requires.
   # `scope` is the permission the legacy API checks for the requested url.
   def client_under(condition, resource, scope = :get_metadata_and_previews)
+    return anonymous_client if condition == :anonymous
+
+    client_for(user_under(condition, resource, scope))
+  end
+
+  def user_under(condition, resource, scope = :get_metadata_and_previews)
+    if ADMIN_VARIANTS.key?(condition)
+      return make_admin(user_under(ADMIN_VARIANTS[condition], resource, scope))
+    end
+
     case condition
-    when :anonymous
-      anonymous_client
     when :unrelated_user
-      client_for(FactoryBot.create(:user))
-    when :admin_without_permission
-      client_for(create_admin_user)
+      FactoryBot.create(:user)
     when :responsible_user
-      client_for(resource.responsible_user)
+      resource.responsible_user
     when :responsible_delegation_member
       user = FactoryBot.create(:user)
       delegation = FactoryBot.create(:delegation)
       delegation.users << user
       make_responsible(resource, delegation)
-      client_for(user)
+      user
     when :responsible_delegation_group_member
       user = FactoryBot.create(:user)
       group = FactoryBot.create(:group)
@@ -77,17 +115,17 @@ module ApiAccessParity
       delegation = FactoryBot.create(:delegation)
       delegation.groups << group
       make_responsible(resource, delegation)
-      client_for(user)
+      user
     when :user_permission, :user_permission_without_scope
       user = FactoryBot.create(:user)
       grant(resource, scope, condition == :user_permission, user: user)
-      client_for(user)
+      user
     when :group_permission, :group_permission_without_scope
       user = FactoryBot.create(:user)
       group = FactoryBot.create(:group)
       group.users << user
       grant(resource, scope, condition == :group_permission, group: group)
-      client_for(user)
+      user
     else
       raise ArgumentError, "unknown condition #{condition}"
     end
@@ -148,7 +186,7 @@ shared_examples :legacy_media_resource_access do |scope = :get_metadata_and_prev
   context "when the resource is public" do
     before { media_resource.update_columns(:get_metadata_and_previews => true, scope => true) }
 
-    %i[anonymous unrelated_user].each do |condition|
+    %i[anonymous unrelated_user admin_without_permission].each do |condition|
       it "grants access to #{condition}" do
         expect_legacy_status(response_under(condition), ApiAccessParity::GRANTED)
       end

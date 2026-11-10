@@ -2,6 +2,7 @@
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [madek.api.authorization :refer [authorized?]]
+            [madek.api.utils.auth :as auth]
             [madek.api.utils.soft-delete :refer [->non-soft-deleted]]
             [next.jdbc :as jdbc]
             [taoensso.timbre :refer [warn]]))
@@ -58,8 +59,8 @@
       (handler request)
 
       (if-let [auth-entity (-> request :authenticated-entity)]
-        (if (-> request :is_admin true?)
-          ; do all as admin
+        (if (auth/admin-route-authorized? request)
+          ; admin routes only; on user routes admins need permissions as well
           (handler request)
 
           ; if not admin check user auth
