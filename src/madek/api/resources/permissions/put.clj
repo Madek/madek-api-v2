@@ -108,18 +108,17 @@
         responsibility-keys))
 
 (defn- wrap-authorize-responsibility-change
-  "Only admins, the responsible user or members of the responsible
-   delegation may change responsible_user_id, responsible_delegation_id
-   or clipboard_user_id."
+  "Only the responsible user or members of the responsible delegation may
+   change responsible_user_id, responsible_delegation_id or
+   clipboard_user_id. Being an admin grants nothing on user routes."
   [handler]
   (fn [{media-resource :media-resource :as request}]
-    (if (or (-> request :is_admin true?)
-            (not (changes-responsibility? media-resource (-> request :parameters :body)))
+    (if (or (not (changes-responsibility? media-resource (-> request :parameters :body)))
             (mr-permissions/responsible-by-auth-entity?
              media-resource (:authenticated-entity request) (:tx request)))
       (handler request)
       {:status 403
-       :body {:message "Only the responsible user, members of the responsible delegation or admins may change the responsibility."}})))
+       :body {:message "Only the responsible user or members of the responsible delegation may change the responsibility."}})))
 
 ;; ### handler ######################################################
 

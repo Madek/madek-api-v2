@@ -11,8 +11,14 @@ Run them against a local server on port 3104:
 mise exec -- bundle exec rspec spec/api/
 ```
 
-Status: 271 examples, 24 failures. Every failure below is a real divergence
-in api-v2, not a spec bug.
+Status: all examples pass. Items 1-4 are fixed, item 5 is a deliberate
+divergence.
+
+Legacy specs that relied on the admin bypass (`spec/authentication/full_text_spec.rb`,
+`spec/resources/collection/edit_group_mr_permissions_spec.rb`,
+`spec/resources/collections/soft-delete/*`) now run each scenario with the admin
+as responsible user and with a user permission, plus a "no permissions" variant
+that expects denial. See `spec/shared/admin_access.rb`.
 
 ## 1. DONE: Admin bypass on media resources
 
@@ -37,9 +43,9 @@ Covered by the admin variants of every condition in `shared.rb`
 (`ApiAccessParity::ADMIN_VARIANTS`) and by `admin_access_spec.rb` (session
 auth, write scopes, arcs, full_texts, admin routes).
 
-Not changed: `permissions/put.clj` still lets admins change the
-responsibility of a resource, but only after they passed the
-edit-permissions check like any other user.
+`permissions/put.clj` (`wrap-authorize-responsibility-change`) no longer
+lets admins change the responsibility of a resource on user routes; only the
+responsible user or members of the responsible delegation may.
 
 ## 2. DONE: `/media-entries/:id/media-files/data-stream/` denied anonymous on public full-size
 
