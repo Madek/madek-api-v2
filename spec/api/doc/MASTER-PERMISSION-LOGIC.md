@@ -193,3 +193,109 @@ permissions like everyone else. To act on someone else's resource, an admin shou
 - use a dedicated `/api-v2/admin/...` endpoint,
 - grant themselves an explicit permission, or
 - take over responsibility through an admin route that is recorded in the audit log.
+
+---
+
+# FEATURE-BRANCH-LOGIC
+
+Branch `mr/pr/minor-opt`. **Rule: an admin can modify resources of other users only on
+`/api-v2/admin/...` routes. On user routes an admin is treated like every other user** and needs
+responsibility (direct or via delegation) or a permission.
+
+## How it is enforced
+
+| Mechanism | Code |
+|---|---|
+| `:is_admin` is still set by authentication (token/session), but **no user-route authorization reads it** anymore. Only authentication and `authorize-admin!` use it. | `authentication/token.clj:61-79`, `authentication/session.clj:77` |
+| `wrap-authorize-admin!` (only on `/admin` routes) sets `:admin-route-authorized true`. The flag is internal to the request map; HTTP input cannot set it. | `src/madek/api/utils/auth.clj:12-37` |
+| `admin-route-authorized?` replaces the `:is_admin` bypass in the central media-resource check. | `shared/media_resource_helper.clj:62` |
+| The same flag is used for listings and derived resources: media-entry and collection view filters, collection-media-entry arcs, collection-collection arcs, full texts. | `media_entries/advanced_filter/permissions.clj:85`, `collections/advanced_filter/permissions.clj:73`, `collection_media_entry_arcs.clj:23`, `collection_collection_arcs.clj:30`, `full_texts.clj:29` |
+| Changing `responsible_user_id` / `responsible_delegation_id` / `clipboard_user_id` additionally requires being the responsible user or a member of the responsible delegation; `edit_permissions` alone is not enough, and being an admin grants nothing. | `permissions/put.clj:110-121` (`wrap-authorize-responsibility-change`) |
+| Collection-collection arc writes are authorized: `:edit-md` on the parent and `:view` on the child (no longer open to anonymous). | `collection_collection_arcs.clj:55-66` |
+
+## Matrix: who may modify someone else's entry (feature branch)
+
+✅ = allowed, ❌ = 403.
+
+| Actor | User routes: edit meta-data | User routes: edit perms / conf-links / delete | User routes: change responsible | `/admin` routes |
+|---|---|---|---|---|
+| Plain user (no relation) | ❌ | ❌ | ❌ | ❌ |
+| Responsible user | ✅ | ✅ | ✅ | ❌ |
+| Delegation member (direct / via group) | ✅ | ✅ | ✅ | ❌ |
+| User permission (all flags) | ✅ | ✅ | ❌ | ❌ |
+| Group permission (all flags) | ✅ | ❌ | ❌ | ❌ |
+| **Admin, no relation** | **❌** | **❌** | **❌** | ✅ |
+| **Admin, view-only permission** | **❌** | **❌** | **❌** | ✅ |
+| Admin with user permission / responsibility | like a user with the same permission / responsibility | | | ✅ |
+
+## Difference to `master`
+
+| Action by an admin without relation to a private entry | `master` | feature branch |
+|---|---|---|
+| `GET /media-entries/:id` | 200 | 403 |
+| `POST .../meta-data/...`, `.../full_texts/` | 200 | 403 |
+| `POST/GET .../conf-links/` | 200 | 403 |
+| `PUT .../perms/resources/` (make public) | 200 | 403 |
+| `PUT .../perms/resources/` (take over responsibility) | 200 | 403 |
+| `POST .../perms/users/:own_id` (grant oneself) | 200 | 403 |
+| `DELETE /media-entries/:id`, `DELETE /collections/:id` | 200 | 403 |
+| `PUT /collections/:id`, collection arcs | 200 | 403 |
+| `PUT /admin/media-entries/:id` (soft delete) | 500 ¹ | 200 |
+| `PUT /admin/collections/:id`, `POST/PUT/DELETE /admin/full_texts/:id` | 200 | 200 |
+
+1. A bug on both branches, fixed here (see [Fix found while testing](#fix-found-while-testing)).
+
+## Tests
+
+`spec/api/admin_modification_scope_spec.rb` ensures the rule.
+
+**User routes.** Each modification runs three times:
+
+1. as the responsible user (control: 200 and the data changed, so the request itself is valid)
+2. as an admin without relation (403, data unchanged)
+3. as an admin with a view-only user permission (403, data unchanged)
+
+| Request | Required permission |
+|---|---|
+| `POST /media-entries/:id/meta-data/:meta_key_id/json/` | `edit_metadata` |
+| `POST /media-entries/:id/full_texts/` | `edit_metadata` |
+| `POST /media-entries/:id/conf-links/` | `edit_permissions` |
+| `PUT /media-entries/:id/perms/resources/` (make public) | `edit_permissions` |
+| `PUT /media-entries/:id/perms/resources/` (take over responsibility) | responsibility |
+| `POST /media-entries/:id/perms/users/:user_id` (grant oneself) | `edit_permissions` |
+| `DELETE /media-entries/:id` | `edit_permissions` |
+| `PUT /collections/:id` | `edit_metadata_and_relations` |
+| `POST /collections/:id/collection-arcs/:child_id` | `edit_metadata_and_relations` |
+| `POST /collections/:id/media-entry-arcs/:media_entry_id` | `edit_metadata_and_relations` |
+| `PUT /collections/:id/perms/resources/` (take over responsibility) | responsibility |
+| `DELETE /collections/:id` | `edit_permissions` |
+
+**Admin routes.** The responsible user gets 403 and the data stays unchanged. An admin without
+relation gets 200 and the data is changed.
+
+- `PUT /admin/media-entries/:id` (soft delete)
+- `PUT /admin/collections/:id`
+- `POST /admin/full_texts/:id`
+- `PUT /admin/full_texts/:id`
+- `DELETE /admin/full_texts/:id`
+
+**Related specs:**
+
+- `spec/api/admin_access_spec.rb`: session admin, listings and derived resources
+- `spec/api/media_resources_access_spec.rb`: read matrix with the admin variants
+- `spec/shared/resource_access.rb` and the legacy specs: user/admin × responsible / permission /
+  no permission
+
+**Result:** `spec/api/admin_modification_scope_spec.rb` has 41 examples and 0 failures. Against
+`master`, the admin examples on user routes would fail: the master probe above shows 200 for
+the same requests.
+
+## Fix found while testing
+
+`PUT /api-v2/admin/media-entries/:id` (`{deleted_at: ...}`) always returned **500**, including
+on `master`. The update succeeded, but the response schema `schema_export_adm_media_entry`
+declared `deleted_at` as `IsoOffsetDateTimeString` while the DB returns an `Instant`, so the
+transaction was rolled back.
+
+Fixed in `src/madek/api/resources/media_entries.clj`: `deleted_at` is now `s/Any` in the
+response schema, like the other timestamps. No spec covered this route before.
