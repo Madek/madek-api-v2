@@ -64,6 +64,7 @@
       (get (get-madek-session-cookie-name)) :value))
 
 (defn- handle [request handler]
+  (debug 'handle request)
   (if-let [cookie-value (and (session-enabled?) (get-cookie-value request))]
     (let [token-hash (token-hash cookie-value)
           tx (:tx request)]

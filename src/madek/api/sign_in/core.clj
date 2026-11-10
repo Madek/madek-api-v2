@@ -5,6 +5,7 @@
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
+   [logbug.debug :as debug]
    [madek.api.anti-csrf.back :refer [anti-csrf-token]]
    [madek.api.anti-csrf.csrf-handler :refer [convert-params]]
    [madek.api.anti-csrf.simple_login :refer [sign-in-view]]
@@ -94,3 +95,5 @@
                                    {:schema {:msg s/Str}
                                     :examples csrf-error-examples}}}})
 
+;### Debug ####################################################################
+(debug/debug-ns *ns*)

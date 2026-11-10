@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [environ.core :refer [env]]
+   [logbug.debug :as debug]
    [madek.api.anti-csrf.csrf-handler :as csrf]
    [madek.api.authentication :as authentication]
    [madek.api.db.core :as db]
@@ -397,3 +398,5 @@
                   "USER" (middleware app-user))]
     (http-server/start handler options)))
 
+;### Debug ####################################################################
+(debug/debug-ns *ns*)

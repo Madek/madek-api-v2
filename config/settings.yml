@@ -1,12 +1,8 @@
 madek_master_secret: 'secret'
 
-# madek_api_session_enabled: true (default; set to false to disable session authentication)
+# madek_api_session_enabled: true is hardcoded now
 # madek_session_cookie_name 'madek-session' is hardcoded now
 madek_session_validity_duration: 7 days
-
-# Origins allowed to make cross-origin (CORS) requests with credentials,
-# e.g. ["https://madek.example.com"]. Default: none.
-# madek_api_cors_allowed_origins: []
 
 
 database: {}
