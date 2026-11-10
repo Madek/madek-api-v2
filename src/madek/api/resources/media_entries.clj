@@ -302,7 +302,7 @@
 
 (def schema_export_adm_media_entry
   (merge schema_export_media_entry
-         {:deleted_at (s/maybe IsoOffsetDateTimeString)}))
+         {:deleted_at s/Any}))
 
 ;; -----------------------
 
