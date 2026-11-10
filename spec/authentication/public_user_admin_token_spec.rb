@@ -40,7 +40,7 @@ describe "1) Test status-code as public-user" do
       "/api-v2/usage-terms/" => 200,
       "/api-v2/collections/?page=1&size=1" => 200,
       "/api-v2/keywords/?page=1&size=2" => 200,
-      "/api-v2/groups/" => 200,
+      "/api-v2/groups/" => 401,
 
       "/api-v2/auth-info/" => 401,
       "/api-v2/edit_sessions/?page=1&size=1" => 401,

@@ -51,62 +51,45 @@
         (sd/response_ok result))
       (sd/response_failed "Not found" 404))))
 
+(defn- find-meta-datum-person
+  "Returns the meta_data_people row :meta_datum_person_id if it belongs to the
+  people meta-datum :meta_key_id of the authorized media-resource, else nil."
+  [req]
+  (let [{:keys [meta_key_id meta_datum_person_id]} (-> req :parameters :path)
+        tx (:tx req)]
+    (when-let [md (db-get-meta-data (:media-resource req) meta_key_id MD_TYPE_PEOPLE tx)]
+      (-> (sql/select :*)
+          (sql/from :meta_data_people)
+          (sql/where [:= :meta_data_people.id meta_datum_person_id]
+                     [:= :meta_data_people.meta_datum_id (:id md)])
+          sql-format
+          (->> (jdbc/execute-one! tx))))))
+
+(defn- find-row-by-id [id table tx]
+  (when id
+    (-> (sql/select :*)
+        (sql/from table)
+        (sql/where [:= :id id])
+        sql-format
+        (->> (jdbc/execute-one! tx)))))
+
 (defn handle_get-meta-datum-person
   [req]
-  (let [mr (-> req :media-resource)
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        meta-datum-person-id (-> req :parameters :path :meta_datum_person_id)
-        tx (:tx req)]
-
-    (if-let [md (db-get-meta-data mr meta-key-id MD_TYPE_PEOPLE tx)]
-      (let [md-id (-> md :id)
-            result (-> (sql/select :*)
-                       (sql/from :people)
-                       (sql/where [:= :people.id (:person_id meta-datum-person-id)])
-                       sql-format
-                       (->> (jdbc/execute-one! tx)))]
-        (sd/response_ok result))
-      (sd/response_failed "Not found" 404))))
+  (if-let [mdp (find-meta-datum-person req)]
+    (sd/response_ok mdp)
+    (sd/response_failed "Not found" 404)))
 
 (defn handle_get-person-for-meta-datum-person
   [req]
-  (let [tx (:tx req)
-        mr (-> req :media-resource)
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        meta-datum-person-id (-> req :parameters :path :meta_datum_person_id)
-        mdp (-> (sql/select :*)
-                (sql/from :meta_data_people)
-                (sql/where [:= :meta_data_people.id meta-datum-person-id])
-                sql-format
-                (->> (jdbc/execute-one! tx)))]
-    (if (and mr meta-key-id mdp)
-      (let [result (-> (sql/select :*)
-                       (sql/from :people)
-                       (sql/where [:= :people.id (:person_id mdp)])
-                       sql-format
-                       (->> (jdbc/execute-one! tx)))]
-        (sd/response_ok result))
-      (sd/response_failed "Not found" 404))))
+  (if-let [person (some-> (find-meta-datum-person req) :person_id (find-row-by-id :people (:tx req)))]
+    (sd/response_ok person)
+    (sd/response_failed "Not found" 404)))
 
 (defn handle_get-role-for-meta-datum-person
   [req]
-  (let [tx (:tx req)
-        mr (-> req :media-resource)
-        meta-key-id (-> req :parameters :path :meta_key_id)
-        meta-datum-person-id (-> req :parameters :path :meta_datum_person_id)
-        mdp (-> (sql/select :*)
-                (sql/from :meta_data_people)
-                (sql/where [:= :meta_data_people.id meta-datum-person-id])
-                sql-format
-                (->> (jdbc/execute-one! tx)))]
-    (if (and mr meta-key-id mdp)
-      (let [result (-> (sql/select :*)
-                       (sql/from :roles)
-                       (sql/where [:= :roles.id (:role_id mdp)])
-                       sql-format
-                       (->> (jdbc/execute-one! tx)))]
-        (sd/response_ok result))
-      (sd/response_failed "Not found" 404))))
+  (if-let [role (some-> (find-meta-datum-person req) :role_id (find-row-by-id :roles (:tx req)))]
+    (sd/response_ok role)
+    (sd/response_failed "Not found" 404)))
 
 ;;  #### Class-Functions ######################################################
 

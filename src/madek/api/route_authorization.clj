@@ -53,8 +53,7 @@
    [:get "/api-v2/people/:id"] "public people data without internal fields"
    [:get "/api-v2/roles/"] reference-data
    [:get "/api-v2/roles/:id"] reference-data
-   [:get "/api-v2/groups/"] reference-data
-   [:get "/api-v2/groups/:id"] reference-data
+   [:get "/api-v2/delegations/:id"] "public delegation data: id, name and description only"
    [:get "/api-v2/usage-terms/"] reference-data
    [:get "/api-v2/usage-terms/:id"] reference-data
    [:get "/api-v2/vocabularies/"] "reference data, filtered by vocabulary permissions"

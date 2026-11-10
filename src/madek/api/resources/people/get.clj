@@ -52,7 +52,8 @@
    :institutional_directory_inactive_since (s/maybe s/Any)})
 
 (def public-schema
-  (dissoc schema :admin_comment :identification_info))
+  (dissoc schema :admin_comment :identification_info :institutional_id
+          :institutional_directory_infos :institutional_directory_inactive_since))
 
 (defn- build-handler [query-fn]
   (fn [{{{id :id} :path} :parameters tx :tx}]

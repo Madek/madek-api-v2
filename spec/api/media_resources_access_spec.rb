@@ -43,18 +43,67 @@ describe "Access parity with the legacy API: media-resources" do
 
     # The legacy `/meta-data-people/:id` is not authorized at all (leak); api-v2
     # has to apply the rules of the parent media-entry instead.
-    # `.../meta-data-people/:id` itself answers 500 for an existing id (handler
-    # bug), so the access decision is checked on its `/person` sub-resource.
     context "with a meta-datum-person" do
       let(:meta_datum) { FactoryBot.create :meta_datum_people, media_entry: media_resource }
       let(:meta_datum_person) { meta_datum.meta_data_people.first }
+      let(:base_path) do
+        "/api-v2/media-entries/#{media_resource.id}/meta-data/#{meta_datum.meta_key_id}" \
+          "/meta-data-people/#{meta_datum_person.id}"
+      end
+
+      describe "GET /media-entries/:id/meta-data/:meta_key_id/meta-data-people/:id" do
+        let(:path) { base_path }
+        include_examples :legacy_media_resource_access
+
+        it "returns the meta-datum-person" do
+          media_resource.update_columns(get_metadata_and_previews: true)
+          response = anonymous_client.get(path)
+          expect(response.status).to eq 200
+          expect(response.body).to include("id" => meta_datum_person.id,
+            "meta_datum_id" => meta_datum.id, "person_id" => meta_datum_person.person_id)
+        end
+      end
 
       describe "GET /media-entries/:id/meta-data/:meta_key_id/meta-data-people/:id/person" do
-        let(:path) do
-          "/api-v2/media-entries/#{media_resource.id}/meta-data/#{meta_datum.meta_key_id}" \
-            "/meta-data-people/#{meta_datum_person.id}/person"
-        end
+        let(:path) { "#{base_path}/person" }
         include_examples :legacy_media_resource_access
+      end
+
+      describe "GET /media-entries/:id/meta-data/:meta_key_id/meta-data-people/:id/role" do
+        let(:meta_datum) { FactoryBot.create :meta_datum_people_with_roles, media_entry: media_resource }
+        let(:meta_datum_person) { meta_datum.meta_data_people.find { |mdp| mdp.role_id.present? } }
+        before { media_resource.update_columns(get_metadata_and_previews: true) }
+
+        it "returns the role of the meta-datum-person" do
+          response = anonymous_client.get("#{base_path}/role")
+          expect(response.status).to eq 200
+          expect(response.body["id"]).to eq meta_datum_person.role_id
+        end
+
+        it "responds 404 when the meta-datum-person has no role" do
+          without_role = meta_datum.meta_data_people.find { |mdp| mdp.role_id.nil? }
+          path = base_path.sub(meta_datum_person.id, without_role.id)
+          expect(anonymous_client.get("#{path}/role").status).to eq 404
+        end
+      end
+
+      # A meta-datum-person must not be reachable through another (public)
+      # media-entry that has a people meta-datum of the same meta-key.
+      describe "a meta-datum-person of another media-entry" do
+        let(:public_entry) do
+          FactoryBot.create :media_entry, responsible_user: owner, get_metadata_and_previews: true
+        end
+        let(:path_via_public_entry) do
+          FactoryBot.create :meta_datum_people, media_entry: public_entry, meta_key: meta_datum.meta_key
+          "/api-v2/media-entries/#{public_entry.id}/meta-data/#{meta_datum.meta_key_id}" \
+            "/meta-data-people/#{meta_datum_person.id}"
+        end
+
+        ["", "/person", "/role"].each do |suffix|
+          it "is not found via #{suffix.presence || "the base route"}" do
+            expect(anonymous_client.get("#{path_via_public_entry}#{suffix}").status).to eq 404
+          end
+        end
       end
     end
 

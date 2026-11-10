@@ -116,6 +116,30 @@
    (s/optional-key :notify_all_members) s/Bool
    (s/optional-key :beta_tester_notifications) s/Bool})
 
+(def public-delegation-keys [:id :name :description])
+
+(def schema_public_delegation
+  {:id s/Uuid
+   :name s/Str
+   :description (s/maybe s/Str)})
+
+(defn handle_get-public-delegation
+  [req]
+  (sd/response_ok (select-keys (:delegation req) public-delegation-keys)))
+
+(def user-routes
+  ["/"
+   {:openapi {:tags ["delegations"]}}
+   ["delegations/:id"
+    {:get {:summary (sd/?no-auth? "Get delegation by id (id, name and description only).")
+           :handler handle_get-public-delegation
+           :middleware [(wwrap-find-delegation :id :id true)]
+           :coercion reitit.coercion.schema/coercion
+           :parameters {:path {:id s/Uuid}}
+           :responses {200 {:description "Returns the public fields of the delegation."
+                            :body schema_public_delegation}
+                       404 (sd/create-error-message-response "Not Found." "No such entity in :delegations as :id with <id>")}}}]])
+
 ; TODO more checks
 ; TODO response coercion
 ; TODO docu

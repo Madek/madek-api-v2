@@ -28,7 +28,9 @@
    :people.institutional_directory_inactive_since])
 
 (def internal-people-keys
-  #{:people.admin_comment :people.identification_info})
+  #{:people.admin_comment :people.identification_info
+    :people.institutional_id :people.institutional_directory_infos
+    :people.institutional_directory_inactive_since})
 
 (def public-people-select-keys
   (vec (remove internal-people-keys people-select-keys)))

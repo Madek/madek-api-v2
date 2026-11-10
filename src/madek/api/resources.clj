@@ -140,6 +140,7 @@
    keywords/query-routes
    meta-keys/query-routes
    people/user-routes
+   delegations/user-routes
 
    ; collections
    collections/ring-routes

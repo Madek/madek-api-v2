@@ -114,7 +114,7 @@
       :handler media-file/get-media-file-data-stream
       :middleware [wrap-find-and-add-media-file-by-media-entry-id
                    jqh/ring-wrap-add-media-resource
-                   jqh/ring-wrap-authorization-download]
+                   media-files.authorization/wrap-auth-media-file-full_size]
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:media_entry_id s/Str}}
       :responses {200 {:description "Returns the media-file data-stream for media-entry id."

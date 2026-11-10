@@ -5,6 +5,7 @@
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [logbug.debug :as debug]
+            [madek.api.authorization :refer [wrap-authorized-user]]
             [madek.api.resources.groups.shared :as groups]
             [madek.api.resources.groups.users :as group-users]
             [madek.api.resources.shared.core :as sd]
@@ -227,6 +228,7 @@
     ["groups/" {:get {:summary "Index of groups"
                       :description "Index of groups "
                       :handler index
+                      :middleware [wrap-authorized-user]
                       :parameters {:query ::group-query-def}
                       :coercion spec/coercion
                       :responses {200 {:description "Return as list of groups."
@@ -237,6 +239,7 @@
                          :swagger {:produces "application/json"}
                          :content-type "application/json"
                          :handler handle_get-group
+                         :middleware [wrap-authorized-user]
                          :coercion reitit.coercion.schema/coercion
                          :parameters {:path {:id s/Uuid}}
                          :responses {200 {:description "OK - Returns a list of group users OR an empty list."
