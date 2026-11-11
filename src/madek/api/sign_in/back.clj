@@ -223,14 +223,11 @@
 
 (defn create-user-session
   [user authentication_system_id
-   {:as request tx :tx settings :settings}
+   {:as request tx :tx}
    & {:keys [user-session]
       :or {user-session {}}}]
   "Create and returns the user_session. The map includes additionally
   the original token to be used as the value of the session cookie."
-  (when (:sessions_force_uniqueness settings)
-    (jdbc/delete! tx :user_sessions ["user_id = ?" (:id user)]))
-
   (let [token (str (UUID/randomUUID))
         token-hash (token-hash token)
         user-session (->> (merge
@@ -255,7 +252,6 @@
              invisible-pw :invisible-password,
              return-to :return-to,
              :as form-params} :form-params-raw,
-    settings :settings,
     :as request}]
   (if-let [user (password-checked-user user-param password)]
     (let [user-session (create-user-session
