@@ -48,14 +48,32 @@
       (handler (assoc request :media-resource collection))
       (sd/response_not_found "No such collection."))))
 
-(defn- wrap-authorize-child-view
-  "Requires view rights on the child collection (path param :child_id)."
-  [handler]
-  (fn [request]
-    (if-let [child (mrh/get-media-resource request :child_id "collections" "Collection" (:tx request))]
-      (mrh/authorize-request-for-media-resource
-       (assoc request :media-resource child) (fn [_] (handler request)) :view)
-      (sd/response_not_found "No such collection."))))
+(defn- find-child-collection
+  "The child collection (path param :child_id); with include-soft-deleted?
+  also a soft-deleted one, as reading an arc to it stays possible."
+  [request include-soft-deleted?]
+  (if include-soft-deleted?
+    (some-> (jdbc/execute-one! (:tx request)
+                               (-> (sql/select :*)
+                                   (sql/from :collections)
+                                   (sql/where [:= :id (-> request :parameters :path :child_id to-uuid)])
+                                   sql-format))
+            (assoc :type "Collection" :table-name "collections"))
+    (mrh/get-media-resource request :child_id "collections" "Collection" (:tx request))))
+
+(defn- authorize-child-view
+  "Returns a middleware requiring view rights on the child collection."
+  [include-soft-deleted?]
+  (fn [handler]
+    (fn [request]
+      (if-let [child (find-child-collection request include-soft-deleted?)]
+        (mrh/authorize-request-for-media-resource
+         (assoc request :media-resource child) (fn [_] (handler request)) :view)
+        (sd/response_not_found "No such collection.")))))
+
+(def ^:private wrap-authorize-child-view (authorize-child-view false))
+
+(def ^:private wrap-authorize-child-view-incl-soft-deleted (authorize-child-view true))
 
 (def ^:private view-parent-middleware
   [wrap-add-parent-collection jqh/ring-wrap-authorization-view])
@@ -257,7 +275,7 @@
      :get
      {:summary "Get collection collection arcs."
       :handler handle_arc-by-parent-and-child
-      :middleware view-parent-middleware
+      :middleware (conj view-parent-middleware wrap-authorize-child-view-incl-soft-deleted)
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:parent_id s/Uuid

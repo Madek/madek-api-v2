@@ -79,4 +79,26 @@ describe "Collection-collection arcs visibility" do
       expect(get_arc(session_client(owner), private_arc).status).to eq 200
     end
   end
+
+  describe "GET /collections/:parent_id/collection-arcs/:child_id" do
+    def get_arc(client, arc)
+      client.get("/api-v2/collections/#{arc.parent_id}/collection-arcs/#{arc.child_id}")
+    end
+
+    it "returns an arc between public collections to anonymous" do
+      expect(get_arc(anonymous_client, public_arc).status).to eq 200
+    end
+
+    it "does not return an arc with a private child to anonymous" do
+      expect(get_arc(anonymous_client, private_arc).status).to eq 401
+    end
+
+    it "does not return an arc with a private child to another user" do
+      expect(get_arc(session_client(other_user), private_arc).status).to eq 403
+    end
+
+    it "returns the arc with the private child to the responsible user" do
+      expect(get_arc(session_client(owner), private_arc).status).to eq 200
+    end
+  end
 end
