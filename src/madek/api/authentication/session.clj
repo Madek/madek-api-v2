@@ -9,8 +9,7 @@
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.utils.config :refer [get-config]]
    [next.jdbc :as jdbc]
-   [pandect.core]
-   [taoensso.timbre :refer [debug]]))
+   [pandect.core]))
 
 (defn- get-madek-session-cookie-name []
   (or (-> (get-config) :madek_session_cookie_name keyword)
@@ -64,7 +63,6 @@
       (get (get-madek-session-cookie-name)) :value))
 
 (defn- handle [request handler]
-  (debug 'handle request)
   (if-let [cookie-value (and (session-enabled?) (get-cookie-value request))]
     (let [token-hash (token-hash cookie-value)
           tx (:tx request)]
