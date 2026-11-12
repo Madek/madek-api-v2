@@ -62,12 +62,28 @@
                                          (:tx req))]
     (sd/response_ok db-result)))
 
+(defn- where-conf-link-of-resource
+  "Restricts a query to the link in the path that belongs to the authorized
+  media-resource of the request."
+  [query req]
+  (let [mr (:media-resource req)]
+    (sql/where query
+               [:= :id (-> req :parameters :path :id)]
+               [:= :resource_id (:id mr)]
+               [:= :resource_type (:type mr)])))
+
+(defn- find-conf-link [req]
+  (jdbc/execute-one! (:tx req)
+                     (-> (sql/select :*)
+                         (sql/from :confidential_links)
+                         (where-conf-link-of-resource req)
+                         sql-format)))
+
 (defn handle_get-conf-link
   [req]
-  (let [id (-> req :parameters :path :id)]
-    (if-let [db-result (dbh/query-eq-find-one :confidential_links :id id (:tx req))]
-      (sd/response_ok db-result)
-      (sd/response_not_found "No such confidential link"))))
+  (if-let [db-result (find-conf-link req)]
+    (sd/response_ok db-result)
+    (sd/response_not_found "No such confidential link")))
 
 (defn handle_update-conf-link
   [req]
@@ -78,7 +94,7 @@
             upd-data (dbh/try-instant-on-presence data :expires_at)
             query (-> (sql/update :confidential_links)
                       (sql/set upd-data)
-                      (sql/where [:= :id id])
+                      (where-conf-link-of-resource req)
                       (sql/returning :*)
                       sql-format)
             upd-result (jdbc/execute-one! (:tx req) query)]
@@ -86,7 +102,7 @@
         (sd/logwrite req (str "handle_update-conf-link:" "\nupdate data: " upd-data "\nresult: " upd-result))
         (if upd-result
           (sd/response_ok upd-result)
-          (sd/response_failed (str "Failed update confidential link: " id) 406))))
+          (sd/response_not_found (str "No such confidential link: " id)))))
 
     (catch Exception ex (sd/response_exception ex))))
 
@@ -95,9 +111,9 @@
   (try
     (catcher/with-logging {}
       (let [id (-> req :parameters :path :id)]
-        (if-let [del-data (dbh/query-eq-find-one :confidential_links :id id (:tx req))]
+        (if-let [del-data (find-conf-link req)]
           (let [query (-> (sql/delete-from :confidential_links)
-                          (sql/where [:= :id id])
+                          (where-conf-link-of-resource req)
                           (sql/returning :*)
                           sql-format)
 

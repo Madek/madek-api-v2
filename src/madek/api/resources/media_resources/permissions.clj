@@ -207,6 +207,18 @@
                                                     mr-type tx))))
         boolean)))
 
+(defn responsible-by-auth-entity?
+  "True if the auth-entity is the responsible user or a member of the
+   responsible delegation of the resource."
+  [resource auth-entity tx]
+  (let [auth-entity-id (:id auth-entity)
+        delegation-id (:responsible_delegation_id resource)]
+    (boolean
+     (and (= "User" (:type auth-entity))
+          (or (= auth-entity-id (:responsible_user_id resource))
+              (and delegation-id
+                   (some #(= delegation-id %) (c/delegation-ids auth-entity-id tx))))))))
+
 (defn viewable-by-auth-entity? [resource auth-entity mr-type tx]
   (permission-by-auth-entity? resource
                               auth-entity

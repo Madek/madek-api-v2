@@ -97,13 +97,37 @@
    "edit_metadata"
    "edit_permissions"])
 
+;; ### responsibility ###############################################
+
+(def ^:private responsibility-keys
+  [:responsible_user_id :responsible_delegation_id :clipboard_user_id])
+
+(defn- changes-responsibility? [media-resource perm-data]
+  (some (fn [k] (and (contains? perm-data k)
+                     (not= (get perm-data k) (get media-resource k))))
+        responsibility-keys))
+
+(defn- wrap-authorize-responsibility-change
+  "Only the responsible user or members of the responsible delegation may
+   change responsible_user_id, responsible_delegation_id or
+   clipboard_user_id. Being an admin grants nothing on user routes."
+  [handler]
+  (fn [{media-resource :media-resource :as request}]
+    (if (or (not (changes-responsibility? media-resource (-> request :parameters :body)))
+            (mr-permissions/responsible-by-auth-entity?
+             media-resource (:authenticated-entity request) (:tx request)))
+      (handler request)
+      {:status 403
+       :body {:message "Only the responsible user or members of the responsible delegation may change the responsibility."}})))
+
 ;; ### handler ######################################################
 
 (def me.resources {:summary "Update media-entry entity permissions"
                    :description (str "Valid perm_name values are" valid_permission_names)
                    :handler handle_update-ressource-perms
                    :middleware [jqh/ring-wrap-add-media-resource
-                                jqh/ring-wrap-authorization-edit-permissions]
+                                jqh/ring-wrap-authorization-edit-permissions
+                                wrap-authorize-responsibility-change]
                    :coercion reitit.coercion.schema/coercion
                    :parameters {:path {:media_entry_id s/Uuid}
                                 :body schema_update-media-entry-perms}
@@ -158,7 +182,8 @@
                     :description (str "Valid perm_name values are" valid_permission_names)
                     :handler handle_update-ressource-perms
                     :middleware [jqh/ring-wrap-add-media-resource
-                                 jqh/ring-wrap-authorization-edit-permissions]
+                                 jqh/ring-wrap-authorization-edit-permissions
+                                 wrap-authorize-responsibility-change]
                     :coercion reitit.coercion.schema/coercion
                     :parameters {:path {:collection_id s/Uuid}
                                  :body schema_update-collection-perms}

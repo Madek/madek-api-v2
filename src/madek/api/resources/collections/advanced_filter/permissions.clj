@@ -1,6 +1,9 @@
 (ns madek.api.resources.collections.advanced-filter.permissions
   (:require
-   [honey.sql.helpers :as sql]))
+   [honey.sql.helpers :as sql]
+   [madek.api.resources.media-entries.advanced-filter.permissions :refer [delegation-ids-subquery]]
+   [madek.api.utils.auth :as auth]
+   [madek.api.utils.helper :refer [to-uuid]]))
 
 ;(defn- api-client-authorized-condition [perm id]
 ;  [:or
@@ -52,6 +55,25 @@
    (when (or (= perm "get_metadata_and_previews")
              (= perm "edit_metadata_and_relations"))
      (group-permission-for-user-exists-condition perm id))])
+
+(defn- user-view-condition [user-id]
+  [:or
+   [:= :collections.get_metadata_and_previews true]
+   [:= :collections.responsible_user_id user-id]
+   [:in :collections.responsible_delegation_id (delegation-ids-subquery user-id)]
+   (user-permission-exists-condition "get_metadata_and_previews" user-id)
+   (group-permission-for-user-exists-condition "get_metadata_and_previews" user-id)])
+
+(defn filter-by-view-permission
+  "Restricts the query to collections the client may view: public ones, and
+  for signed-in users additionally those they are responsible for or have
+  view permission on. Admins are only unrestricted on admin routes."
+  [sqlmap {:keys [authenticated-entity] :as request}]
+  (cond
+    (auth/admin-route-authorized? request) sqlmap
+    (= "User" (:type authenticated-entity)) (sql/where sqlmap (user-view-condition
+                                                               (to-uuid (:id authenticated-entity))))
+    :else (sql/where sqlmap [:= :collections.get_metadata_and_previews true])))
 
 (defn- filter-by-permission-for-auth-entity [sqlmap permission authenticated-entity]
   (case (:type authenticated-entity)

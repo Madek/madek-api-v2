@@ -5,7 +5,6 @@
    [clojure.walk :refer [keywordize-keys]]
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
-   [logbug.debug :as debug]
    [madek.api.anti-csrf.back :refer [anti-csrf-token]]
    [madek.api.anti-csrf.csrf-handler :refer [convert-params]]
    [madek.api.anti-csrf.simple_login :refer [sign-in-view]]
@@ -96,4 +95,6 @@
                                     :examples csrf-error-examples}}}})
 
 ;### Debug ####################################################################
-(debug/debug-ns *ns*)
+; Do not enable debug-ns here: it logs the arguments of post-sign-in,
+; including the password.
+;(debug/debug-ns *ns*)

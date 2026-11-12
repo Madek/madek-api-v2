@@ -200,48 +200,20 @@ shared_context :json_client_for_authenticated_token_user_write do |ctx|
   include_context :json_client_for_authenticated_token_base, ctx, false, false, true
 end
 
-shared_context :json_client_for_authenticated_api_client do |ctx|
-  let :api_client do
-    FactoryBot.create :api_client, password: "TOPSECRET"
-  end
-
-  let :entity do
-    api_client
-  end
-
-  include_context :json_client_for_authenticated_entity
-
-  describe "JSON `client` for authenticated `api_client`" do
-    include_context ctx if ctx
-  end
-end
-
 shared_context :authenticated_json_client do |_ctx|
-  # if rand < 0.5
-
-  # TODO token auth
-  # TODO session-auth
-
   let :user do
     FactoryBot.create :user, password: "TOPSECRET"
   end
-  let :api_client do
-    nil
+
+  let :authenticated_json_client_token do
+    ApiToken.create user: user, scope_read: true, scope_write: true
   end
-  # else
-  #  let :user do
-  #    nil
-  #  end
-  #  let :api_client do
-  #    FactoryBot.create :api_client, password: 'TOPSECRET'
-  #  end
-  # end
 
   let :client_entity do
-    user # || api_client
+    user
   end
 
   let :authenticated_json_client do
-    plain_faraday_json_client
+    wtoken_header_plain_faraday_json_client(authenticated_json_client_token.token)
   end
 end

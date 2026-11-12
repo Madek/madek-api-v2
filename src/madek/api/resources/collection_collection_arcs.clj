@@ -5,8 +5,12 @@
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
    [madek.api.resources.collection-media-entry-arcs :refer [schema_collection-collection-arc-export]]
+   [madek.api.resources.collections.advanced-filter.permissions :as coll-perms]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.resources.shared.media_resource_helper :as mrh]
+   [madek.api.utils.auth :as auth]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
    [madek.api.utils.helper :refer [to-uuid]]
@@ -17,11 +21,72 @@
    [schema.core :as s]
    [spec-tools.core :as st]))
 
+;### authorization ############################################################
+
+(defn- filter-by-viewable-collections
+  "Restricts arcs to those whose parent and child collection the client may
+  view. Admins are only unrestricted on admin routes."
+  [sqlmap req]
+  (if (auth/admin-route-authorized? req)
+    sqlmap
+    (sql/where sqlmap
+               [:in :collection_collection_arcs.parent_id
+                (-> (sql/select :collections.id)
+                    (sql/from :collections)
+                    (coll-perms/filter-by-view-permission req))]
+               [:in :collection_collection_arcs.child_id
+                (-> (sql/select :collections.id)
+                    (sql/from :collections)
+                    (coll-perms/filter-by-view-permission req))])))
+
+(defn- wrap-add-parent-collection
+  "Adds the parent collection (path param :parent_id) as :media-resource, so
+  that the jqh/ring-wrap-authorization-* wrappers can authorize against it."
+  [handler]
+  (fn [request]
+    (if-let [collection (mrh/get-media-resource request :parent_id "collections" "Collection" (:tx request))]
+      (handler (assoc request :media-resource collection))
+      (sd/response_not_found "No such collection."))))
+
+(defn- find-child-collection
+  "The child collection (path param :child_id); with include-soft-deleted?
+  also a soft-deleted one, as reading an arc to it stays possible."
+  [request include-soft-deleted?]
+  (if include-soft-deleted?
+    (some-> (jdbc/execute-one! (:tx request)
+                               (-> (sql/select :*)
+                                   (sql/from :collections)
+                                   (sql/where [:= :id (-> request :parameters :path :child_id to-uuid)])
+                                   sql-format))
+            (assoc :type "Collection" :table-name "collections"))
+    (mrh/get-media-resource request :child_id "collections" "Collection" (:tx request))))
+
+(defn- authorize-child-view
+  "Returns a middleware requiring view rights on the child collection."
+  [include-soft-deleted?]
+  (fn [handler]
+    (fn [request]
+      (if-let [child (find-child-collection request include-soft-deleted?)]
+        (mrh/authorize-request-for-media-resource
+         (assoc request :media-resource child) (fn [_] (handler request)) :view)
+        (sd/response_not_found "No such collection.")))))
+
+(def ^:private wrap-authorize-child-view (authorize-child-view false))
+
+(def ^:private wrap-authorize-child-view-incl-soft-deleted (authorize-child-view true))
+
+(def ^:private view-parent-middleware
+  [wrap-add-parent-collection jqh/ring-wrap-authorization-view])
+
+(def ^:private edit-parent-middleware
+  [wrap-add-parent-collection jqh/ring-wrap-authorization-edit-metadata])
+
 (defn arc-query [request]
   (-> (sql/select :*)
       (sql/from :collection_collection_arcs)
       (sql/order-by [:parent_id :asc] [:child_id :asc])
       (sql/where [:= :id (-> request :parameters :path :id to-uuid)])
+      (filter-by-viewable-collections request)
       sql-format))
 
 (defn handle_get-arc [req]
@@ -46,15 +111,16 @@
       (sd/response_ok arc)
       (sd/response_failed "No such collection-collection-arc" 404))))
 
-(defn arcs-query [query-params]
+(defn arcs-query [query-params req]
   (-> (sql/select :*)
       (sql/from :collection_collection_arcs)
       (sql/order-by [:parent_id :asc] [:child_id :asc])
       (dbh/build-query-param query-params :child_id)
-      (dbh/build-query-param query-params :parent_id)))
+      (dbh/build-query-param query-params :parent_id)
+      (filter-by-viewable-collections req)))
 
 (defn handle_query-arcs [req]
-  (let [query (arcs-query (-> req :parameters :query))
+  (let [query (arcs-query (-> req :parameters :query) req)
         db-result (pagination-handler req query :collection-collection-arcs)]
     (sd/response_ok db-result)))
 
@@ -152,7 +218,6 @@
                                                       :description "A list of collection-collection-arcs"}))
 (sa/def ::response-groups-body (sa/keys :opt-un [:list-of/collection-collection-arcs ::sp/data ::sp/pagination]))
 
-; TODO add permission checks
 (def ring-routes
   ["/collection-collection-arcs"
    {:openapi {:tags ["api/collections"]}}
@@ -165,7 +230,6 @@
       :responses {200 {:description "Returns the collection collection arcs."
                        :body ::response-groups-body}}}}]
    ; TODO rename param to collection_id
-   ; TODO add permission checks
    ["/:id"
     {:get
      {:summary (sd/?no-auth? "Get collection collection arcs.")
@@ -178,7 +242,6 @@
                   404 {:description "Collection collection arc not found."
                        :body s/Any}} ; TODO response coercion
       }}]])
-; TODO rename param use middleware for permissions
 (def collection-routes
   ["/collections/:parent_id"
    {:openapi {:tags ["api/collections"]}}
@@ -195,8 +258,9 @@
    ;]
    ["/collection-arcs/:child_id"
     {:post
-     {:summary (sd/?no-auth? (sd/sum_todo "Create collection collection arc"))
+     {:summary (sd/sum_todo "Create collection collection arc")
       :handler handle_create-col-col-arc
+      :middleware (conj edit-parent-middleware wrap-authorize-child-view)
       :swagger {:produces "application/json"
                 :consumes "application/json"}
       :coercion reitit.coercion.schema/coercion
@@ -209,8 +273,9 @@
                        :body s/Any}}}
 
      :get
-     {:summary (sd/?no-auth? "Get collection collection arcs.")
+     {:summary "Get collection collection arcs."
       :handler handle_arc-by-parent-and-child
+      :middleware (conj view-parent-middleware wrap-authorize-child-view-incl-soft-deleted)
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:parent_id s/Uuid
@@ -223,8 +288,9 @@
 
      ; TODO col col arc update tests
      :put
-     {:summary (sd/?no-auth? (sd/sum_usr "Update collection collection arc"))
+     {:summary (sd/sum_usr "Update collection collection arc")
       :handler handle_update-arc
+      :middleware edit-parent-middleware
       :swagger {:produces "application/json"
                 :consumes "application/json"}
       :coercion reitit.coercion.schema/coercion
@@ -240,8 +306,9 @@
 
      ; TODO col col arc delete tests
      :delete
-     {:summary (sd/?no-auth? (sd/sum_usr "Delete collection collection arc"))
+     {:summary (sd/sum_usr "Delete collection collection arc")
       :handler handle_delete-arc
+      :middleware edit-parent-middleware
       :swagger {:produces "application/json"}
       :coercion reitit.coercion.schema/coercion
       :parameters {:path {:parent_id s/Uuid

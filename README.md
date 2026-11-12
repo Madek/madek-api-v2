@@ -56,6 +56,9 @@ Requirements:
 - Use http://localhost:3104/api-v2/api-docs/index.html#/api%2Fauth-info/get_api_v2_test_csrf to test them
   - Only data-manipulation requests require a CSRF token
   - `madek-anti-csrf-token` (Cookie) & `x-csrf-token` (Request-Header) have to be identical
+  - This is a double-submit check: any non-browser client can satisfy it, so it protects browser sessions only,
+    not direct API calls. Browser-side protection relies on `SameSite=Lax` for the session cookie and on the
+    CORS allow-list `madek_api_cors_allowed_origins` (default: no origin).
 
 ### Starting up the Server
 
@@ -94,6 +97,11 @@ export http_resources_scope=ADMIN
 ```
 
 
+
+**Route authorization guard**: every route needs an authorization middleware
+(see `madek.api.route-authorization/authorization-middlewares`) or an entry with a reason in
+`explicitly-unprotected-routes`. The application refuses to start otherwise; also checked by
+`clojure -M:test -n madek.api.route-authorization-test`.
 
 ### Formatting Code
 

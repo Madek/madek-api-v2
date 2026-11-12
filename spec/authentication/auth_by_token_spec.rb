@@ -1,6 +1,6 @@
 require "spec_helper"
 
-context "with proper username but bad password" do
+context "with a token without read and write scope" do
   include_context :json_client_for_authenticated_token_user_no_creds do
     let :response do
       client.get("/api-v2/auth-info/")
@@ -11,7 +11,7 @@ context "with proper username but bad password" do
   end
 end
 
-context "with proper username and password" do
+context "with a token with read and write scope" do
   include_context :json_client_for_authenticated_token_user do
     let :response do
       client.get("/api-v2/auth-info/")
@@ -31,8 +31,8 @@ context "with proper username and password" do
           body["login"]
         end
 
-        it "should be equal to the entities login" do
-          expect(ApiToken.find_by_token(token.token).user_id).to eq token.user_id
+        it "is the login of the token's user" do
+          expect(login).to eq user.login
         end
       end
 

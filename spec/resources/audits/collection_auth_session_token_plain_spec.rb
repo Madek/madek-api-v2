@@ -134,9 +134,9 @@ describe "Fetch collections (session-based)" do
     expect(response.status).to eq(200)
   end
 
-  it "returns 200 for unauthorized GET /api-v2/auth-info/" do
+  it "returns 401 for GET /api-v2/auth-info/ without session" do
     response = plain_faraday_json_client.get("/api-v2/auth-info/")
-    expect(response.status).to eq(200)
+    expect(response.status).to eq(401)
   end
 end
 
@@ -170,9 +170,9 @@ describe "Fetch collections (admin session)" do
     expect(response.status).to eq(200)
   end
 
-  it "returns 200 for unauthorized GET /api-v2/auth-info/" do
+  it "returns 401 for GET /api-v2/auth-info/ without session" do
     response = plain_faraday_json_client.get("/api-v2/auth-info/")
-    expect(response.status).to eq(200)
+    expect(response.status).to eq(401)
   end
 end
 

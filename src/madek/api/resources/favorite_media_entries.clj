@@ -6,6 +6,7 @@
    [madek.api.authorization :as authorization]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
+   [madek.api.resources.shared.json_query_param_helper :as jqh]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
@@ -50,6 +51,7 @@
           (sd/response_ok favorite_media_entry)
           (let [sql-query (-> (sql/insert-into :favorite_media_entries)
                               (sql/values [data])
+                              (sql/returning :*)
                               sql-format)
                 ins-res (jdbc/execute-one! (:tx req) sql-query)]
             (if ins-res
@@ -70,10 +72,11 @@
                             (sql/where [:= :user_id user-id] [:= :media_entry_id media_entry-id])
                             sql-format)
               del-result (jdbc/execute-one! (:tx req) sql-query)]
-          (if (= 1 del-result)
+          (if (= 1 (:next.jdbc/update-count del-result))
             (sd/response_ok favorite_media_entry)
-            (error "Failed delete favorite_media_entry "
-                   "user-id: " user-id "media_entry-id: " media_entry-id)))))
+            (do (error "Failed delete favorite_media_entry "
+                       "user-id: " user-id "media_entry-id: " media_entry-id)
+                (sd/response_failed "Could not delete favorite_media_entry." 406))))))
     (catch Exception ex (sd/response_exception ex))))
 
 (defn wwrap-find-favorite_media_entry [send404]
@@ -124,8 +127,8 @@
 ; user self edit favorites
 (def favorite-routes
   ["/favorites/media-entries/"
-   {:openapi {:tags ["api/favorite"]}}
-   {:get
+   {:openapi {:tags ["api/favorite"]}
+    :get
     {:summary (sd/sum_usr "List users favorites media_entries ids.")
      :handler handle_list-favorite_media_entries-by-user
      :middleware [authorization/wrap-authorized-user]
@@ -136,12 +139,14 @@
 
 (def media-entry-routes
   ["/media-entry/:media_entry_id/favorites/"
-   {:openapi {:tags ["api/media-entries"]}}
-   {:post {:summary (sd/sum_usr "Create favorite_media_entry for authed user and media-entry.")
+   {:openapi {:tags ["api/media-entries"]}
+    :post {:summary (sd/sum_usr "Create favorite_media_entry for authed user and media-entry.")
            :handler handle_create-favorite_media_entry
 
            :middleware [authorization/wrap-authorized-user
                         (wwrap-find-media_entry :media_entry_id)
+                        jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-view
                         (wwrap-find-favorite_media_entry-by-auth false)]
            :swagger {:produces "application/json"}
            :coercion reitit.coercion.schema/coercion

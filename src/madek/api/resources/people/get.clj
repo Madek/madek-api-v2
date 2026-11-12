@@ -2,7 +2,7 @@
   (:require
    [clojure.spec.alpha :as sa]
    [honey.sql :refer [format] :rename {format sql-format}]
-   [madek.api.resources.people.common :refer [person-query]]
+   [madek.api.resources.people.common :refer [person-query public-person-query]]
    [madek.api.resources.shared.core :as sd]
    [madek.api.utils.coercion.spec-alpha-definition :as sp]
    [madek.api.utils.coercion.spec-alpha-definition-nil :as sp-nil]
@@ -51,19 +51,23 @@
    :institutional_directory_infos [s/Str]
    :institutional_directory_inactive_since (s/maybe s/Any)})
 
-(defn handler
-  [{{{id :id} :path} :parameters
-    tx :tx :as req}]
-  (debug req)
-  (debug id)
-  (if-let [person (-> (person-query id)
-                      sql-format
-                      (->> (jdbc/execute-one! tx)))]
-    (sd/response_ok person)
-    (sd/response_failed "No such person found" 404)))
+(def public-schema
+  (dissoc schema :admin_comment :identification_info :institutional_id
+          :institutional_directory_infos :institutional_directory_inactive_since))
+
+(defn- build-handler [query-fn]
+  (fn [{{{id :id} :path} :parameters tx :tx}]
+    (debug id)
+    (if-let [person (-> (query-fn id)
+                        sql-format
+                        (->> (jdbc/execute-one! tx)))]
+      (sd/response_ok person)
+      (sd/response_failed "No such person found" 404))))
+
+(def handler (build-handler person-query))
 
 (def route
-  {:summary (sd/?no-auth? (sd/sum_adm "Get person by uid"))
+  {:summary (sd/sum_adm "Get person by uid")
    :description "Get a person by uid (either uuid or pair of json encoded [institution, institutional_id]).
    Returns 404, if no such people exists."
    :handler handler
@@ -75,3 +79,9 @@
    :responses {200 {:description "Person found."
                     :body schema}
                404 (sd/create-error-message-response "Not Found." "No such person found.")}})
+
+(def public-route
+  (-> route
+      (assoc :summary (sd/?no-auth? "Get person by uid")
+             :handler (build-handler public-person-query))
+      (assoc-in [:responses 200 :body] public-schema)))

@@ -75,12 +75,13 @@ describe "Modify collection with authentication (GET/POST/PUT/DELETE)" do
     end
 
     it "returns 200 for authorized GET request" do
-      response = plain_faraday_json_client.get("/api-v2/groups/")
+      expect(plain_faraday_json_client.get("/api-v2/groups/").status).to eq(401)
+
+      response = wtoken_header_plain_faraday_json_client_get(admin_user_token.token, "/api-v2/groups/")
       expect(response.status).to eq(200)
       id = response.body["groups"].first["id"]
 
-      response = plain_faraday_json_client.get("/api-v2/groups/#{id}")
-      expect(response.status).to eq(200)
+      expect(plain_faraday_json_client.get("/api-v2/groups/#{id}").status).to eq(401)
 
       response = wtoken_header_plain_faraday_json_client_get(admin_user_token.token, "/api-v2/groups/#{id}")
       expect(response.status).to eq(200)

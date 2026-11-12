@@ -1,6 +1,5 @@
 require "spec_helper"
 require "cgi"
-require "timecop"
 
 shared_examples :responds_with_unauthorized do
   it "responds with success 200" do
@@ -101,27 +100,17 @@ describe "API-Token Authentication" do
 
     context "read only token connection" do
       include_context :json_client_for_authenticated_token_user_read do
-        context "connection via token as token-user" do
-          it "enables to read the auth-info/" do
-            expect(response.status).to be == 200
-          end
+        it "enables to read the auth-info/" do
+          expect(response.status).to be == 200
         end
 
-        context 'connection via token as password and some "nonsense" as username' do
-          it "enables to read the auth-info/" do
-            expect(response.status).to be == 200
+        it "is forbidden to use an unsafe http verb" do
+          post_response = client.post("/api-v2/collections/") do |req|
+            req.headers["Content-Type"] = "application/json"
+            req.body = {}.to_json
           end
-        end
-
-        context 'connection via token "Authorization: token TOKEN" header' do
-          it "enables to read the auth-info/" do
-            expect(response.status).to be == 200
-          end
-
-          it "is forbidden to use an unsafe http verb" do
-            delete_response = client.delete("auth-info/") # .data[:href])
-            expect(delete_response.status).to be == 405
-          end
+          expect(post_response.status).to be == 403
+          expect(post_response.body.to_s).to match(/unsafe http verbs/)
         end
       end
     end
@@ -141,30 +130,8 @@ describe "API-Token Authentication" do
         client.get("/api-v2/vocabularies/?page=1&count=100")
       end
 
-      context "using an authorized token " do
-        context "used in token auth" do
-          it "accessing auth-info results in 200" do
-            expect(response.status).to be == 200
-          end
-        end
-
-        context "used in token auth" do
-          it "accessing auth-info results in 200" do
-            expect(response.status).to be == 200
-          end
-        end
-
-        context "used in token auth" do
-          it "accessing auth-info results in 200" do
-            expect(response.status).to be == 200
-          end
-        end
-
-        context "used in token auth" do
-          it "accessing auth-info results in 200" do
-            expect(response.status).to be == 200
-          end
-        end
+      it "reading vocabularies results in 200" do
+        expect(response.status).to be == 200
       end
     end
   end
@@ -175,30 +142,8 @@ describe "API-Token Authentication" do
         client.get("/api-v2/admin/vocabularies/?page=1&count=100")
       end
 
-      context "using an authorized token " do
-        context "used in token auth" do
-          it "access forbidden auth-info results in 403" do
-            expect(response.status).to be == 403
-          end
-        end
-
-        context "used in token auth" do
-          it "access forbidden auth-info results in 403" do
-            expect(response.status).to be == 403
-          end
-        end
-
-        context "used in token auth" do
-          it "access forbidden auth-info results in 403" do
-            expect(response.status).to be == 403
-          end
-        end
-
-        context "used in token auth" do
-          it "access forbidden auth-info results in 403" do
-            expect(response.status).to be == 403
-          end
-        end
+      it "reading admin vocabularies results in 403" do
+        expect(response.status).to be == 403
       end
     end
   end

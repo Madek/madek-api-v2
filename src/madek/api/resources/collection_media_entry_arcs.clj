@@ -3,37 +3,59 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [logbug.catcher :as catcher]
+   [madek.api.resources.collections.advanced-filter.permissions :as coll-perms]
+   [madek.api.resources.media-entries.advanced-filter.permissions :as me-perms]
    [madek.api.resources.shared.core :as sd]
    [madek.api.resources.shared.db_helper :as dbh]
    [madek.api.resources.shared.json_query_param_helper :as jqh]
+   [madek.api.resources.shared.media_resource_helper :as mrh]
+   [madek.api.utils.auth :as auth]
    [madek.api.utils.helper :refer [to-uuid sql-format-quoted]]
    [madek.api.utils.pagination :refer [pagination-handler]]
    [next.jdbc :as jdbc]
    [reitit.coercion.schema]
    [schema.core :as s]))
 
-(defn arc-query [id]
+(defn- filter-by-viewable-resources
+  "Restricts arcs to those whose collection and media-entry the client may
+  view. Admins are only unrestricted on admin routes."
+  [sqlmap req]
+  (if (auth/admin-route-authorized? req)
+    sqlmap
+    (sql/where sqlmap
+               [:in :collection_media_entry_arcs.collection_id
+                (-> (sql/select :collections.id)
+                    (sql/from :collections)
+                    (coll-perms/filter-by-view-permission req))]
+               [:in :collection_media_entry_arcs.media_entry_id
+                (-> (sql/select :media_entries.id)
+                    (sql/from :media_entries)
+                    (me-perms/filter-by-view-permission req))])))
+
+(defn arc-query [id req]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
       (sql/order-by [:media_entry_id :asc] [:collection_id :asc])
       (sql/where [:= :id (to-uuid id)])
+      (filter-by-viewable-resources req)
       sql-format))
 
 (defn arc [req]
   (let [id (-> req :parameters :path :id)
-        db-query (arc-query id)
+        db-query (arc-query id req)
         db-result (jdbc/execute! (:tx req) db-query)]
     (if-let [arc (first db-result)]
       (sd/response_ok arc)
       (sd/response_not_found "No such collection-media-entry-arc"))))
 
 ; TODO test query and paging
-(defn arcs-query [query-params]
+(defn arcs-query [query-params req]
   (-> (sql/select :*)
       (sql/from :collection_media_entry_arcs)
       (sql/order-by [:media_entry_id :asc] [:collection_id :asc])
       (dbh/build-query-param query-params :collection_id)
-      (dbh/build-query-param query-params :media_entry_id)))
+      (dbh/build-query-param query-params :media_entry_id)
+      (filter-by-viewable-resources req)))
 
 (defn arcs [req]
   (let [query-params (-> req :parameters :query)
@@ -41,16 +63,28 @@
         params (merge
                 (if (nil? query-params) {} query-params)
                 (if (nil? path-params) {} path-params))
-        db-query (arcs-query params)
+        db-query (arcs-query params req)
         db-result (pagination-handler req db-query :collection-media-entry-arcs)]
     (sd/response_ok db-result)))
 
+(defn wrap-authorize-view-media-entry
+  "Requires view rights on the media-entry given by :media_entry_id; the
+  request passed on keeps its own :media-resource."
+  [handler]
+  (fn [request]
+    (if-let [media-entry (mrh/get-media-resource request :media_entry_id "media_entries" "MediaEntry" (:tx request))]
+      (mrh/authorize-request-for-media-resource
+       (assoc request :media-resource media-entry)
+       (fn [_] (handler request))
+       :view)
+      (sd/response_not_found "No such media-entry."))))
+
 (defn create-col-me-arc
   ([col-id me-id data tx]
-   (let [ins-data (assoc data
-                         :collection_id col-id
-                         :media_entry_id me-id
-                         :order (double (:order data)))
+   (let [ins-data (cond-> (assoc data
+                                 :collection_id col-id
+                                 :media_entry_id me-id)
+                    (some? (:order data)) (assoc :order (double (:order data))))
          sql (-> (sql/insert-into :collection_media_entry_arcs)
                  (sql/values [ins-data])
                  (sql/returning :*)
@@ -205,10 +239,9 @@
     {:post
      {:summary (sd/?token? (sd/sum_usr "Create collection media-entry arc"))
       :handler handle_create-col-me-arc
-      ; TODO check: if collection edit md and relations is allowed checked
-      ; not the media entry edit md
       :middleware [jqh/ring-wrap-add-media-resource
-                   jqh/ring-wrap-authorization-edit-metadata]
+                   jqh/ring-wrap-authorization-edit-metadata
+                   wrap-authorize-view-media-entry]
       :swagger {:produces "application/json" :consumes "application/json"}
       :accept "application/json"
       :content-type "application/json"

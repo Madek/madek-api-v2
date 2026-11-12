@@ -88,15 +88,15 @@
                             :body s/Any}}
            :parameters {:path {:preview_id s/Uuid}}}}]])
 
-; TODO auth
 (def media-entry-routes
   ["/media-entries"
    {:openapi {:tags ["api/media-entries"]}}
-   ; TODO media-entry preview auth
    ["/:media_entry_id/previews/"
     {:get {:summary "Get all previews for media-entry id."
            :handler handle-get-previews-index
-           :middleware [media-files/wrap-find-and-add-media-file-by-media-entry-id]
+           :middleware [jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-view
+                        media-files/wrap-find-and-add-media-file-by-media-entry-id]
            :coercion reitit.coercion.schema/coercion
            :parameters {:path {:media_entry_id s/Str}}
            :responses {200 {:description "Returns the list of previews."

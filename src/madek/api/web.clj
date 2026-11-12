@@ -1,6 +1,7 @@
 (ns madek.api.web
   (:require
    [clojure.java.io :as io]
+   [clojure.string :as str]
    [environ.core :refer [env]]
    [logbug.debug :as debug]
    [madek.api.anti-csrf.csrf-handler :as csrf]
@@ -11,9 +12,11 @@
    [madek.api.resources]
    [madek.api.resources.auth-info :as auth-info]
    [madek.api.resources.shared.core :as sd]
+   [madek.api.route-authorization :as route-authorization]
    [madek.api.sign-in.core :as sign-in]
    [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS]]
    [madek.api.utils.cli :refer [long-opt-for-key]]
+   [madek.api.utils.config :refer [get-config]]
    [madek.api.utils.ring-audits :as ring-audits]
    [muuntaja.core :as m]
    [reitit.coercion.schema]
@@ -92,20 +95,24 @@
 
 ;### wrap CORS ###############################################################
 
-(defn add-access-control-allow-credentials [response]
-  (assoc-in response [:headers "Access-Control-Allow-Credentials"] true))
+(defn- cors-allowed-origins []
+  (->> (:madek_api_cors_allowed_origins (get-config))
+       (map #(str/replace (str %) #"/+$" ""))
+       set))
 
-(defn wrap-with-access-control-allow-credentials [handler]
-  (fn [request]
-    (add-access-control-allow-credentials (handler request))))
+(defn- cors-origin-allowed?
+  "Only origins listed in the setting madek_api_cors_allowed_origins may make
+  cross-origin requests; by default none."
+  [request]
+  (contains? (cors-allowed-origins) (get-in request [:headers "origin"])))
 
 (defn ring-wrap-cors [handler]
-  (-> handler
-      (cors-middleware/wrap-cors
-       :access-control-allow-origin [#".*"]
-       :access-control-allow-methods [:options :get :put :post :delete]
-       :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization", "Credentials" "Cookie"])
-      wrap-with-access-control-allow-credentials))
+  (cors-middleware/wrap-cors
+   handler
+   :access-control-allow-origin cors-origin-allowed?
+   :access-control-allow-credentials "true"
+   :access-control-allow-methods [:options :get :put :post :delete]
+   :access-control-allow-headers ["Origin" "X-Requested-With" "Content-Type" "Accept" "Authorization", "Credentials" "Cookie"]))
 
 ;###############################################################################
 
@@ -146,19 +153,19 @@
             :handler sign-in/get-sign-in}}]]
 
    ["/api-v2/sign-out/"
-    {:get {:accept "application/json"
-           :handler sign-in/logout-handler
-           :openapi {:tags ["api/auth-info"] :security []}
-           :coercion reitit.coercion.schema/coercion
-           :responses {200 {:description "Logout successful."
-                            :body {:status s/Str
-                                   :message s/Str}}
-                       400 {:description "Bad request."
-                            :body {:status s/Str
-                                   :message s/Str}}
-                       404 {:description "No active session found"
-                            :body {:status s/Str
-                                   :message s/Str}}}}}]
+    {:post {:accept "application/json"
+            :handler sign-in/logout-handler
+            :openapi {:tags ["api/auth-info"] :security []}
+            :coercion reitit.coercion.schema/coercion
+            :responses {200 {:description "Logout successful."
+                             :body {:status s/Str
+                                    :message s/Str}}
+                        400 {:description "Bad request."
+                             :body {:status s/Str
+                                    :message s/Str}}
+                        404 {:description "No active session found"
+                             :body {:status s/Str
+                                    :message s/Str}}}}}]
 
    ["/api-v2"
     {:openapi {:tags ["api/auth-info"] :security ADMIN_AUTH_METHODS}}
@@ -334,7 +341,8 @@
 
 (defn create-app [router-data]
   (rr/ring-handler
-   (rr/router router-data get-router-options)
+   (route-authorization/assert-routes-protected!
+    (rr/router router-data get-router-options))
    common-routes))
 
 (def app-all (create-app get-router-data-all))

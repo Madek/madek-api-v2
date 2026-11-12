@@ -5,6 +5,7 @@
             [madek.api.authorization :as authorization]
             [madek.api.resources.shared.core :as sd]
             [madek.api.resources.shared.db_helper :as dbh]
+            [madek.api.resources.shared.json_query_param_helper :as jqh]
             [madek.api.utils.auth :refer [ADMIN_AUTH_METHODS wrap-authorize-admin!]]
             [madek.api.utils.helper :refer [f normalize-fields]]
             [next.jdbc :as jdbc]
@@ -45,7 +46,7 @@
       (let [user-id (or (-> req :user :id) (-> req :authenticated-entity :id))
             col-id (-> req :collection :id)
             data {:user_id user-id res-col-name col-id}
-            sql-query (-> (sql/insert-into :favorite_collections) (sql/values [data]) sql-format)]
+            sql-query (-> (sql/insert-into :favorite_collections) (sql/values [data]) (sql/returning :*) sql-format)]
         (if-let [favorite_collection (-> req res-req-name)]
           ; already has favorite_collection
           (sd/response_ok favorite_collection)
@@ -121,8 +122,8 @@
 ; TODO tests
 (def favorite-routes
   ["/favorites/collections/"
-   {:openapi {:tags ["api/favorite"]}}
-   {:get
+   {:openapi {:tags ["api/favorite"]}
+    :get
     {:summary (sd/sum_usr "List users favorite_collections.")
      :handler handle_list-favorite_collection-by-user
      :middleware [authorization/wrap-authorized-user]
@@ -130,16 +131,17 @@
      :responses {200 {:description "Returns the favorite_collections."
                       :body {:collection_ids [s/Uuid]}}}}}])
 
-; TODO media resource permissions?
 ; TODO docu
 ; TODO tests
 (def collection-routes
   ["/collections/:collection_id/favorites"
-   {:openapi {:tags ["api/collections"]}}
-   {:post {:summary (sd/sum_usr "Create favorite_collection for authed user and collection.")
+   {:openapi {:tags ["api/collections"]}
+    :post {:summary (sd/sum_usr "Create favorite_collection for authed user and collection.")
            :handler handle_create-favorite_collection
            :middleware [authorization/wrap-authorized-user
                         (wwrap-find-collection :collection_id)
+                        jqh/ring-wrap-add-media-resource
+                        jqh/ring-wrap-authorization-view
                         (wwrap-find-favorite_collection-by-auth false)]
            :coercion reitit.coercion.schema/coercion
            :responses {200 {:description "Returns the created favorite_collection."

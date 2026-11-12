@@ -8,6 +8,7 @@ require "config/database"
 require "config/web"
 
 require "shared/clients"
+require "shared/resource_access"
 require "pry"
 require "uuidtools"
 
