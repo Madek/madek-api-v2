@@ -3,7 +3,6 @@ eval_gemfile "datalayer/Gemfile"
 # stay on patched rack 2.2.x
 gem "rack", "~> 2.2.25"
 
-gem "addressable"
 gem "cider_ci-open_session", ">= 1.0.0", "< 2.0.0"
 gem "faraday"
 gem "git"
